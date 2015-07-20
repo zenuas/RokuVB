@@ -1,0 +1,10 @@
+*.suo
+*.user
+
+out/
+bin/
+obj/
+*.obj
+*.exe
+
+*.bz2

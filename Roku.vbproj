@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6196B226-3F71-4F49-8BFD-1912CC449FE4}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Roku</RootNamespace>
+    <AssemblyName>roku</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>Empty</MyType>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>roku.xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>roku.xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>On</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Sub Main</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="roku.y" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compiler\MyIToken.vb" />
+    <Compile Include="Compiler\Lexer.vb" />
+    <Compile Include="Compiler\MyLexer.Combine.vb" />
+    <Compile Include="Compiler\MyLexer.vb" />
+    <Compile Include="Compiler\MyParser.Combine.vb" />
+    <Compile Include="Compiler\MyParser.vb" />
+    <Compile Include="Compiler\Parser.vb" />
+    <Compile Include="Compiler\SymbolTypes.vb" />
+    <Compile Include="Compiler\SyntaxErrorException.vb" />
+    <Compile Include="Compiler\MyToken.vb" />
+    <Compile Include="Main.vb" />
+    <Compile Include="Manager\InType.vb" />
+    <Compile Include="Node\BaseNode.vb" />
+    <Compile Include="Node\BlockNode.vb" />
+    <Compile Include="Node\DeclareNode.vb" />
+    <Compile Include="Node\ExpressionNode.vb" />
+    <Compile Include="Node\FunctionCallNode.vb" />
+    <Compile Include="Node\FunctionNode.vb" />
+    <Compile Include="Node\IEvaluableNode.vb" />
+    <Compile Include="Node\INode.vb" />
+    <Compile Include="Node\IRunableNode.vb" />
+    <Compile Include="Node\IScopeNode.vb" />
+    <Compile Include="Node\LetNode.vb" />
+    <Compile Include="Node\ListNode.vb" />
+    <Compile Include="Node\NumericNode.vb" />
+    <Compile Include="Node\StringNode.vb" />
+    <Compile Include="Node\TypeNode.vb" />
+    <Compile Include="Node\VariableNode.vb" />
+    <Compile Include="Util\Util.vb" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)
+cscript //nologo yanp.js</PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
