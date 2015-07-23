@@ -8,7 +8,6 @@ Namespace Node
 
 
         Property Type As InType
-        ReadOnly Property Receiver As InType
 
     End Interface
 

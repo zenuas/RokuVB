@@ -11,6 +11,9 @@ Namespace Compiler
         ''' <summary>':'</summary>
         __x3A
 
+        ''' <summary>'?'</summary>
+        __x3F
+
         ''' <summary>'['</summary>
         __x5B
 
@@ -20,6 +23,9 @@ Namespace Compiler
         ''' <summary>BEGIN</summary>
         BEGIN
 
+        ''' <summary>ELSE</summary>
+        [ELSE]
+
         ''' <summary>END</summary>
         [END]
 
@@ -28,6 +34,9 @@ Namespace Compiler
 
         ''' <summary>EQ</summary>
         EQ
+
+        ''' <summary>IF</summary>
+        [IF]
 
         ''' <summary>LET</summary>
         [LET]
@@ -62,8 +71,17 @@ Namespace Compiler
         ''' <summary>decla</summary>
         decla
 
+        ''' <summary>elseif</summary>
+        [elseif]
+
         ''' <summary>expr</summary>
         expr
+
+        ''' <summary>if</summary>
+        if_1
+
+        ''' <summary>ifthen</summary>
+        ifthen
 
         ''' <summary>let</summary>
         let_1

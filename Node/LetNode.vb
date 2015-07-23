@@ -1,16 +1,17 @@
+Imports System
 Imports System.Collections.Generic
-
+Imports Roku.Manager
 
 Namespace Node
 
     Public Class LetNode
         Inherits BaseNode
-        Implements IRunableNode
+        Implements IEvaluableNode
 
 
         Public Overridable Property Var As VariableNode
-        Public Overridable Property Right As IEvaluableNode Implements IRunableNode.Expression
-        Public Overridable Property [Next] As IRunableNode Implements IRunableNode.Next
+        Public Overridable Property Expression As IEvaluableNode
+        Public Overridable Property Type As InType Implements IEvaluableNode.Type
     End Class
 
 End Namespace

@@ -18,12 +18,6 @@ Namespace Node
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Arguments As IEvaluableNode()
         Public Overridable Property Type As InType Implements IEvaluableNode.Type
-
-        Public Overridable ReadOnly Property Receiver As InType Implements IEvaluableNode.Receiver
-            Get
-                Return Me.Expression.Receiver
-            End Get
-        End Property
     End Class
 
 End Namespace

@@ -1,4 +1,5 @@
-﻿Imports System.Collections.Generic
+﻿Imports System
+Imports System.Collections.Generic
 Imports Roku.Manager
 
 
@@ -6,28 +7,14 @@ Namespace Node
 
     Public Class BlockNode
         Inherits BaseNode
-        Implements IScopeNode
+        Implements IScopeNode, IEvaluableNode
 
 
-        Public Overridable Property Statement As IRunableNode
+        Public Overridable Property Statements As New List(Of IEvaluableNode)
 
-        Public Overridable Sub AddStatement(stmt As IRunableNode)
+        Public Overridable Sub AddStatement(stmt As IEvaluableNode)
 
-            If stmt Is Nothing Then Return
-
-            stmt.Parent = Me
-            If Me.Statement Is Nothing Then
-
-                Me.Statement = stmt
-            Else
-
-                Dim current = Me.Statement
-                Do While current.Next IsNot Nothing
-
-                    current = current.Next
-                Loop
-                current.Next = stmt
-            End If
+            If stmt IsNot Nothing Then Me.Statements.Add(stmt)
         End Sub
 
         Public Overridable Sub AddFunction(func As FunctionNode) Implements IScopeNode.AddFunction
@@ -46,6 +33,8 @@ Namespace Node
                 Return Me.scope_
             End Get
         End Property
+
+        Public Overridable Property Type As InType Implements IEvaluableNode.Type
     End Class
 
 End Namespace

@@ -26,10 +26,10 @@ Namespace Compiler
 
         Protected Overridable Function CreateLetNode(
                 var As VariableNode,
-                right As IEvaluableNode
+                expr As IEvaluableNode
             ) As LetNode
 
-            Dim let_ As New LetNode With {.Var = var, .Right = right}
+            Dim let_ As New LetNode With {.Var = var, .Expression = expr}
             let_.AppendLineNumber(var)
             Return let_
         End Function
@@ -85,6 +85,25 @@ Namespace Compiler
             var_.AppendLineNumber(s)
 
             Return var_
+        End Function
+
+        Protected Overridable Function CreateIfNode(
+                cond As IEvaluableNode,
+                [then] As IEvaluableNode
+            ) As IfNode
+
+            Return Me.CreateIfNode(cond, [then], Nothing)
+        End Function
+
+        Protected Overridable Function CreateIfNode(
+                cond As IEvaluableNode,
+                [then] As IEvaluableNode,
+                [else] As IEvaluableNode
+            ) As IfNode
+
+            Dim [if] As New IfNode With {.Condition = cond, .Then = [then], .Else = [else]}
+            [if].AppendLineNumber(cond)
+            Return [if]
         End Function
 
     End Class

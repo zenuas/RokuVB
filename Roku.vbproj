@@ -80,8 +80,8 @@
     <Compile Include="Node\FunctionCallNode.vb" />
     <Compile Include="Node\FunctionNode.vb" />
     <Compile Include="Node\IEvaluableNode.vb" />
+    <Compile Include="Node\IfNode.vb" />
     <Compile Include="Node\INode.vb" />
-    <Compile Include="Node\IRunableNode.vb" />
     <Compile Include="Node\IScopeNode.vb" />
     <Compile Include="Node\LetNode.vb" />
     <Compile Include="Node\ListNode.vb" />

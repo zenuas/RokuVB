@@ -20,6 +20,7 @@ Namespace Compiler
             Me.ReservedChar(")"c) = SymbolTypes.__x29
             Me.ReservedChar("["c) = SymbolTypes.__x5B
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
+            Me.ReservedChar("?"c) = SymbolTypes.__x3F
             Me.ReservedChar(":"c) = SymbolTypes.__x3A
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
             Me.ReservedWord("END") = SymbolTypes.[END]
@@ -28,6 +29,8 @@ Namespace Compiler
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
+            Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
+            Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
