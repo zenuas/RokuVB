@@ -7,7 +7,7 @@ Namespace Compiler
 
 #Region "scope"
 
-        Protected Overridable Property CurrentScope() As IScopeNode
+        Protected Overridable Property CurrentScope As IScopeNode
 
         Protected Overridable Sub PushScope(scope As IScopeNode)
 

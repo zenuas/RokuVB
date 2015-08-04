@@ -31,6 +31,11 @@ Public Class Main
                 self.CompileFile(self.loader_, arg)
             Next
         End If
+
+#If DEBUG Then
+        Console.WriteLine("push any key...")
+        Console.ReadKey()
+#End If
     End Sub
 
     Public Overridable Sub CompileFile(loader As Loader, f As String)
@@ -52,6 +57,45 @@ Public Class Main
 
     Public Overridable Sub Compile(node As INode)
 
+        If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
+    End Sub
+
+    Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
+
+        Dim mark As New Dictionary(Of Object, Boolean)
+
+        Dim f As Action(Of Object, Object) =
+            Sub(owner As Object, receiver As Object)
+
+                If receiver Is Nothing OrElse mark.ContainsKey(receiver) Then Return
+                mark.Add(receiver, True)
+
+                For Each x In Traverse.Fields(receiver)
+
+                    Dim p = x.Item1
+                    If TypeOf p Is INode AndAlso Not mark.ContainsKey(p) Then
+
+                        If Not mark.ContainsKey(p) Then
+
+                            out.WriteLine("{0} [label = ""{1}""]", p.GetHashCode.ToString, p.GetType.Name)
+                            mark.Add(p, True)
+                        End If
+                        out.WriteLine("{0} -> {1};", If(owner Is Nothing, "root", owner.GetHashCode.ToString), p.GetHashCode.ToString)
+                    End If
+                    f(If(TypeOf p Is INode, p, owner), p)
+                Next
+            End Sub
+
+        out.WriteLine("
+digraph roku {
+graph [
+];
+node [
+shape = record,
+align = left,
+];")
+        f(Nothing, node)
+        out.WriteLine("}")
     End Sub
 
 #Region "compiler option"
@@ -122,6 +166,9 @@ Public Class Main
 
     <CommandLine("r", "ir")>
     Public Overridable Property IROutput As String = ""
+
+    <CommandLine("N", "node-dump")>
+    Public Overridable Property NodeDump As IO.StreamWriter = Nothing
 
 #End Region
 

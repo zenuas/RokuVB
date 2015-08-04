@@ -89,14 +89,10 @@
     <Compile Include="Node\StringNode.vb" />
     <Compile Include="Node\TypeNode.vb" />
     <Compile Include="Node\VariableNode.vb" />
+    <Compile Include="Util\Traverse.vb" />
     <Compile Include="Util\Util.vb" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)

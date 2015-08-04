@@ -7,7 +7,8 @@ Imports Roku.Node
 %define YYROOTNAMESPACE Roku
 %define YYNAMESPACE     Compiler
 
-%type<BlockNode>        block
+%type<BlockNode>        stmts block
+%type<IEvaluableNode>   stmt
 %type<LetNode>          let
 %type<IfNode>           if ifthen elseif
 %type<IEvaluableNode>   expr
@@ -24,8 +25,11 @@ Imports Roku.Node
 
 %%
 
-program : void
-        | program stmt
+start   : program
+program : begin stmts {$$ = Me.PopScope}
+begin   :             {Me.PushScope(New BlockNode)}
+stmts   : void        {$$ = Me.CurrentScope}
+        | stmts stmt  {$1.AddStatement($2) : $$ = $1}
 
 
 ########## statement ##########
@@ -34,7 +38,7 @@ stmt : line
      | if
      | block
 
-block : BEGIN program END
+block : BEGIN program END {$$ = $2}
 
 
 ########## expr ##########
@@ -62,7 +66,7 @@ let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
 
 
 ########## sub ##########
-sub   : SUB var '(' args ')' type EOL block
+sub   : SUB var '(' args ')' typex EOL block
 args  : void
       | argn
 argn  : decla
@@ -70,6 +74,8 @@ argn  : decla
 decla : var ':' type
 type  : var
       | '[' type ']'
+typex : void
+      | type
 
 
 ########## if ##########

@@ -62,6 +62,9 @@ Namespace Compiler
         ''' <summary>args</summary>
         args
 
+        ''' <summary>begin</summary>
+        begin_1
+
         ''' <summary>block</summary>
         block
 
@@ -98,8 +101,14 @@ Namespace Compiler
         ''' <summary>program</summary>
         program
 
+        ''' <summary>start</summary>
+        start
+
         ''' <summary>stmt</summary>
         stmt
+
+        ''' <summary>stmts</summary>
+        stmts
 
         ''' <summary>str</summary>
         str_1
@@ -109,6 +118,9 @@ Namespace Compiler
 
         ''' <summary>type</summary>
         type
+
+        ''' <summary>typex</summary>
+        typex
 
         ''' <summary>var</summary>
         var_1
