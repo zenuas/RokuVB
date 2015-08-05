@@ -5,13 +5,13 @@ Imports Roku.Manager
 
 Namespace Node
 
-    Public Class ListNode
+    Public Class ListNode(Of T)
         Inherits BaseNode
         Implements IEvaluableNode
 
 
-        Private list_ As New List(Of IEvaluableNode)
-        Public Overridable ReadOnly Property List As List(Of IEvaluableNode)
+        Private list_ As New List(Of T)
+        Public Overridable ReadOnly Property List As List(Of T)
             Get
                 Return Me.list_
             End Get

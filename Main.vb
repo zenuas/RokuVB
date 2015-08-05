@@ -62,25 +62,38 @@ Public Class Main
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
 
-        Dim mark As New Dictionary(Of Object, Boolean)
+        Dim mark As New Dictionary(Of Integer, Boolean)
 
         Dim f As Action(Of Object, Object) =
             Sub(owner As Object, receiver As Object)
 
-                If receiver Is Nothing OrElse mark.ContainsKey(receiver) Then Return
-                mark.Add(receiver, True)
+                If receiver Is Nothing OrElse mark.ContainsKey(receiver.GetHashCode) Then Return
+                mark.Add(receiver.GetHashCode, True)
 
                 For Each x In Traverse.Fields(receiver)
 
                     Dim p = x.Item1
-                    If TypeOf p Is INode AndAlso Not mark.ContainsKey(p) Then
+                    If TypeOf p Is INode AndAlso Not mark.ContainsKey(p.GetHashCode) Then
 
-                        If Not mark.ContainsKey(p) Then
+                        Dim hash = p.GetHashCode
+                        If Not mark.ContainsKey(hash) Then
 
-                            out.WriteLine("{0} [label = ""{1}""]", p.GetHashCode.ToString, p.GetType.Name)
-                            mark.Add(p, True)
+                            Dim name = ""
+                            Select Case True
+                                Case TypeOf p Is VariableNode : name = "\l" + CType(p, VariableNode).Name
+                                Case TypeOf p Is TypeNode : name = "\l" + CType(p, TypeNode).Name
+                                Case TypeOf p Is NumericNode : name = "\l" + CType(p, NumericNode).Numeric.ToString
+                                Case TypeOf p Is StringNode : name = "\l""" + CType(p, StringNode).String + """"
+                                Case TypeOf p Is FunctionNode : name = "\l" + CType(p, FunctionNode).Name
+                                Case TypeOf p Is ExpressionNode : name = "\l" + CType(p, ExpressionNode).Operator
+                                Case TypeOf p Is DeclareNode : name = "\l" + CType(p, DeclareNode).Name.Name
+                                Case TypeOf p Is LetNode : name = "\l" + CType(p, LetNode).Var.Name
+                            End Select
+
+                            out.WriteLine("{0} [label = ""{1}{2}""]", hash.ToString, p.GetType.Name, name)
+                            'mark.Add(hash, True)
                         End If
-                        out.WriteLine("{0} -> {1};", If(owner Is Nothing, "root", owner.GetHashCode.ToString), p.GetHashCode.ToString)
+                        out.WriteLine("{0} -> {1};", If(owner Is Nothing, "root", owner.GetHashCode.ToString), hash.ToString)
                     End If
                     f(If(TypeOf p Is INode, p, owner), p)
                 Next

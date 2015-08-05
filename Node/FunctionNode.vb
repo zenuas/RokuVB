@@ -14,6 +14,9 @@ Namespace Node
         End Sub
 
         Public Overridable Property Name As String = ""
+        Public Overridable Property Arguments As DeclareNode()
+        Public Overridable Property [Return] As TypeNode
+        Public Overridable Property Body As BlockNode
         Public Overridable Property Type As InType Implements IEvaluableNode.Type
     End Class
 

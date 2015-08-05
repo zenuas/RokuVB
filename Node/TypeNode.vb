@@ -4,12 +4,13 @@
         Inherits BaseNode
 
 
-        Public Sub New(name As String)
+        Public Sub New(name As VariableNode)
 
-            Me.Name = name
+            Me.Name = name.Name
+            Me.AppendLineNumber(name)
         End Sub
 
-        Public Sub New(parent_ As TypeNode, name As String)
+        Public Sub New(parent_ As TypeNode, name As VariableNode)
             Me.New(name)
 
             Me.Namespace = parent_

@@ -1,5 +1,7 @@
 
 Imports Roku.Node
+Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
 Imports Roku.Compiler
@@ -22,9 +24,9 @@ Namespace Compiler
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("?"c) = SymbolTypes.__x3F
             Me.ReservedChar(":"c) = SymbolTypes.__x3A
+            Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
             Me.ReservedWord("END") = SymbolTypes.[END]
-            Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ

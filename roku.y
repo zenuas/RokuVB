@@ -1,22 +1,28 @@
 
 %{
 Imports Roku.Node
+Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %}
 
 %default INode
 %define YYROOTNAMESPACE Roku
 %define YYNAMESPACE     Compiler
 
-%type<BlockNode>        stmts block
-%type<IEvaluableNode>   stmt
-%type<LetNode>          let
-%type<IfNode>           if ifthen elseif
-%type<IEvaluableNode>   expr
-%type<IEvaluableNode>   call
-%type<ListNode>         list
-%type<VariableNode>     var varx
-%type<NumericNode>      num
-%type<StringNode>       str
+%type<BlockNode>      block stmt
+%type<IEvaluableNode> line
+%type<LetNode>        let
+%type<FunctionNode>   sub
+%type<DeclareNode>    decla
+%type<DeclareListNode> args argn
+%type<TypeNode>       type typex
+%type<IfNode>         if ifthen elseif
+%type<IEvaluableNode> expr
+%type<IEvaluableNode> call
+%type<IEvaluableListNode> list
+%type<VariableNode>   var varx
+%type<NumericNode>    num
+%type<StringNode>     str
 
 %left  ELSE
 %left  OPE
@@ -26,25 +32,24 @@ Imports Roku.Node
 %%
 
 start   : program
-program : begin stmts {$$ = Me.PopScope}
-begin   :             {Me.PushScope(New BlockNode)}
-stmts   : void        {$$ = Me.CurrentScope}
-        | stmts stmt  {$1.AddStatement($2) : $$ = $1}
+program : begin stmt {$$ = Me.PopScope}
+begin   :            {Me.PushScope(New BlockNode)}
 
 
 ########## statement ##########
-stmt : line
-     | sub
-     | if
-     | block
+stmt  : void        {$$ = Me.CurrentScope}
+      | stmt line   {$1.AddStatement($2) : $$ = $1}
+
+line  : expr EOL
+      | let  EOL
+      | sub
+      | if
+      | block
 
 block : BEGIN program END {$$ = $2}
 
 
 ########## expr ##########
-line : expr EOL
-     | let  EOL
-
 expr : var
      | str
      | num
@@ -66,13 +71,13 @@ let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
 
 
 ########## sub ##########
-sub   : SUB var '(' args ')' typex EOL block
-args  : void
+sub   : SUB var '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
+args  : void       {$$ = Me.CreateListNode(Of DeclareNode)}
       | argn
-argn  : decla
-      | argn decla
-decla : var ':' type
-type  : var
+argn  : decla      {$$ = Me.CreateListNode($1)}
+      | argn decla {$1.List.Add($2) : $$ = $1}
+decla : var ':' type {$$ = New DeclareNode($1, $3)}
+type  : var          {$$ = New TypeNode($1)}
       | '[' type ']'
 typex : void
       | type

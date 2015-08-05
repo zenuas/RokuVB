@@ -107,9 +107,6 @@ Namespace Compiler
         ''' <summary>stmt</summary>
         stmt
 
-        ''' <summary>stmts</summary>
-        stmts
-
         ''' <summary>str</summary>
         str_1
 

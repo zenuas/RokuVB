@@ -61,14 +61,14 @@ Namespace Compiler
             Return Me.CreateExpressionNode(left, "", Nothing)
         End Function
 
-        Protected Overridable Function CreateListNode() As ListNode
+        Protected Overridable Function CreateListNode(Of T)() As ListNode(Of T)
 
-            Return New ListNode
+            Return New ListNode(Of T)
         End Function
 
-        Protected Overridable Function CreateListNode(expr As IEvaluableNode) As ListNode
+        Protected Overridable Function CreateListNode(Of T)(expr As T) As ListNode(Of T)
 
-            Dim list = Me.CreateListNode
+            Dim list = Me.CreateListNode(Of T)
             list.List.Add(expr)
 
             Return list
@@ -104,6 +104,18 @@ Namespace Compiler
             Dim [if] As New IfNode With {.Condition = cond, .Then = [then], .Else = [else]}
             [if].AppendLineNumber(cond)
             Return [if]
+        End Function
+
+        Protected Overridable Function CreateFunctionNode(
+                name As VariableNode,
+                args() As DeclareNode,
+                ret As TypeNode,
+                body As BlockNode
+            ) As FunctionNode
+
+            Dim f As New FunctionNode(name.Name) With {.Arguments = args, .Return = ret, .Body = body}
+            f.AppendLineNumber(name)
+            Return f
         End Function
 
     End Class
