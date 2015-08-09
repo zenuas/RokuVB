@@ -12,9 +12,7 @@ Namespace Compiler
 
             Me.ReservedWord.Clear()
             Me.ReservedWord("sub") = SymbolTypes.SUB
-            Me.ReservedWord("sub") = SymbolTypes.LET
-            Me.ReservedWord("sub") = SymbolTypes.LET
-            Me.ReservedWord("sub") = SymbolTypes.SUB
+            Me.ReservedWord("var") = SymbolTypes.LET
         End Sub
 
 #Region "reader"

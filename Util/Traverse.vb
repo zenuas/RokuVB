@@ -3,30 +3,34 @@ Imports System.Collections.Generic
 Imports System.Reflection
 
 
-Public Class Traverse
+Namespace Util
 
-    Public Shared Iterator Function Fields(
-            x As Object,
-            Optional flag As BindingFlags = BindingFlags.FlattenHierarchy Or BindingFlags.Public Or BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.GetField
-        ) As IEnumerable(Of Tuple(Of Object, FieldInfo))
+    Public Class Traverse
 
-        If x Is Nothing Then Return
+        Public Shared Iterator Function Fields(
+                x As Object,
+                Optional flag As BindingFlags = BindingFlags.FlattenHierarchy Or BindingFlags.Public Or BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.GetField
+            ) As IEnumerable(Of Tuple(Of Object, FieldInfo))
 
-        If TypeOf x Is Array Then
+            If x Is Nothing Then Return
 
-            Dim xs = CType(x, Array)
-            For i = 0 To xs.Length - 1
+            If TypeOf x Is Array Then
 
-                Yield New Tuple(Of Object, FieldInfo)(xs.GetValue(i), Nothing)
-            Next
-        Else
-            For Each m In x.GetType.GetFields(flag)
+                Dim xs = CType(x, Array)
+                For i = 0 To xs.Length - 1
 
-                Yield Tuple.Create(m.GetValue(x), m)
-            Next
-        End If
+                    Yield New Tuple(Of Object, FieldInfo)(xs.GetValue(i), Nothing)
+                Next
+            Else
+                For Each m In x.GetType.GetFields(flag)
 
-    End Function
+                    Yield Tuple.Create(m.GetValue(x), m)
+                Next
+            End If
+
+        End Function
 
 
-End Class
+    End Class
+
+End Namespace

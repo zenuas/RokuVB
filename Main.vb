@@ -70,7 +70,7 @@ Public Class Main
                 If receiver Is Nothing OrElse mark.ContainsKey(receiver.GetHashCode) Then Return
                 mark.Add(receiver.GetHashCode, True)
 
-                For Each x In Traverse.Fields(receiver)
+                For Each x In Util.Traverse.Fields(receiver)
 
                     Dim p = x.Item1
                     If TypeOf p Is INode AndAlso Not mark.ContainsKey(p.GetHashCode) Then

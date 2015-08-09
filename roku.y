@@ -25,7 +25,9 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<StringNode>     str
 
 %left  ELSE
+%token<NumericNode> NUM
 %left  OPE
+
 %left  '?'
 %right '(' '['
 
@@ -41,6 +43,7 @@ stmt  : void        {$$ = Me.CurrentScope}
       | stmt line   {$1.AddStatement($2) : $$ = $1}
 
 line  : expr EOL
+      | call EOL
       | let  EOL
       | sub
       | if
@@ -53,8 +56,8 @@ block : BEGIN program END {$$ = $2}
 expr : var
      | str
      | num
-     | call
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
+     | '(' call ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
      | expr OPE expr     {$$ = Me.CreateExpressionNode($1, $2.Name, $3)}
      | expr '[' expr ']' {$$ = Me.CreateExpressionNode($1, "[]", $3)}
@@ -99,7 +102,7 @@ varx  : var
       | ELSE    {$$ = Me.CreateVariableNode($1)}
       | LET     {$$ = Me.CreateVariableNode($1)}
 num   : NUM     {$$ = $1}
-str   | STR     {$$ = New StringNode($1)}
+str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.Append($2.Name) : $$ = $1}
 
 void : {$$ = Nothing}

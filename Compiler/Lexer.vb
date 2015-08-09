@@ -136,6 +136,7 @@ Namespace Compiler
                 Me.reader_x_ = 1
                 Me.reader_y_ += 1
             End If
+            Me.peek_buffer_ = -1
             Return Me.reader_.ReadLine
         End Function
 

@@ -89,14 +89,24 @@
     <Compile Include="Node\StringNode.vb" />
     <Compile Include="Node\TypeNode.vb" />
     <Compile Include="Node\VariableNode.vb" />
+    <Compile Include="RkCode\RkCode0.vb" />
+    <Compile Include="RkCode\RkCode2.vb" />
+    <Compile Include="RkCode\RkCall.vb" />
+    <Compile Include="RkCode\RkCode3.vb" />
+    <Compile Include="RkCode\RkGoto.vb" />
+    <Compile Include="RkCode\RkOperand.vb" />
+    <Compile Include="RkCode\RkCode1.vb" />
+    <Compile Include="RkCode\RkNumeric32.vb" />
+    <Compile Include="RkCode\RkString.vb" />
+    <Compile Include="RkCode\RkValue.vb" />
     <Compile Include="Util\Traverse.vb" />
-    <Compile Include="Util\Util.vb" />
+    <Compile Include="Util\Functions.vb" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)
-cscript //nologo yanp.js</PreBuildEvent>
+yanp.bat --quit</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -125,9 +125,6 @@ Namespace Compiler
         ''' <summary>void</summary>
         void
 
-        ''' <summary>$1</summary>
-        __x241
-
         ''' <summary>$END</summary>
         _END
 

@@ -1,21 +1,30 @@
-@prompt $$$S
+@echo off
+prompt $$$S
 
-mkdir Compiler
+mkdir Compiler 2> NUL
 
-..\legacy\Yanp\bin\Debug\yanp.exe ^
-  -i roku.y ^
-  -v tests\\roku.txt ^
-  -c tests\\roku.csv ^
-  -p .\\Compiler\\ ^
-  -b ..\\legacy\\Yanp ^
-  -t vb
+cscript //nologo ..\legacy\build-tools\make.vbs Compiler\MyParser.vb roku.y || call :yanp
 
-find /n "/reduce" tests\roku.txt
+if "%1" neq "--quit" pause
+exit /b 0
 
-del Compiler\ParserSample.vb8.sln
-del Compiler\ParserSample.vbproj
-del Compiler\Main.vb
-del Compiler\IToken.vb
-del Compiler\Token.vb
 
-REM @pause
+
+:yanp
+  ..\legacy\Yanp\bin\Debug\yanp.exe ^
+    -i roku.y ^
+    -v tests\\roku.txt ^
+    -c tests\\roku.csv ^
+    -p .\\Compiler\\ ^
+    -b ..\\legacy\\Yanp ^
+    -t vb
+  
+  find /n "/reduce" < tests\roku.txt
+  
+  del Compiler\ParserSample.vb8.sln
+  del Compiler\ParserSample.vbproj
+  del Compiler\Main.vb
+  del Compiler\IToken.vb
+  del Compiler\Token.vb
+  exit /b 0
+
