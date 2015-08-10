@@ -64,41 +64,6 @@ Public Class Main
 
         Dim mark As New Dictionary(Of Integer, Boolean)
 
-        Dim f As Action(Of Object, Object) =
-            Sub(owner As Object, receiver As Object)
-
-                If receiver Is Nothing OrElse mark.ContainsKey(receiver.GetHashCode) Then Return
-                mark.Add(receiver.GetHashCode, True)
-
-                For Each x In Util.Traverse.Fields(receiver)
-
-                    Dim p = x.Item1
-                    If TypeOf p Is INode AndAlso Not mark.ContainsKey(p.GetHashCode) Then
-
-                        Dim hash = p.GetHashCode
-                        If Not mark.ContainsKey(hash) Then
-
-                            Dim name = ""
-                            Select Case True
-                                Case TypeOf p Is VariableNode : name = "\l" + CType(p, VariableNode).Name
-                                Case TypeOf p Is TypeNode : name = "\l" + CType(p, TypeNode).Name
-                                Case TypeOf p Is NumericNode : name = "\l" + CType(p, NumericNode).Numeric.ToString
-                                Case TypeOf p Is StringNode : name = "\l""" + CType(p, StringNode).String + """"
-                                Case TypeOf p Is FunctionNode : name = "\l" + CType(p, FunctionNode).Name
-                                Case TypeOf p Is ExpressionNode : name = "\l" + CType(p, ExpressionNode).Operator
-                                Case TypeOf p Is DeclareNode : name = "\l" + CType(p, DeclareNode).Name.Name
-                                Case TypeOf p Is LetNode : name = "\l" + CType(p, LetNode).Var.Name
-                            End Select
-
-                            out.WriteLine("{0} [label = ""{1}{2}""]", hash.ToString, p.GetType.Name, name)
-                            'mark.Add(hash, True)
-                        End If
-                        out.WriteLine("{0} -> {1};", If(owner Is Nothing, "root", owner.GetHashCode.ToString), hash.ToString)
-                    End If
-                    f(If(TypeOf p Is INode, p, owner), p)
-                Next
-            End Sub
-
         out.WriteLine("
 digraph roku {
 graph [
@@ -107,7 +72,40 @@ node [
 shape = record,
 align = left,
 ];")
-        f(Nothing, node)
+
+        Dim dump_node =
+            Sub(x As INode)
+
+                Dim name = ""
+                If x.LineNumber.HasValue Then name = String.Format("\l( {0}, {1} )", x.LineNumber, x.LineColumn)
+                Select Case True
+                    Case TypeOf x Is VariableNode : name += "\l" + CType(x, VariableNode).Name
+                    Case TypeOf x Is TypeNode : name += "\l" + CType(x, TypeNode).Name
+                    Case TypeOf x Is NumericNode : name += "\l" + CType(x, NumericNode).Numeric.ToString
+                    Case TypeOf x Is StringNode : name += "\l""" + CType(x, StringNode).String + """"
+                    Case TypeOf x Is FunctionNode : name += "\l" + CType(x, FunctionNode).Name
+                    Case TypeOf x Is ExpressionNode : name += "\l" + CType(x, ExpressionNode).Operator
+                    Case TypeOf x Is DeclareNode : name += "\l" + CType(x, DeclareNode).Name.Name
+                    Case TypeOf x Is LetNode : name += "\l" + CType(x, LetNode).Var.Name
+                End Select
+
+                out.WriteLine("{0} [label = ""{1}{2}""]", x.GetHashCode, x.GetType.Name, name)
+            End Sub
+        dump_node(node)
+
+        Util.Traverse.Nodes(node,
+            Function(parent, ref, child)
+
+                Dim child_hash = child.GetHashCode
+                out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child_hash, ref)
+
+                If mark.ContainsKey(child_hash) Then Return False
+
+                dump_node(child)
+                mark.Add(child_hash, True)
+                Return True
+            End Function)
+
         out.WriteLine("}")
     End Sub
 

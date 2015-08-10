@@ -25,8 +25,8 @@ Namespace Compiler
             Me.ReservedChar(":"c) = SymbolTypes.__x3A
             Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedWord("EOL") = SymbolTypes.EOL
-            Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
             Me.ReservedWord("END") = SymbolTypes.[END]
+            Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ

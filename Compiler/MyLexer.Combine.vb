@@ -111,7 +111,11 @@ RESTART_:
 
                 indent += 1
                 Me.ReadChar()
-                If Me.Parser.IsAccept(Me.eol_) AndAlso (c = Convert.ToChar(10) OrElse c = Convert.ToChar(13)) Then Return Me.CreateEndOfLine
+                If c = Convert.ToChar(10) OrElse c = Convert.ToChar(13) Then
+
+                    If Me.Parser.IsAccept(Me.eol_) Then Return Me.CreateEndOfLine
+                    indent = 0
+                End If
                 If Me.EndOfStream() Then Return Me.CreateEndOfToken_
                 c = Me.NextChar
             Loop

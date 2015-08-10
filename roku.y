@@ -33,9 +33,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %%
 
-start   : program
-program : begin stmt {$$ = Me.PopScope}
-begin   :            {Me.PushScope(New BlockNode)}
+start : block
 
 
 ########## statement ##########
@@ -49,7 +47,8 @@ line  : expr EOL
       | if
       | block
 
-block : BEGIN program END {$$ = $2}
+block : begin stmt END {$$ = Me.PopScope}
+begin : BEGIN          {Me.PushScope(New BlockNode)}
 
 
 ########## expr ##########

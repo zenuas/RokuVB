@@ -98,9 +98,6 @@ Namespace Compiler
         ''' <summary>num</summary>
         num_1
 
-        ''' <summary>program</summary>
-        program
-
         ''' <summary>start</summary>
         start
 
