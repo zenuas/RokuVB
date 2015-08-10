@@ -3,7 +3,7 @@ prompt $$$S
 
 mkdir Compiler 2> NUL
 
-cscript //nologo ..\legacy\build-tools\make.vbs Compiler\MyParser.vb roku.y || call :yanp
+cscript //nologo ..\legacy\build-tools\make.vbs Parser\MyParser.vb roku.y || call :yanp
 
 if "%1" neq "--quit" pause
 exit /b 0
@@ -15,16 +15,16 @@ exit /b 0
     -i roku.y ^
     -v tests\\roku.txt ^
     -c tests\\roku.csv ^
-    -p .\\Compiler\\ ^
+    -p .\\Parser\\ ^
     -b ..\\legacy\\Yanp ^
     -t vb
   
   find /n "/reduce" < tests\roku.txt
   
-  del Compiler\ParserSample.vb8.sln
-  del Compiler\ParserSample.vbproj
-  del Compiler\Main.vb
-  del Compiler\IToken.vb
-  del Compiler\Token.vb
+  del Parser\ParserSample.vb8.sln
+  del Parser\ParserSample.vbproj
+  del Parser\Main.vb
+  del Parser\IToken.vb
+  del Parser\Token.vb
   exit /b 0
 

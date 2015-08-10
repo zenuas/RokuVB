@@ -2,7 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
 
-Namespace Compiler
+Namespace Parser
 
     Partial Public Class MyLexer
 
@@ -310,12 +310,12 @@ RESTART_:
 
         Protected Overridable Function CreateBlockBegin(indent As Integer) As IToken(Of INode)
 
-            Return New Token(SymbolTypes.BEGIN) With {.Indent = indent}
+            Return New Token(SymbolTypes.BEGIN) With {.indent = indent}
         End Function
 
         Protected Overridable Function CreateBlockEnd(indent As Integer) As IToken(Of INode)
 
-            Return New Token(SymbolTypes.END) With {.Indent = indent}
+            Return New Token(SymbolTypes.END) With {.indent = indent}
         End Function
 
         Protected Overridable Function ReadVariableFirst(buf As System.Text.StringBuilder) As Token

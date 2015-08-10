@@ -7,7 +7,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %default INode
 %define YYROOTNAMESPACE Roku
-%define YYNAMESPACE     Compiler
+%define YYNAMESPACE     Parser
+%define YYMYNAMESPACE   Parser
 
 %type<BlockNode>      block stmt
 %type<IEvaluableNode> line

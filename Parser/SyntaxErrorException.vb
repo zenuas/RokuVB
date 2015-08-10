@@ -1,6 +1,6 @@
 Imports System
 
-Namespace Compiler
+Namespace Parser
 
     Public Class SyntaxErrorException
         Inherits Exception

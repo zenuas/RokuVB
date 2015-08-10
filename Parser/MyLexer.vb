@@ -4,9 +4,9 @@ Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
-Imports Roku.Compiler
+Imports Roku.Parser
 
-Namespace Compiler
+Namespace Parser
 
     Public Class MyLexer
         Inherits Lexer(Of INode)

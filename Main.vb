@@ -1,7 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Reflection
-Imports Roku.Compiler
+Imports Roku.Parser
 Imports Roku.Node
 
 
@@ -62,8 +62,6 @@ Public Class Main
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
 
-        Dim mark As New Dictionary(Of Integer, Boolean)
-
         out.WriteLine("
 digraph roku {
 graph [
@@ -94,17 +92,12 @@ align = left,
         dump_node(node)
 
         Util.Traverse.Nodes(node,
-            Function(parent, ref, child)
+            Sub(parent, ref, child, isfirst)
 
-                Dim child_hash = child.GetHashCode
-                out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child_hash, ref)
+                If isfirst Then dump_node(child)
+                out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
 
-                If mark.ContainsKey(child_hash) Then Return False
-
-                dump_node(child)
-                mark.Add(child_hash, True)
-                Return True
-            End Function)
+            End Sub)
 
         out.WriteLine("}")
     End Sub

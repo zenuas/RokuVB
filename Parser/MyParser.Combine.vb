@@ -1,7 +1,7 @@
 ﻿Imports Roku.Node
 
 
-Namespace Compiler
+Namespace Parser
 
     Partial Public Class MyParser
 

@@ -33,6 +33,37 @@ Namespace Util
 
         Public Shared Sub Nodes(
                 node As INode,
+                callback As Action(Of INode, String, INode, Boolean)
+            )
+
+            Traverse.Nodes(node,
+                Function(parent, ref, child, isfirst)
+
+                    callback(parent, ref, child, isfirst)
+                    Return isfirst
+                End Function)
+
+        End Sub
+
+        Public Shared Sub Nodes(
+                node As INode,
+                callback As Func(Of INode, String, INode, Boolean, Boolean)
+            )
+
+            Dim mark As New Dictionary(Of Integer, Boolean)
+            Traverse.Nodes(node,
+                Function(parent, ref, child)
+
+                    Dim child_hash = child.GetHashCode
+                    Dim isfirst = Not mark.ContainsKey(child_hash)
+                    If isfirst Then mark.Add(child_hash, True)
+                    Return callback(parent, ref, child, isfirst)
+                End Function)
+
+        End Sub
+
+        Public Shared Sub Nodes(
+                node As INode,
                 callback As Func(Of INode, String, INode, Boolean)
             )
 

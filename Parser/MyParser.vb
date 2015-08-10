@@ -5,9 +5,9 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
 Imports System
-Imports Roku.Compiler
+Imports Roku.Parser
 
-Namespace Compiler
+Namespace Parser
 
     Public Class MyParser
         Inherits Parser(Of INode)
@@ -353,7 +353,7 @@ Namespace Compiler
             Return Me.DoAction(New Token(type), length, value)
         End Function
 
-        Protected Overrides Sub OnError(ByVal lex As Compiler.Lexer(Of INode))
+        Protected Overrides Sub OnError(ByVal lex As Parser.Lexer(Of INode))
 
             Throw New SyntaxErrorException(lex.LineNumber, lex.LineColumn, "syntax error")
         End Sub

@@ -2,7 +2,7 @@ Imports System
 Imports System.Collections.Generic
 Imports System.IO
 
-Namespace Compiler
+Namespace Parser
 
     Public MustInherit Class Lexer(Of T)
 

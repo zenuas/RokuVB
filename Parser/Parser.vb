@@ -1,6 +1,6 @@
 Imports System.Collections.Generic
 
-Namespace Compiler
+Namespace Parser
 
     Public MustInherit Class Parser(Of T)
 

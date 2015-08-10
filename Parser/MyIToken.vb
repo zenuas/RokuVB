@@ -1,4 +1,4 @@
-Namespace Compiler
+Namespace Parser
 
     Public Interface IToken(Of T)
 

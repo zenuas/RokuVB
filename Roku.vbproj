@@ -61,16 +61,17 @@
     <None Include="roku.y" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\MyIToken.vb" />
-    <Compile Include="Compiler\Lexer.vb" />
-    <Compile Include="Compiler\MyLexer.Combine.vb" />
-    <Compile Include="Compiler\MyLexer.vb" />
-    <Compile Include="Compiler\MyParser.Combine.vb" />
-    <Compile Include="Compiler\MyParser.vb" />
-    <Compile Include="Compiler\Parser.vb" />
-    <Compile Include="Compiler\SymbolTypes.vb" />
-    <Compile Include="Compiler\SyntaxErrorException.vb" />
-    <Compile Include="Compiler\MyToken.vb" />
+    <Compile Include="Compiler\Normalize.vb" />
+    <Compile Include="Parser\MyIToken.vb" />
+    <Compile Include="Parser\Lexer.vb" />
+    <Compile Include="Parser\MyLexer.Combine.vb" />
+    <Compile Include="Parser\MyLexer.vb" />
+    <Compile Include="Parser\MyParser.Combine.vb" />
+    <Compile Include="Parser\MyParser.vb" />
+    <Compile Include="Parser\Parser.vb" />
+    <Compile Include="Parser\SymbolTypes.vb" />
+    <Compile Include="Parser\SyntaxErrorException.vb" />
+    <Compile Include="Parser\MyToken.vb" />
     <Compile Include="Main.vb" />
     <Compile Include="Manager\InType.vb" />
     <Compile Include="Node\BaseNode.vb" />

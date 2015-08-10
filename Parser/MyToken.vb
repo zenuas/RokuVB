@@ -3,11 +3,11 @@ Imports Roku.Node
 
 
 Imports System
-Imports Roku.Compiler
+Imports Roku.Parser
 
-Namespace Compiler
+Namespace Parser
 
-    <Serializable()> _
+    <Serializable()>
     Public Class Token
         Implements IToken(Of INode)
 
