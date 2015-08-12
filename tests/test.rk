@@ -1,5 +1,6 @@
-var a = 1
-var b = 2
-var x = a + b
-f x a b
-var y = x + b
+#var a = 1
+#var b = 2
+#var c = 3
+var x = (a + b) * c
+#f x a b
+#var y = x + b

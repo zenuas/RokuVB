@@ -57,7 +57,9 @@ Public Class Main
 
     Public Overridable Sub Compile(node As INode)
 
+        Compiler.Normalize.Normalization(node)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
+
     End Sub
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
@@ -89,13 +91,12 @@ align = left,
 
                 out.WriteLine("{0} [label = ""{1}{2}""]", x.GetHashCode, x.GetType.Name, name)
             End Sub
-        dump_node(node)
 
         Util.Traverse.Nodes(node,
             Sub(parent, ref, child, isfirst)
 
                 If isfirst Then dump_node(child)
-                out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
+                If parent IsNot Nothing Then out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
 
             End Sub)
 
