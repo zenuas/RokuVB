@@ -57,6 +57,7 @@ Public Class Main
 
     Public Overridable Sub Compile(node As INode)
 
+        Compiler.NameResolver.ResolveName(node)
         Compiler.Normalize.Normalization(node)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
 

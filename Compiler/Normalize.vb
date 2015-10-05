@@ -44,6 +44,8 @@ Namespace Compiler
                                         If TypeOf e Is ExpressionNode Then
 
                                             Dim expr = CType(e, ExpressionNode)
+                                            If expr.Operator.Equals("()") Then Return insert_let(expr.Left)
+
                                             expr.Left = insert_let(expr.Left)
                                             expr.Right = insert_let(expr.Right)
                                             Return to_let(expr)
