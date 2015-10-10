@@ -65,7 +65,7 @@ Namespace Parser
             If Me.indent_stack_.Count = 0 Then
 
                 Me.indent_stack_.Add(Me.next_.Indent)
-                Return Me.CreateBlockBegin(Me.next_.Indent)
+                Return Me.CreateBlockBegin(Me.next_.Indent, Me.LineNumber)
             End If
 
             If Me.prev_ IsNot Nothing AndAlso
@@ -84,7 +84,7 @@ Namespace Parser
                 ElseIf prev_indent < next_indent Then
 
                     Me.indent_stack_.Add(next_indent)
-                    Me.prev_ = Me.CreateBlockBegin(next_indent)
+                    Me.prev_ = Me.CreateBlockBegin(next_indent, Me.LineNumber)
                 Else
                     Me.indent_stack_.RemoveAt(Me.indent_stack_.Count - 1)
                     Me.prev_ = Me.CreateBlockEnd(prev_indent)
@@ -308,9 +308,9 @@ RESTART_:
             Return Me.CreateEndOfToken
         End Function
 
-        Protected Overridable Function CreateBlockBegin(indent As Integer) As IToken(Of INode)
+        Protected Overridable Function CreateBlockBegin(indent As Integer, linenum As Integer) As IToken(Of INode)
 
-            Return New Token(SymbolTypes.BEGIN) With {.indent = indent}
+            Return New Token(SymbolTypes.BEGIN) With {.Indent = indent, .LineNumber = linenum, .LineColumn = 0}
         End Function
 
         Protected Overridable Function CreateBlockEnd(indent As Integer) As IToken(Of INode)

@@ -23,40 +23,37 @@ Namespace Compiler
                     Return If(x Is Nothing, v, x)
                 End Function
 
-            Dim scope_search As Action(Of INode) =
-                Sub(x As INode)
+            Util.Traverse.NodesReplaceOnce(
+                node,
+                CType(node, BlockNode),
+                Function(parent, ref, child, current, isfirst, next_)
 
-                    If Not TypeOf x Is BlockNode Then Return
-                    Dim current = CType(x, BlockNode)
+                    If parent IsNot Nothing AndAlso TypeOf child Is BlockNode Then
 
-                    Util.Traverse.Nodes(current,
-                        Function(parent, ref, child, replace, isfirst)
+                        Dim block = CType(child, BlockNode)
+                        block.Parent = current
+                        next_(block, block)
 
-                            If parent IsNot Nothing AndAlso TypeOf child Is BlockNode Then
+                    Else
 
-                                CType(child, BlockNode).Parent = current
-                                scope_search(child)
-                                Return False
+                        next_(child, current)
+                        If TypeOf child Is VariableNode Then
 
-                            ElseIf TypeOf child Is VariableNode Then
+                            Dim var = CType(child, VariableNode)
+                            If TypeOf parent Is LetNode AndAlso ref.Equals("Var") Then
 
-                                Dim var = CType(child, VariableNode)
-                                If TypeOf parent Is LetNode AndAlso ref.Equals("Var") Then
+                                var.Scope = current
+                                current.Scope.Add(var.Name, child)
+                            Else
 
-                                    var.Scope = current
-                                    current.Scope.Add(var.Name, child)
-                                Else
-
-                                    replace(resolve_var(current, var))
-                                End If
-
+                                Return resolve_var(current, var)
                             End If
 
-                            Return True
-                        End Function)
-                End Sub
+                        End If
+                    End If
 
-            scope_search(node)
+                    Return child
+                End Function)
 
         End Sub
 

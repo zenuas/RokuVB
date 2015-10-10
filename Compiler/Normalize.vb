@@ -8,125 +8,117 @@ Namespace Compiler
 
         Public Shared Sub Normalization(node As INode)
 
-            Dim block_search As Action(Of INode) =
-                Sub(x As INode)
+            Util.Traverse.NodesOnce(
+                node,
+                CType(node, BlockNode),
+                Function(parent, ref, child, user, isfirst, next_)
 
-                    If Not TypeOf x Is BlockNode Then Return
+                    If Not isfirst Then Return child
 
-                    Util.Traverse.Nodes(x,
-                        Function(parent, ref, child, isfirst)
+                    If TypeOf child Is BlockNode Then
 
-                            If Not isfirst Then Return isfirst
+                        Dim block = CType(child, BlockNode)
+                        Dim var_index = 0
+                        Dim i = 0
 
-                            If TypeOf child Is BlockNode Then
+                        Dim to_let =
+                            Function(e As IEvaluableNode)
 
-                                Dim block = CType(child, BlockNode)
-                                Dim var_index = 0
-                                Dim i = 0
+                                Dim var As New VariableNode(String.Format("${0}", var_index))
+                                var.LineNumber = e.LineNumber
+                                var.LineColumn = e.LineColumn
+                                var_index += 1
 
-                                Dim to_let =
-                                    Function(e As IEvaluableNode)
+                                Dim let_ As New LetNode With {.Var = var, .Expression = e}
+                                block.Statements.Insert(i, let_)
+                                i += 1
+                                Return var
+                            End Function
 
-                                        Dim var As New VariableNode(String.Format("${0}", var_index))
-                                        var.LineNumber = e.LineNumber
-                                        var.LineColumn = e.LineColumn
-                                        var_index += 1
+                        Dim insert_let As Func(Of IEvaluableNode, IEvaluableNode) =
+                            Function(e As IEvaluableNode) As IEvaluableNode
 
-                                        Dim let_ As New LetNode With {.Var = var, .Expression = e}
-                                        block.Statements.Insert(i, let_)
-                                        i += 1
-                                        Return var
-                                    End Function
+                                If TypeOf e Is ExpressionNode Then
 
-                                Dim insert_let As Func(Of IEvaluableNode, IEvaluableNode) =
-                                    Function(e As IEvaluableNode) As IEvaluableNode
+                                    Dim expr = CType(e, ExpressionNode)
+                                    If expr.Operator.Equals("()") Then Return insert_let(expr.Left)
 
-                                        If TypeOf e Is ExpressionNode Then
+                                    expr.Left = insert_let(expr.Left)
+                                    expr.Right = insert_let(expr.Right)
+                                    Return to_let(expr)
 
-                                            Dim expr = CType(e, ExpressionNode)
-                                            If expr.Operator.Equals("()") Then Return insert_let(expr.Left)
+                                ElseIf TypeOf e Is FunctionCallNode Then
 
-                                            expr.Left = insert_let(expr.Left)
-                                            expr.Right = insert_let(expr.Right)
-                                            Return to_let(expr)
+                                ElseIf TypeOf e Is LetNode Then
 
-                                        ElseIf TypeOf e Is FunctionCallNode Then
+                                    Dim let_ = CType(e, LetNode)
+                                    let_.Expression = insert_let(let_.Expression)
+                                    Return let_
 
-                                        ElseIf TypeOf e Is LetNode Then
+                                ElseIf TypeOf e Is VariableNode Then
 
-                                            Dim let_ = CType(e, LetNode)
-                                            let_.Expression = insert_let(let_.Expression)
-                                            Return let_
+                                End If
 
-                                        ElseIf TypeOf e Is VariableNode Then
+                                Return e
+                            End Function
 
-                                        End If
+                        Dim to_flat As Func(Of IEvaluableNode, IEvaluableNode) =
+                            Function(e As IEvaluableNode) As IEvaluableNode
 
-                                        Return e
-                                    End Function
+                                If TypeOf e Is ExpressionNode Then
 
-                                Dim to_flat As Func(Of IEvaluableNode, IEvaluableNode) =
-                                    Function(e As IEvaluableNode) As IEvaluableNode
+                                    Dim expr = CType(e, ExpressionNode)
+                                    expr.Left = insert_let(expr.Left)
+                                    expr.Right = insert_let(expr.Right)
 
-                                        If TypeOf e Is ExpressionNode Then
+                                ElseIf TypeOf e Is FunctionCallNode Then
 
-                                            Dim expr = CType(e, ExpressionNode)
-                                            expr.Left = insert_let(expr.Left)
-                                            expr.Right = insert_let(expr.Right)
+                                ElseIf TypeOf e Is VariableNode Then
 
-                                        ElseIf TypeOf e Is FunctionCallNode Then
+                                End If
 
-                                        ElseIf TypeOf e Is VariableNode Then
+                                Return e
+                            End Function
 
-                                        End If
+                        Do While i < block.Statements.Count
 
-                                        Return e
-                                    End Function
+                            Dim v = block.Statements(i)
+                            If TypeOf v Is ExpressionNode Then
 
-                                Do While i < block.Statements.Count
+                                'Dim expr = CType(v, ExpressionNode)
+                                'expr.Left = to_flat(expr.Left)
+                                'expr.Right = to_flat(expr.Right)
+                                to_flat(v)
 
-                                    Dim v = block.Statements(i)
-                                    If TypeOf v Is ExpressionNode Then
+                            ElseIf TypeOf v Is FunctionCallNode Then
 
-                                        'Dim expr = CType(v, ExpressionNode)
-                                        'expr.Left = to_flat(expr.Left)
-                                        'expr.Right = to_flat(expr.Right)
-                                        to_flat(v)
+                                Dim func = CType(v, FunctionCallNode)
+                                func.Expression = insert_let(func.Expression)
+                                For j = 0 To func.Arguments.Length - 1
 
-                                    ElseIf TypeOf v Is FunctionCallNode Then
+                                    func.Arguments(j) = insert_let(func.Arguments(j))
+                                Next
 
-                                        Dim func = CType(v, FunctionCallNode)
-                                        func.Expression = insert_let(func.Expression)
-                                        For j = 0 To func.Arguments.Length - 1
+                            ElseIf TypeOf v Is LetNode Then
 
-                                            func.Arguments(j) = insert_let(func.Arguments(j))
-                                        Next
+                                Dim let_ = CType(v, LetNode)
+                                let_.Expression = to_flat(let_.Expression)
 
-                                    ElseIf TypeOf v Is LetNode Then
+                            ElseIf TypeOf v Is IfNode Then
 
-                                        Dim let_ = CType(v, LetNode)
-                                        let_.Expression = to_flat(let_.Expression)
-
-                                    ElseIf TypeOf v Is IfNode Then
-
-                                        Dim if_ = CType(v, IfNode)
-                                        if_.Condition = insert_let(if_.Condition)
-                                        block_search(if_.Then)
-                                        block_search(if_.Else)
-                                    Else
-                                        block_search(v)
-                                    End If
-                                    i += 1
-                                Loop
-
-                                Return False
+                                Dim if_ = CType(v, IfNode)
+                                if_.Condition = insert_let(if_.Condition)
                             End If
+                            i += 1
+                        Loop
 
-                            Return isfirst
-                        End Function)
-                End Sub
+                        next_(block, block)
+                    Else
+                        next_(child, user)
+                    End If
 
-            block_search(node)
+                    Return child
+                End Function)
         End Sub
 
     End Class

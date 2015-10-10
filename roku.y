@@ -44,12 +44,12 @@ stmt  : void        {$$ = Me.CurrentScope}
 line  : expr EOL
       | call EOL
       | let  EOL
-      | sub
+      | sub         {Me.CurrentScope.AddFunction($1)}
       | if
       | block
 
 block : begin stmt END {$$ = Me.PopScope}
-begin : BEGIN          {Me.PushScope(New BlockNode)}
+begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber.Value))}
 
 
 ########## expr ##########

@@ -127,19 +127,21 @@ Namespace Util
             Return Nothing
         End Function
 
-        Public Shared Iterator Function Map(Of T, R)(xs() As T, f As Func(Of T, Integer, R)) As IEnumerable(Of R)
+        Public Shared Iterator Function Map(Of T, R)(xs As IEnumerable(Of T), f As Func(Of T, Integer, R)) As IEnumerable(Of R)
 
-            For i = 0 To xs.Length - 1
+            Dim i = 0
+            For Each x In xs
 
-                Yield f(xs(i), i)
+                Yield f(x, i)
+                i += 1
             Next
         End Function
 
-        Public Shared Iterator Function Map(Of T, R)(xs() As T, f As Func(Of T, R)) As IEnumerable(Of R)
+        Public Shared Iterator Function Map(Of T, R)(xs As IEnumerable(Of T), f As Func(Of T, R)) As IEnumerable(Of R)
 
-            For i = 0 To xs.Length - 1
+            For Each x In xs
 
-                Yield f(xs(i))
+                Yield f(x)
             Next
         End Function
 

@@ -9,6 +9,11 @@ Namespace Node
         Inherits BaseNode
         Implements IScopeNode, IEvaluableNode
 
+        Public Sub New(linenum As Integer)
+
+            Me.LineNumber = linenum
+            Me.LineColumn = 0
+        End Sub
 
         Public Overridable Property Statements As New List(Of IEvaluableNode)
 
@@ -19,10 +24,12 @@ Namespace Node
 
         Public Overridable Sub AddFunction(func As FunctionNode) Implements IScopeNode.AddFunction
 
+            Me.Scope.Add(func.Name, func)
         End Sub
 
         Public Overridable Sub AddVar(var_ As VariableNode) Implements IScopeNode.AddVar
 
+            Me.Scope.Add(var_.Name, var_)
         End Sub
 
         Public Overridable Property Owner As IEvaluableNode Implements IScopeNode.Owner

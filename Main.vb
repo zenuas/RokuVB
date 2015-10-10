@@ -74,32 +74,77 @@ shape = record,
 align = left,
 ];")
 
-        Dim dump_node =
-            Sub(x As INode)
+        Util.Traverse.NodesOnce(Of Object)(
+            node,
+            Nothing,
+            Function(parent, ref, child, user, isfirst, next_)
 
-                Dim name = ""
-                If x.LineNumber.HasValue Then name = String.Format("\l( {0}, {1} )", x.LineNumber, x.LineColumn)
-                Select Case True
-                    Case TypeOf x Is VariableNode : name += "\l" + CType(x, VariableNode).Name
-                    Case TypeOf x Is TypeNode : name += "\l" + CType(x, TypeNode).Name
-                    Case TypeOf x Is NumericNode : name += "\l" + CType(x, NumericNode).Numeric.ToString
-                    Case TypeOf x Is StringNode : name += "\l""" + CType(x, StringNode).String + """"
-                    Case TypeOf x Is FunctionNode : name += "\l" + CType(x, FunctionNode).Name
-                    Case TypeOf x Is ExpressionNode : name += "\l" + CType(x, ExpressionNode).Operator
-                    Case TypeOf x Is DeclareNode : name += "\l" + CType(x, DeclareNode).Name.Name
-                    Case TypeOf x Is LetNode : name += "\l" + CType(x, LetNode).Var.Name
-                End Select
+                If TypeOf child Is BlockNode Then
 
-                out.WriteLine("{0} [label = ""{1}{2}""]", x.GetHashCode, x.GetType.Name, name)
-            End Sub
+                    Dim block = CType(child, BlockNode)
+                    out.WriteLine(String.Format("subgraph cluster_block_stmt_{0} {{", block.GetHashCode))
+                    out.WriteLine("  style=solid;")
+                    out.WriteLine("  color=black;")
+                    out.WriteLine("  node [style=filled];")
 
-        Util.Traverse.Nodes(node,
-            Sub(parent, ref, child, isfirst)
+                    Dim name = "block"
+                    Dim args = ""
+                    If parent Is Nothing Then
 
-                If isfirst Then dump_node(child)
-                If parent IsNot Nothing Then out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
+                        name = "entrypoint"
 
-            End Sub)
+                    ElseIf TypeOf parent Is FunctionNode AndAlso ref.Equals("Body") Then
+
+                        Dim func = CType(parent, FunctionNode)
+                        name = func.Name
+                        args = "\l" + String.Join("\l", Util.Functions.Map(func.Arguments, Function(arg) String.Format("{0} : {1}", arg.Name.Name, arg.Type.Name)))
+                    End If
+
+                    out.WriteLine(String.Format("  label = ""{0} ({1}){2}"";", name, block.LineNumber, args))
+                    out.WriteLine("  " + String.Join(" -> ", Util.Functions.Map(block.Statements, Function(x) x.GetHashCode.ToString)))
+                    out.WriteLine("}")
+                End If
+
+                next_(child, user)
+                Return child
+            End Function)
+
+        Util.Traverse.NodesOnce(Of Object)(
+            node,
+            Nothing,
+            Function(parent, ref, child, user, isfirst, next_)
+
+                If TypeOf child Is BlockNode OrElse
+                    TypeOf parent Is FunctionNode OrElse
+                    TypeOf child Is FunctionNode Then
+
+                    ' nothing
+                Else
+
+                    If isfirst Then
+
+                        Dim name = ""
+                        If child.LineNumber.HasValue Then name = String.Format("\l( {0}, {1} )", child.LineNumber, child.LineColumn)
+                        Select Case True
+                            Case TypeOf child Is VariableNode : name += "\l" + CType(child, VariableNode).Name
+                            Case TypeOf child Is TypeNode : name += "\l" + CType(child, TypeNode).Name
+                            Case TypeOf child Is NumericNode : name += "\l" + CType(child, NumericNode).Numeric.ToString
+                            Case TypeOf child Is StringNode : name += "\l""" + CType(child, StringNode).String + """"
+                            Case TypeOf child Is FunctionNode : name += "\l" + CType(child, FunctionNode).Name
+                            Case TypeOf child Is ExpressionNode : name += "\l" + CType(child, ExpressionNode).Operator
+                            Case TypeOf child Is DeclareNode : name += "\l" + CType(child, DeclareNode).Name.Name
+                            Case TypeOf child Is LetNode : name += "\l" + CType(child, LetNode).Var.Name
+                        End Select
+
+                        out.WriteLine("{0} [label = ""{1}{2}""]", child.GetHashCode, child.GetType.Name, name)
+                    End If
+
+                    If parent IsNot Nothing AndAlso TypeOf parent IsNot BlockNode Then out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
+                End If
+
+                next_(child, user)
+                Return child
+            End Function)
 
         out.WriteLine("}")
     End Sub

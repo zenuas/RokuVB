@@ -139,7 +139,7 @@ Namespace Parser
 
                 Case -7
                     System.Diagnostics.Debug.WriteLine("line : sub .")
-                    yy_value = Me.DefaultAction(1)
+                    Me.CurrentScope.AddFunction(CType(Me.GetValue(-1), FunctionNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -8
@@ -159,7 +159,7 @@ Namespace Parser
 
                 Case -11
                     System.Diagnostics.Debug.WriteLine("begin : BEGIN .")
-                    Me.PushScope(New BlockNode)
+                    Me.PushScope(New BlockNode(CType(Me.GetToken(-1), Token).LineNumber.Value))
                     yy_token = Me.DoAction(SymbolTypes.begin_1, 1, yy_value)
 
                 Case -12

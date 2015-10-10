@@ -31,66 +31,70 @@ Namespace Util
 
         End Function
 
-        Public Shared Sub Nodes(
+        Public Delegate Sub NodesNext(Of T)(node As INode, user As T)
+        Public Delegate Sub NodesCallback(Of T)(parent As INode, ref As String, node As INode, user As T, next_ As NodesNext(Of T))
+        Public Delegate Function NodesReplaceCallback(Of T)(parent As INode, ref As String, node As INode, user As T, next_ As NodesNext(Of T)) As INode
+
+        Public Shared Sub NodesOnce(Of T)(
                 node As INode,
-                callback As Action(Of INode, String, INode, Boolean)
+                user As T,
+                callback As Func(Of INode, String, INode, T, Boolean, NodesNext(Of T), INode)
             )
 
-            Traverse.Nodes(node,
-                Function(parent, ref, child, isfirst)
-
-                    callback(parent, ref, child, isfirst)
-                    Return isfirst
-                End Function)
-
-        End Sub
-
-        Public Shared Sub Nodes(
-                node As INode,
-                callback As Func(Of INode, String, INode, Boolean, Boolean)
-            )
-
-            Traverse.Nodes(node,
-                Function(parent, ref, child, replace, isfirst)
-
-                    Return callback(parent, ref, child, isfirst)
-                End Function)
-
-        End Sub
-
-        Public Shared Sub Nodes(
-                node As INode,
-                callback As Func(Of INode, String, INode, Action(Of INode), Boolean, Boolean)
-            )
+            Dim dummy_next = Sub(node_ As INode, user_ As T) Return
 
             Dim mark As New Dictionary(Of Integer, Boolean)
-            Traverse.Nodes(node,
-                Function(parent As INode, ref As String, child As INode, replace As Action(Of INode))
+            Traverse.Nodes(
+                node,
+                user,
+                Function(parent, ref, child, user_, next_)
 
                     Dim child_hash = child.GetHashCode
                     Dim isfirst = Not mark.ContainsKey(child_hash)
                     If isfirst Then mark.Add(child_hash, True)
-                    Return callback(parent, ref, child, replace, isfirst)
+                    Return callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
                 End Function)
-
         End Sub
 
-        Public Shared Sub Nodes(
+        Public Shared Sub NodesReplaceOnce(Of T)(
                 node As INode,
-                callback As Func(Of INode, String, INode, Action(Of INode), Boolean)
+                user As T,
+                callback As Func(Of INode, String, INode, T, Boolean, NodesNext(Of T), INode)
+            )
+
+            Dim dummy_next = Sub(node_ As INode, user_ As T) Return
+
+            Dim mark As New Dictionary(Of Integer, Boolean)
+            Traverse.NodesReplace(
+                node,
+                user,
+                Function(parent, ref, child, user_, next_)
+
+                    Dim child_hash = child.GetHashCode
+                    Dim isfirst = Not mark.ContainsKey(child_hash)
+                    If isfirst Then mark.Add(child_hash, True)
+                    Return callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
+                End Function)
+        End Sub
+
+        Public Shared Sub Nodes(Of T)(
+                node As INode,
+                user As T,
+                callback As NodesCallback(Of T)
             )
 
             If node Is Nothing Then Return
-            If Not callback(Nothing, "", node, Nothing) Then Return
 
-            Dim enum_nodes As Action(Of INode) =
-                Sub(node_ As INode)
+            Dim next_node As NodesNext(Of T) =
+                Sub(node_ As INode, user_ As T)
+
+                    If node_ Is Nothing Then Return
 
                     Dim f =
-                        Sub(ref As String, v As INode, replace As Action(Of INode))
+                        Sub(ref As String, v As INode)
 
                             If v Is Nothing Then Return
-                            If callback(node_, ref, v, replace) Then enum_nodes(v)
+                            callback(node_, ref, v, user, next_node)
                         End Sub
 
                     Select Case True
@@ -98,57 +102,124 @@ Namespace Util
                         Case TypeOf node_ Is BlockNode
 
                             Dim x = CType(node_, BlockNode)
-                            f("Owner", x.Owner, Sub(new_node) x.Owner = CType(new_node, IEvaluableNode))
+                            f("Owner", x.Owner)
                             For i = 0 To x.Statements.Count - 1
 
-                                Dim i_ = i
-                                f(String.Format("[{0}]", i), x.Statements(i), Sub(new_node) x.Statements(i_) = CType(new_node, IEvaluableNode))
+                                f(String.Format("[{0}]", i), x.Statements(i))
                             Next
 
-                            Dim after As Dictionary(Of String, INode) = Nothing
                             For Each key In x.Scope.Keys
 
-                                f(String.Format("`{0}", key), x.Scope(key),
-                                    Sub(new_node)
-                                        If after Is Nothing Then after = New Dictionary(Of String, INode)
-                                        after(key) = new_node
-                                    End Sub)
+                                f(String.Format("`{0}", key), x.Scope(key))
                             Next
-                            If after IsNot Nothing Then
 
-                                For Each key In after.Keys
+                        Case TypeOf node_ Is FunctionNode
 
-                                    x.Scope(key) = after(key)
-                                Next
-                            End If
+                            Dim x = CType(node_, FunctionNode)
+                            For i = 0 To x.Arguments.Length - 1
+
+                                f(String.Format("[{0}]", i), x.Arguments(i))
+                            Next
+                            f("Return", x.Return)
+                            f("Body", x.Body)
 
                         Case TypeOf node_ Is LetNode
 
                             Dim x = CType(node_, LetNode)
-                            f("Var", x.Var, Sub(new_node) x.Var = CType(new_node, VariableNode))
-                            f("Expression", x.Expression, Sub(new_node) x.Expression = CType(new_node, IEvaluableNode))
+                            f("Var", x.Var)
+                            f("Expression", x.Expression)
 
                         Case TypeOf node_ Is ExpressionNode
 
                             Dim x = CType(node_, ExpressionNode)
-                            f("Left", x.Left, Sub(new_node) x.Left = CType(new_node, IEvaluableNode))
-                            f("Right", x.Right, Sub(new_node) x.Right = CType(new_node, IEvaluableNode))
+                            f("Left", x.Left)
+                            f("Right", x.Right)
 
                         Case TypeOf node_ Is FunctionCallNode
 
                             Dim x = CType(node_, FunctionCallNode)
-                            f("Expression", x.Expression, Sub(new_node) x.Expression = CType(new_node, IEvaluableNode))
+                            f("Expression", x.Expression)
                             For i = 0 To x.Arguments.Length - 1
 
-                                Dim i_ = i
-                                f(String.Format("[{0}]", i), x.Arguments(i), Sub(new_node) x.Arguments(i_) = CType(new_node, IEvaluableNode))
+                                f(String.Format("[{0}]", i), x.Arguments(i))
                             Next
                     End Select
                 End Sub
-            enum_nodes(node)
 
+            callback(Nothing, "", node, user, next_node)
         End Sub
 
+        Public Shared Sub NodesReplace(Of T)(
+                node As INode,
+                user As T,
+                callback As NodesReplaceCallback(Of T)
+            )
+
+            If node Is Nothing Then Return
+
+            Dim next_node As NodesNext(Of T) =
+                Sub(node_ As INode, user_ As T)
+
+                    If node_ Is Nothing Then Return
+
+                    Dim f =
+                        Function(ref As String, v As INode)
+
+                            If v Is Nothing Then Return Nothing
+                            Return callback(node_, ref, v, user, next_node)
+                        End Function
+
+                    Select Case True
+
+                        Case TypeOf node_ Is BlockNode
+
+                            Dim x = CType(node_, BlockNode)
+                            x.Owner = CType(f("Owner", x.Owner), IEvaluableNode)
+                            For i = 0 To x.Statements.Count - 1
+
+                                x.Statements(i) = CType(f(String.Format("[{0}]", i), x.Statements(i)), IEvaluableNode)
+                            Next
+
+                            For Each key In New List(Of String)(x.Scope.Keys)
+
+                                x.Scope(key) = f(String.Format("`{0}", key), x.Scope(key))
+                            Next
+
+                        Case TypeOf node_ Is FunctionNode
+
+                            Dim x = CType(node_, FunctionNode)
+                            For i = 0 To x.Arguments.Length - 1
+
+                                x.Arguments(i) = CType(f(String.Format("[{0}]", i), x.Arguments(i)), DeclareNode)
+                            Next
+                            x.Return = CType(f("Return", x.Return), TypeNode)
+                            x.Body = CType(f("Body", x.Body), BlockNode)
+
+                        Case TypeOf node_ Is LetNode
+
+                            Dim x = CType(node_, LetNode)
+                            x.Var = CType(f("Var", x.Var), VariableNode)
+                            x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
+
+                        Case TypeOf node_ Is ExpressionNode
+
+                            Dim x = CType(node_, ExpressionNode)
+                            x.Left = CType(f("Left", x.Left), IEvaluableNode)
+                            x.Right = CType(f("Right", x.Right), IEvaluableNode)
+
+                        Case TypeOf node_ Is FunctionCallNode
+
+                            Dim x = CType(node_, FunctionCallNode)
+                            x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
+                            For i = 0 To x.Arguments.Length - 1
+
+                                x.Arguments(i) = CType(f(String.Format("[{0}]", i), x.Arguments(i)), IEvaluableNode)
+                            Next
+                    End Select
+                End Sub
+
+            callback(Nothing, "", node, user, next_node)
+        End Sub
 
     End Class
 
