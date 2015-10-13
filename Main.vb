@@ -59,6 +59,7 @@ Public Class Main
 
         Compiler.NameResolver.ResolveName(node)
         Compiler.Normalize.Normalization(node)
+        Compiler.Closure.Capture(node)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
 
     End Sub

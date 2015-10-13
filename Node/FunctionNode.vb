@@ -1,4 +1,5 @@
-﻿Imports Roku.Manager
+﻿Imports System.Collections.Generic
+Imports Roku.Manager
 
 
 Namespace Node
@@ -18,6 +19,14 @@ Namespace Node
         Public Overridable Property [Return] As TypeNode
         Public Overridable Property Body As BlockNode
         Public Overridable Property Type As InType Implements IEvaluableNode.Type
+
+        Private bind_ As New Dictionary(Of IScopeNode, Boolean)
+        Public Overridable ReadOnly Property Bind As Dictionary(Of IScopeNode, Boolean)
+            Get
+                Return Me.bind_
+            End Get
+        End Property
+
     End Class
 
 End Namespace
