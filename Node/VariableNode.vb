@@ -16,6 +16,8 @@ Namespace Node
         Public Overridable Property Name As String
         Public Overridable Property Scope As IScopeNode
         Public Overridable Property Type As InType Implements IEvaluableNode.Type
+        Public Overridable Property ClosureEnvironment As Boolean = False
+
     End Class
 
 End Namespace

@@ -11,9 +11,9 @@ Namespace Compiler
             Util.Traverse.NodesOnce(
                 node,
                 CType(node, BlockNode),
-                Function(parent, ref, child, user, isfirst, next_)
+                Sub(parent, ref, child, user, isfirst, next_)
 
-                    If Not isfirst Then Return child
+                    If Not isfirst Then Return
 
                     If TypeOf child Is BlockNode Then
 
@@ -116,9 +116,7 @@ Namespace Compiler
                     Else
                         next_(child, user)
                     End If
-
-                    Return child
-                End Function)
+                End Sub)
         End Sub
 
     End Class

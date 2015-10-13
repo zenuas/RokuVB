@@ -38,7 +38,7 @@ Namespace Util
         Public Shared Sub NodesOnce(Of T)(
                 node As INode,
                 user As T,
-                callback As Func(Of INode, String, INode, T, Boolean, NodesNext(Of T), INode)
+                callback As Action(Of INode, String, INode, T, Boolean, NodesNext(Of T))
             )
 
             Dim dummy_next = Sub(node_ As INode, user_ As T) Return
@@ -47,13 +47,13 @@ Namespace Util
             Traverse.Nodes(
                 node,
                 user,
-                Function(parent, ref, child, user_, next_)
+                Sub(parent, ref, child, user_, next_)
 
                     Dim child_hash = child.GetHashCode
                     Dim isfirst = Not mark.ContainsKey(child_hash)
                     If isfirst Then mark.Add(child_hash, True)
-                    Return callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
-                End Function)
+                    callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
+                End Sub)
         End Sub
 
         Public Shared Sub NodesReplaceOnce(Of T)(
