@@ -7,7 +7,7 @@ Namespace Node
         Inherits INode
 
 
-        Property Type As InType
+        Property Type As IType
 
     End Interface
 

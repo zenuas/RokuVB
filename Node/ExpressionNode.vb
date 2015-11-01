@@ -11,7 +11,7 @@ Namespace Node
         Public Overridable Property [Operator] As String = ""
         Public Overridable Property Left As IEvaluableNode = Nothing
         Public Overridable Property Right As IEvaluableNode = Nothing
-        Public Overridable Property Type As InType Implements IEvaluableNode.Type
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
     End Class
 
 End Namespace

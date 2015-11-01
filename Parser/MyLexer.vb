@@ -30,6 +30,7 @@ Namespace Parser
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ
+            Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
             Me.ReservedWord("IF") = SymbolTypes.[IF]

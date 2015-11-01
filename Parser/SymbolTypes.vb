@@ -50,6 +50,9 @@ Namespace Parser
         ''' <summary>STR</summary>
         STR
 
+        ''' <summary>STRUCT</summary>
+        STRUCT
+
         ''' <summary>SUB</summary>
         [SUB]
 
@@ -106,6 +109,9 @@ Namespace Parser
 
         ''' <summary>str</summary>
         str_1
+
+        ''' <summary>struct</summary>
+        struct_1
 
         ''' <summary>sub</summary>
         sub_1

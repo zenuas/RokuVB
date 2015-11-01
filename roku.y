@@ -47,6 +47,7 @@ line  : expr EOL
       | sub         {Me.CurrentScope.AddFunction($1)}
       | if
       | block
+      | struct
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber.Value))}
@@ -71,6 +72,10 @@ list : expr              {$$ = Me.CreateListNode($1)}
 
 ########## let ##########
 let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
+
+
+########## struct ##########
+struct : STRUCT var EOL block
 
 
 ########## sub ##########
@@ -103,7 +108,7 @@ varx  : var
       | LET     {$$ = Me.CreateVariableNode($1)}
 num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
-      | str STR {$1.Append($2.Name) : $$ = $1}
+      | str STR {$1.String.Append($2.Name) : $$ = $1}
 
 void : {$$ = Nothing}
 

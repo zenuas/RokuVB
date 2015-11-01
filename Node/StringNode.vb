@@ -12,27 +12,13 @@ Namespace Node
 
         Public Sub New(s As Token)
 
-            Me.String = s.Name
+            Me.String.Append(s.Name)
             Me.AppendLineNumber(s)
         End Sub
 
-        Private string_ As New StringBuilder
-        Public Overridable Property [String]() As String
-            Get
-                Return Me.string_.ToString
-            End Get
-            Set(ByVal value As String)
+        Public Overridable ReadOnly Property [String] As New StringBuilder
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
 
-                Me.string_ = New StringBuilder(value)
-            End Set
-        End Property
-
-        Public Overridable Sub Append(s As String)
-
-            Me.string_.Append(s)
-        End Sub
-
-        Public Overridable Property Type As InType Implements IEvaluableNode.Type
     End Class
 
 End Namespace

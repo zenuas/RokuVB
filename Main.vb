@@ -60,6 +60,8 @@ Public Class Main
         Compiler.NameResolver.ResolveName(node)
         Compiler.Normalize.Normalization(node)
         Compiler.Closure.Capture(node)
+        Dim sys = New Manager.SystemLirary With {.Name = "System"}
+        Compiler.Typing.TypeInference(node, sys)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
 
     End Sub
@@ -130,7 +132,7 @@ align = left,
                             Case TypeOf child Is VariableNode : name += "\l" + CType(child, VariableNode).Name
                             Case TypeOf child Is TypeNode : name += "\l" + CType(child, TypeNode).Name
                             Case TypeOf child Is NumericNode : name += "\l" + CType(child, NumericNode).Numeric.ToString
-                            Case TypeOf child Is StringNode : name += "\l""" + CType(child, StringNode).String + """"
+                            Case TypeOf child Is StringNode : name += "\l""" + CType(child, StringNode).String.ToString + """"
                             Case TypeOf child Is FunctionNode : name += "\l" + CType(child, FunctionNode).Name
                             Case TypeOf child Is ExpressionNode : name += "\l" + CType(child, ExpressionNode).Operator
                             Case TypeOf child Is DeclareNode : name += "\l" + CType(child, DeclareNode).Name.Name

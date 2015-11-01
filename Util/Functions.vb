@@ -16,28 +16,32 @@ Namespace Util
             Return [else]
         End Function
 
-        Public Shared Function Car(Of T)(ParamArray xs() As T) As T
+        Public Shared Function Car(Of T)(xs As IEnumerable(Of T)) As T
 
-            Return xs(0)
+            Dim e = xs.GetEnumerator
+            e.MoveNext()
+            Return e.Current
         End Function
 
-        Public Shared Iterator Function Cdr(Of T)(ParamArray xs() As T) As IEnumerable(Of T)
+        Public Shared Iterator Function Cdr(Of T)(xs As IEnumerable(Of T)) As IEnumerable(Of T)
 
-            For i = 1 To xs.Length - 1
+            Dim e = xs.GetEnumerator
+            If Not e.MoveNext Then Return
+            Do While e.MoveNext
+
+                Yield e.Current
+            Loop
+        End Function
+
+        Public Shared Iterator Function Range(Of T)(xs As IList(Of T), from As Integer) As IEnumerable(Of T)
+
+            For i = [from] To xs.Count - 1
 
                 Yield xs(i)
             Next
         End Function
 
-        Public Shared Iterator Function Range(Of T)(xs() As T, from As Integer) As IEnumerable(Of T)
-
-            For i = [from] To xs.Length - 1
-
-                Yield xs(i)
-            Next
-        End Function
-
-        Public Shared Iterator Function Range(Of T)(xs() As T, from As Integer, [to] As Integer) As IEnumerable(Of T)
+        Public Shared Iterator Function Range(Of T)(xs As IList(Of T), from As Integer, [to] As Integer) As IEnumerable(Of T)
 
             For i = [from] To [to]
 
@@ -45,29 +49,30 @@ Namespace Util
             Next
         End Function
 
-        Public Shared Function Split(Of T)(ParamArray xs() As T) As Tuple(Of T, IEnumerable(Of T))
+        Public Shared Function Split(Of T)(xs As IEnumerable(Of T)) As Tuple(Of T, IEnumerable(Of T))
 
             Return Tuple.Create(Car(xs), Cdr(xs))
         End Function
 
-        Public Shared Function Split(Of T)(xs() As T, f As Func(Of T, Integer, Boolean)) As Tuple(Of List(Of T), List(Of T))
+        Public Shared Function Split(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Tuple(Of List(Of T), List(Of T))
 
             Dim false_part As New List(Of T)
             Dim true_part As New List(Of T)
-            For i = 0 To xs.Length - 1
+            Dim i = 0
+            For Each x In xs
 
-                Dim x = xs(i)
                 If f(x, i) Then
 
                     true_part.Add(x)
                 Else
                     false_part.Add(x)
                 End If
+                i += 1
             Next
             Return Tuple.Create(false_part, true_part)
         End Function
 
-        Public Shared Function Split(Of T)(xs() As T, f As Func(Of T, Boolean)) As Tuple(Of List(Of T), List(Of T))
+        Public Shared Function Split(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As Tuple(Of List(Of T), List(Of T))
 
             Return Split(xs, Function(x, i) f(x))
         End Function
@@ -77,7 +82,7 @@ Namespace Util
             Return xs
         End Function
 
-        Public Shared Iterator Function Join(Of T)(xs() As T, ys() As T) As IEnumerable(Of T)
+        Public Shared Iterator Function Join(Of T)(xs As IEnumerable(Of T), ys As IEnumerable(Of T)) As IEnumerable(Of T)
 
             For Each x In xs : Yield x : Next
             For Each y In ys : Yield y : Next
@@ -88,9 +93,14 @@ Namespace Util
             Return New List(Of T)(xs)
         End Function
 
-        Public Shared Function Null(Of T)(xs() As T) As Boolean
+        Public Shared Function List(Of T)(xs As IEnumerable(Of T)) As List(Of T)
 
-            Return xs.Length = 0
+            Return New List(Of T)(xs)
+        End Function
+
+        Public Shared Function Null(Of T)(xs As IEnumerable(Of T)) As Boolean
+
+            Return Not xs.GetEnumerator.MoveNext
         End Function
 
         Public Shared Function Tee(Of T)(a As T, f As Action(Of T)) As T
@@ -145,9 +155,9 @@ Namespace Util
             Next
         End Function
 
-        Public Shared Iterator Function Apply(Of T)(xs() As T, f As Func(Of T, Integer, T)) As IEnumerable(Of T)
+        Public Shared Iterator Function Apply(Of T)(xs As IList(Of T), f As Func(Of T, Integer, T)) As IEnumerable(Of T)
 
-            For i = 0 To xs.Length - 1
+            For i = 0 To xs.Count - 1
 
                 Dim x = f(xs(i), i)
                 xs(i) = x
@@ -155,9 +165,9 @@ Namespace Util
             Next
         End Function
 
-        Public Shared Iterator Function Apply(Of T)(xs() As T, f As Func(Of T, T)) As IEnumerable(Of T)
+        Public Shared Iterator Function Apply(Of T)(xs As IList(Of T), f As Func(Of T, T)) As IEnumerable(Of T)
 
-            For i = 0 To xs.Length - 1
+            For i = 0 To xs.Count - 1
 
                 Dim x = f(xs(i))
                 xs(i) = x
@@ -165,22 +175,65 @@ Namespace Util
             Next
         End Function
 
-        Public Shared Iterator Function Where(Of T)(xs() As T, f As Func(Of T, Integer, Boolean)) As IEnumerable(Of T)
+        Public Shared Iterator Function Where(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As IEnumerable(Of T)
 
-            For i = 0 To xs.Length - 1
+            Dim i = 0
+            For Each x In xs
 
-                Dim x = xs(i)
                 If f(x, i) Then Yield x
             Next
         End Function
 
-        Public Shared Iterator Function Where(Of T)(xs() As T, f As Func(Of T, Boolean)) As IEnumerable(Of T)
+        Public Shared Iterator Function Where(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As IEnumerable(Of T)
 
-            For i = 0 To xs.Length - 1
+            For Each x In xs
 
-                Dim x = xs(i)
                 If f(x) Then Yield x
             Next
+        End Function
+
+        Public Shared Function [And](Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Boolean
+
+            Dim i = 0
+            For Each x In xs
+
+                If Not f(x, i) Then Return False
+                i += 1
+            Next
+
+            Return True
+        End Function
+
+        Public Shared Function [And](Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As Boolean
+
+            For Each x In xs
+
+                If Not f(x) Then Return False
+            Next
+
+            Return True
+        End Function
+
+        Public Shared Function [Or](Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Boolean
+
+            Dim i = 0
+            For Each x In xs
+
+                If f(x, i) Then Return True
+                i += 1
+            Next
+
+            Return False
+        End Function
+
+        Public Shared Function [Or](Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As Boolean
+
+            For Each x In xs
+
+                If f(x) Then Return True
+            Next
+
+            Return False
         End Function
 
     End Class

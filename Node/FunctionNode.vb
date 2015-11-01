@@ -18,14 +18,8 @@ Namespace Node
         Public Overridable Property Arguments As DeclareNode()
         Public Overridable Property [Return] As TypeNode
         Public Overridable Property Body As BlockNode
-        Public Overridable Property Type As InType Implements IEvaluableNode.Type
-
-        Private bind_ As New Dictionary(Of IScopeNode, Boolean)
-        Public Overridable ReadOnly Property Bind As Dictionary(Of IScopeNode, Boolean)
-            Get
-                Return Me.bind_
-            End Get
-        End Property
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable ReadOnly Property Bind As New Dictionary(Of IScopeNode, Boolean)
 
     End Class
 

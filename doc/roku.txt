@@ -68,6 +68,17 @@ CatchErrorイベントを各 名前解決～翻訳までのインスタンスごとにAddHandlerしている
 OpCodeという名前は.NETの名前とかぶっていたのでRkCodeに変更する
 それに伴いOpのプレフィックスはRkに変更する
 
+OpCodeはそれぞれOpCode0を基本型にし、4つに分けていた
+  OpCode0・・・コードのみ(NOPやRETURNなど)
+  OpCode1・・・コードと戻り値のみ(RETURN)
+  OpCode2・・・コードと戻り値と引数1(単項演算のMULなど)
+  OpCode3・・・コードと戻り値と引数2(ADDやMULなど)
+この形式ではコードと型のチェックをしコード出力を行っていたため、分岐が増えた
+1つのコードには1つの引数形式を持たせる
+コードを分けないといけないのはRETURN(引数ありなし)と単項演算子ぐらいである
+RkCodeでは上記をふまえRETURN_0とRETURN1、MUL_1とMULを作る
+3番地コード形式のみしか用意しない
+
 
 .コード出力(Assemble)
 RIRはなくてもいい、CILから作る
@@ -76,3 +87,46 @@ RIRはなくてもいい、CILから作る
 元はクラスベースであったためCILでもクラスを作っていたが
 全てshared functionで作るか??
 
+
+.設計方針
+
+オブジェクト指向は弊害が多いため最小限にとどめる
+
+* クラスメンバ変数はほぼPublicにする
+* Privateなメンバ変数はアクセサを作るか関数にする
+* クラスメンバ関数は非破壊関数にする
+  破壊関数は戻り値なしにする
+* コンストラクタはなるべく作らない、呼び出し側でNew Withする
+* 初期化以外のタイミングでなるべくクラスメンバ変数への再代入を避ける
+* できればデータ定義するクラスには処理を書かず、操作のみするStaticな関数を設ける
+* なるべく継承は用いない
+* 他のオブジェクトを参照するメンバ関数はなるべく作らない
+  処理の主体が自オブジェクトなら作って構わない
+
+.総称型を使うために
+
+struct Foo(@T1, @T2)
+	var a : Int
+	var b : @T1
+	var c : @T2
+var x = Foo.of Int String
+var y = Foo.of String Bar
+sub f1.of(@T1, @T2)(m : Foo.of @T1 @T2)
+	print m
+f1 x
+var fx = f1.of Baz Int
+struct Hoge(@T1)
+	var a : Foo.of Int @T
+↓
+Dim Foo As New RkStruct With {.Name = "Foo"}
+Foo.AddVar("a", Int)
+Foo.AddVar("b", Foo.DefineGeneric("@T1"))
+Foo.AddVar("c", Foo.DefineGeneric("@T2"))
+Dim x = Foo.FixedGeneric(Int, String)
+Dim y = Foo.FixedGeneric(String, Bar)
+Dim f1 As New RkFunction With {.Name = "f1"}
+f1.Arguments.Add("m", Foo.FixedGeneric(f1.DefineGeneric("@T1"), f1.DefineGeneric("@T2")))
+f1.FixedGeneric(x)
+Dim fx = f1.FixedGeneric(Baz, Int)
+Dim Hoge As New RkStruct With {.Name = "Hoge"}
+Hoge.AddVar("a", Foo.FixedGeneric(Int, Hoge.DefineGeneric("@T")))

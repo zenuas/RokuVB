@@ -1,6 +1,6 @@
-Namespace RkCode
+Namespace Manager
 
-    Public Enum RkOperand
+    Public Enum RkOperator
 
         Nop
 

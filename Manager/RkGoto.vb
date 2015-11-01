@@ -1,11 +1,7 @@
-Namespace RkCode
+Namespace Manager
 
     Public Class RkGoto
         Inherits RkCode0
-
-        Public Sub New()
-
-        End Sub
 
         Public Overridable Property Label As RkCode0
 

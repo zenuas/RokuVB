@@ -34,14 +34,9 @@ Namespace Node
 
         Public Overridable Property Owner As IEvaluableNode Implements IScopeNode.Owner
 
-        Private scope_ As New Dictionary(Of String, INode)
-        Public Overridable ReadOnly Property Scope As Dictionary(Of String, INode) Implements IScopeNode.Scope
-            Get
-                Return Me.scope_
-            End Get
-        End Property
+        Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
 
-        Public Overridable Property Type As InType Implements IEvaluableNode.Type
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
     End Class
 
 End Namespace

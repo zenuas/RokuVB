@@ -13,6 +13,7 @@ Namespace Parser
             Me.ReservedWord.Clear()
             Me.ReservedWord("sub") = SymbolTypes.SUB
             Me.ReservedWord("var") = SymbolTypes.LET
+            Me.ReservedWord("struct") = SymbolTypes.STRUCT
         End Sub
 
 #Region "reader"

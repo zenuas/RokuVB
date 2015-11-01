@@ -11,7 +11,7 @@ Namespace Node
         Public Overridable Property [Condition] As IEvaluableNode = Nothing
         Public Overridable Property [Then] As IEvaluableNode = Nothing
         Public Overridable Property [Else] As IEvaluableNode = Nothing
-        Public Overridable Property Type As InType Implements IEvaluableNode.Type
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
     End Class
 
 End Namespace
