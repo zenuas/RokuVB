@@ -18,6 +18,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<DeclareListNode> args argn
 %type<TypeNode>       type typex
 %type<IfNode>         if ifthen elseif
+%type<StructNode>     struct struct_block
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list
@@ -47,7 +48,7 @@ line  : expr EOL
       | sub         {Me.CurrentScope.AddFunction($1)}
       | if
       | block
-      | struct
+      | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber.Value))}
@@ -75,7 +76,15 @@ let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
 
 
 ########## struct ##########
-struct : STRUCT var EOL block
+struct : STRUCT var EOL struct_block   {$4.Name = $2.Name : $$ = $4}
+
+struct_block : struct_begin define END {$$ = Me.PopScope}
+struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber.Value))}
+
+define : void
+       | define LET var ':' type EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
+       | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
+       | define sub
 
 
 ########## sub ##########

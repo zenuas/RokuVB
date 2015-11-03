@@ -113,6 +113,16 @@ Namespace Util
                                 f(String.Format("`{0}", key), x.Scope(key))
                             Next
 
+                        Case TypeOf node_ Is StructNode
+
+                            Dim x = CType(node_, StructNode)
+                            f("Owner", x.Owner)
+
+                            For Each key In x.Scope.Keys
+
+                                f(String.Format("`{0}", key), x.Scope(key))
+                            Next
+
                         Case TypeOf node_ Is FunctionNode
 
                             Dim x = CType(node_, FunctionNode)
@@ -127,6 +137,7 @@ Namespace Util
 
                             Dim x = CType(node_, LetNode)
                             f("Var", x.Var)
+                            f("Declare", x.Declare)
                             f("Expression", x.Expression)
 
                         Case TypeOf node_ Is ExpressionNode

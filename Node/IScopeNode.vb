@@ -11,7 +11,7 @@ Namespace Node
         'ReadOnly Property [Imports] As List(Of ImportEntry)
 
         Sub AddFunction(func As FunctionNode)
-        Sub AddVar(var_ As VariableNode)
+        Sub AddLet(let_ As LetNode)
 
         Property Owner As IEvaluableNode
 

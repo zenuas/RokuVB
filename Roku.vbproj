@@ -66,13 +66,15 @@
     <Compile Include="Compiler\Normalize.vb" />
     <Compile Include="Compiler\Typing.vb" />
     <Compile Include="Compiler\Translater.vb" />
-    <Compile Include="Manager\SystemLirary.vb" />
+    <Compile Include="Manager\RkNativeFunction.vb" />
+    <Compile Include="Manager\SystemLibrary.vb" />
     <Compile Include="Manager\NamedValue.vb" />
     <Compile Include="Manager\IEntry.vb" />
     <Compile Include="Manager\RkFunction.vb" />
     <Compile Include="Manager\RkGenericEntry.vb" />
     <Compile Include="Manager\RkStruct.vb" />
     <Compile Include="Manager\RkNamespace.vb" />
+    <Compile Include="Node\StructNode.vb" />
     <Compile Include="Parser\MyIToken.vb" />
     <Compile Include="Parser\Lexer.vb" />
     <Compile Include="Parser\MyLexer.Combine.vb" />

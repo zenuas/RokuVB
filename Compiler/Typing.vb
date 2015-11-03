@@ -7,28 +7,61 @@ Namespace Compiler
 
     Public Class Typing
 
-        Public Shared Function Prototype(node As INode) As RkStruct
+        Public Shared Sub TypeInference(node As INode, root As RkNamespace)
 
-            Dim g As New RkStruct With {.Name = "Global"}
-
+            ' create prototype
             Util.Traverse.NodesOnce(
                 node,
-                g,
+                root,
                 Sub(parent, ref, child, current, isfirst, next_)
 
+                    If TypeOf child Is StructNode Then
+
+                        Dim node_struct = CType(child, StructNode)
+                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name}
+                        node_struct.Type = rk_struct
+                        current.Local.Add(rk_struct.Name, rk_struct)
+
+                    ElseIf TypeOf child Is FunctionNode Then
+
+                        Dim node_func = CType(child, FunctionNode)
+                        Dim rk_func = New RkFunction With {.Name = node_func.Name}
+                        node_func.Type = rk_func
+                        current.Local.Add(rk_func.Name, rk_func)
+                    End If
+
+                    next_(child, current)
                 End Sub)
 
-            Return g
-        End Function
+            ' typing
+            Util.Traverse.NodesOnce(
+                node,
+                root,
+                Sub(parent, ref, child, current, isfirst, next_)
 
-        Public Shared Function TypeInference(node As INode, sys As RkStruct) As RkStruct
+                    If TypeOf child Is StructNode Then
 
-            Dim g = Prototype(node)
+                        Dim node_struct = CType(child, StructNode)
+                        Dim rk_struct = CType(node_struct.Type, RkStruct)
 
-            g.Local.Add(sys.Name, sys)
+                        For Each x In node_struct.Scope.Values
 
-            Return g
-        End Function
+                            If TypeOf x Is LetNode Then
+
+                            End If
+                        Next
+
+                    ElseIf TypeOf child Is FunctionNode Then
+
+                        Dim node_func = CType(child, FunctionNode)
+                        Dim rk_func = New RkFunction With {.Name = node_func.Name}
+
+                    End If
+
+                    next_(child, current)
+                End Sub)
+
+        End Sub
 
     End Class
 

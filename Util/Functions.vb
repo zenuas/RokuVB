@@ -137,6 +137,24 @@ Namespace Util
             Return Nothing
         End Function
 
+        Public Shared Sub [Do](Of T)(xs As IEnumerable(Of T), f As Action(Of T, Integer))
+
+            Dim i = 0
+            For Each x In xs
+
+                f(x, i)
+                i += 1
+            Next
+        End Sub
+
+        Public Shared Sub [Do](Of T)(xs As IEnumerable(Of T), f As Action(Of T))
+
+            For Each x In xs
+
+                f(x)
+            Next
+        End Sub
+
         Public Shared Iterator Function Map(Of T, R)(xs As IEnumerable(Of T), f As Func(Of T, Integer, R)) As IEnumerable(Of R)
 
             Dim i = 0

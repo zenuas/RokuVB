@@ -11,6 +11,7 @@ Namespace Node
 
 
         Public Overridable Property Var As VariableNode
+        Public Overridable Property [Declare] As TypeNode
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
     End Class

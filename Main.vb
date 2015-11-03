@@ -60,11 +60,22 @@ Public Class Main
         Compiler.NameResolver.ResolveName(node)
         Compiler.Normalize.Normalization(node)
         Compiler.Closure.Capture(node)
-        Dim sys = New Manager.SystemLirary With {.Name = "System"}
-        Compiler.Typing.TypeInference(node, sys)
+        Dim root = CreateRootNamespace("Global")
+        Compiler.Typing.TypeInference(node, root)
+        Compiler.Translater.Translate(node, root)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
 
     End Sub
+
+    Public Overridable Function CreateRootNamespace(name As String) As Manager.RkNamespace
+
+        Dim root As New Manager.RkNamespace With {.Name = name}
+        Dim sys = New Manager.SystemLirary With {.Name = "System"}
+        root.Local.Add(sys.Name, sys)
+        root.AddLoadPath(sys)
+
+        Return root
+    End Function
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
 
@@ -137,6 +148,7 @@ align = left,
                             Case TypeOf child Is ExpressionNode : name += "\l" + CType(child, ExpressionNode).Operator
                             Case TypeOf child Is DeclareNode : name += "\l" + CType(child, DeclareNode).Name.Name
                             Case TypeOf child Is LetNode : name += "\l" + CType(child, LetNode).Var.Name
+                            Case TypeOf child Is StructNode : name += "\l" + CType(child, StructNode).Name
                         End Select
 
                         out.WriteLine("{0} [label = ""{1}{2}""]", child.GetHashCode, child.GetType.Name, name)

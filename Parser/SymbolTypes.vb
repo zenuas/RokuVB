@@ -77,6 +77,9 @@ Namespace Parser
         ''' <summary>decla</summary>
         decla
 
+        ''' <summary>define</summary>
+        define
+
         ''' <summary>elseif</summary>
         [elseif]
 
@@ -112,6 +115,12 @@ Namespace Parser
 
         ''' <summary>struct</summary>
         struct_1
+
+        ''' <summary>struct_begin</summary>
+        struct_begin
+
+        ''' <summary>struct_block</summary>
+        struct_block
 
         ''' <summary>sub</summary>
         sub_1
