@@ -12,6 +12,13 @@ Namespace Manager
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
 
+        Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
+
+            If Me.Local.ContainsKey(name) Then Return Me.Local(name)
+            If Me.Super IsNot Nothing Then Return Me.Super.GetValue(name)
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
             Dim x As New RkGenericEntry With {.Name = name}
@@ -24,10 +31,10 @@ Namespace Manager
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue(Of IType) With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
+            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
         End Function
 
-        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue(Of IType)) As IType Implements IType.FixedGeneric
+        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
             If Not Me.HasGeneric Then Return Me
 
@@ -44,7 +51,6 @@ Namespace Manager
 
             Return Me.Generics.Count > 0
         End Function
-
     End Class
 
 End Namespace

@@ -96,7 +96,7 @@ align = left,
                 If TypeOf child Is BlockNode Then
 
                     Dim block = CType(child, BlockNode)
-                    out.WriteLine(String.Format("subgraph cluster_block_stmt_{0} {{", block.GetHashCode))
+                    out.WriteLine($"subgraph cluster_block_stmt_{block.GetHashCode} {{")
                     out.WriteLine("  style=solid;")
                     out.WriteLine("  color=black;")
                     out.WriteLine("  node [style=filled];")
@@ -111,10 +111,10 @@ align = left,
 
                         Dim func = CType(parent, FunctionNode)
                         name = func.Name
-                        args = "\l" + String.Join("\l", Util.Functions.Map(func.Arguments, Function(arg) String.Format("{0} : {1}", arg.Name.Name, arg.Type.Name)))
+                        args = "\l" + String.Join("\l", Util.Functions.Map(func.Arguments, Function(arg) $"{arg.Name.Name} : {arg.Type.Name}"))
                     End If
 
-                    out.WriteLine(String.Format("  label = ""{0} ({1}){2}"";", name, block.LineNumber, args))
+                    out.WriteLine($"  label = ""{name} ({block.LineNumber}){args}"";")
                     out.WriteLine("  " + String.Join(" -> ", Util.Functions.Map(block.Statements, Function(x) x.GetHashCode.ToString)))
                     out.WriteLine("}")
                 End If
@@ -138,23 +138,23 @@ align = left,
                     If isfirst Then
 
                         Dim name = ""
-                        If child.LineNumber.HasValue Then name = String.Format("\l( {0}, {1} )", child.LineNumber, child.LineColumn)
+                        If child.LineNumber.HasValue Then name = $"\l( {child.LineNumber}, {child.LineColumn} )"
                         Select Case True
-                            Case TypeOf child Is VariableNode : name += "\l" + CType(child, VariableNode).Name
-                            Case TypeOf child Is TypeNode : name += "\l" + CType(child, TypeNode).Name
-                            Case TypeOf child Is NumericNode : name += "\l" + CType(child, NumericNode).Numeric.ToString
-                            Case TypeOf child Is StringNode : name += "\l""" + CType(child, StringNode).String.ToString + """"
-                            Case TypeOf child Is FunctionNode : name += "\l" + CType(child, FunctionNode).Name
-                            Case TypeOf child Is ExpressionNode : name += "\l" + CType(child, ExpressionNode).Operator
-                            Case TypeOf child Is DeclareNode : name += "\l" + CType(child, DeclareNode).Name.Name
-                            Case TypeOf child Is LetNode : name += "\l" + CType(child, LetNode).Var.Name
-                            Case TypeOf child Is StructNode : name += "\l" + CType(child, StructNode).Name
+                            Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
+                            Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $"\l{v.Name}"
+                            Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $"\l{v.Numeric}"
+                            Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $"\l""{v.String}"""
+                            Case TypeOf child Is FunctionNode : Dim v = CType(child, FunctionNode) : name += $"\l{v.Name}"
+                            Case TypeOf child Is ExpressionNode : Dim v = CType(child, ExpressionNode) : name += $"\l{v.Operator}\l`{v.Type?.Name}`"
+                            Case TypeOf child Is DeclareNode : Dim v = CType(child, DeclareNode) : name += $"\l{v.Name.Name}\l`{v.Type?.Name}`"
+                            Case TypeOf child Is LetNode : Dim v = CType(child, LetNode) : name += $"\l{v.Var.Name}\l`{v.Type?.Name}`"
+                            Case TypeOf child Is StructNode : Dim v = CType(child, StructNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
                         End Select
 
-                        out.WriteLine("{0} [label = ""{1}{2}""]", child.GetHashCode, child.GetType.Name, name)
+                        out.WriteLine($"{child.GetHashCode} [label = ""{child.GetType.Name}{name}""]")
                     End If
 
-                    If parent IsNot Nothing AndAlso TypeOf parent IsNot BlockNode Then out.WriteLine("{0} -> {1} [label = ""{2}""];", parent.GetHashCode, child.GetHashCode, ref)
+                    If parent IsNot Nothing AndAlso TypeOf parent IsNot BlockNode Then out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
                 End If
 
                 next_(child, user)
@@ -206,9 +206,9 @@ align = left,
             Dim method = opt_map(key)
             If method.Name.Equals(key, StringComparison.CurrentCultureIgnoreCase) Then
 
-                Console.WriteLine("  --{0}", key)
+                Console.WriteLine($"  --{key}")
             Else
-                Console.WriteLine("  -{0}, --{1}", key, method.Name)
+                Console.WriteLine($"  -{key}, --{method.Name}")
             End If
         Next
 
@@ -218,7 +218,7 @@ align = left,
     <CommandLine("V", "version")>
     Public Overridable Sub Version()
 
-        Console.WriteLine("roku {0}", Assembly.GetExecutingAssembly.GetName.Version)
+        Console.WriteLine($"roku {Assembly.GetExecutingAssembly.GetName.Version}")
 
         System.Environment.Exit(0)
     End Sub
@@ -295,14 +295,14 @@ align = left,
             If key.StartsWith(name) Then
 
                 If key.Length = name.Length Then Return opts(name)
-                If find IsNot Nothing Then Throw New Exception(String.Format("cannot interpret ``{0}''", name))
+                If find IsNot Nothing Then Throw New Exception($"cannot interpret ``{name}''")
                 find = key
             End If
         Next
 
         If find IsNot Nothing Then Return opts(find)
 
-        Throw New Exception(String.Format("unknown option ``{0}''", name))
+        Throw New Exception($"unknown option ``{name}''")
     End Function
 
     Public Shared Function Parse(receiver As Object, args() As String) As String()

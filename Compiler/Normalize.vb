@@ -24,7 +24,7 @@ Namespace Compiler
                         Dim to_let =
                             Function(e As IEvaluableNode)
 
-                                Dim var As New VariableNode(String.Format("${0}", var_index))
+                                Dim var As New VariableNode($"${var_index}")
                                 var.LineNumber = e.LineNumber
                                 var.LineColumn = e.LineColumn
                                 var_index += 1

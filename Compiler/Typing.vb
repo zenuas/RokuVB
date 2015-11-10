@@ -22,6 +22,15 @@ Namespace Compiler
                         node_struct.Type = rk_struct
                         current.Local.Add(rk_struct.Name, rk_struct)
 
+                        For Each x In node_struct.Scope.Values
+
+                            If TypeOf x Is LetNode Then
+
+                                Dim let_ = CType(x, LetNode)
+                                rk_struct.Local.Add(let_.Var.Name, let_.Type)
+                            End If
+                        Next
+
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
@@ -39,26 +48,30 @@ Namespace Compiler
                 root,
                 Sub(parent, ref, child, current, isfirst, next_)
 
-                    If TypeOf child Is StructNode Then
+                    next_(child, current)
 
-                        Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = CType(node_struct.Type, RkStruct)
+                    If TypeOf child Is NumericNode Then
 
-                        For Each x In node_struct.Scope.Values
+                        Dim node_num = CType(child, NumericNode)
+                        node_num.Type = root.LoadLibrary("Int32")
 
-                            If TypeOf x Is LetNode Then
+                    ElseIf TypeOf child Is TypeNode Then
 
-                            End If
-                        Next
+                        Dim node_type = CType(child, TypeNode)
+                        node_type.Type = root.LoadLibrary(node_type.Name)
 
-                    ElseIf TypeOf child Is FunctionNode Then
+                    ElseIf TypeOf child Is LetNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = New RkFunction With {.Name = node_func.Name}
+                        Dim node_let = CType(child, LetNode)
+                        node_let.Type = If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)
+                        node_let.Var.Type = node_let.Type
+
+                    ElseIf TypeOf child Is ExpressionNode Then
+
+                        Dim node_expr = CType(child, ExpressionNode)
+                        node_expr.Type = CType(node_expr.Left.Type.GetValue(node_expr.Operator), RkFunction).Return
 
                     End If
-
-                    next_(child, current)
                 End Sub)
 
         End Sub

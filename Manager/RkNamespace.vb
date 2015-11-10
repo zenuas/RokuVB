@@ -19,9 +19,13 @@ Namespace Manager
             If Not Me.LoadPaths.Contains(path) Then Me.LoadPaths.Add(path)
         End Sub
 
-        Public Overridable Function LoadLibrary(name As String) As IEntry
+        Public Overridable Function LoadLibrary(name As String) As IType
 
-            If Me.Local.ContainsKey(name) Then Return Me.Local(name)
+            If Me.Local.ContainsKey(name) Then
+
+                Dim x = Me.Local(name)
+                If TypeOf x Is IType Then Return CType(x, IType)
+            End If
 
             ' name format
             ' ok "Int"
@@ -38,7 +42,7 @@ Namespace Manager
                 End If
             Next
 
-            Throw New ArgumentException(String.Format("``{0}'' was not found", name))
+            Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
         Public Overridable Property Name As String Implements IEntry.Name

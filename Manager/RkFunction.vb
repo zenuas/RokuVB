@@ -9,11 +9,16 @@ Namespace Manager
         Implements IType
 
         Public Overridable Property Name As String Implements IEntry.Name
-        Public Overridable ReadOnly Property Arguments As New List(Of NamedValue(Of IType))
+        Public Overridable ReadOnly Property Arguments As New List(Of NamedValue)
         Public Overridable Property [Return] As IType
         Public Overridable ReadOnly Property Body As New List(Of RkCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
 
+
+        Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
+
+            Throw New NotImplementedException()
+        End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
@@ -27,10 +32,10 @@ Namespace Manager
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue(Of IType) With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
+            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
         End Function
 
-        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue(Of IType)) As IType Implements IType.FixedGeneric
+        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
             If Not Me.HasGeneric Then Return Me
 
@@ -38,7 +43,7 @@ Namespace Manager
             If Me.Return IsNot Nothing Then x.Return = Me.Return.FixedGeneric(values)
             For Each v In Me.Arguments
 
-                x.Arguments.Add(New NamedValue(Of IType) With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
+                x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
             Return x

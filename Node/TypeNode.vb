@@ -1,7 +1,13 @@
-﻿Namespace Node
+﻿Imports System
+Imports System.Collections.Generic
+Imports Roku.Manager
+
+
+Namespace Node
 
     Public Class TypeNode
         Inherits BaseNode
+        Implements IEvaluableNode
 
 
         Public Sub New(name As VariableNode)
@@ -19,6 +25,7 @@
         Public Overridable Property Name As String
         Public Overridable Property [Namespace] As TypeNode
         Public Overridable Property IsArray As Boolean = False
+        Public Overridable Property Type As IType Implements IEvaluableNode.Type
 
     End Class
 

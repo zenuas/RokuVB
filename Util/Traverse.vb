@@ -105,12 +105,12 @@ Namespace Util
                             f("Owner", x.Owner)
                             For i = 0 To x.Statements.Count - 1
 
-                                f(String.Format("[{0}]", i), x.Statements(i))
+                                f($"[{i}]", x.Statements(i))
                             Next
 
                             For Each key In x.Scope.Keys
 
-                                f(String.Format("`{0}", key), x.Scope(key))
+                                f($"`{key}", x.Scope(key))
                             Next
 
                         Case TypeOf node_ Is StructNode
@@ -120,7 +120,7 @@ Namespace Util
 
                             For Each key In x.Scope.Keys
 
-                                f(String.Format("`{0}", key), x.Scope(key))
+                                f($"`{key}", x.Scope(key))
                             Next
 
                         Case TypeOf node_ Is FunctionNode
@@ -128,7 +128,7 @@ Namespace Util
                             Dim x = CType(node_, FunctionNode)
                             For i = 0 To x.Arguments.Length - 1
 
-                                f(String.Format("[{0}]", i), x.Arguments(i))
+                                f($"[{i}]", x.Arguments(i))
                             Next
                             f("Return", x.Return)
                             f("Body", x.Body)
@@ -152,7 +152,7 @@ Namespace Util
                             f("Expression", x.Expression)
                             For i = 0 To x.Arguments.Length - 1
 
-                                f(String.Format("[{0}]", i), x.Arguments(i))
+                                f($"[{i}]", x.Arguments(i))
                             Next
                     End Select
                 End Sub
@@ -188,12 +188,12 @@ Namespace Util
                             x.Owner = CType(f("Owner", x.Owner), IEvaluableNode)
                             For i = 0 To x.Statements.Count - 1
 
-                                x.Statements(i) = CType(f(String.Format("[{0}]", i), x.Statements(i)), IEvaluableNode)
+                                x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IEvaluableNode)
                             Next
 
                             For Each key In New List(Of String)(x.Scope.Keys)
 
-                                x.Scope(key) = f(String.Format("`{0}", key), x.Scope(key))
+                                x.Scope(key) = f($"`{key}", x.Scope(key))
                             Next
 
                         Case TypeOf node_ Is FunctionNode
@@ -201,7 +201,7 @@ Namespace Util
                             Dim x = CType(node_, FunctionNode)
                             For i = 0 To x.Arguments.Length - 1
 
-                                x.Arguments(i) = CType(f(String.Format("[{0}]", i), x.Arguments(i)), DeclareNode)
+                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), DeclareNode)
                             Next
                             x.Return = CType(f("Return", x.Return), TypeNode)
                             x.Body = CType(f("Body", x.Body), BlockNode)
@@ -224,7 +224,7 @@ Namespace Util
                             x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
                             For i = 0 To x.Arguments.Length - 1
 
-                                x.Arguments(i) = CType(f(String.Format("[{0}]", i), x.Arguments(i)), IEvaluableNode)
+                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), IEvaluableNode)
                             Next
                     End Select
                 End Sub

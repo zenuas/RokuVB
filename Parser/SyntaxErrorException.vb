@@ -6,7 +6,7 @@ Namespace Parser
         Inherits Exception
 
         Public Sub New(ByVal lineno As Integer, ByVal column As Integer, ByVal message As String, ByVal ParamArray args As Object())
-            MyBase.New(String.Format("parser read({0}, {1}): {2}", lineno, column, String.Format(message, args)))
+            MyBase.New($"parser read({lineno}, {column}): {String.Format(message, args)}")
 
         End Sub
 
