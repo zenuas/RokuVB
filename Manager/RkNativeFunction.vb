@@ -22,6 +22,11 @@ Namespace Manager
             Return New RkCode0() {x}
         End Function
 
+        Public Overrides Function CloneGeneric() As IType
+
+            Return New RkNativeFunction With {.Name = Me.Name, .Operator = Me.Operator}
+        End Function
+
     End Class
 
 End Namespace

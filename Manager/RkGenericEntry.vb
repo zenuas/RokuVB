@@ -34,6 +34,11 @@ Namespace Manager
 
             Throw New NotImplementedException()
         End Function
+
+        Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
+
+            Throw New NotImplementedException()
+        End Function
     End Class
 
 End Namespace

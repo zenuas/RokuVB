@@ -2,54 +2,53 @@
 Namespace Manager
 
     Public Class SystemLirary
-        Inherits RkStruct
+        Inherits RkNamespace
 
         Public Sub New()
 
             Me.Initialize()
         End Sub
 
-        Public Sub Initialize()
+        Public Overridable Sub Initialize()
 
-            ' struct Numeric(@T)
-            '    sub +(@T, @T) @T
+            ' struct Numeric
+            ' sub +(@T: Numeric)(@T, @T) @T
             Dim num As New RkStruct With {.Name = "Numeric"}
-            Dim num_t = num.DefineGeneric("@T")
             Dim add_native_function =
-                Sub(name As String, op As RkOperator)
+                Function(name As String, op As RkOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op}
-                    Dim f_t = f.DefineGeneric(num_t.Name)
-                    f_t.Reference = num_t
+                    Dim f_t = f.DefineGeneric("@T")
                     f.Return = f_t
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
                     f.Arguments.Add(New NamedValue With {.Name = "right", .Value = f_t})
-                    num.Local.Add(name, f)
-                End Sub
-            add_native_function("+", RkOperator.Plus)
-            add_native_function("-", RkOperator.Minus)
-            add_native_function("*", RkOperator.Mul)
-            add_native_function("/", RkOperator.Div)
-            add_native_function("==", RkOperator.Equal)
-            add_native_function(">", RkOperator.Gt)
-            add_native_function(">=", RkOperator.Gte)
-            add_native_function("<", RkOperator.Lt)
-            add_native_function("<=", RkOperator.Lte)
+                    Me.AddFunction(f)
+                    Return f
+                End Function
+            Dim num_plus = add_native_function("+", RkOperator.Plus)
+            Dim num_minus = add_native_function("-", RkOperator.Minus)
+            Dim num_mul = add_native_function("*", RkOperator.Mul)
+            Dim num_div = add_native_function("/", RkOperator.Div)
+            Dim num_eq = add_native_function("==", RkOperator.Equal)
+            Dim num_gt = add_native_function(">", RkOperator.Gt)
+            Dim num_gte = add_native_function(">=", RkOperator.Gte)
+            Dim num_lt = add_native_function("<", RkOperator.Lt)
+            Dim num_lte = add_native_function("<=", RkOperator.Lte)
             Me.Local.Add(num.Name, num)
 
-            ' struct Int32 : Numeric.of(Int32)
+            ' struct Int32 : Numeric
             Dim define_num =
-                Function(name As String)
+                Function(name As String, byte_size As Integer)
 
                     Dim x As New RkStruct With {.Name = name}
-                    x.Super = num.FixedGeneric(x)
-                    Me.Local.Add(x.Name, x)
+                    x.Super = num
+                    Me.AddStruct(x)
                     Return x
                 End Function
-            Dim int64 = define_num("Int64")
-            Dim int32 = define_num("Int32")
-            Dim int16 = define_num("Int16")
-            Dim int8 = define_num("Int8")
+            Dim int64 = define_num("Int64", 8)
+            Dim int32 = define_num("Int32", 4)
+            Dim int16 = define_num("Int16", 2)
+            Dim int8 = define_num("Int8", 1)
             Me.Local.Add("Int", int32)
         End Sub
 

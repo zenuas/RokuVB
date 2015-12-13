@@ -130,3 +130,20 @@ f1.FixedGeneric(x)
 Dim fx = f1.FixedGeneric(Baz, Int)
 Dim Hoge As New RkStruct With {.Name = "Hoge"}
 Hoge.AddVar("a", Foo.FixedGeneric(Int, Hoge.DefineGeneric("@T")))
+
+.Namespaceと型の実装
+
+RkNamespaceはuse、struct、sub、namespaceを持つ
+RkStructはletしか持たない(letの初期化はコンストラクタという特別なsubを持つ)
+RkFunctionはlet、struct、subを持つ
+
+struct RkNamespace
+    var Local    = Dictionary(String, RkStruct | RkFunction | RkNamespace)
+    var LoadPath = List(RkStruct | RkNamespace)
+
+struct RkStruct
+    var Vars = Dictionary(String, LetNode)
+    var Ctor = RkFunction()
+
+struct RkFunction
+    var Local = Dictionary(String, RkStruct | RkFunction | LetNode)

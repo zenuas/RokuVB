@@ -61,6 +61,7 @@ Public Class Main
         Compiler.Normalize.Normalization(node)
         Compiler.Closure.Capture(node)
         Dim root = CreateRootNamespace("Global")
+        Compiler.Typing.Prototype(node, root)
         Compiler.Typing.TypeInference(node, root)
         Compiler.Translater.Translate(node, root)
         If Me.NodeDump IsNot Nothing Then Me.NodeDumpGraph(Me.NodeDump, node)
@@ -69,12 +70,7 @@ Public Class Main
 
     Public Overridable Function CreateRootNamespace(name As String) As Manager.RkNamespace
 
-        Dim root As New Manager.RkNamespace With {.Name = name}
-        Dim sys = New Manager.SystemLirary With {.Name = "System"}
-        root.Local.Add(sys.Name, sys)
-        root.AddLoadPath(sys)
-
-        Return root
+        Return New Manager.SystemLirary With {.Name = "System"}
     End Function
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)

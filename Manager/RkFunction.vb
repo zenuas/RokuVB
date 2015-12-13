@@ -39,7 +39,7 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            Dim x As New RkFunction With {.Name = Me.Name}
+            Dim x = CType(Me.CloneGeneric, RkFunction)
             If Me.Return IsNot Nothing Then x.Return = Me.Return.FixedGeneric(values)
             For Each v In Me.Arguments
 
@@ -52,6 +52,11 @@ Namespace Manager
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
             Return Me.Generics.Count > 0
+        End Function
+
+        Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
+
+            Return New RkFunction With {.Name = Me.Name}
         End Function
 
         Public Overridable Function CreateCall(ParamArray args() As RkValue) As RkCode0()
@@ -67,7 +72,6 @@ Namespace Manager
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function
-
     End Class
 
 End Namespace

@@ -13,6 +13,7 @@ Namespace Manager
         Function FixedGeneric(ParamArray values() As IType) As IType
         Function FixedGeneric(ParamArray values() As NamedValue) As IType
         Function HasGeneric() As Boolean
+        Function CloneGeneric() As IType
 
     End Interface
 

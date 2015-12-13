@@ -254,6 +254,30 @@ Namespace Util
             Return False
         End Function
 
+        Public Shared Function IndexOf(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In xs
+
+                If f(x, i) Then Return i
+                i += 1
+            Next
+
+            Return -1
+        End Function
+
+        Public Shared Function IndexOf(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In xs
+
+                If f(x) Then Return i
+                i += 1
+            Next
+
+            Return -1
+        End Function
+
     End Class
 
 

@@ -1,11 +1,11 @@
 ﻿Imports System
 Imports System.Collections.Generic
-
+Imports Roku.Node
 
 Namespace Manager
 
     Public Class RkStruct
-        Implements IType
+        Implements IType, IAddLet
 
         Public Overridable Property Super As IType
         Public Overridable Property Name As String Implements IType.Name
@@ -38,7 +38,7 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            Dim x As New RkStruct With {.Name = Me.Name}
+            Dim x = CType(Me.CloneGeneric, RkStruct)
             If Me.Super IsNot Nothing Then x.Super = Me.Super.FixedGeneric(values)
             For Each v In Me.Local
 
@@ -51,6 +51,15 @@ Namespace Manager
 
             Return Me.Generics.Count > 0
         End Function
+
+        Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
+
+            Return New RkStruct With {.Name = Me.Name}
+        End Function
+
+        Public Overridable Sub AddLet(x As LetNode) Implements IAddLet.AddLet
+        End Sub
+
     End Class
 
 End Namespace

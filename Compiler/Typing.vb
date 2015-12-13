@@ -7,9 +7,8 @@ Namespace Compiler
 
     Public Class Typing
 
-        Public Shared Sub TypeInference(node As INode, root As RkNamespace)
+        Public Shared Sub Prototype(node As INode, root As RkNamespace)
 
-            ' create prototype
             Util.Traverse.NodesOnce(
                 node,
                 root,
@@ -41,38 +40,63 @@ Namespace Compiler
 
                     next_(child, current)
                 End Sub)
+        End Sub
 
-            ' typing
-            Util.Traverse.NodesOnce(
-                node,
-                root,
-                Sub(parent, ref, child, current, isfirst, next_)
+        Public Shared Sub TypeInference(node As INode, root As RkNamespace)
 
-                    next_(child, current)
+            Do While True
 
-                    If TypeOf child Is NumericNode Then
+                Dim type_fix = False
 
-                        Dim node_num = CType(child, NumericNode)
-                        node_num.Type = root.LoadLibrary("Int32")
+                Util.Traverse.NodesOnce(
+                    node,
+                    root,
+                    Sub(parent, ref, child, current, isfirst, next_)
 
-                    ElseIf TypeOf child Is TypeNode Then
+                        next_(child, current)
 
-                        Dim node_type = CType(child, TypeNode)
-                        node_type.Type = root.LoadLibrary(node_type.Name)
+                        If TypeOf child Is NumericNode Then
 
-                    ElseIf TypeOf child Is LetNode Then
+                            Dim node_num = CType(child, NumericNode)
+                            If node_num.Type Is Nothing Then
 
-                        Dim node_let = CType(child, LetNode)
-                        node_let.Type = If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)
-                        node_let.Var.Type = node_let.Type
+                                node_num.Type = root.LoadLibrary("Int32")
+                                type_fix = True
+                            End If
 
-                    ElseIf TypeOf child Is ExpressionNode Then
+                        ElseIf TypeOf child Is TypeNode Then
 
-                        Dim node_expr = CType(child, ExpressionNode)
-                        node_expr.Type = CType(node_expr.Left.Type.GetValue(node_expr.Operator), RkFunction).Return
+                            Dim node_type = CType(child, TypeNode)
+                            If node_type.Type Is Nothing Then
 
-                    End If
-                End Sub)
+                                node_type.Type = root.LoadLibrary(node_type.Name)
+                                type_fix = True
+                            End If
+
+                        ElseIf TypeOf child Is LetNode Then
+
+                            Dim node_let = CType(child, LetNode)
+                            If node_let.Type Is Nothing Then
+
+                                node_let.Type = If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)
+                                node_let.Var.Type = node_let.Type
+                                type_fix = True
+                            End If
+
+                        ElseIf TypeOf child Is ExpressionNode Then
+
+                            Dim node_expr = CType(child, ExpressionNode)
+                            If node_expr.Type Is Nothing Then
+
+                                node_expr.Type = current.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type).Return
+                                type_fix = True
+                            End If
+
+                        End If
+                    End Sub)
+
+                If Not type_fix Then Exit Do
+            Loop
 
         End Sub
 
