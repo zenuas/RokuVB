@@ -14,6 +14,8 @@ Namespace Compiler
                 root,
                 Sub(parent, ref, child, current, isfirst, next_)
 
+                    If Not isfirst Then Return
+
                     If TypeOf child Is StructNode Then
 
                         Dim node_struct = CType(child, StructNode)
@@ -53,6 +55,7 @@ Namespace Compiler
                     root,
                     Sub(parent, ref, child, current, isfirst, next_)
 
+                        If Not isfirst Then Return
                         next_(child, current)
 
                         If TypeOf child Is NumericNode Then
@@ -89,6 +92,15 @@ Namespace Compiler
                             If node_expr.Type Is Nothing Then
 
                                 node_expr.Type = current.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type).Return
+                                type_fix = True
+                            End If
+
+                        ElseIf TypeOf child Is DeclareNode Then
+
+                            Dim node_declare = CType(child, DeclareNode)
+                            If node_declare.Name.Type Is Nothing Then
+
+                                node_declare.Name.Type = current.LoadLibrary(node_declare.Type.Name)
                                 type_fix = True
                             End If
 

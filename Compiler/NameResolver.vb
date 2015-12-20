@@ -31,6 +31,15 @@ Namespace Compiler
                     If parent IsNot Nothing AndAlso TypeOf child Is BlockNode Then
 
                         Dim block = CType(child, BlockNode)
+                        If TypeOf block.Owner Is FunctionNode Then
+
+                            Dim func = CType(block.Owner, FunctionNode)
+                            For Each x In func.Arguments
+
+                                x.Name.Scope = current
+                                block.Scope.Add(x.Name.Name, x.Name)
+                            Next
+                        End If
                         block.Parent = current
                         next_(block, block)
 

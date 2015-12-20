@@ -52,7 +52,7 @@ Namespace Util
                     Dim child_hash = child.GetHashCode
                     Dim isfirst = Not mark.ContainsKey(child_hash)
                     If isfirst Then mark.Add(child_hash, True)
-                    callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
+                    callback(parent, ref, child, user_, isfirst, If(isfirst, next_, dummy_next))
                 End Sub)
         End Sub
 
@@ -73,7 +73,7 @@ Namespace Util
                     Dim child_hash = child.GetHashCode
                     Dim isfirst = Not mark.ContainsKey(child_hash)
                     If isfirst Then mark.Add(child_hash, True)
-                    Return callback(parent, ref, child, user, isfirst, If(isfirst, next_, dummy_next))
+                    Return callback(parent, ref, child, user_, isfirst, If(isfirst, next_, dummy_next))
                 End Function)
         End Sub
 
@@ -94,7 +94,7 @@ Namespace Util
                         Sub(ref As String, v As INode)
 
                             If v Is Nothing Then Return
-                            callback(node_, ref, v, user, next_node)
+                            callback(node_, ref, v, user_, next_node)
                         End Sub
 
                     Select Case True
@@ -177,7 +177,7 @@ Namespace Util
                         Function(ref As String, v As INode)
 
                             If v Is Nothing Then Return Nothing
-                            Return callback(node_, ref, v, user, next_node)
+                            Return callback(node_, ref, v, user_, next_node)
                         End Function
 
                     Select Case True

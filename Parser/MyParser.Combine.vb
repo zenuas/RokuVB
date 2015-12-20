@@ -124,6 +124,7 @@ Namespace Parser
             ) As FunctionNode
 
             Dim f As New FunctionNode(name.Name) With {.Arguments = args, .Return = ret, .Body = body}
+            body.Owner = f
             f.AppendLineNumber(name)
             Return f
         End Function
