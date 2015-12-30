@@ -70,7 +70,7 @@ Public Class Main
 
     Public Overridable Function CreateRootNamespace(name As String) As Manager.RkNamespace
 
-        Return New Manager.SystemLirary With {.Name = "System"}
+        Return New Manager.SystemLirary With {.Name = name}
     End Function
 
     Public Overridable Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)

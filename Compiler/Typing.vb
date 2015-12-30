@@ -50,6 +50,16 @@ Namespace Compiler
 
                 Dim type_fix = False
 
+                Dim set_type =
+                    Function(n As IEvaluableNode, f As Func(Of IType))
+
+                        If n.Type IsNot Nothing Then Return False
+
+                        n.Type = f()
+                        type_fix = True
+                        Return True
+                    End Function
+
                 Util.Traverse.NodesOnce(
                     node,
                     root,
@@ -61,48 +71,30 @@ Namespace Compiler
                         If TypeOf child Is NumericNode Then
 
                             Dim node_num = CType(child, NumericNode)
-                            If node_num.Type Is Nothing Then
-
-                                node_num.Type = root.LoadLibrary("Int32")
-                                type_fix = True
-                            End If
+                            set_type(node_num, Function() root.LoadLibrary("Int32"))
 
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
-                            If node_type.Type Is Nothing Then
-
-                                node_type.Type = root.LoadLibrary(node_type.Name)
-                                type_fix = True
-                            End If
+                            set_type(node_type, Function() root.LoadLibrary(node_type.Name))
 
                         ElseIf TypeOf child Is LetNode Then
 
                             Dim node_let = CType(child, LetNode)
-                            If node_let.Type Is Nothing Then
+                            If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
 
-                                node_let.Type = If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)
                                 node_let.Var.Type = node_let.Type
-                                type_fix = True
                             End If
 
                         ElseIf TypeOf child Is ExpressionNode Then
 
                             Dim node_expr = CType(child, ExpressionNode)
-                            If node_expr.Type Is Nothing Then
-
-                                node_expr.Type = current.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type).Return
-                                type_fix = True
-                            End If
+                            set_type(node_expr, Function() current.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type).Return)
 
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            If node_declare.Name.Type Is Nothing Then
-
-                                node_declare.Name.Type = current.LoadLibrary(node_declare.Type.Name)
-                                type_fix = True
-                            End If
+                            set_type(node_declare.Name, Function() current.LoadLibrary(node_declare.Type.Name))
 
                         End If
                     End Sub)
