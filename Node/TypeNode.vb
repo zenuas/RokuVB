@@ -25,6 +25,7 @@ Namespace Node
         Public Overridable Property Name As String
         Public Overridable Property [Namespace] As TypeNode
         Public Overridable Property IsArray As Boolean = False
+        Public Overridable Property IsGeneric As Boolean = False
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
 
     End Class

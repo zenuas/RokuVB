@@ -35,6 +35,7 @@ Namespace Parser
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
+            Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
 

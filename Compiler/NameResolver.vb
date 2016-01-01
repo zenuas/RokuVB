@@ -28,21 +28,19 @@ Namespace Compiler
                 CType(node, BlockNode),
                 Function(parent, ref, child, current, isfirst, next_)
 
-                    If parent IsNot Nothing AndAlso TypeOf child Is BlockNode Then
+                    If Not isfirst Then Return child
 
-                        Dim block = CType(child, BlockNode)
-                        If TypeOf block.Owner Is FunctionNode Then
+                    If TypeOf child Is FunctionNode Then
 
-                            Dim func = CType(block.Owner, FunctionNode)
-                            For Each x In func.Arguments
+                        Dim func = CType(child, FunctionNode)
+                        Dim body = func.Body
+                        body.Parent = current
+                        For Each x In func.Arguments
 
-                                x.Name.Scope = current
-                                block.Scope.Add(x.Name.Name, x.Name)
-                            Next
-                        End If
-                        block.Parent = current
-                        next_(block, block)
-
+                            x.Name.Scope = body
+                            body.Scope.Add(x.Name.Name, x.Name)
+                        Next
+                        next_(child, body)
                     Else
 
                         next_(child, current)

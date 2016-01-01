@@ -157,6 +157,12 @@ RESTART_:
 
                 Return Me.ReadVariable(buf)
 
+            ElseIf c = "@"c Then
+
+                Dim at = Me.ReadVariableFirst(buf)
+                at.Type = SymbolTypes.ATVAR
+                Return at
+
             ElseIf c = """"c Then
 
                 Return Me.ReadString(c)

@@ -20,6 +20,9 @@ Namespace Parser
         ''' <summary>']'</summary>
         __x5D
 
+        ''' <summary>ATVAR</summary>
+        ATVAR
+
         ''' <summary>BEGIN</summary>
         BEGIN
 
@@ -64,6 +67,9 @@ Namespace Parser
 
         ''' <summary>args</summary>
         args
+
+        ''' <summary>atvar</summary>
+        atvar_1
 
         ''' <summary>begin</summary>
         begin_1

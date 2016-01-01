@@ -126,6 +126,7 @@ align = left,
 
                 If TypeOf child Is BlockNode OrElse
                     TypeOf parent Is FunctionNode OrElse
+                    (TypeOf parent Is DeclareNode AndAlso TypeOf child Is TypeNode) OrElse
                     TypeOf child Is FunctionNode Then
 
                     ' nothing
@@ -150,7 +151,9 @@ align = left,
                         out.WriteLine($"{child.GetHashCode} [label = ""{child.GetType.Name}{name}""]")
                     End If
 
-                    If parent IsNot Nothing AndAlso TypeOf parent IsNot BlockNode Then out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
+                    If parent IsNot Nothing AndAlso
+                        TypeOf parent IsNot BlockNode AndAlso
+                        Not (TypeOf parent Is DeclareNode AndAlso TypeOf child Is VariableNode) Then out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
                 End If
 
                 next_(child, user)

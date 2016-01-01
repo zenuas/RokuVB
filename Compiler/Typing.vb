@@ -56,7 +56,7 @@ Namespace Compiler
                         If n.Type IsNot Nothing Then Return False
 
                         n.Type = f()
-                        type_fix = True
+                        If n.Type IsNot Nothing Then type_fix = True
                         Return True
                     End Function
 
@@ -76,6 +76,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
+                            If node_type.IsGeneric Then Return
                             set_type(node_type, Function() root.LoadLibrary(node_type.Name))
 
                         ElseIf TypeOf child Is LetNode Then
@@ -94,7 +95,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            set_type(node_declare.Name, Function() current.LoadLibrary(node_declare.Type.Name))
+                            set_type(node_declare.Name, Function() node_declare.Type.Type)
 
                         End If
                     End Sub)

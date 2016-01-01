@@ -22,12 +22,12 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list
-%type<VariableNode>   var varx
+%type<VariableNode>   var varx atvar
 %type<NumericNode>    num
 %type<StringNode>     str
 
 %left  ELSE
-%token<NumericNode> NUM
+%token<NumericNode>  NUM
 %left  OPE
 
 %left  '?'
@@ -96,6 +96,7 @@ argn  : decla      {$$ = Me.CreateListNode($1)}
 decla : var ':' type {$$ = New DeclareNode($1, $3)}
 type  : var          {$$ = New TypeNode($1)}
       | '[' type ']'
+      | atvar        {$$ = New TypeNode($1) With {.IsGeneric = True}}
 typex : void
       | type
 
@@ -115,6 +116,7 @@ varx  : var
       | IF      {$$ = Me.CreateVariableNode($1)}
       | ELSE    {$$ = Me.CreateVariableNode($1)}
       | LET     {$$ = Me.CreateVariableNode($1)}
+atvar : ATVAR   {$$ = Me.CreateVariableNode($1)}
 num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.String.Append($2.Name) : $$ = $1}

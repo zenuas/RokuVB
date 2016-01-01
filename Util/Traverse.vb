@@ -154,6 +154,12 @@ Namespace Util
 
                                 f($"[{i}]", x.Arguments(i))
                             Next
+
+                        Case TypeOf node_ Is DeclareNode
+
+                            Dim x = CType(node_, DeclareNode)
+                            f("Name", x.Name)
+                            f("Type", x.Type)
                     End Select
                 End Sub
 
@@ -226,6 +232,12 @@ Namespace Util
 
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), IEvaluableNode)
                             Next
+
+                        Case TypeOf node_ Is DeclareNode
+
+                            Dim x = CType(node_, DeclareNode)
+                            x.Name = CType(f("Name", x.Name), VariableNode)
+                            x.Type = CType(f("Type", x.Type), TypeNode)
                     End Select
                 End Sub
 

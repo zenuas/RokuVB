@@ -13,6 +13,7 @@ Namespace Compiler
                 CType(node, IScopeNode),
                 Sub(parent, ref, child, current, isfirst, next_)
 
+                    If TypeOf child Is FunctionNode Then current = CType(child, FunctionNode).Body
                     If TypeOf child Is IScopeNode Then current = CType(child, IScopeNode)
 
                     If TypeOf child Is VariableNode Then
