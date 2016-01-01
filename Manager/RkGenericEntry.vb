@@ -27,7 +27,7 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Return Util.Functions.Car(Util.Functions.Where(values, Function(x) x.Name = Me.Name)).Value
+            Return Util.Functions.Car(Util.Functions.Where(values, Function(x) x.Name.Equals(Me.Name))).Value
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

@@ -11,6 +11,9 @@
     <FileAlignment>512</FileAlignment>
     <MyType>Empty</MyType>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NoConfig>true</NoConfig>
+    <NoStandardLib>true</NoStandardLib>
+    <NoVBRuntimeReference>true</NoVBRuntimeReference>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -61,6 +64,9 @@
     <None Include="roku.y" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\CommandLineAttribute.vb" />
+    <Compile Include="Command\Parser.vb" />
+    <Compile Include="Command\Option.vb" />
     <Compile Include="Compiler\Closure.vb" />
     <Compile Include="Compiler\NameResolver.vb" />
     <Compile Include="Compiler\Normalize.vb" />
