@@ -18,17 +18,16 @@ Public Class Main
     Public Shared Sub Main(args() As String)
 
         Dim opt As New Command.Option
-        Dim loader As New Loader
         Dim xs = Command.Parser.Parse(opt, args)
 
         If xs.Length = 0 Then
 
-            CompileConsole(loader, System.Console.In, opt)
+            CompileConsole(System.Console.In, opt)
         Else
 
             For Each arg In xs
 
-                CompileFile(loader, arg, opt)
+                CompileFile(arg, opt)
             Next
         End If
 
@@ -38,7 +37,7 @@ Public Class Main
 #End If
     End Sub
 
-    Public Shared Sub CompileFile(loader As Loader, f As String, opt As Command.Option)
+    Public Shared Sub CompileFile(f As String, opt As Command.Option)
 
         Using reader As New IO.StreamReader(f)
 
@@ -48,7 +47,7 @@ Public Class Main
         'Compile(loader.AddImport(f).Node)
     End Sub
 
-    Public Shared Sub CompileConsole(loader As Loader, reader As System.IO.TextReader, opt As Command.Option)
+    Public Shared Sub CompileConsole(reader As System.IO.TextReader, opt As Command.Option)
 
         Dim parser As New MyParser
         Compile(parser.Parse(New MyLexer(reader) With {.Parser = parser}), opt)
