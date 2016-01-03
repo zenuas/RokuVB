@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
 
@@ -75,6 +76,11 @@ Namespace Compiler
                             Dim node_num = CType(child, NumericNode)
                             set_type(node_num, Function() root.LoadLibrary("Int32"))
 
+                        ElseIf TypeOf child Is StringNode Then
+
+                            Dim node_str = CType(child, StringNode)
+                            set_type(node_str, Function() root.LoadLibrary("String"))
+
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
@@ -107,17 +113,29 @@ Namespace Compiler
                             If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(CType(node_call.Expression, FunctionNode).Type, RkFunction)
 
                             If node_call.Function Is Nothing AndAlso
-                                node_call.Expression.Type IsNot Nothing Then
+                                rk_function IsNot Nothing Then
 
+                                If rk_function.HasGeneric Then
+
+                                    Dim xs As New Dictionary(Of String, IType)
+                                    For i = 0 To rk_function.Arguments.Count - 1
+
+                                        Dim arg = rk_function.Arguments(i)
+                                        If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
+
+                                        If xs.ContainsKey(arg.Value.Name) Then
+
+                                            ' type check
+                                        Else
+                                            xs.Add(arg.Value.Name, node_call.Arguments(i).Type)
+                                        End If
+                                    Next
+
+                                    rk_function = CType(rk_function.FixedGeneric(Util.Functions.List(Util.Functions.Map(xs.Keys, Function(x) New NamedValue With {.Name = x, .Value = xs(x)})).ToArray), RkFunction)
+                                End If
                                 node_call.Function = rk_function
                                 type_fix = True
                             End If
-                            'set_type(node_call, Function() current.GetFunction(node_call.Expression, node_call.Arguments).Return)
-
-                            'If node_call.Type IsNot Nothing AndAlso node_call.Then Then
-
-
-                            'End If
 
                         End If
                     End Sub)

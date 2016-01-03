@@ -75,6 +75,11 @@ Namespace Manager
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.Name}({String.Join(", ", Util.Functions.Map(Me.Arguments, Function(x) x.Value.Name))})" + If(Me.Return IsNot Nothing, $" {Me.Return.Name}", "")
+        End Function
     End Class
 
 End Namespace

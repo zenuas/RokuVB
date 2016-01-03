@@ -1,11 +1,10 @@
 ﻿Imports System
-Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
 
 
-<Assembly: AssemblyVersion("0.0.*")> 
+<Assembly: AssemblyVersion("0.0.*")>
 Public Class Main
 
     Public Class Loader
@@ -145,6 +144,7 @@ align = left,
                             Case TypeOf child Is DeclareNode : Dim v = CType(child, DeclareNode) : name += $"\l{v.Name.Name}\l`{v.Type?.Name}`"
                             Case TypeOf child Is LetNode : Dim v = CType(child, LetNode) : name += $"\l{v.Var.Name}\l`{v.Type?.Name}`"
                             Case TypeOf child Is StructNode : Dim v = CType(child, StructNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
+                            Case TypeOf child Is FunctionCallNode : Dim v = CType(child, FunctionCallNode) : name += $"\lsub {v.Function?.ToString}"
                         End Select
 
                         out.WriteLine($"{child.GetHashCode} [label = ""{child.GetType.Name}{name}""]")

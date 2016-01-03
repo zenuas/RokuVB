@@ -50,6 +50,18 @@ Namespace Manager
             Dim int16 = define_num("Int16", 2)
             Dim int8 = define_num("Int8", 1)
             Me.Local.Add("Int", int32)
+
+            ' struct Array(@T)
+            ' struct Char : Int16
+            ' struct String : Array(Char)
+            Dim arr As New RkStruct With {.Name = "Array"}
+            Dim arr_t = arr.DefineGeneric("@T")
+            Me.Local.Add("Array", arr)
+            Dim chr As New RkStruct With {.Name = "Char", .Super = int16}
+            Me.Local.Add("Char", chr)
+            Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr)}
+            Me.Local.Add("String", str)
+
         End Sub
 
     End Class
