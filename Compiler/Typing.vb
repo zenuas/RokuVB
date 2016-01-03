@@ -37,6 +37,8 @@ Namespace Compiler
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = New RkFunction With {.Name = node_func.Name}
                         node_func.Type = rk_func
+                        rk_func.Arguments.AddRange(Util.Functions.Map(node_func.Arguments, Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
+                        If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
                         current.Local.Add(rk_func.Name, rk_func)
                     End If
 
@@ -96,6 +98,26 @@ Namespace Compiler
 
                             Dim node_declare = CType(child, DeclareNode)
                             set_type(node_declare.Name, Function() node_declare.Type.Type)
+
+                        ElseIf TypeOf child Is FunctionCallNode Then
+
+                            Dim node_call = CType(child, FunctionCallNode)
+                            Dim rk_function As RkFunction = Nothing
+
+                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(CType(node_call.Expression, FunctionNode).Type, RkFunction)
+
+                            If node_call.Function Is Nothing AndAlso
+                                node_call.Expression.Type IsNot Nothing Then
+
+                                node_call.Function = rk_function
+                                type_fix = True
+                            End If
+                            'set_type(node_call, Function() current.GetFunction(node_call.Expression, node_call.Arguments).Return)
+
+                            'If node_call.Type IsNot Nothing AndAlso node_call.Then Then
+
+
+                            'End If
 
                         End If
                     End Sub)

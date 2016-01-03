@@ -18,12 +18,13 @@ Namespace Parser
 
         Public Overrides Sub SetRegisterWord()
 
+            Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedChar(")"c) = SymbolTypes.__x29
             Me.ReservedChar("["c) = SymbolTypes.__x5B
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("?"c) = SymbolTypes.__x3F
             Me.ReservedChar(":"c) = SymbolTypes.__x3A
-            Me.ReservedChar("("c) = SymbolTypes.__x28
+            Me.ReservedChar(","c) = SymbolTypes.__x2C
             Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("END") = SymbolTypes.[END]
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN

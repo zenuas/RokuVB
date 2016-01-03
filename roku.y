@@ -21,7 +21,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<StructNode>     struct struct_block
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
-%type<IEvaluableListNode> list
+%type<IEvaluableListNode> list listn
 %type<VariableNode>   var varx atvar
 %type<NumericNode>    num
 %type<StringNode>     str
@@ -43,7 +43,6 @@ stmt  : void        {$$ = Me.CurrentScope}
       | stmt line   {$1.AddStatement($2) : $$ = $1}
 
 line  : expr EOL
-      | call EOL
       | let  EOL
       | sub         {Me.CurrentScope.AddFunction($1)}
       | if
@@ -58,18 +57,19 @@ begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber.Value))}
 expr : var
      | str
      | num
+     | call
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
-     | '(' call ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
      | expr OPE expr     {$$ = Me.CreateExpressionNode($1, $2.Name, $3)}
      | expr '[' expr ']' {$$ = Me.CreateExpressionNode($1, "[]", $3)}
      | expr '?' expr ':' expr
 
-call : expr list         {$$ = New FunctionCallNode($1, $2.List.ToArray)}
+call : expr '(' list ')' {$$ = New FunctionCallNode($1, $3.List.ToArray)}
 
-list : expr              {$$ = Me.CreateListNode($1)}
-     | list expr         {$1.List.Add($2) : $$ = $1}
-
+list  : void             {$$ = Me.CreateListNode(Of IEvaluableNode)}
+      | listn extra
+listn : expr             {$$ = Me.CreateListNode($1)}
+      | listn ',' expr   {$1.List.Add($3) : $$ = $1}
 
 ########## let ##########
 let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
@@ -89,14 +89,14 @@ define : void
 
 ########## sub ##########
 sub   : SUB var '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
-args  : void       {$$ = Me.CreateListNode(Of DeclareNode)}
-      | argn
-argn  : decla      {$$ = Me.CreateListNode($1)}
-      | argn decla {$1.List.Add($2) : $$ = $1}
-decla : var ':' type {$$ = New DeclareNode($1, $3)}
-type  : var          {$$ = New TypeNode($1)}
+args  : void           {$$ = Me.CreateListNode(Of DeclareNode)}
+      | argn extra
+argn  : decla          {$$ = Me.CreateListNode($1)}
+      | argn ',' decla {$1.List.Add($3) : $$ = $1}
+decla : var ':' type   {$$ = New DeclareNode($1, $3)}
+type  : var            {$$ = New TypeNode($1)}
       | '[' type ']'
-      | atvar        {$$ = New TypeNode($1) With {.IsGeneric = True}}
+      | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
 typex : void
       | type
 
@@ -121,5 +121,8 @@ num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.String.Append($2.Name) : $$ = $1}
 
-void : {$$ = Nothing}
+extra : void
+      | ','
+
+void  : {$$ = Nothing}
 

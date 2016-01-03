@@ -1,4 +1,5 @@
-﻿Imports Roku.Manager
+﻿Imports System
+Imports Roku.Manager
 
 
 Namespace Node
@@ -18,6 +19,16 @@ Namespace Node
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Arguments As IEvaluableNode()
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+            Get
+                Return Me.Function?.Return
+            End Get
+            Set(value As IType)
+
+                Throw New NotSupportedException
+            End Set
+        End Property
+
+        Public Overridable Property [Function] As RkFunction
     End Class
 
 End Namespace

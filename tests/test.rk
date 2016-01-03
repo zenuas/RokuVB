@@ -6,9 +6,12 @@ var a = 1
 var b = 2
 var c = 3
 var x = (a + b) * c
+var add_int = add(1,   2)
+var add_str = add("a", "b")
+var add_err = add(1,   "a")
 
 sub f(x:Int)
 	var y = x + 3
 
-sub add(a: @T b: @T) @T
+sub add(a: @T, b: @T) @T
 	return(a + b)

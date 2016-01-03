@@ -147,3 +147,39 @@ struct RkStruct
 
 struct RkFunction
     var Local = Dictionary(String, RkStruct | RkFunction | LetNode)
+
+
+.総称型の実装
+
+総称型はC++のテンプレートのインライン展開(だっけ？)のように扱う
+
+sub add(a: @T, b: @T) @T
+    return(a + b)
+add(1, 2)     #=> 3
+add("a", "b") #=> ab
+add(Hoge(), Hoge()) #=> ERROR!!
+
+総称型に特に制約のない限り、add関数の定義時点では「a + b」という構文は問題ない
+IntやString同士には「+」関数が定義されているため「add(1, 2)」「add("a", "b")」という呼び出しは間違いではない
+ただHoge型の足し算は未定義のため「add(Hoge(), Hoge())」という呼び出しの時点でエラーとしたい
+
+従来「型付け→中間コード翻訳」という順に処理をしていたが
+逆にするか、型付けの前に呼び出し側を展開する処理を挟む必要がある
+
+..型付けの前にする事
+
+sub add(a: @T, b: @T) @T を
+
+sub add(a: Int, b: Int) Int と
+sub add(a: String, b: String) String と
+sub add(a: Hoge, b: Hoge) Hoge を作る
+
+型付けで
+sub add(a: Hoge, b: Hoge) Hoge がエラーになればよい
+エラーメッセージは「add(Hoge(), Hoge())」の行がエラーと出たほうがいい
+
+..中間コード翻訳について
+
+sub add(a: @T, b: @T) @T を中間コードに落とす必要はなくなる
+インライン展開するわけだからコードサイズは大きくなる
+内部的に関数のオーバーロードが出来ないといけない
