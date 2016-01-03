@@ -1,6 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
-Imports Roku.Manager
+Imports Roku.Node
 
 
 Namespace Manager
@@ -13,6 +13,7 @@ Namespace Manager
         Public Overridable Property [Return] As IType
         Public Overridable ReadOnly Property Body As New List(Of RkCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable ReadOnly Property Fixed As New Dictionary(Of IEnumerable(Of IType), RkFunction)
 
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
@@ -30,6 +31,26 @@ Namespace Manager
             Return x
         End Function
 
+        Public Function FixedGenericCall(fcall As FunctionCallNode) As IType
+
+            Dim xs As New Dictionary(Of String, IType)
+            For i = 0 To Me.Arguments.Count - 1
+
+                Dim arg = Me.Arguments(i)
+                If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
+
+                If xs.ContainsKey(arg.Value.Name) Then
+
+                    ' type check
+                Else
+                    xs.Add(arg.Value.Name, fcall.Arguments(i).Type)
+                End If
+            Next
+
+            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(xs.Keys, Function(x) New NamedValue With {.Name = x, .Value = xs(x)})).ToArray)
+
+        End Function
+
         Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
 
             If Not Me.HasGeneric Then Throw New Exception("not generics")
@@ -42,6 +63,11 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
+            For Each fix In Me.Fixed
+
+                If Util.Functions.And(fix.Key, Function(g, i) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(Me.Generics(i).Name))).Value Is g) Then Return fix.Value
+            Next
+
             Dim x = CType(Me.CloneGeneric, RkFunction)
             If Me.Return IsNot Nothing Then x.Return = Me.Return.FixedGeneric(values)
             For Each v In Me.Arguments
@@ -49,6 +75,7 @@ Namespace Manager
                 x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
+            Me.Fixed.Add(Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(g.Name))).Value), x)
             Return x
         End Function
 
