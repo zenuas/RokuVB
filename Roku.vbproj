@@ -64,9 +64,13 @@
     <None Include="roku.y" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Architecture\ArchitectureNameAttribute.vb" />
     <Compile Include="Command\CommandLineAttribute.vb" />
     <Compile Include="Command\Parser.vb" />
     <Compile Include="Command\Option.vb" />
+    <Compile Include="Architecture\IArchitecture.vb" />
+    <Compile Include="Architecture\RIR\RokuIR.vb" />
+    <Compile Include="Architecture\SourceWriter.vb" />
     <Compile Include="Compiler\Closure.vb" />
     <Compile Include="Compiler\NameResolver.vb" />
     <Compile Include="Compiler\Normalize.vb" />
@@ -123,7 +127,9 @@
     <Compile Include="Util\Traverse.vb" />
     <Compile Include="Util\Functions.vb" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Architecture\CIL\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)

@@ -6,6 +6,19 @@ Namespace Command
 
     Public Class [Option]
 
+        <CommandLine("o", "output")>
+        Public Overridable Property Output As String = "a.exe"
+
+        <CommandLine("a", "arch")>
+        Public Overridable Property Architecture As String = "cil"
+
+        <CommandLine("N", "node-dump")>
+        Public Overridable Property NodeDump As IO.StreamWriter = Nothing
+
+        Public Overridable Sub LoadPath(path As String)
+
+        End Sub
+
         <CommandLine("h", "help")>
         Public Overridable Sub Help()
 
@@ -31,19 +44,6 @@ Namespace Command
 
             System.Environment.Exit(0)
         End Sub
-
-        Public Overridable Sub LoadPath(path As String)
-
-        End Sub
-
-        <CommandLine("o", "output")>
-        Public Overridable Property Output As String = "a.exe"
-
-        <CommandLine("r", "ir")>
-        Public Overridable Property IROutput As String = ""
-
-        <CommandLine("N", "node-dump")>
-        Public Overridable Property NodeDump As IO.StreamWriter = Nothing
 
     End Class
 

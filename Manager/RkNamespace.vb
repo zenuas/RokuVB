@@ -10,6 +10,7 @@ Namespace Manager
 
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IEntry)
+        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of RkFunction))
         Public Overridable ReadOnly Property LoadPaths As New List(Of IEntry)
 
         Public Overridable Sub AddLoadPath(path As IEntry)
@@ -56,17 +57,33 @@ Namespace Manager
 
         Public Overridable Sub AddFunction(x As RkFunction) Implements IAddFunction.AddFunction
 
-            Me.Local.Add(x.Name, x)
+            Dim name = x.Name
+            If Not Me.Functions.ContainsKey(name) Then Me.Functions.Add(name, New List(Of RkFunction))
+            Me.Functions(name).Add(x)
+
+            'Dim name = x.CreateManglingName
+            'If Me.Local.ContainsKey(name) Then
+
+            '    If Me.Local(name) IsNot x Then
+
+            '        ' check
+            '    End If
+            'Else
+
+            '    Me.Local.Add(name, x)
+            'End If
         End Sub
 
         Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
 
-            Dim f = Me.GetValueOf(Of RkFunction)(name, Sub() Throw New ArgumentException($"``{name}'' was not found"))
+            For Each f In Util.Functions.Where(Me.Functions(name), Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
 
-            If f.Arguments.Count <> args.Length Then Throw New ArgumentException("parameter miss match")
-            If f.HasGeneric Then
+                If Util.Functions.And(f.Arguments, Function(x, i) x.Value Is args(i)) Then Return f
+            Next
 
-                Dim xs = Util.Functions.List(Util.Functions.Map(f.Generics, Function(x) CType(Nothing, IType)))
+            For Each f In Util.Functions.Where(Me.Functions(name), Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric)
+
+                Dim xs(f.Generics.Count - 1) As IType
                 For i = 0 To f.Arguments.Count - 1
 
                     Dim arg = f.Arguments(i)
@@ -84,12 +101,12 @@ Namespace Manager
                     End If
                 Next
 
-                Return CType(f.FixedGeneric(xs.ToArray), RkFunction)
-            Else
+                Dim x = CType(f.FixedGeneric(xs), RkFunction)
+                Me.AddFunction(x)
+                Return x
+            Next
 
-                ' check
-                Return f
-            End If
+            Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
         Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T
@@ -105,6 +122,19 @@ Namespace Manager
 
             Dim x As IEntry = Nothing
             If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then Return default_()
+            'If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then
+
+            '    ' demangling
+            '    For Each v In Me.Local.Values
+
+            '        If v IsNot Nothing AndAlso v.Name.Equals(name) Then
+
+            '            x = v
+            '            Exit For
+            '        End If
+            '    Next
+            '    If x Is Nothing OrElse TypeOf x IsNot T Then Return default_()
+            'End If
             Return CType(x, T)
         End Function
 

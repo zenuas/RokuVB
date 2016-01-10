@@ -2,6 +2,7 @@
 Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
+Imports Roku.Architecture
 
 
 <Assembly: AssemblyVersion("0.0.*")>
@@ -64,11 +65,31 @@ Public Class Main
         Compiler.Translater.Translate(node, root)
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, node)
 
+        Dim arch = CreateArchitecture(opt.Architecture)
+        arch.Assemble(root)
+        arch.Optimize()
+        arch.Emit(opt.Output)
     End Sub
 
     Public Shared Function CreateRootNamespace(name As String) As Manager.RkNamespace
 
         Return New Manager.SystemLirary With {.Name = name}
+    End Function
+
+    Public Shared Function CreateArchitecture(name As String) As IArchitecture
+
+        Dim separate = name.LastIndexOf(":"c)
+        Dim asm = If(separate < 0, System.Reflection.Assembly.GetExecutingAssembly, System.Reflection.Assembly.LoadFrom(name.Substring(0, separate)))
+        Dim arch = If(separate < 0, name, name.Substring(separate + 1))
+
+        For Each x In asm.GetTypes
+
+            If Not Util.Functions.Or(x.GetInterfaces, Function(inter) inter.Equals(GetType(IArchitecture))) Then Continue For
+            Dim attr = CType(x.GetCustomAttribute(GetType(ArchitectureNameAttribute)), ArchitectureNameAttribute)
+            If (attr IsNot Nothing AndAlso attr.Name.Equals(arch)) OrElse x.FullName.Equals(arch) Then Return CType(x.GetConstructor(New Type() {}).Invoke(New Object() {}), IArchitecture)
+        Next
+
+        Throw New Exception($"not found architecture {name}")
     End Function
 
     Public Shared Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)

@@ -22,7 +22,7 @@ Namespace Compiler
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = New RkStruct With {.Name = node_struct.Name}
                         node_struct.Type = rk_struct
-                        current.Local.Add(rk_struct.Name, rk_struct)
+                        current.AddStruct(rk_struct)
 
                         For Each x In node_struct.Scope.Values
 
@@ -40,7 +40,7 @@ Namespace Compiler
                         node_func.Type = rk_func
                         rk_func.Arguments.AddRange(Util.Functions.Map(node_func.Arguments, Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
                         If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
-                        current.Local.Add(rk_func.Name, rk_func)
+                        current.AddFunction(rk_func)
                     End If
 
                     next_(child, current)
@@ -109,6 +109,18 @@ Namespace Compiler
                             Dim node_declare = CType(child, DeclareNode)
                             set_type(node_declare.Name, Function() node_declare.Type.Type)
 
+                        ElseIf TypeOf child Is FunctionNode Then
+
+                            Dim node_func = CType(child, FunctionNode)
+                            Dim rk_function = node_func.Function
+                            If rk_function.HasGeneric Then Return
+
+                            For i = 0 To node_func.Arguments.Length - 1
+
+                                rk_function.Arguments(i).Value = node_func.Arguments(i).Type.Type
+                            Next
+                            rk_function.Return = node_func.Return?.Type
+
                         ElseIf TypeOf child Is FunctionCallNode Then
 
                             Dim node_call = CType(child, FunctionCallNode)
@@ -121,21 +133,7 @@ Namespace Compiler
 
                                 If rk_function.HasGeneric Then
 
-                                    Dim xs As New Dictionary(Of String, IType)
-                                    For i = 0 To rk_function.Arguments.Count - 1
-
-                                        Dim arg = rk_function.Arguments(i)
-                                        If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
-
-                                        If xs.ContainsKey(arg.Value.Name) Then
-
-                                            ' type check
-                                        Else
-                                            xs.Add(arg.Value.Name, node_call.Arguments(i).Type)
-                                        End If
-                                    Next
-
-                                    rk_function = CType(rk_function.FixedGeneric(Util.Functions.List(Util.Functions.Map(xs.Keys, Function(x) New NamedValue With {.Name = x, .Value = xs(x)})).ToArray), RkFunction)
+                                    rk_function = current.Namespace.GetFunction(rk_function.Name, Util.Functions.List(Util.Functions.Map(node_call.Arguments, Function(x) x.Type)).ToArray)
                                 End If
                                 node_call.Function = rk_function
                                 type_fix = True

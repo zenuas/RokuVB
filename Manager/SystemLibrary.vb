@@ -34,7 +34,7 @@ Namespace Manager
             Dim num_gte = add_native_function(">=", RkOperator.Gte)
             Dim num_lt = add_native_function("<", RkOperator.Lt)
             Dim num_lte = add_native_function("<=", RkOperator.Lte)
-            Me.Local.Add(num.Name, num)
+            Me.AddStruct(num)
 
             ' struct Int32 : Numeric
             Dim define_num =
@@ -56,11 +56,11 @@ Namespace Manager
             ' struct String : Array(Char)
             Dim arr As New RkStruct With {.Name = "Array"}
             Dim arr_t = arr.DefineGeneric("@T")
-            Me.Local.Add("Array", arr)
+            Me.AddStruct(arr)
             Dim chr As New RkStruct With {.Name = "Char", .Super = int16}
-            Me.Local.Add("Char", chr)
+            Me.AddStruct(chr)
             Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr)}
-            Me.Local.Add("String", str)
+            Me.AddStruct(str)
 
         End Sub
 
