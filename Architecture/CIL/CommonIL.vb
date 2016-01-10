@@ -77,7 +77,7 @@ Namespace Architecture.CIL
 
                 For Each f In Util.Functions.Where(fs.Value, Function(x) Not x.HasGeneric)
 
-                    map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), System.Type.EmptyTypes)
+                    map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), Me.RkStructToCILType(f.Arguments, structs))
                 Next
             Next
 
@@ -104,6 +104,11 @@ Namespace Architecture.CIL
             If r.Name.Equals("String") Then Return GetType(String)
 
             Return structs(CType(r, RkStruct))
+        End Function
+
+        Public Overridable Function RkStructToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeBuilder)) As System.Type()
+
+            Return Util.Functions.List(Util.Functions.Map(r, Function(x) Me.RkStructToCILType(x.Value, structs))).ToArray
         End Function
     End Class
 
