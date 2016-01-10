@@ -39,11 +39,13 @@ Public Class Main
 
     Public Shared Sub CompileFile(f As String, opt As Command.Option)
 
+        Dim node As INode
         Using reader As New IO.StreamReader(f)
 
             Dim parser As New MyParser
-            Compile(parser.Parse(New MyLexer(reader) With {.Parser = parser}), opt)
+            node = parser.Parse(New MyLexer(reader) With {.Parser = parser})
         End Using
+        Compile(node, opt)
         'Compile(loader.AddImport(f).Node)
     End Sub
 
