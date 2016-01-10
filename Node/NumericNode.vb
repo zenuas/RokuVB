@@ -16,6 +16,11 @@ Namespace Node
 
         Public Overridable Property Numeric As UInt32
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} ""{Me.Numeric}"""
+        End Function
     End Class
 
 End Namespace

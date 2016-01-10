@@ -65,11 +65,11 @@ Namespace Compiler
 
                 Util.Traverse.NodesOnce(
                     node,
-                    root,
+                    New With {.Namespace = root, .Function = CType(Nothing, FunctionNode)},
                     Sub(parent, ref, child, current, isfirst, next_)
 
                         If Not isfirst Then Return
-                        next_(child, current)
+                        next_(child, If(TypeOf child Is FunctionNode, New With {.Namespace = current.Namespace, .Function = CType(child, FunctionNode)}, current))
 
                         If TypeOf child Is NumericNode Then
 
@@ -84,8 +84,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
-                            If node_type.IsGeneric Then Return
-                            set_type(node_type, Function() root.LoadLibrary(node_type.Name))
+                            set_type(node_type, Function() If(node_type.IsGeneric, current.Function.Function.Generics.Find(Function(x) node_type.Name.Equals(x.Name)), current.Namespace.LoadLibrary(node_type.Name)))
 
                         ElseIf TypeOf child Is LetNode Then
 
@@ -98,7 +97,12 @@ Namespace Compiler
                         ElseIf TypeOf child Is ExpressionNode Then
 
                             Dim node_expr = CType(child, ExpressionNode)
-                            set_type(node_expr, Function() current.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type).Return)
+                            set_type(node_expr,
+                                Function()
+
+                                    If node_expr.Function Is Nothing Then node_expr.Function = current.Namespace.GetFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
+                                    Return node_expr.Function.Return
+                                End Function)
 
                         ElseIf TypeOf child Is DeclareNode Then
 
@@ -110,7 +114,7 @@ Namespace Compiler
                             Dim node_call = CType(child, FunctionCallNode)
                             Dim rk_function As RkFunction = Nothing
 
-                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(CType(node_call.Expression, FunctionNode).Type, RkFunction)
+                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(node_call.Expression, FunctionNode).Function
 
                             If node_call.Function Is Nothing AndAlso
                                 rk_function IsNot Nothing Then

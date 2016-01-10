@@ -18,6 +18,10 @@ Namespace Node
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property ClosureEnvironment As Boolean = False
 
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} ""{Me.Name}"""
+        End Function
     End Class
 
 End Namespace

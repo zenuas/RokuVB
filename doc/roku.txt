@@ -190,3 +190,86 @@ sub add(a: @T, b: @T) @T を中間コードに落とす必要はなくなる
 総称型の解決のために Node→RkFunction を呼び出しごとに作っている
 
 総称型を解決した際にキャッシュを作り Node→RkFunction(@T)→RkFunction という流れを作る
+
+..別案 2016/01/04
+
+Node→RkFunction(@T)→RkFunction だと中間コード翻訳時点でNodeのStatementsが
+型が確定していない
+中間コード作成時にまた解決とかを行わないといけないのでめんどくさい
+
+すこし無駄が増えるが下記モデルのほうが後続処理がやりやすい
+Node(@T)→RkFunction(@T)
+  ├→Node(Int)→RkFunction(Int)
+  └→Node(String)→RkFunction(String)
+
+この場合、総称型に依存しないインナー関数はNode(@T)にあったほうが無駄がないとか
+改善案はあるが、とりあえずこの形にしてみる
+
+RkFunctionに用意した @T() -> RkFunction は消して
+Nodeに @T -> Node を用意する
+RkFunction.DefineGeneric はそのまま残すが、Node.DefineGeneric 相当を作る
+
+多段階に展開されるとこうなる？
+sub f1(a: @T) @T
+	return(a)
+sub f2(a: @T2) @T2
+	return(f1(a))
+var a = f2(1)
+
+Node(f1 @T)→RkFunction(@T)
+  └→Node(f1 @T2)→RkFunction(@T2)
+      └→Node(f1 Int)→RkFunction(Int)
+Node(f2 @T2)→RkFunction(@T2)
+  └→Node(f2 Int)→RkFunction(Int)
+
+欠点：
+  名前解決、クロージャー変換を再実行しないとちゃんとならない
+  これをさぼると結局めんどくさい
+
+..別案 2016/01/05
+
+中間コード翻訳で部分的な型解決(RkGenericEntryに限る)をできるようにする
+RkGenericEntry.Referenceに解決後の型を入れる
+
+FunctionNode(@T1, @T2)→RkFunction(@T1, @T2)
+これを
+FunctionCallNode(t1, t2)
+FunctionCallNode(t3, t4)
+から
+FunctionNode(@T1, @T2)→RkFunction(@T1, @T2)
+  ├→Cache(t1, t2)→RkFunction(t1, t2)
+  └→Cache(t3, t4)→RkFunction(t3, t4)
+となる
+
+sub f(FunctionNode, FunctionCallNode)->RkFunction
+が必要になる
+処理は簡単に書くとこうなる
+(FunctionNode, FunctionCallNode) => @T[]
+(FunctionNode, RkFunction, @T[]) => RkFunction'
+FunctionNode.Cache(@T[] -> RkFunction')
+
+一度で解決しきれない時が若干面倒
+sub f1(a: @T1, b: @T2)
+sub f2(c: @T3)
+	f1(1, c)
+f2(2)
+
+sub translation(node)
+	if node is FunctionNode
+		func_translation(node)
+	else if node is FunctionCallNode
+		call_translation(node)
+	else
+		...
+sub func_translation(node: FunctionNode)
+	if !node.IsGeneric
+		func_translation'(node, @T[])
+sub func_translation'(node: FunctionNode, types: @T[])
+	var needs   = node.FixedParameter(types)
+	var rk_func = node.FixedGeneric(needs)
+	if !rk_func.Completed
+		rk_func ...
+		rk_func.Completed = true
+		node.Cache(needs, rk_func)
+sub call_translation(node: FunctionCallNode)
+	node.Function = func_translation'(node.Expression.Type: FunctionNode, node.Arguments)

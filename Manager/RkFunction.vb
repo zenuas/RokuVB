@@ -13,7 +13,8 @@ Namespace Manager
         Public Overridable Property [Return] As IType
         Public Overridable ReadOnly Property Body As New List(Of RkCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
-        Public Overridable ReadOnly Property Fixed As New Dictionary(Of IEnumerable(Of IType), RkFunction)
+        Public Overridable Property Apply As IEnumerable(Of IType) = Nothing
+        Public Overridable ReadOnly Property Fixed As New List(Of RkFunction)
 
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
@@ -65,7 +66,7 @@ Namespace Manager
 
             For Each fix In Me.Fixed
 
-                If Util.Functions.And(fix.Key, Function(g, i) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(Me.Generics(i).Name))).Value Is g) Then Return fix.Value
+                If Util.Functions.And(fix.Apply, Function(g, i) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(Me.Generics(i).Name))).Value Is g) Then Return fix
             Next
 
             Dim x = CType(Me.CloneGeneric, RkFunction)
@@ -75,7 +76,8 @@ Namespace Manager
                 x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
-            Me.Fixed.Add(Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(g.Name))).Value), x)
+            x.Apply = Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(g.Name))).Value)
+            Me.Fixed.Add(x)
             Return x
         End Function
 

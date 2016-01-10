@@ -21,6 +21,11 @@ Namespace Node
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable ReadOnly Property Bind As New Dictionary(Of IScopeNode, Boolean)
 
+        Public Overridable ReadOnly Property [Function] As RkFunction
+            Get
+                Return CType(Me.Type, RkFunction)
+            End Get
+        End Property
     End Class
 
 End Namespace
