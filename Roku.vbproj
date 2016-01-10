@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Architecture\ArchitectureNameAttribute.vb" />
+    <Compile Include="Architecture\CIL\CommonIL.vb" />
     <Compile Include="Command\CommandLineAttribute.vb" />
     <Compile Include="Command\Parser.vb" />
     <Compile Include="Command\Option.vb" />
@@ -127,9 +128,7 @@
     <Compile Include="Util\Traverse.vb" />
     <Compile Include="Util\Functions.vb" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Architecture\CIL\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)
