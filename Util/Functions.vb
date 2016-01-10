@@ -98,6 +98,14 @@ Namespace Util
             Return New List(Of T)(xs)
         End Function
 
+        Public Shared Iterator Function Reverse(Of T)(xs As IList(Of T)) As IEnumerable(Of T)
+
+            For i = xs.Count - 1 To 0 Step -1
+
+                Yield xs(i)
+            Next
+        End Function
+
         Public Shared Function Null(Of T)(xs As IEnumerable(Of T)) As Boolean
 
             Return Not xs.GetEnumerator.MoveNext
@@ -208,6 +216,26 @@ Namespace Util
 
                 If f(x) Then Yield x
             Next
+        End Function
+
+        Public Shared Function Find(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As T
+
+            Return Car(Where(xs, f))
+        End Function
+
+        Public Shared Function Find(Of T)(xs As IEnumerable(Of T), f As Func(Of T, Boolean)) As T
+
+            Return Car(Where(xs, f))
+        End Function
+
+        Public Shared Function FindLast(Of T)(xs As IList(Of T), f As Func(Of T, Integer, Boolean)) As T
+
+            Return Car(Where(Reverse(xs), f))
+        End Function
+
+        Public Shared Function FindLast(Of T)(xs As IList(Of T), f As Func(Of T, Boolean)) As T
+
+            Return Car(Where(Reverse(xs), f))
         End Function
 
         Public Shared Function [And](Of T)(xs As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Boolean
