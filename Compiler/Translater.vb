@@ -12,12 +12,12 @@ Namespace Compiler
             Dim compleat As New Dictionary(Of RkFunction, Boolean)
 
             Dim make_func =
-                Sub(rk_func As RkFunction, node_func As FunctionNode)
+                Sub(rk_func As RkFunction, node_func As FunctionNode, node_body As BlockNode)
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
                     Dim fix_map As New Dictionary(Of String, IType)
-                    If rk_func.Apply IsNot Nothing Then Util.Functions.Do(rk_func.Apply, Sub(x, i) fix_map(node_func.Function.Generics(i).Name) = x)
+                    If rk_func.Apply IsNot Nothing AndAlso node_func IsNot Nothing Then Util.Functions.Do(rk_func.Apply, Sub(x, i) fix_map(node_func.Function.Generics(i).Name) = x)
 
                     Dim to_value =
                         Function(x As IEvaluableNode)
@@ -32,7 +32,7 @@ Namespace Compiler
                     Dim make_expr = Function(x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCall(to_value(x.Left)), x.Function.CreateCall(to_value(x.Left), to_value(x.Right)))
                     Dim make_expr_ret = Function(ret As RkValue, x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCallReturn(ret, to_value(x.Left)), x.Function.CreateCallReturn(ret, to_value(x.Left), to_value(x.Right)))
 
-                    For Each stmt In node_func.Body.Statements
+                    For Each stmt In node_body.Statements
 
                         If stmt.Type Is Nothing Then
 
@@ -66,6 +66,13 @@ Namespace Compiler
                     compleat(rk_func) = True
                 End Sub
 
+            If TypeOf node Is BlockNode Then
+
+                Dim ctor As New RkFunction With {.Name = ".ctor"}
+                make_func(ctor, Nothing, CType(node, BlockNode))
+                root.AddFunction(ctor)
+            End If
+
             Util.Traverse.NodesOnce(
                 node,
                 root,
@@ -80,12 +87,12 @@ Namespace Compiler
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = node_func.Function
-                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func)
+                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body)
 
                     ElseIf TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-                        If TypeOf node_call.Expression Is FunctionNode Then make_func(node_call.Function, CType(node_call.Expression, FunctionNode))
+                        If TypeOf node_call.Expression Is FunctionNode Then make_func(node_call.Function, CType(node_call.Expression, FunctionNode), CType(node_call.Expression, FunctionNode).Body)
 
                     End If
                     next_(child, current)
