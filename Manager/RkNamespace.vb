@@ -107,6 +107,11 @@ Namespace Manager
             If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then Return default_()
             Return CType(x, T)
         End Function
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} {Me.Name}"
+        End Function
     End Class
 
 End Namespace

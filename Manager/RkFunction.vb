@@ -66,7 +66,7 @@ Namespace Manager
 
             For Each fix In Me.Fixed
 
-                If Util.Functions.And(fix.Apply, Function(g, i) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(Me.Generics(i).Name))).Value Is g) Then Return fix
+                If Util.Functions.And(fix.Apply, Function(g, i) Util.Functions.Find(values, Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
             Next
 
             Dim x = CType(Me.CloneGeneric, RkFunction)
@@ -76,7 +76,7 @@ Namespace Manager
                 x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
-            x.Apply = Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Car(Util.Functions.Where(values, Function(v) v.Name.Equals(g.Name))).Value)
+            x.Apply = Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Find(values, Function(v) v.Name.Equals(g.Name)).Value)
             Me.Fixed.Add(x)
             Return x
         End Function
@@ -93,14 +93,14 @@ Namespace Manager
 
         Public Overridable Function CreateCall(ParamArray args() As RkValue) As RkCode0()
 
-            Dim x As New RkCall With {.Function = New RkValue With {.Type = Me}}
+            Dim x As New RkCall With {.Function = Me}
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function
 
         Public Overridable Function CreateCallReturn(return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Dim x As New RkCall With {.Function = New RkValue With {.Type = Me}, .Return = return_}
+            Dim x As New RkCall With {.Function = Me, .Return = return_}
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function

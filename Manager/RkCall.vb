@@ -14,7 +14,7 @@ Namespace Manager
 
         Public Overridable ReadOnly Property Arguments As New List(Of RkValue)
         Public Overridable Property [Return] As RkValue
-        Public Overridable Property [Function] As RkValue
+        Public Overridable Property [Function] As RkFunction
 
     End Class
 

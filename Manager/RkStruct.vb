@@ -63,6 +63,11 @@ Namespace Manager
         Public Overridable Sub AddLet(x As LetNode) Implements IAddLet.AddLet
         End Sub
 
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} {Me.Name}"
+        End Function
+
     End Class
 
 End Namespace

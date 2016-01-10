@@ -27,6 +27,11 @@ Namespace Manager
             Return New RkNativeFunction With {.Name = Me.Name, .Operator = Me.Operator}
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} ""{Me.Operator}"""
+        End Function
+
     End Class
 
 End Namespace

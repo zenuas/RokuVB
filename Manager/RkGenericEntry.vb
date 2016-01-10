@@ -8,7 +8,7 @@ Namespace Manager
         Implements IType
 
         Public Overridable Property Name As String Implements IType.Name
-        Public Overridable Property Reference As IType = Nothing
+        'Public Overridable Property Reference As IType = Nothing
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -27,7 +27,7 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Return Util.Functions.Car(Util.Functions.Where(values, Function(x) x.Name.Equals(Me.Name))).Value
+            Return Util.Functions.Find(values, Function(x) x.Name.Equals(Me.Name)).Value
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
@@ -38,6 +38,11 @@ Namespace Manager
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
             Throw New NotImplementedException()
+        End Function
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.GetType.Name} {Me.Name}"
         End Function
     End Class
 
