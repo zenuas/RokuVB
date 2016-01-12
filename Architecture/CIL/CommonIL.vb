@@ -79,7 +79,7 @@ Namespace Architecture.CIL
             Dim map As New Dictionary(Of RkFunction, MethodBuilder)
             For Each fs In ns.Functions
 
-                For Each f In Util.Functions.Where(fs.Value, Function(x) Not x.HasGeneric)
+                For Each f In Util.Functions.Where(fs.Value, Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction)
 
                     map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), Me.RkStructToCILType(f.Arguments, structs))
                 Next
@@ -100,9 +100,10 @@ Namespace Architecture.CIL
                 Dim get_local =
                     Function(v As RkValue)
 
-                        If locals.ContainsKey(v.Name) Then Return locals(v.Name)
-                        il.DeclareLocal(Me.RkStructToCILType(v.Type, structs))
-                        locals(v.Name) = max_local
+                        Dim name = v.Name
+                        If locals.ContainsKey(name) Then Return locals(name)
+                        il.DeclareLocal(Me.RkStructToCILType(v.Type, structs)).SetLocalSymInfo(name)
+                        locals(name) = max_local
                         max_local += 1
                         Return max_local - 1
                     End Function
