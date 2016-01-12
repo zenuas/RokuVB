@@ -16,6 +16,7 @@ Namespace Architecture.CIL
         Public Overridable Property Subsystem As PEFileKinds = PEFileKinds.ConsoleApplication
         Public Overridable Property Assembly As AssemblyBuilder
         Public Overridable Property [Module] As ModuleBuilder
+        Public Overridable Property Debug As Boolean = True
 
         Public Overridable Sub Assemble(ns As RkNamespace) Implements IArchitecture.Assemble
 
@@ -23,7 +24,7 @@ Namespace Architecture.CIL
 
             Dim name As New AssemblyName(Me.EntryPoint)
             Me.Assembly = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-            Me.Module = Me.Assembly.DefineDynamicModule(Me.EntryPoint, System.IO.Path.GetRandomFileName, False)
+            Me.Module = Me.Assembly.DefineDynamicModule(Me.EntryPoint, System.IO.Path.GetRandomFileName, Me.Debug)
 
             Dim structs = Me.DeclareStructs(Me.Root)
             Dim functions = Me.DeclareMethods(Me.Root, structs)
@@ -54,12 +55,15 @@ Namespace Architecture.CIL
         Public Overridable Sub Emit(path As String) Implements IArchitecture.Emit
 
             Dim temp = System.IO.Path.GetFileName(Me.Module.FullyQualifiedName)
+            Dim pdb = System.IO.Path.GetFileNameWithoutExtension(temp) + ".pdb"
             Try
                 Me.Assembly.Save(temp)
                 System.IO.File.Copy(temp, path, True)
+                System.IO.File.Copy(temp, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(path), System.IO.Path.GetFileNameWithoutExtension(path) + ".pdb"), True)
 
             Finally
                 System.IO.File.Delete(temp)
+                System.IO.File.Delete(pdb)
 
             End Try
         End Sub
