@@ -131,6 +131,32 @@ Namespace Architecture.CIL
 
                             Dim str = CType(v, RkString)
                             il.Emit(OpCodes.Ldstr, str.String)
+
+                        ElseIf TypeOf v Is RkValue Then
+
+                            Dim index = get_local(v)
+                            Select Case index
+
+                                Case 0 : il.Emit(OpCodes.Ldloc_0)
+                                Case 1 : il.Emit(OpCodes.Ldloc_1)
+                                Case 2 : il.Emit(OpCodes.Ldloc_2)
+                                Case 3 : il.Emit(OpCodes.Ldloc_3)
+
+                                Case -1 : il.Emit(OpCodes.Ldarg_0)
+                                Case -2 : il.Emit(OpCodes.Ldarg_1)
+                                Case -3 : il.Emit(OpCodes.Ldarg_2)
+                                Case -4 : il.Emit(OpCodes.Ldarg_3)
+
+                                Case Else
+
+                                    If index >= 0 Then
+
+                                        il.Emit(OpCodes.Ldloc, index)
+                                    Else
+
+                                        il.Emit(OpCodes.Ldarg, -(index + 1))
+                                    End If
+                            End Select
                         Else
                         End If
                     End Sub
