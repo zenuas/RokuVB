@@ -27,7 +27,7 @@ Namespace Architecture.CIL
 
             Dim structs = Me.DeclareStructs(Me.Root)
             Dim functions = Me.DeclareMethods(Me.Root, structs)
-            Me.DeclareStatements(functions)
+            Me.DeclareStatements(functions, structs)
 
             If Me.Subsystem <> PEFileKinds.Dll Then
 
@@ -84,11 +84,98 @@ Namespace Architecture.CIL
             Return map
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodBuilder))
+        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodBuilder), structs As Dictionary(Of RkStruct, TypeBuilder))
 
             For Each f In functions
 
                 Dim il = f.Value.GetILGenerator
+                Dim locals As New Dictionary(Of String, Integer)
+                Dim max_local = 0
+                Util.Functions.Do(f.Key.Arguments, Sub(v, i) locals(v.Name) = -i - 1)
+
+                Dim get_local =
+                    Function(v As RkValue)
+
+                        If locals.ContainsKey(v.Name) Then Return locals(v.Name)
+                        il.DeclareLocal(Me.RkStructToCILType(v.Type, structs))
+                        locals(v.Name) = max_local
+                        max_local += 1
+                        Return max_local - 1
+                    End Function
+
+                Dim gen_il_load =
+                    Sub(v As RkValue)
+
+                        If TypeOf v Is RkNumeric32 Then
+
+                            Dim num = CType(v, RkNumeric32)
+                            Select Case num.Numeric
+
+                                'Case -1 : il.Emit(OpCodes.Ldc_I4_M1)
+                                Case 0 : il.Emit(OpCodes.Ldc_I4_0)
+                                Case 1 : il.Emit(OpCodes.Ldc_I4_1)
+                                Case 2 : il.Emit(OpCodes.Ldc_I4_2)
+                                Case 3 : il.Emit(OpCodes.Ldc_I4_3)
+                                Case 4 : il.Emit(OpCodes.Ldc_I4_4)
+                                Case 5 : il.Emit(OpCodes.Ldc_I4_5)
+                                Case 6 : il.Emit(OpCodes.Ldc_I4_6)
+                                Case 7 : il.Emit(OpCodes.Ldc_I4_7)
+                                Case 8 : il.Emit(OpCodes.Ldc_I4_8)
+
+                                Case Else
+                                    il.Emit(OpCodes.Ldc_I4, num.Numeric)
+
+                            End Select
+
+                        ElseIf TypeOf v Is RkString Then
+
+                            Dim str = CType(v, RkString)
+                            il.Emit(OpCodes.Ldstr, str.String)
+                        Else
+                        End If
+                    End Sub
+
+                Dim gen_il_store =
+                    Sub(v As RkValue)
+
+                        Dim index = get_local(v)
+                        Select Case index
+
+                            Case 0 : il.Emit(OpCodes.Stloc_0)
+                            Case 1 : il.Emit(OpCodes.Stloc_1)
+                            Case 2 : il.Emit(OpCodes.Stloc_2)
+                            Case 3 : il.Emit(OpCodes.Stloc_3)
+                            Case Else
+
+                                If index >= 0 Then
+
+                                    il.Emit(OpCodes.Stloc, index)
+                                Else
+
+                                    il.Emit(OpCodes.Starg, -(index + 1))
+                                End If
+                        End Select
+                    End Sub
+
+                Dim gen_il_3op =
+                    Sub(ope As OpCode, code As RkCode)
+
+                        gen_il_load(code.Left)
+                        gen_il_load(code.Right)
+                        il.Emit(ope)
+                        If code.Return IsNot Nothing Then gen_il_store(code.Return)
+                    End Sub
+
+                For Each stmt In f.Key.Body
+
+                    Select Case stmt.Operator
+                        Case RkOperator.Plus : gen_il_3op(OpCodes.Add, CType(stmt, RkCode))
+                        Case RkOperator.Minus : gen_il_3op(OpCodes.Sub, CType(stmt, RkCode))
+                        Case RkOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, RkCode))
+                        Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
+
+                    End Select
+                Next
                 il.Emit(OpCodes.Ret)
             Next
         End Sub

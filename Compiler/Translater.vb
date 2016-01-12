@@ -24,10 +24,10 @@ Namespace Compiler
 
                             Dim t = If(TypeOf x.Type Is RkGenericEntry, fix_map(x.Type.Name), x.Type)
 
-                            If TypeOf x Is VariableNode Then Return New RkValue With {.Name = CType(x, VariableNode).Name, .Type = t}
-                            If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t}
-                            If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t}
-                            Return New RkValue With {.Type = t}
+                            If TypeOf x Is VariableNode Then Return New RkValue With {.Name = CType(x, VariableNode).Name, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
+                            Return New RkValue With {.Type = t, .Scope = rk_func}
                         End Function
                     Dim make_expr = Function(x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCall(to_value(x.Left)), x.Function.CreateCall(to_value(x.Left), to_value(x.Right)))
                     Dim make_expr_ret = Function(ret As RkValue, x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCallReturn(ret, to_value(x.Left)), x.Function.CreateCallReturn(ret, to_value(x.Left), to_value(x.Right)))

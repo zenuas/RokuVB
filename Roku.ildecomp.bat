@@ -17,6 +17,8 @@ call :make a.il  a.exe                 %BAT% || call :echoexec ildasm a.exe /out
 
 call :echoexec .\a.exe
 
+start a.il
+
 pause
 exit /b 0
 
