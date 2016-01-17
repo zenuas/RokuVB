@@ -94,9 +94,8 @@ Namespace Architecture.CIL
             For Each f In functions
 
                 Dim il = f.Value.GetILGenerator
-                Dim locals As New Dictionary(Of String, Integer)
+                Dim locals = f.Key.Arguments.Map(Function(x) x.Name).ToHash(Function(x, i) -i - 1)
                 Dim max_local = 0
-                f.Key.Arguments.Do(Sub(v, i) locals(v.Name) = -i - 1)
 
                 Dim get_local =
                     Function(v As RkValue)

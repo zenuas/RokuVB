@@ -104,6 +104,22 @@ Namespace Util
         End Function
 
         <Extension>
+        Public Function ToHash(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of T, R)
+
+            Dim hash As New Dictionary(Of T, R)
+            self.Do(Sub(x) hash(x) = f(x))
+            Return hash
+        End Function
+
+        <Extension>
+        Public Function ToHash(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of T, R)
+
+            Dim hash As New Dictionary(Of T, R)
+            self.Do(Sub(x, i) hash(x) = f(x, i))
+            Return hash
+        End Function
+
+        <Extension>
         Public Iterator Function Reverse(Of T)(self As IList(Of T)) As IEnumerable(Of T)
 
             For i = self.Count - 1 To 0 Step -1
