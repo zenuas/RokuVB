@@ -3,6 +3,7 @@ Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
 Imports Roku.Architecture
+Imports Roku.Util.ArrayExtension
 
 
 <Assembly: AssemblyVersion("0.0.*")>
@@ -86,7 +87,7 @@ Public Class Main
 
         For Each x In asm.GetTypes
 
-            If Not Util.Functions.Or(x.GetInterfaces, Function(inter) inter.Equals(GetType(IArchitecture))) Then Continue For
+            If Not x.GetInterfaces.Or(Function(inter) inter.Equals(GetType(IArchitecture))) Then Continue For
             Dim attr = CType(x.GetCustomAttribute(GetType(ArchitectureNameAttribute)), ArchitectureNameAttribute)
             If (attr IsNot Nothing AndAlso attr.Name.Equals(arch)) OrElse x.FullName.Equals(arch) Then Return CType(x.GetConstructor(New Type() {}).Invoke(New Object() {}), IArchitecture)
         Next
@@ -128,11 +129,11 @@ align = left,
 
                         Dim func = CType(parent, FunctionNode)
                         name = func.Name
-                        args = "\l" + String.Join("\l", Util.Functions.Map(func.Arguments, Function(arg) $"{arg.Name.Name} : {arg.Type.Name}"))
+                        args = "\l" + String.Join("\l", func.Arguments.Map(Function(arg) $"{arg.Name.Name} : {arg.Type.Name}"))
                     End If
 
                     out.WriteLine($"  label = ""{name} ({block.LineNumber}){args}"";")
-                    out.WriteLine("  " + String.Join(" -> ", Util.Functions.Map(block.Statements, Function(x) x.GetHashCode.ToString)))
+                    out.WriteLine("  " + String.Join(" -> ", block.Statements.Map(Function(x) x.GetHashCode.ToString)))
                     out.WriteLine("}")
                 End If
 

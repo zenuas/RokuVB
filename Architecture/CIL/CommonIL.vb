@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports System.Reflection.Emit
 Imports Roku.Manager
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Architecture.CIL
@@ -79,7 +80,7 @@ Namespace Architecture.CIL
             Dim map As New Dictionary(Of RkFunction, MethodBuilder)
             For Each fs In ns.Functions
 
-                For Each f In Util.Functions.Where(fs.Value, Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction)
+                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction)
 
                     map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), Me.RkStructToCILType(f.Arguments, structs))
                 Next
@@ -95,7 +96,7 @@ Namespace Architecture.CIL
                 Dim il = f.Value.GetILGenerator
                 Dim locals As New Dictionary(Of String, Integer)
                 Dim max_local = 0
-                Util.Functions.Do(f.Key.Arguments, Sub(v, i) locals(v.Name) = -i - 1)
+                f.Key.Arguments.Do(Sub(v, i) locals(v.Name) = -i - 1)
 
                 Dim get_local =
                     Function(v As RkValue)
@@ -226,7 +227,7 @@ Namespace Architecture.CIL
 
         Public Overridable Function RkStructToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeBuilder)) As System.Type()
 
-            Return Util.Functions.List(Util.Functions.Map(r, Function(x) Me.RkStructToCILType(x.Value, structs))).ToArray
+            Return r.Map(Function(x) Me.RkStructToCILType(x.Value, structs)).ToArray
         End Function
     End Class
 

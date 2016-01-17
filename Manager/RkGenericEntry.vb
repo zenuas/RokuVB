@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -27,7 +28,7 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Return Util.Functions.Find(values, Function(x) x.Name.Equals(Me.Name)).Value
+            Return values.Find(Function(x) x.Name.Equals(Me.Name)).Value
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

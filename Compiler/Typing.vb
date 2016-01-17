@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Compiler
@@ -38,7 +39,7 @@ Namespace Compiler
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = New RkFunction With {.Name = node_func.Name}
                         node_func.Type = rk_func
-                        rk_func.Arguments.AddRange(Util.Functions.Map(node_func.Arguments, Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
+                        rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
                         If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
                         current.AddFunction(rk_func)
                     End If
@@ -127,13 +128,14 @@ Namespace Compiler
                             Dim rk_function As RkFunction = Nothing
 
                             If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(node_call.Expression, FunctionNode).Function
+                            If TypeOf node_call.Expression Is VariableNode Then rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
 
                             If node_call.Function Is Nothing AndAlso
                                 rk_function IsNot Nothing Then
 
                                 If rk_function.HasGeneric Then
 
-                                    rk_function = current.Namespace.GetFunction(rk_function.Name, Util.Functions.List(Util.Functions.Map(node_call.Arguments, Function(x) x.Type)).ToArray)
+                                    rk_function = current.Namespace.GetFunction(rk_function.Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
                                 End If
                                 node_call.Function = rk_function
                                 type_fix = True

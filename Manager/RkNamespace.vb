@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -76,12 +77,12 @@ Namespace Manager
 
         Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
 
-            For Each f In Util.Functions.Where(Me.Functions(name), Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
+            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
 
-                If Util.Functions.And(f.Arguments, Function(x, i) x.Value Is args(i)) Then Return f
+                If f.Arguments.And(Function(x, i) x.Value Is args(i)) Then Return f
             Next
 
-            For Each f In Util.Functions.Where(Me.Functions(name), Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric)
+            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric)
 
                 Dim xs(f.Generics.Count - 1) As IType
                 For i = 0 To f.Arguments.Count - 1
@@ -89,7 +90,7 @@ Namespace Manager
                     Dim arg = f.Arguments(i)
                     If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
 
-                    Dim xs_i = Util.Functions.IndexOf(f.Generics, Function(g) g.Name.Equals(arg.Value.Name))
+                    Dim xs_i = f.Generics.IndexOf(Function(g) g.Name.Equals(arg.Value.Name))
                     If xs(xs_i) Is Nothing Then
 
                         xs(xs_i) = args(i)

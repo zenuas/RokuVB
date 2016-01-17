@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Compiler
@@ -17,7 +18,7 @@ Namespace Compiler
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
                     Dim fix_map As New Dictionary(Of String, IType)
-                    If rk_func.Apply IsNot Nothing AndAlso node_func IsNot Nothing Then Util.Functions.Do(rk_func.Apply, Sub(x, i) fix_map(node_func.Function.Generics(i).Name) = x)
+                    If rk_func.Apply IsNot Nothing AndAlso node_func IsNot Nothing Then rk_func.Apply.Do(Sub(x, i) fix_map(node_func.Function.Generics(i).Name) = x)
 
                     Dim to_value =
                         Function(x As IEvaluableNode)

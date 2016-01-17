@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -48,7 +49,7 @@ Namespace Manager
                 End If
             Next
 
-            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(xs.Keys, Function(x) New NamedValue With {.Name = x, .Value = xs(x)})).ToArray)
+            Return Me.FixedGeneric(xs.Keys.Map(Function(x) New NamedValue With {.Name = x, .Value = xs(x)}).ToArray)
 
         End Function
 
@@ -57,7 +58,7 @@ Namespace Manager
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
+            Return Me.FixedGeneric(values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
         End Function
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
@@ -66,7 +67,7 @@ Namespace Manager
 
             For Each fix In Me.Fixed
 
-                If Util.Functions.And(fix.Apply, Function(g, i) Util.Functions.Find(values, Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
+                If fix.Apply.And(Function(g, i) values.Find(Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
             Next
 
             Dim x = CType(Me.CloneGeneric, RkFunction)
@@ -76,7 +77,7 @@ Namespace Manager
                 x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
-            x.Apply = Util.Functions.Map(Me.Generics, Function(g) Util.Functions.Find(values, Function(v) v.Name.Equals(g.Name)).Value)
+            x.Apply = Me.Generics.Map(Function(g) values.Find(Function(v) v.Name.Equals(g.Name)).Value)
             Me.Fixed.Add(x)
             Return x
         End Function
@@ -112,7 +113,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}({String.Join(", ", Util.Functions.Map(Me.Arguments, Function(x) x.Value.Name))})" + If(Me.Return IsNot Nothing, $" {Me.Return.Name}", "")
+            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value.Name))})" + If(Me.Return IsNot Nothing, $" {Me.Return.Name}", "")
         End Function
     End Class
 

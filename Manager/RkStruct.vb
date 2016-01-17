@@ -1,6 +1,8 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
+Imports Roku.Util.ArrayExtension
+
 
 Namespace Manager
 
@@ -34,7 +36,7 @@ Namespace Manager
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(Util.Functions.List(Util.Functions.Map(values, Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v})).ToArray)
+            Return Me.FixedGeneric(values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
         End Function
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
