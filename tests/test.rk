@@ -20,4 +20,4 @@ var a = f(x)
 print(a)
 
 sub f(a: Int) Int
-	return(a)
+	return(a * a)

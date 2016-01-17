@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports System.Diagnostics
 Imports System.Collections.Generic
 Imports System.Reflection
 Imports System.Reflection.Emit
@@ -12,12 +13,30 @@ Namespace Architecture.CIL
     Public Class CommonIL
         Implements IArchitecture
 
+#Region "export libs"
+
+        Public Class Export
+
+            Public Overridable Property Name As String
+            Public Overridable Property Assembly As String
+            Public Overridable Property [Class] As String
+            Public Overridable Property Method As String
+            Public Overridable Property Arguments As Type()
+        End Class
+
+        Public Overridable ReadOnly Property Exports As Export() = New Export() {
+                New Export With {.Name = "print", .Assembly = "mscorlib", .Class = "System.Console", .Method = "WriteLine", .Arguments = New Type() {GetType(String)}},
+                New Export With {.Name = "print", .Assembly = "mscorlib", .Class = "System.Console", .Method = "WriteLine", .Arguments = New Type() {GetType(Integer)}}
+            }
+
+#End Region
+
         Public Overridable Property Root As RkNamespace
         Public Overridable Property EntryPoint As String = "Global"
         Public Overridable Property Subsystem As PEFileKinds = PEFileKinds.ConsoleApplication
         Public Overridable Property Assembly As AssemblyBuilder
         Public Overridable Property [Module] As ModuleBuilder
-        Public Overridable Property Debug As Boolean = True
+        Public Overridable Property IsDebug As Boolean = True
 
         Public Overridable Sub Assemble(ns As RkNamespace) Implements IArchitecture.Assemble
 
@@ -25,7 +44,7 @@ Namespace Architecture.CIL
 
             Dim name As New AssemblyName(Me.EntryPoint)
             Me.Assembly = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-            Me.Module = Me.Assembly.DefineDynamicModule(Me.EntryPoint, System.IO.Path.GetRandomFileName, Me.Debug)
+            Me.Module = Me.Assembly.DefineDynamicModule(Me.EntryPoint, System.IO.Path.GetRandomFileName, Me.IsDebug)
 
             Dim structs = Me.DeclareStructs(Me.Root)
             Dim functions = Me.DeclareMethods(Me.Root, structs)
@@ -75,25 +94,35 @@ Namespace Architecture.CIL
             Return map
         End Function
 
-        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeBuilder)) As Dictionary(Of RkFunction, MethodBuilder)
+        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeBuilder)) As Dictionary(Of RkFunction, MethodInfo)
 
-            Dim map As New Dictionary(Of RkFunction, MethodBuilder)
+            Dim map As New Dictionary(Of RkFunction, MethodInfo)
             For Each fs In ns.Functions
 
-                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction)
+                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction AndAlso Not x.Name.Equals("return"))
 
-                    map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), Me.RkStructToCILType(f.Arguments, structs))
+                    Dim args = Me.RkStructToCILType(f.Arguments, structs)
+                    Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
+                    If export.IsNull Then
+
+                        Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
+                        map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs), args)
+                    Else
+
+                        Dim e = export.Car
+                        map(f) = System.Reflection.Assembly.Load(e.Assembly).GetType(e.Class).GetMethod(e.Method, e.Arguments)
+                    End If
                 Next
             Next
 
             Return map
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodBuilder), structs As Dictionary(Of RkStruct, TypeBuilder))
+        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeBuilder))
 
-            For Each f In functions
+            For Each f In functions.Where(Function(x) TypeOf x.Value Is MethodBuilder)
 
-                Dim il = f.Value.GetILGenerator
+                Dim il = CType(f.Value, MethodBuilder).GetILGenerator
                 Dim locals = f.Key.Arguments.Map(Function(x) x.Name).ToHash(Function(x, i) -i - 1)
                 Dim max_local = 0
 
@@ -197,6 +226,7 @@ Namespace Architecture.CIL
                         If code.Return IsNot Nothing Then gen_il_store(code.Return)
                     End Sub
 
+                Dim found_ret = False
                 For Each stmt In f.Key.Body
 
                     Select Case stmt.Operator
@@ -205,9 +235,20 @@ Namespace Architecture.CIL
                         Case RkOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, RkCode))
                         Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
 
+                        Case RkOperator.Call
+                            Dim cc = CType(stmt, RkCall)
+                            cc.Arguments.Do(Sub(arg) gen_il_load(arg))
+                            il.Emit(OpCodes.Call, functions(cc.Function))
+                            If cc.Return IsNot Nothing Then gen_il_store(cc.Return)
+
+                        Case RkOperator.Return
+                            If TypeOf stmt Is RkCode Then gen_il_load(CType(stmt, RkCode).Left)
+                            il.Emit(OpCodes.Ret)
+                            found_ret = True
+
                     End Select
                 Next
-                il.Emit(OpCodes.Ret)
+                If Not found_ret Then il.Emit(OpCodes.Ret)
             Next
         End Sub
 

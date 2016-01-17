@@ -11,6 +11,7 @@ Namespace Compiler
         Public Shared Sub Translate(node As INode, root As RkNamespace)
 
             Dim compleat As New Dictionary(Of RkFunction, Boolean)
+            Dim returns = root.Functions("return")
 
             Dim make_func =
                 Sub(rk_func As RkFunction, node_func As FunctionNode, node_body As BlockNode)
@@ -33,36 +34,51 @@ Namespace Compiler
                     Dim make_expr = Function(x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCall(to_value(x.Left)), x.Function.CreateCall(to_value(x.Left), to_value(x.Right)))
                     Dim make_expr_ret = Function(ret As RkValue, x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCallReturn(ret, to_value(x.Left)), x.Function.CreateCallReturn(ret, to_value(x.Left), to_value(x.Right)))
 
-                    For Each stmt In node_body.Statements
+                    If node_body IsNot Nothing Then
 
-                        If stmt.Type Is Nothing Then
+                        For Each stmt In node_body.Statements
 
-                            Continue For
-                        End If
+                            If TypeOf stmt Is ExpressionNode Then
 
-                        If TypeOf stmt Is ExpressionNode Then
+                                Dim expr = CType(stmt, ExpressionNode)
+                                rk_func.Body.AddRange(make_expr(expr))
 
-                            Dim expr = CType(stmt, ExpressionNode)
-                            rk_func.Body.AddRange(make_expr(expr))
+                            ElseIf TypeOf stmt Is FunctionCallNode Then
 
-                        ElseIf TypeOf stmt Is FunctionCallNode Then
+                                Dim func = CType(stmt, FunctionCallNode)
+                                If returns.Or(Function(ret) func.Function Is ret) Then
 
-                            Dim func = CType(stmt, FunctionCallNode)
+                                    If func.Arguments.Length > 0 Then
 
-                        ElseIf TypeOf stmt Is LetNode Then
+                                        rk_func.Body.Add(New RkCode With {.Operator = RkOperator.Return, .Left = to_value(func.Arguments(0))})
+                                    Else
+                                        rk_func.Body.Add(New RkCode0 With {.Operator = RkOperator.Return})
+                                    End If
+                                Else
 
-                            Dim let_ = CType(stmt, LetNode)
-                            If TypeOf let_.Expression Is ExpressionNode Then
+                                    rk_func.Body.AddRange(func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray))
+                                End If
 
-                                rk_func.Body.AddRange(make_expr_ret(let_.Var, CType(let_.Expression, ExpressionNode)))
+                            ElseIf TypeOf stmt Is LetNode Then
+
+                                Dim let_ = CType(stmt, LetNode)
+                                If TypeOf let_.Expression Is ExpressionNode Then
+
+                                    rk_func.Body.AddRange(make_expr_ret(let_.Var, CType(let_.Expression, ExpressionNode)))
+
+                                ElseIf TypeOf let_.Expression Is FunctionCallNode Then
+
+                                    Dim func = CType(let_.Expression, FunctionCallNode)
+                                    rk_func.Body.AddRange(func.Function.CreateCallReturn(New RkValue With {.Name = let_.Var.Name, .Type = let_.Type}, func.Arguments.Map(Function(x) to_value(x)).ToArray))
+                                End If
+
+                            ElseIf TypeOf stmt Is IfNode Then
+
+                                Dim if_ = CType(stmt, IfNode)
+
                             End If
-
-                        ElseIf TypeOf stmt Is IfNode Then
-
-                            Dim if_ = CType(stmt, IfNode)
-
-                        End If
-                    Next
+                        Next
+                    End If
 
                     compleat(rk_func) = True
                 End Sub
@@ -93,7 +109,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-                        If TypeOf node_call.Expression Is FunctionNode Then make_func(node_call.Function, CType(node_call.Expression, FunctionNode), CType(node_call.Expression, FunctionNode).Body)
+                        make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode?.Body)
 
                     End If
                     next_(child, current)

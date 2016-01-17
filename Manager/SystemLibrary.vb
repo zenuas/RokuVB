@@ -62,6 +62,18 @@ Namespace Manager
             Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr)}
             Me.AddStruct(str)
 
+            ' sub print(s: @T)
+            Dim print As New RkFunction With {.Name = "print"}
+            Dim print_t = print.DefineGeneric("@T")
+            print.Arguments.Add(New NamedValue With {.Name = "s", .Value = print_t})
+            Me.AddFunction(print)
+
+            ' sub return(s: @T)
+            Dim return_ As New RkFunction With {.Name = "return"}
+            Dim return_t = return_.DefineGeneric("@T")
+            return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
+            Me.AddFunction(return_)
+
         End Sub
 
     End Class

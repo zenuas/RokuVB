@@ -16,6 +16,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable Property Apply As IEnumerable(Of IType) = Nothing
         Public Overridable ReadOnly Property Fixed As New List(Of RkFunction)
+        Public Overridable Property FunctionNode As FunctionNode = Nothing
 
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue

@@ -14,6 +14,11 @@ Namespace Manager
 
             Return New RkValue With {.Name = node.Name, .Type = node.Type}
         End Operator
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.Name}: {Me.Type}"
+        End Function
     End Class
 
 End Namespace
