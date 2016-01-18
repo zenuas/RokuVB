@@ -123,7 +123,7 @@ Namespace Architecture.CIL
             For Each f In functions.Where(Function(x) TypeOf x.Value Is MethodBuilder)
 
                 Dim il = CType(f.Value, MethodBuilder).GetILGenerator
-                Dim locals = f.Key.Arguments.Map(Function(x) x.Name).ToHash(Function(x, i) -i - 1)
+                Dim locals = f.Key.Arguments.Map(Function(x) x.Name).ToHash_ValueDerivation(Function(x, i) -i - 1)
                 Dim max_local = 0
 
                 Dim get_local =

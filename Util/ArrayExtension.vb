@@ -104,7 +104,23 @@ Namespace Util
         End Function
 
         <Extension>
-        Public Function ToHash(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of T, R)
+        Public Function ToHash_KeyDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of R, T)
+
+            Dim hash As New Dictionary(Of R, T)
+            self.Do(Sub(x) hash(f(x)) = x)
+            Return hash
+        End Function
+
+        <Extension>
+        Public Function ToHash_KeyDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of R, T)
+
+            Dim hash As New Dictionary(Of R, T)
+            self.Do(Sub(x, i) hash(f(x, i)) = x)
+            Return hash
+        End Function
+
+        <Extension>
+        Public Function ToHash_ValueDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of T, R)
 
             Dim hash As New Dictionary(Of T, R)
             self.Do(Sub(x) hash(x) = f(x))
@@ -112,7 +128,7 @@ Namespace Util
         End Function
 
         <Extension>
-        Public Function ToHash(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of T, R)
+        Public Function ToHash_ValueDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of T, R)
 
             Dim hash As New Dictionary(Of T, R)
             self.Do(Sub(x, i) hash(x) = f(x, i))
