@@ -19,7 +19,7 @@ Namespace Compiler
 
                         Dim block = CType(child, BlockNode)
                         Dim var_index = 0
-                        Dim i = 0
+                        Dim program_pointer = 0
 
                         Dim to_let =
                             Function(e As IEvaluableNode)
@@ -30,8 +30,8 @@ Namespace Compiler
                                 var_index += 1
 
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
-                                block.Statements.Insert(i, let_)
-                                i += 1
+                                block.Statements.Insert(program_pointer, let_)
+                                program_pointer += 1
                                 Return var
                             End Function
 
@@ -48,6 +48,13 @@ Namespace Compiler
                                     Return to_let(expr)
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
+
+                                    Dim call_ = CType(e, FunctionCallNode)
+                                    For i = 0 To call_.Arguments.Length - 1
+
+                                        call_.Arguments(i) = insert_let(call_.Arguments(i))
+                                    Next
+                                    Return to_let(call_)
 
                                 ElseIf TypeOf e Is LetNode Then
 
@@ -80,9 +87,9 @@ Namespace Compiler
                                 Return e
                             End Function
 
-                        Do While i < block.Statements.Count
+                        Do While program_pointer < block.Statements.Count
 
-                            Dim v = block.Statements(i)
+                            Dim v = block.Statements(program_pointer)
                             If TypeOf v Is ExpressionNode Then
 
                                 'Dim expr = CType(v, ExpressionNode)
@@ -94,9 +101,9 @@ Namespace Compiler
 
                                 Dim func = CType(v, FunctionCallNode)
                                 func.Expression = insert_let(func.Expression)
-                                For j = 0 To func.Arguments.Length - 1
+                                For i = 0 To func.Arguments.Length - 1
 
-                                    func.Arguments(j) = insert_let(func.Arguments(j))
+                                    func.Arguments(i) = insert_let(func.Arguments(i))
                                 Next
 
                             ElseIf TypeOf v Is LetNode Then
@@ -109,7 +116,7 @@ Namespace Compiler
                                 Dim if_ = CType(v, IfNode)
                                 if_.Condition = insert_let(if_.Condition)
                             End If
-                            i += 1
+                            program_pointer += 1
                         Loop
 
                         next_(block, block)
