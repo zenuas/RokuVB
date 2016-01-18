@@ -33,12 +33,12 @@ Namespace Parser
             Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
-            Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
+            Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
 
             MyBase.SetRegisterWord()
         End Sub

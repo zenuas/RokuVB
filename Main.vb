@@ -100,6 +100,7 @@ Public Class Main
         out.WriteLine("
 digraph roku {
 graph [
+compound = true
 ];
 node [
 shape = record,
@@ -146,7 +147,7 @@ align = left,
             Nothing,
             Function(parent, ref, child, user, isfirst, next_)
 
-                If TypeOf child Is BlockNode OrElse
+                If (parent Is Nothing AndAlso TypeOf child Is BlockNode) OrElse
                     TypeOf parent Is FunctionNode OrElse
                     (TypeOf parent Is DeclareNode AndAlso TypeOf child Is TypeNode) OrElse
                     TypeOf child Is FunctionNode Then
@@ -154,7 +155,7 @@ align = left,
                     ' nothing
                 Else
 
-                    If isfirst Then
+                    If isfirst AndAlso TypeOf child IsNot BlockNode Then
 
                         Dim name = ""
                         If child.LineNumber.HasValue Then name = $"\l( {child.LineNumber}, {child.LineColumn} )"
@@ -176,7 +177,16 @@ align = left,
 
                     If parent IsNot Nothing AndAlso
                         TypeOf parent IsNot BlockNode AndAlso
-                        Not (TypeOf parent Is DeclareNode AndAlso TypeOf child Is VariableNode) Then out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
+                        Not (TypeOf parent Is DeclareNode AndAlso TypeOf child Is VariableNode) Then
+
+                        If TypeOf child Is BlockNode Then
+
+                            'out.WriteLine($"{parent.GetHashCode} -> {CType(child, BlockNode).Statements(0).GetHashCode} [label = ""{ref}"", lhead = cluster_block_stmt_{child.GetHashCode}];")
+                            out.WriteLine($"{parent.GetHashCode} -> {CType(child, BlockNode).Statements(0).GetHashCode} [label = ""{ref}""];")
+                        Else
+                            out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
+                        End If
+                    End If
                 End If
 
                 next_(child, user)

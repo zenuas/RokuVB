@@ -104,10 +104,12 @@ typex : void
 ########## if ##########
 if     : ifthen
        | elseif
-       | if ELSE EOL block  {$1.Else = $4 : $$ = $1}
-ifthen : IF expr EOL block  {$$ = Me.CreateIfNode($2, $4)}
-elseif : ifthen ELSE ifthen {$1.Else = $3 : $$ = $1}
-       | elseif ELSE ifthen {$1.Else = $3 : $$ = $1}
+       | ifthen ELSE EOL block {$1.Else = $4 : $$ = $1}
+       | elseif ELSE EOL block {$1.Else = $4 : $$ = $1}
+ifthen : IF expr EOL block     {$$ = Me.CreateIfNode($2, $4)}
+elseif : ifthen ELSE ifthen    {$1.Else = $3 : $$ = $1}
+       | elseif ELSE ifthen    {$1.Else = $3 : $$ = $1}
+
 
 ########## other ##########
 var   : VAR     {$$ = Me.CreateVariableNode($1)}
