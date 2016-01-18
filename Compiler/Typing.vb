@@ -64,6 +64,22 @@ Namespace Compiler
                         Return True
                     End Function
 
+                Dim set_func =
+                    Function(node_func As FunctionNode) As RkFunction
+
+                        Dim rk_function = node_func.Function
+                        If Not rk_function.HasGeneric Then
+
+                            For i = 0 To node_func.Arguments.Length - 1
+
+                                rk_function.Arguments(i).Value = node_func.Arguments(i).Type.Type
+                            Next
+                            rk_function.Return = node_func.Return?.Type
+                        End If
+
+                        Return rk_function
+                    End Function
+
                 Util.Traverse.NodesOnce(
                     node,
                     New With {.Namespace = root, .Function = CType(Nothing, FunctionNode)},
@@ -112,22 +128,14 @@ Namespace Compiler
 
                         ElseIf TypeOf child Is FunctionNode Then
 
-                            Dim node_func = CType(child, FunctionNode)
-                            Dim rk_function = node_func.Function
-                            If rk_function.HasGeneric Then Return
-
-                            For i = 0 To node_func.Arguments.Length - 1
-
-                                rk_function.Arguments(i).Value = node_func.Arguments(i).Type.Type
-                            Next
-                            rk_function.Return = node_func.Return?.Type
+                            set_func(CType(child, FunctionNode))
 
                         ElseIf TypeOf child Is FunctionCallNode Then
 
                             Dim node_call = CType(child, FunctionCallNode)
                             Dim rk_function As RkFunction = Nothing
 
-                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = CType(node_call.Expression, FunctionNode).Function
+                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = set_func(CType(node_call.Expression, FunctionNode))
                             If TypeOf node_call.Expression Is VariableNode Then rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
 
                             If node_call.Function Is Nothing AndAlso
