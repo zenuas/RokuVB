@@ -99,7 +99,7 @@ Namespace Parser
 
         Protected Overridable Function CreateIfNode(
                 cond As IEvaluableNode,
-                [then] As IEvaluableNode
+                [then] As BlockNode
             ) As IfNode
 
             Return Me.CreateIfNode(cond, [then], Nothing)
@@ -107,7 +107,7 @@ Namespace Parser
 
         Protected Overridable Function CreateIfNode(
                 cond As IEvaluableNode,
-                [then] As IEvaluableNode,
+                [then] As BlockNode,
                 [else] As IEvaluableNode
             ) As IfNode
 

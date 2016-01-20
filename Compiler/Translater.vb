@@ -1,4 +1,5 @@
-﻿Imports System.Collections.Generic
+﻿Imports System
+Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Util.ArrayExtension
@@ -34,14 +35,12 @@ Namespace Compiler
                     Dim make_expr = Function(x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCall(to_value(x.Left)), x.Function.CreateCall(to_value(x.Left), to_value(x.Right)))
                     Dim make_expr_ret = Function(ret As RkValue, x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCallReturn(ret, to_value(x.Left)), x.Function.CreateCallReturn(ret, to_value(x.Left), to_value(x.Right)))
 
-                    If node_body IsNot Nothing Then
-
-                        For Each stmt In node_body.Statements
+                    Dim make_stmt =
+                        Function(stmt As IEvaluableNode)
 
                             If TypeOf stmt Is ExpressionNode Then
 
-                                Dim expr = CType(stmt, ExpressionNode)
-                                rk_func.Body.AddRange(make_expr(expr))
+                                Return make_expr(CType(stmt, ExpressionNode))
 
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
@@ -50,35 +49,90 @@ Namespace Compiler
 
                                     If func.Arguments.Length > 0 Then
 
-                                        rk_func.Body.Add(New RkCode With {.Operator = RkOperator.Return, .Left = to_value(func.Arguments(0))})
+                                        Return {New RkCode With {.Operator = RkOperator.Return, .Left = to_value(func.Arguments(0))}}
                                     Else
-                                        rk_func.Body.Add(New RkCode0 With {.Operator = RkOperator.Return})
+                                        Return {New RkCode0 With {.Operator = RkOperator.Return}}
                                     End If
                                 Else
 
-                                    rk_func.Body.AddRange(func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray))
+                                    Return func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray)
                                 End If
+                            Else
 
-                            ElseIf TypeOf stmt Is LetNode Then
-
-                                Dim let_ = CType(stmt, LetNode)
-                                If TypeOf let_.Expression Is ExpressionNode Then
-
-                                    rk_func.Body.AddRange(make_expr_ret(let_.Var, CType(let_.Expression, ExpressionNode)))
-
-                                ElseIf TypeOf let_.Expression Is FunctionCallNode Then
-
-                                    Dim func = CType(let_.Expression, FunctionCallNode)
-                                    rk_func.Body.AddRange(func.Function.CreateCallReturn(New RkValue With {.Name = let_.Var.Name, .Type = let_.Type}, func.Arguments.Map(Function(x) to_value(x)).ToArray))
-                                End If
-
-                            ElseIf TypeOf stmt Is IfNode Then
-
-                                Dim if_ = CType(stmt, IfNode)
-
+                                Throw New Exception("unknown stmt")
                             End If
-                        Next
-                    End If
+                        End Function
+                    Dim make_stmt_let =
+                        Function(let_ As LetNode, stmt As IEvaluableNode)
+
+                            If TypeOf stmt Is ExpressionNode Then
+
+                                Return make_expr_ret(let_.Var, CType(stmt, ExpressionNode))
+
+                            ElseIf TypeOf let_.Expression Is FunctionCallNode Then
+
+                                Dim func = CType(stmt, FunctionCallNode)
+                                Return func.Function.CreateCallReturn(New RkValue With {.Name = let_.Var.Name, .Type = let_.Type}, func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                            Else
+
+                                Throw New Exception("unknown stmt")
+                            End If
+                        End Function
+                    Dim make_if As Func(Of IfNode, List(Of RkCode0)) = Nothing
+                    Dim make_stmts As Func(Of List(Of IEvaluableNode), List(Of RkCode0)) =
+                        Function(stmts)
+
+                            Dim body As New List(Of RkCode0)
+                            For Each stmt In stmts
+
+                                If TypeOf stmt Is LetNode Then
+
+                                    Dim let_ = CType(stmt, LetNode)
+                                    body.AddRange(make_stmt_let(let_, let_.Expression))
+
+                                ElseIf TypeOf stmt Is IfNode Then
+
+                                    body.AddRange(make_if(CType(stmt, IfNode)))
+
+                                Else
+                                    body.AddRange(make_stmt(stmt))
+                                End If
+                            Next
+                            Return body
+                        End Function
+                    make_if =
+                        Function(if_)
+
+                            Dim rk_if = New RkIf With {.Condition = to_value(if_.Condition)}
+                            Dim then_ = make_stmts(if_.Then.Statements)
+                            Dim endif_ = New RkLabel
+                            If then_.Count > 0 Then
+
+                                rk_if.Then = New RkLabel
+                                then_.Insert(0, rk_if.Then)
+                            Else
+                                rk_if.Then = endif_
+                            End If
+
+                            Dim body As New List(Of RkCode0)
+                            body.Add(rk_if)
+                            body.AddRange(then_)
+                            If if_.Else IsNot Nothing Then
+
+                                body.Add(New RkGoto With {.Label = endif_})
+                                Dim else_ = If(TypeOf if_.Else Is IfNode, make_if(CType(if_.Else, IfNode)), make_stmts(CType(if_.Else, BlockNode).Statements))
+                                rk_if.Else = New RkLabel
+                                else_.Insert(0, rk_if.Else)
+                                body.AddRange(else_)
+                            Else
+
+                                rk_if.Else = endif_
+                            End If
+                            body.Add(endif_)
+                            Return body
+                        End Function
+
+                    If node_body IsNot Nothing Then rk_func.Body.AddRange(make_stmts(node_body.Statements))
 
                     compleat(rk_func) = True
                 End Sub

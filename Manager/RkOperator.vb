@@ -118,6 +118,7 @@ Namespace Manager
 
         [If]
         [Goto]
+        Label
 
         [Try]
         [Catch]

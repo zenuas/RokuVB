@@ -81,6 +81,8 @@
     <Compile Include="Manager\IAddStruct.vb" />
     <Compile Include="Manager\IAddLet.vb" />
     <Compile Include="Manager\NamedValue.vb" />
+    <Compile Include="Manager\RkLabel.vb" />
+    <Compile Include="Manager\RkGoto.vb" />
     <Compile Include="Manager\RkNativeFunction.vb" />
     <Compile Include="Manager\SystemLibrary.vb" />
     <Compile Include="Manager\IEntry.vb" />
@@ -120,7 +122,7 @@
     <Compile Include="Manager\RkCode.vb" />
     <Compile Include="Manager\RkCall.vb" />
     <Compile Include="Manager\RkCode0.vb" />
-    <Compile Include="Manager\RkGoto.vb" />
+    <Compile Include="Manager\RkIf.vb" />
     <Compile Include="Manager\RkOperator.vb" />
     <Compile Include="Manager\RkNumeric32.vb" />
     <Compile Include="Manager\RkString.vb" />

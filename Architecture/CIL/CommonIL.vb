@@ -226,6 +226,8 @@ Namespace Architecture.CIL
                         If code.Return IsNot Nothing Then gen_il_store(code.Return)
                     End Sub
 
+                Dim labels = f.Key.Body.Where(Function(x) TypeOf x Is RkLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
+
                 Dim found_ret = False
                 For Each stmt In f.Key.Body
 
@@ -245,6 +247,18 @@ Namespace Architecture.CIL
                             If TypeOf stmt Is RkCode Then gen_il_load(CType(stmt, RkCode).Left)
                             il.Emit(OpCodes.Ret)
                             found_ret = True
+
+                        Case RkOperator.If
+                            Dim if_ = CType(stmt, RkIf)
+                            gen_il_load(if_.Condition)
+                            il.Emit(OpCodes.Brtrue, labels(if_.Then))
+                            il.Emit(OpCodes.Br, labels(if_.Else))
+
+                        Case RkOperator.Goto
+                            il.Emit(OpCodes.Br, labels(CType(stmt, RkGoto).Label))
+
+                        Case RkOperator.Label
+                            il.MarkLabel(labels(stmt))
 
                     End Select
                 Next
