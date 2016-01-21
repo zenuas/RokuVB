@@ -108,7 +108,7 @@ Namespace Parser
         Protected Overridable Function CreateIfNode(
                 cond As IEvaluableNode,
                 [then] As BlockNode,
-                [else] As IEvaluableNode
+                [else] As BlockNode
             ) As IfNode
 
             Dim [if] As New IfNode With {.Condition = cond, .Then = [then], .Else = [else]}
@@ -127,6 +127,15 @@ Namespace Parser
             body.Owner = f
             f.AppendLineNumber(name)
             Return f
+        End Function
+
+        Protected Overridable Function ToBlock(if_ As IfNode) As BlockNode
+
+            Dim block = New BlockNode(if_.LineNumber.Value)
+            if_.Parent = block
+            block.Statements.Add(if_)
+            block.Parent = Me.CurrentScope
+            Return block
         End Function
 
     End Class

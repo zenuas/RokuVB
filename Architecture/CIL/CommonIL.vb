@@ -236,6 +236,7 @@ Namespace Architecture.CIL
                         Case RkOperator.Minus : gen_il_3op(OpCodes.Sub, CType(stmt, RkCode))
                         Case RkOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, RkCode))
                         Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
+                        Case RkOperator.Equal : gen_il_3op(OpCodes.Ceq, CType(stmt, RkCode))
 
                         Case RkOperator.Call
                             Dim cc = CType(stmt, RkCall)

@@ -120,7 +120,7 @@ Namespace Compiler
                             If if_.Else IsNot Nothing Then
 
                                 body.Add(New RkGoto With {.Label = endif_})
-                                Dim else_ = If(TypeOf if_.Else Is IfNode, make_if(CType(if_.Else, IfNode)), make_stmts(CType(if_.Else, BlockNode).Statements))
+                                Dim else_ = make_stmts(if_.Else.Statements)
                                 rk_if.Else = New RkLabel
                                 else_.Insert(0, rk_if.Else)
                                 body.AddRange(else_)

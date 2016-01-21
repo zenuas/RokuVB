@@ -251,7 +251,7 @@ Namespace Util
                             Dim x = CType(node_, IfNode)
                             x.Condition = CType(f("Condition", x.Condition), IEvaluableNode)
                             x.Then = CType(f("Then", x.Then), BlockNode)
-                            x.Else = CType(f("Else", x.Else), IEvaluableNode)
+                            x.Else = CType(f("Else", x.Else), BlockNode)
                     End Select
                 End Sub
 

@@ -362,12 +362,12 @@ Namespace Parser
 
                 Case -46
                     System.Diagnostics.Debug.WriteLine("elseif : ifthen ELSE ifthen .")
-                    CType(Me.GetValue(-3), IfNode).Else = CType(Me.GetValue(-1), IfNode) : yy_value = CType(Me.GetValue(-3), IfNode)
+                    CType(Me.GetValue(-3), IfNode).Else = Me.ToBlock(CType(Me.GetValue(-1), IfNode)) : yy_value = CType(Me.GetValue(-3), IfNode)
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -47
                     System.Diagnostics.Debug.WriteLine("elseif : elseif ELSE ifthen .")
-                    CType(Me.GetValue(-3), IfNode).Else = CType(Me.GetValue(-1), IfNode) : yy_value = CType(Me.GetValue(-3), IfNode)
+                    CType(Me.GetValue(-3), IfNode).Else = Me.ToBlock(CType(Me.GetValue(-1), IfNode)) : yy_value = CType(Me.GetValue(-3), IfNode)
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -48
