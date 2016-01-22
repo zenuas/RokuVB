@@ -29,6 +29,12 @@ Namespace Architecture.CIL
                 New Export With {.Name = "print", .Assembly = "mscorlib", .Class = "System.Console", .Method = "WriteLine", .Arguments = New Type() {GetType(Integer)}}
             }
 
+        Public Class TypeData
+
+            Public Overridable Property Builder As TypeBuilder
+            Public Overridable Property Constructor As ConstructorBuilder
+        End Class
+
 #End Region
 
         Public Overridable Property Root As RkNamespace
@@ -49,6 +55,7 @@ Namespace Architecture.CIL
             Dim structs = Me.DeclareStructs(Me.Root)
             Dim functions = Me.DeclareMethods(Me.Root, structs)
             Me.DeclareStatements(functions, structs)
+            structs.Do(Sub(x) x.Value.Builder.CreateType())
 
             If Me.Subsystem <> PEFileKinds.Dll Then
 
@@ -88,18 +95,30 @@ Namespace Architecture.CIL
             End Try
         End Sub
 
-        Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of RkStruct, TypeBuilder)
+        Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of RkStruct, TypeData)
 
-            Dim map As New Dictionary(Of RkStruct, TypeBuilder)
+            Dim map As New Dictionary(Of RkStruct, TypeData)
+            For Each struct In ns.Structs.Where(Function(x) x.Value.StructNode IsNot Nothing)
+
+                map(struct.Value) = New TypeData With {.Builder = Me.Module.DefineType(struct.Key)}
+            Next
+            For Each v In map
+
+                v.Value.Constructor = v.Value.Builder.DefineDefaultConstructor(MethodAttributes.Public)
+                For Each x In v.Key.Local
+
+                    v.Value.Builder.DefineField(x.Key, Me.RkStructToCILType(x.Value, map), FieldAttributes.Public)
+                Next
+            Next
             Return map
         End Function
 
-        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeBuilder)) As Dictionary(Of RkFunction, MethodInfo)
+        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
 
             Dim map As New Dictionary(Of RkFunction, MethodInfo)
             For Each fs In ns.Functions
 
-                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso TypeOf x IsNot RkNativeFunction AndAlso Not x.Name.Equals("return"))
+                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing)
 
                     Dim args = Me.RkStructToCILType(f.Arguments, structs)
                     Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
@@ -118,7 +137,7 @@ Namespace Architecture.CIL
             Return map
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeBuilder))
+        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
 
             For Each f In functions.Where(Function(x) TypeOf x.Value Is MethodBuilder)
 
@@ -240,6 +259,13 @@ Namespace Architecture.CIL
                         End If
                     End Sub
 
+                Dim get_ctor =
+                    Function(t As IType)
+
+                        Dim r = CType(t, RkStruct)
+                        Return If(structs.ContainsKey(r), structs(r).Constructor, Me.RkStructToCILType(t, structs).GetConstructor(Type.EmptyTypes))
+                    End Function
+
                 Dim labels = f.Key.Body.Where(Function(x) TypeOf x Is RkLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
 
                 Dim found_ret = False
@@ -268,6 +294,11 @@ Namespace Architecture.CIL
                             il.Emit(OpCodes.Ret)
                             found_ret = True
 
+                        Case RkOperator.Alloc
+                            Dim alloc = CType(stmt, RkCode)
+                            il.Emit(OpCodes.Newobj, get_ctor(alloc.Left.Type))
+                            gen_il_store(alloc.Return)
+
                         Case RkOperator.If
                             Dim if_ = CType(stmt, RkIf)
                             gen_il_load(if_.Condition)
@@ -286,7 +317,7 @@ Namespace Architecture.CIL
             Next
         End Sub
 
-        Public Overridable Function RkStructToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeBuilder)) As System.Type
+        Public Overridable Function RkStructToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As System.Type
 
             If r Is Nothing Then Return GetType(System.Void)
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
@@ -296,10 +327,10 @@ Namespace Architecture.CIL
             If r.Name.Equals("Int64") Then Return GetType(Int64)
             If r.Name.Equals("String") Then Return GetType(String)
 
-            Return structs(CType(r, RkStruct))
+            Return structs(CType(r, RkStruct)).Builder
         End Function
 
-        Public Overridable Function RkStructToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeBuilder)) As System.Type()
+        Public Overridable Function RkStructToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeData)) As System.Type()
 
             Return r.Map(Function(x) Me.RkStructToCILType(x.Value, structs)).ToArray
         End Function

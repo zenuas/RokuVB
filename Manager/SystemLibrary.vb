@@ -49,7 +49,7 @@ Namespace Manager
             Dim int32 = define_num("Int32", 4)
             Dim int16 = define_num("Int16", 2)
             Dim int8 = define_num("Int8", 1)
-            Me.Local.Add("Int", int32)
+            Me.Structs.Add("Int", int32)
 
             ' struct Array(@T)
             ' struct Char : Int16
@@ -73,6 +73,12 @@ Namespace Manager
             Dim return_t = return_.DefineGeneric("@T")
             return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
             Me.AddFunction(return_)
+
+            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc}
+            Dim alloc_t = alloc.DefineGeneric("@T")
+            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
+            alloc.Return = alloc_t
+            Me.AddFunction(alloc)
 
         End Sub
 

@@ -13,6 +13,7 @@ Namespace Manager
         Public Overridable Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable Property StructNode As StructNode = Nothing
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 

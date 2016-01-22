@@ -1,15 +1,6 @@
 struct Hoge
 	var x = 1
 	var y : Int
+	var z = "hoge"
 
-var a = 1
-var b = 2
-var c = 3
-var x = (a + b) * c
-var add_int = add(1,   x)
-var add_str = add("a", "b")
-print(add_int)
-print(add_str)
-
-sub add(a: @T, b: @T) @T
-	return(a + b)
+var a = Hoge()

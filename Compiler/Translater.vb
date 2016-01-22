@@ -55,7 +55,12 @@ Namespace Compiler
                                     End If
                                 Else
 
-                                    Return func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                    If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then
+
+                                        Return func.Function.CreateCall(to_value(func.Expression))
+                                    Else
+                                        Return func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                    End If
                                 End If
                             Else
 
@@ -72,7 +77,12 @@ Namespace Compiler
                             ElseIf TypeOf let_.Expression Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
-                                Return func.Function.CreateCallReturn(to_value(let_.Var), func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then
+
+                                    Return func.Function.CreateCallReturn(to_value(let_.Var), to_value(func.Expression))
+                                Else
+                                    Return func.Function.CreateCallReturn(to_value(let_.Var), func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                End If
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode Then
@@ -145,7 +155,7 @@ Namespace Compiler
 
             If TypeOf node Is BlockNode Then
 
-                Dim ctor As New RkFunction With {.Name = ".ctor"}
+                Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}}
                 make_func(ctor, Nothing, CType(node, BlockNode))
                 root.AddFunction(ctor)
             End If

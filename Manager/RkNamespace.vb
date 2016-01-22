@@ -11,7 +11,7 @@ Namespace Manager
 
 
         Public Overridable Property Name As String Implements IEntry.Name
-        Public Overridable ReadOnly Property Local As New Dictionary(Of String, IEntry)
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, RkStruct)
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of RkFunction))
         Public Overridable ReadOnly Property LoadPaths As New List(Of IEntry)
 
@@ -28,11 +28,7 @@ Namespace Manager
 
         Public Overridable Function LoadLibrary(name As String) As IType
 
-            If Me.Local.ContainsKey(name) Then
-
-                Dim x = Me.Local(name)
-                If TypeOf x Is IType Then Return CType(x, IType)
-            End If
+            If Me.Structs.ContainsKey(name) Then Return Me.Structs(name)
 
             ' name format
             ' ok "Int"
@@ -54,7 +50,7 @@ Namespace Manager
 
         Public Overridable Sub AddStruct(x As RkStruct) Implements IAddStruct.AddStruct
 
-            Me.Local.Add(x.Name, x)
+            Me.Structs.Add(x.Name, x)
         End Sub
 
         Public Overridable Sub AddFunction(x As RkFunction) Implements IAddFunction.AddFunction
@@ -109,34 +105,34 @@ Namespace Manager
             Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
-        Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T
+        'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T
 
-            Return Me.GetValueOf(Of T)(name,
-                Function()
+        '    Return Me.GetValueOf(Of T)(name,
+        '        Function()
 
-                    default_()
-                End Function)
-        End Function
+        '            default_()
+        '        End Function)
+        'End Function
 
-        Public Overridable Function GetValueOf(Of T)(name As String, default_ As Func(Of T)) As T
+        'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Func(Of T)) As T
 
-            Dim x As IEntry = Nothing
-            If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then Return default_()
-            'If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then
+        '    Dim x As IEntry = Nothing
+        '    If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then Return default_()
+        '    'If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then
 
-            '    ' demangling
-            '    For Each v In Me.Local.Values
+        '    '    ' demangling
+        '    '    For Each v In Me.Local.Values
 
-            '        If v IsNot Nothing AndAlso v.Name.Equals(name) Then
+        '    '        If v IsNot Nothing AndAlso v.Name.Equals(name) Then
 
-            '            x = v
-            '            Exit For
-            '        End If
-            '    Next
-            '    If x Is Nothing OrElse TypeOf x IsNot T Then Return default_()
-            'End If
-            Return CType(x, T)
-        End Function
+        '    '            x = v
+        '    '            Exit For
+        '    '        End If
+        '    '    Next
+        '    '    If x Is Nothing OrElse TypeOf x IsNot T Then Return default_()
+        '    'End If
+        '    Return CType(x, T)
+        'End Function
 
         Public Overrides Function ToString() As String
 

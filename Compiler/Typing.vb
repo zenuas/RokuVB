@@ -21,7 +21,7 @@ Namespace Compiler
                     If TypeOf child Is StructNode Then
 
                         Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name}
+                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct}
                         node_struct.Type = rk_struct
                         current.AddStruct(rk_struct)
 
@@ -137,6 +137,7 @@ Namespace Compiler
 
                             If TypeOf node_call.Expression Is FunctionNode Then rk_function = set_func(CType(node_call.Expression, FunctionNode))
                             If TypeOf node_call.Expression Is VariableNode Then rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                            If TypeOf node_call.Expression Is StructNode Then rk_function = current.Namespace.GetFunction("#Alloc", node_call.Expression.Type)
 
                             If node_call.Function Is Nothing AndAlso
                                 rk_function IsNot Nothing Then
@@ -148,6 +149,16 @@ Namespace Compiler
                                 node_call.Function = rk_function
                                 type_fix = True
                             End If
+
+                        ElseIf TypeOf child Is StructNode Then
+
+                            Dim node_struct = CType(child, StructNode)
+                            Dim rk_struct = CType(node_struct.Type, RkStruct)
+
+                            For Each s In node_struct.Scope.Where(Function(x) TypeOf x.Value Is LetNode)
+
+                                rk_struct.Local(s.Key) = CType(s.Value, LetNode).Type
+                            Next
 
                         End If
                     End Sub)
