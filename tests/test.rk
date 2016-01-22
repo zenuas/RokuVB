@@ -9,7 +9,7 @@ var x = (a + b) * c
 var add_int = add(1,   x)
 var add_str = add("a", "b")
 print(add_int)
-#print(add_str)
+print(add_str)
 
 sub add(a: @T, b: @T) @T
 	return(a + b)

@@ -226,13 +226,27 @@ Namespace Architecture.CIL
                         If code.Return IsNot Nothing Then gen_il_store(code.Return)
                     End Sub
 
+                Dim gen_il_3ad =
+                    Sub(ope As OpCode, code As RkCode)
+
+                        If code.Left.Type.Name.Equals("String") Then
+
+                            gen_il_load(code.Left)
+                            gen_il_load(code.Right)
+                            il.EmitCall(OpCodes.Call, GetType(System.String).GetMethod("Concat", {GetType(String), GetType(String)}), {GetType(String), GetType(String)})
+                            If code.Return IsNot Nothing Then gen_il_store(code.Return)
+                        Else
+                            gen_il_3op(ope, code)
+                        End If
+                    End Sub
+
                 Dim labels = f.Key.Body.Where(Function(x) TypeOf x Is RkLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
 
                 Dim found_ret = False
                 For Each stmt In f.Key.Body
 
                     Select Case stmt.Operator
-                        Case RkOperator.Plus : gen_il_3op(OpCodes.Add, CType(stmt, RkCode))
+                        Case RkOperator.Plus : gen_il_3ad(OpCodes.Add, CType(stmt, RkCode))
                         Case RkOperator.Minus : gen_il_3op(OpCodes.Sub, CType(stmt, RkCode))
                         Case RkOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, RkCode))
                         Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
