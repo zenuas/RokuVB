@@ -32,15 +32,19 @@ Namespace Compiler
                             If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
                             Return New RkValue With {.Type = t, .Scope = rk_func}
                         End Function
-                    Dim make_expr = Function(x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCall(to_value(x.Left)), x.Function.CreateCall(to_value(x.Left), to_value(x.Right)))
-                    Dim make_expr_ret = Function(ret As RkValue, x As ExpressionNode) If(x.Right Is Nothing, x.Function.CreateCallReturn(ret, to_value(x.Left)), x.Function.CreateCallReturn(ret, to_value(x.Left), to_value(x.Right)))
 
                     Dim make_stmt =
                         Function(stmt As IEvaluableNode)
 
                             If TypeOf stmt Is ExpressionNode Then
 
-                                Return make_expr(CType(stmt, ExpressionNode))
+                                Dim expr = CType(stmt, ExpressionNode)
+                                Return If(expr.Right Is Nothing, expr.Function.CreateCall(to_value(expr.Left)), expr.Function.CreateCall(to_value(expr.Left), to_value(expr.Right)))
+
+                            ElseIf TypeOf stmt Is PropertyNode Then
+
+                                Dim prop = CType(stmt, PropertyNode)
+                                Return {New RkCode With {.Operator = RkOperator.Dot, .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
 
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
@@ -72,9 +76,16 @@ Namespace Compiler
 
                             If TypeOf stmt Is ExpressionNode Then
 
-                                Return make_expr_ret(to_value(let_.Var), CType(stmt, ExpressionNode))
+                                Dim expr = CType(stmt, ExpressionNode)
+                                Dim ret = to_value(let_.Var)
+                                Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(ret, to_value(expr.Left)), expr.Function.CreateCallReturn(ret, to_value(expr.Left), to_value(expr.Right)))
 
-                            ElseIf TypeOf let_.Expression Is FunctionCallNode Then
+                            ElseIf TypeOf stmt Is PropertyNode Then
+
+                                Dim prop = CType(stmt, PropertyNode)
+                                Return {New RkCode With {.Operator = RkOperator.Dot, .Return = to_value(let_.Var), .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
+
+                            ElseIf TypeOf stmt Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
                                 If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then

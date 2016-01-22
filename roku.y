@@ -60,6 +60,7 @@ expr : var
      | call
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
+     | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}
      | expr OPE expr     {$$ = Me.CreateExpressionNode($1, $2.Name, $3)}
      | expr '[' expr ']' {$$ = Me.CreateExpressionNode($1, "[]", $3)}
      | expr '?' expr ':' expr

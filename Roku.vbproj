@@ -90,6 +90,7 @@
     <Compile Include="Manager\RkGenericEntry.vb" />
     <Compile Include="Manager\RkStruct.vb" />
     <Compile Include="Manager\RkNamespace.vb" />
+    <Compile Include="Node\PropertyNode.vb" />
     <Compile Include="Node\StructNode.vb" />
     <Compile Include="Parser\MyIToken.vb" />
     <Compile Include="Parser\Lexer.vb" />

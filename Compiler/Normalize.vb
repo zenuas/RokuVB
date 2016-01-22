@@ -47,6 +47,12 @@ Namespace Compiler
                                     expr.Right = insert_let(expr.Right)
                                     Return to_let(expr)
 
+                                ElseIf TypeOf e Is PropertyNode Then
+
+                                    Dim prop = CType(e, PropertyNode)
+                                    prop.Left = insert_let(prop.Left)
+                                    Return to_let(prop)
+
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
                                     Dim call_ = CType(e, FunctionCallNode)
@@ -78,6 +84,11 @@ Namespace Compiler
                                     expr.Left = insert_let(expr.Left)
                                     expr.Right = insert_let(expr.Right)
 
+                                ElseIf TypeOf e Is PropertyNode Then
+
+                                    Dim prop = CType(e, PropertyNode)
+                                    prop.Left = insert_let(prop.Left)
+
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
                                 ElseIf TypeOf e Is VariableNode Then
@@ -95,6 +106,10 @@ Namespace Compiler
                                 'Dim expr = CType(v, ExpressionNode)
                                 'expr.Left = to_flat(expr.Left)
                                 'expr.Right = to_flat(expr.Right)
+                                to_flat(v)
+
+                            ElseIf TypeOf v Is PropertyNode Then
+
                                 to_flat(v)
 
                             ElseIf TypeOf v Is FunctionCallNode Then

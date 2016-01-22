@@ -11,6 +11,9 @@ Namespace Parser
         ''' <summary>','</summary>
         __x2C
 
+        ''' <summary>'.'</summary>
+        __x2E
+
         ''' <summary>':'</summary>
         __x3A
 
@@ -148,6 +151,9 @@ Namespace Parser
 
         ''' <summary>var</summary>
         var_1
+
+        ''' <summary>varx</summary>
+        varx
 
         ''' <summary>void</summary>
         void

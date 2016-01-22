@@ -20,6 +20,7 @@ Namespace Parser
 
             Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedChar(")"c) = SymbolTypes.__x29
+            Me.ReservedChar("."c) = SymbolTypes.__x2E
             Me.ReservedChar("["c) = SymbolTypes.__x5B
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("?"c) = SymbolTypes.__x3F
@@ -35,10 +36,10 @@ Namespace Parser
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
+            Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
-            Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
 
             MyBase.SetRegisterWord()
         End Sub

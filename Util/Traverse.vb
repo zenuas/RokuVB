@@ -146,6 +146,12 @@ Namespace Util
                             f("Left", x.Left)
                             f("Right", x.Right)
 
+                        Case TypeOf node_ Is PropertyNode
+
+                            Dim x = CType(node_, PropertyNode)
+                            f("Left", x.Left)
+                            f("Right", x.Right)
+
                         Case TypeOf node_ Is FunctionCallNode
 
                             Dim x = CType(node_, FunctionCallNode)
@@ -230,6 +236,12 @@ Namespace Util
                             Dim x = CType(node_, ExpressionNode)
                             x.Left = CType(f("Left", x.Left), IEvaluableNode)
                             x.Right = CType(f("Right", x.Right), IEvaluableNode)
+
+                        Case TypeOf node_ Is PropertyNode
+
+                            Dim x = CType(node_, PropertyNode)
+                            x.Left = CType(f("Left", x.Left), IEvaluableNode)
+                            x.Right = CType(f("Right", x.Right), VariableNode)
 
                         Case TypeOf node_ Is FunctionCallNode
 

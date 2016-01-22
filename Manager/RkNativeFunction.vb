@@ -29,7 +29,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} ""{Me.Operator}"""
+            Return $"{Me.GetType.Name} '{Me.Operator}'"
         End Function
 
     End Class

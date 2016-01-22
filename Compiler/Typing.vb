@@ -121,6 +121,11 @@ Namespace Compiler
                                     Return node_expr.Function.Return
                                 End Function)
 
+                        ElseIf TypeOf child Is PropertyNode Then
+
+                            Dim node_prop = CType(child, PropertyNode)
+                            set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.Find(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
+
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)

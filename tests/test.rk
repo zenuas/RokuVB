@@ -4,3 +4,4 @@ struct Hoge
 	var z = "hoge"
 
 var a = Hoge()
+print(a.z)
