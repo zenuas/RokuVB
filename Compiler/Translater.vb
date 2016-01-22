@@ -15,7 +15,7 @@ Namespace Compiler
             Dim returns = root.Functions("return")
 
             Dim make_func =
-                Sub(rk_func As RkFunction, node_func As FunctionNode, node_body As BlockNode)
+                Sub(rk_func As RkFunction, node_func As FunctionNode, func_stmts As List(Of IEvaluableNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
@@ -74,7 +74,11 @@ Namespace Compiler
                     Dim make_stmt_let =
                         Function(let_ As LetNode, stmt As IEvaluableNode)
 
-                            If TypeOf stmt Is ExpressionNode Then
+                            If stmt Is Nothing Then
+
+                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = to_value(let_.Var)}}
+
+                            ElseIf TypeOf stmt Is ExpressionNode Then
 
                                 Dim expr = CType(stmt, ExpressionNode)
                                 Dim ret = to_value(let_.Var)
@@ -96,7 +100,8 @@ Namespace Compiler
                                 End If
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
-                                    TypeOf stmt Is NumericNode Then
+                                    TypeOf stmt Is NumericNode OrElse
+                                    TypeOf stmt Is StringNode Then
 
                                 Return {New RkCode With {.Operator = RkOperator.Bind, .Return = to_value(let_.Var), .Left = to_value(stmt)}}
 
@@ -159,7 +164,7 @@ Namespace Compiler
                             Return body
                         End Function
 
-                    If node_body IsNot Nothing Then rk_func.Body.AddRange(make_stmts(node_body.Statements))
+                    If func_stmts IsNot Nothing Then rk_func.Body.AddRange(make_stmts(func_stmts))
 
                     compleat(rk_func) = True
                 End Sub
@@ -167,7 +172,7 @@ Namespace Compiler
             If TypeOf node Is BlockNode Then
 
                 Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}}
-                make_func(ctor, Nothing, CType(node, BlockNode))
+                make_func(ctor, Nothing, CType(node, BlockNode).Statements)
                 root.AddFunction(ctor)
             End If
 
@@ -180,17 +185,19 @@ Namespace Compiler
 
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
+                        rk_struct.Initializer = CType(current.GetFunction("#Alloc", rk_struct), RkNativeFunction)
+                        make_func(rk_struct.Initializer, Nothing, node_struct.Statements)
 
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = node_func.Function
-                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body)
+                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body.Statements)
 
                     ElseIf TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-                        make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode?.Body)
+                        If node_call.Function.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Body.Statements)
 
                     End If
                     next_(child, current)
