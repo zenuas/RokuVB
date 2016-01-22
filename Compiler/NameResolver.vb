@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports Roku.Node
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Compiler
@@ -20,12 +21,12 @@ Namespace Compiler
                 Function(current As IScopeNode, v As VariableNode)
 
                     Dim x = resolve_name(current, v.Name)
-                    Return If(x Is Nothing, v, x)
+                    Return If(x Is Nothing, v, If(TypeOf x Is LetNode, CType(x, LetNode).Var, x))
                 End Function
 
             Util.Traverse.NodesReplaceOnce(
                 node,
-                CType(node, BlockNode),
+                CType(node, IScopeNode),
                 Function(parent, ref, child, current, isfirst, next_)
 
                     If Not isfirst Then Return child
@@ -41,6 +42,12 @@ Namespace Compiler
                             body.Scope.Add(x.Name.Name, x.Name)
                         Next
                         next_(child, body)
+
+                    ElseIf TypeOf child Is StructNode Then
+
+                        Dim struct = CType(child, StructNode)
+                        struct.Parent = current
+                        next_(child, struct)
                     Else
 
                         next_(child, current)
@@ -50,7 +57,7 @@ Namespace Compiler
                             If TypeOf parent Is LetNode AndAlso ref.Equals("Var") Then
 
                                 var.Scope = current
-                                current.Scope.Add(var.Name, child)
+                                If TypeOf current IsNot StructNode Then current.Scope.Add(var.Name, child)
                             Else
 
                                 Return resolve_var(current, var)

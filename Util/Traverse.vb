@@ -117,7 +117,6 @@ Namespace Util
 
                             Dim x = CType(node_, StructNode)
                             f("Owner", x.Owner)
-
                             For Each key In x.Scope.Keys
 
                                 f($"`{key}", x.Scope(key))
@@ -210,6 +209,15 @@ Namespace Util
                                 x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IEvaluableNode)
                             Next
 
+                            For Each key In New List(Of String)(x.Scope.Keys)
+
+                                x.Scope(key) = f($"`{key}", x.Scope(key))
+                            Next
+
+                        Case TypeOf node_ Is StructNode
+
+                            Dim x = CType(node_, StructNode)
+                            x.Owner = CType(f("Owner", x.Owner), IEvaluableNode)
                             For Each key In New List(Of String)(x.Scope.Keys)
 
                                 x.Scope(key) = f($"`{key}", x.Scope(key))

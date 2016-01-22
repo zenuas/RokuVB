@@ -1,7 +1,6 @@
 struct Hoge
-	var x = 1
-	var y : Int
-	var z = "hoge"
+	var hello = "hello"
+	var hello_world = hello + " world"
 
 var a = Hoge()
-print(a.z)
+print(a.hello_world)
