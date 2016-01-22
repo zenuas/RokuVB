@@ -238,6 +238,11 @@ Namespace Architecture.CIL
                         Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
                         Case RkOperator.Equal : gen_il_3op(OpCodes.Ceq, CType(stmt, RkCode))
 
+                        Case RkOperator.Bind
+                            Dim bind = CType(stmt, RkCode)
+                            gen_il_load(bind.Left)
+                            gen_il_store(bind.Return)
+
                         Case RkOperator.Call
                             Dim cc = CType(stmt, RkCall)
                             cc.Arguments.Do(Sub(arg) gen_il_load(arg))

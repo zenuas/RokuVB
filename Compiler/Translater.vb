@@ -67,12 +67,18 @@ Namespace Compiler
 
                             If TypeOf stmt Is ExpressionNode Then
 
-                                Return make_expr_ret(let_.Var, CType(stmt, ExpressionNode))
+                                Return make_expr_ret(to_value(let_.Var), CType(stmt, ExpressionNode))
 
                             ElseIf TypeOf let_.Expression Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
-                                Return func.Function.CreateCallReturn(New RkValue With {.Name = let_.Var.Name, .Type = let_.Type}, func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                Return func.Function.CreateCallReturn(to_value(let_.Var), func.Arguments.Map(Function(x) to_value(x)).ToArray)
+
+                            ElseIf TypeOf stmt Is VariableNode OrElse
+                                    TypeOf stmt Is NumericNode Then
+
+                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = to_value(let_.Var), .Left = to_value(stmt)}}
+
                             Else
 
                                 Throw New Exception("unknown stmt")

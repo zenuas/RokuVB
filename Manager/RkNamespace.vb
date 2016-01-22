@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports System.Diagnostics
 Imports Roku.Util.ArrayExtension
 
 
@@ -96,9 +97,7 @@ Namespace Manager
                         xs(xs_i) = args(i)
                     Else
 
-                        If xs(xs_i) IsNot args(i) Then
-
-                        End If
+                        Debug.Assert(xs(xs_i) Is args(i))
                     End If
                 Next
 

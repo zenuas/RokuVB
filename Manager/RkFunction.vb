@@ -79,6 +79,7 @@ Namespace Manager
             Next
             x.Body.AddRange(Me.Body)
             x.Apply = Me.Generics.Map(Function(g) values.Find(Function(v) v.Name.Equals(g.Name)).Value)
+            x.FunctionNode = Me.FunctionNode
             Me.Fixed.Add(x)
             Return x
         End Function
