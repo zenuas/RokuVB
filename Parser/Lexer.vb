@@ -11,11 +11,7 @@ Namespace Parser
         Public Sub New(reader As TextReader)
 
             Me.BaseReader = reader
-            Me.GeneratorInitialize()
             Me.Initialize()
-        End Sub
-
-        Public Overridable Sub GeneratorInitialize()
         End Sub
 
         Public Overridable Sub Initialize()
@@ -74,7 +70,7 @@ Namespace Parser
 #End Region
 
 #Region "read char"
-        
+
         Public Overridable Property PeekBuffer As Integer = -1
 
         Public Overridable Function EndOfStream() As Boolean

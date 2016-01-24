@@ -14,10 +14,6 @@ Namespace Parser
         Public Sub New(ByVal reader As System.IO.TextReader)
             MyBase.New(reader)
 
-        End Sub
-
-        Public Overrides Sub GeneratorInitialize()
-
             Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedChar(")"c) = SymbolTypes.__x29
             Me.ReservedChar("."c) = SymbolTypes.__x2E
@@ -47,12 +43,12 @@ Namespace Parser
             Return New Token(SymbolTypes._END)
         End Function
 
-        Public Overrides Function CreateCharToken(ByVal x As Integer) As IToken(Of INode)
+        Public Overrides Function CreateCharToken(x As Integer) As IToken(Of INode)
 
             Return New Token(CType(x, SymbolTypes))
         End Function
 
-        Public Overrides Function CreateWordToken(ByVal x As Integer) As IToken(Of INode)
+        Public Overrides Function CreateWordToken(x As Integer) As IToken(Of INode)
 
             Return New Token(CType(x, SymbolTypes))
         End Function
