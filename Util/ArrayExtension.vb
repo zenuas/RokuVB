@@ -11,7 +11,7 @@ Namespace Util
         Public Function Car(Of T)(self As IEnumerable(Of T)) As T
 
             Dim e = self.GetEnumerator
-            If Not e.MoveNext Then Throw New IndexOutOfRangeException
+            e.MoveNext()
             Return e.Current
         End Function
 
@@ -24,6 +24,14 @@ Namespace Util
 
                 Yield e.Current
             Loop
+        End Function
+
+        <Extension>
+        Public Function First(Of T)(self As IEnumerable(Of T)) As T
+
+            Dim e = self.GetEnumerator
+            If Not e.MoveNext Then Throw New IndexOutOfRangeException
+            Return e.Current
         End Function
 
         <Extension>
@@ -234,11 +242,23 @@ Namespace Util
         <Extension>
         Public Function FindFirst(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As T
 
-            Return self.Where(f).Car
+            Return self.Where(f).First
         End Function
 
         <Extension>
         Public Function FindFirst(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As T
+
+            Return self.Where(f).First
+        End Function
+
+        <Extension>
+        Public Function FindFirstOrNull(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As T
+
+            Return self.Where(f).Car
+        End Function
+
+        <Extension>
+        Public Function FindFirstOrNull(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As T
 
             Return self.Where(f).Car
         End Function
@@ -247,11 +267,24 @@ Namespace Util
         Public Function FindLast(Of T)(self As IList(Of T), f As Func(Of T, Integer, Boolean)) As T
 
             Dim count = self.Count - 1
-            Return self.Reverse.Where(Function(x, i) f(x, count - i)).Car
+            Return self.Reverse.Where(Function(x, i) f(x, count - i)).First
         End Function
 
         <Extension>
         Public Function FindLast(Of T)(self As IList(Of T), f As Func(Of T, Boolean)) As T
+
+            Return self.Reverse.Where(f).First
+        End Function
+
+        <Extension>
+        Public Function FindLastOrNull(Of T)(self As IList(Of T), f As Func(Of T, Integer, Boolean)) As T
+
+            Dim count = self.Count - 1
+            Return self.Reverse.Where(Function(x, i) f(x, count - i)).Car
+        End Function
+
+        <Extension>
+        Public Function FindLastOrNull(Of T)(self As IList(Of T), f As Func(Of T, Boolean)) As T
 
             Return self.Reverse.Where(f).Car
         End Function

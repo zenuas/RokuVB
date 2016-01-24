@@ -26,7 +26,7 @@ Namespace Manager
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
-            Dim x = Me.Generics.FindFirst(Function(a) a.Name.Equals(name))
+            Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
             x = New RkGenericEntry With {.Name = name}

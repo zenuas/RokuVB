@@ -23,6 +23,7 @@ Namespace Compiler
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct}
                         node_struct.Type = rk_struct
+                        node_struct.Generics.Do(Sub(x) rk_struct.DefineGeneric(x.Name))
                         current.AddStruct(rk_struct)
 
                         For Each x In node_struct.Scope.Values
