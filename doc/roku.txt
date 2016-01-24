@@ -273,3 +273,110 @@ sub func_translation'(node: FunctionNode, types: @T[])
 		node.Cache(needs, rk_func)
 sub call_translation(node: FunctionCallNode)
 	node.Function = func_translation'(node.Expression.Type: FunctionNode, node.Arguments)
+
+.関数の呼び出し
+
+関数の呼び出し方法は何パターンかある
+
+まずレシーバを伴わない関数呼び出し
+
+struct Hoge
+	var a = 1
+sub f()
+	return(1)
+
+f()            # 関数名をそのままコールする、FunctionCallNode->FunctionNodeとなる
+print()        # システム組み込みの関数をコールする、FunctionCallNode->VariableNodeとなり関数の検索が必要
+var x = f
+x()            # 変数経由でコールする、FunctionCallNode->VariableNode(RkFunction)となり関数の検索が不要
+var h = Hoge() # 構造体の作成をする、FunctionCallNode->StructNodeとなる、#Allocという特別な関数を呼び出す
+var y = Hoge
+y()            # 変数経由で構造体の作成をする、FunctionCallNode->VariableNode(RkStruct)となる
+
+現時点では
+FunctionCallNode->VariableNode(RkFunction) と
+FunctionCallNode->VariableNode(RkStruct) が対応できていない
+
+..レシーバを伴う関数の呼び出し
+
+いわゆるメソッドの実装方法
+今回クラスは実装しないが、メソッドの書き方は取り入れたい
+
+よくあるクラス型のメソッドの悪い点はこれにつきる
+* クラス定義とメソッドは同時に記述する、つまりクラス記述者しかメソッドを増やせない
+  動的言語ならメソッドを追加できるものもある
+  最近の.NET系ではExtensionがありメソッド追加に見せかけることもできる
+
+メソッドを追加できないためこういう問題が起こる
+
+* メソッドは1クラスづつにしか追加できない(独自メソッドは継承して追加する
+  スーパークラスに追加して派生クラスで使うことはできない
+* 組み込み型にメソッドが追加できない、IntやString型に独自メソッドを定義できない
+
+例えばgrep、map、sort、do関数を順に呼び出す場合
+do(sort(map(grep([1, 2, 3], x => x > 1), x => "" + x)), x => print(x)) となる
+Haskellならdo関数なんてないけど、勢いで書くとこんな感じ
+do (x -> print x) $ sort $ grep (x -> x > 1) $ map [1, 2, 3] こうかな
+右から順に考えていくのが嫌だ
+
+レシーバが使えるなら自然と左から順になる
+[1, 2, 3].grep(x => x > 1).map(x => "" + x).sort().do(x => print(x))
+
+..対応案 2016/01/23
+
+第一引数をレシーバにできる
+
+sub grep(self: @T[], f: (@T => Bool)) @T[]
+sub map(self: @T[], f: (@T => @R)) @R[]
+sub sort(self: @T[]) @T[]
+sub do(self: @T[], f: (@T))
+があるとき
+
+[1, 2, 3].grep(x => x > 1).map(x => "" + x).sort().do(x => print(x))
+としてよい
+
+欠点:
+こうしてもよいわけで、どちらでもいいというのは一貫性がない
+do(sort(map(grep([1, 2, 3], x => x > 1), x => "" + x)), x => print(x))
+
+..対応案 2016/01/24
+
+メソッドと関数は表記を変える、メソッド形式でしか呼び出せなくする
+レシーバはselfという名前を自動でつける
+sub @T[].map(f: (@T=>@R)) @R[]
+sub @T[].grep(f: (@T=>Bool)) @T[]
+sub @T[].sort(f: @T[]) @T[]
+sub @T[].do(f: (@T))
+
+欠点:
+レシーバ変数名が固定になる
+
+利点:
+よりメソッドっぽくなる
+sub String.compare(a: String) Bool
+
+.ToDo
+
+  テストケースのチェック自動化
+! 組み込み型(Int、Float、Bool、Array、Char、String、Date)
+  配列
+! 四則演算(Intのみ対応)
+  比較演算
+o 関数呼び出し
+  メソッド呼び出し
+  演算子定義
+  クロージャ変換
+  関数型の引数、戻り値
+  部分適用
+! 関数の総称型対応(段階を踏むケースは未対応 sub f(@T,@R), f2(@T) = f(1, @T), f2(2))
+o 構造体のnew
+  構造体の総称型対応
+  構造体の継承
+  構造体のキャスト
+  別型への型変換(IntからFloatなど)
+! if文(ifのcond部分にカッコをつけるか検討)
+  ネームスペースの実装
+  複数ファイルからのコンパイル
+  .NETのインポート
+  コマンドラインオプションをArchitectureへの適用
+  コンパイルエラーメッセージ

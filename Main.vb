@@ -44,7 +44,20 @@ Public Class Main
         Using reader As New IO.StreamReader(f)
 
             Dim parser As New MyParser
-            node = parser.Parse(New MyLexer(reader) With {.Parser = parser})
+            Dim lex As New MyLexer(reader) With {.Parser = parser}
+            Try
+                node = parser.Parse(lex)
+
+            Catch ex As SyntaxErrorException
+
+                Dim store = CType(lex.StoreToken, Token)
+                Console.WriteLine(ex.Message)
+                Console.WriteLine(lex.ReadLine)
+                Console.Write("".PadLeft(store.LineColumn.Value - 1))
+                Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
+                Return
+
+            End Try
         End Using
         Compile(node, opt)
         'Compile(loader.AddImport(f).Node)

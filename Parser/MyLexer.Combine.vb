@@ -8,7 +8,7 @@ Namespace Parser
 
         Public Overridable Property Parser As MyParser
 
-        Protected Overrides Sub SetCustomRegisterWord()
+        Public Overrides Sub Initialize()
 
             Me.ReservedWord.Clear()
             Me.ReservedWord("sub") = SymbolTypes.SUB
@@ -26,8 +26,9 @@ Namespace Parser
         Private indent_stack_ As New List(Of Integer)
 
 
-        Protected Overrides Function Reader() As IToken(Of INode)
+        Public Overrides Function Reader() As IToken(Of INode)
 
+            Me.CurrentWord.Clear()
             If Me.next_ Is Nothing Then Me.next_ = Me.ReaderNext
 
             If Me.next_.InputToken = SymbolTypes.EOL Then
@@ -471,6 +472,48 @@ RESTART_:
         Protected Overridable Function CreateNumericToken(n As UInt32) As Token
 
             Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(n)}
+        End Function
+
+#End Region
+
+#Region "read line"
+
+        Public Overridable Property CurrentWord As New System.Text.StringBuilder
+        Public Overridable Property CurrentLine As New System.Text.StringBuilder
+
+        Public Overrides Function ReadChar() As Char
+
+            If Me.EndOfStream() Then Throw New InvalidOperationException("ReadChar called end-of-stream")
+            Dim n = Me.ReadStream
+            Dim c = Char.ConvertFromUtf32(n)(0)
+            If n = &HA OrElse (n = &HD AndAlso Me.PeekStream() <> &HA) Then
+
+                Me.LineColumn = 1
+                Me.LineNumber += 1
+                Me.CurrentWord.Clear()
+                Me.CurrentLine.Clear()
+            Else
+                Me.LineColumn += 1
+                Me.CurrentWord.Append(c)
+                Me.CurrentLine.Append(c)
+            End If
+            Return c
+        End Function
+
+        Public Overrides Function ReadLine() As String
+
+            If Not Me.EndOfStream Then
+
+                Me.LineColumn = 1
+                Me.LineNumber += 1
+            End If
+            If Me.PeekBuffer >= 0 Then Me.CurrentLine.Append(Char.ConvertFromUtf32(Me.PeekBuffer)(0))
+            Me.PeekBuffer = -1
+            Me.CurrentLine.Append(Me.BaseReader.ReadLine)
+            Dim s = Me.CurrentLine.ToString
+            Me.CurrentWord.Clear()
+            Me.CurrentLine.Clear()
+            Return s
         End Function
 
 #End Region

@@ -16,7 +16,7 @@ Namespace Parser
 
         End Sub
 
-        Public Overrides Sub SetRegisterWord()
+        Public Overrides Sub GeneratorInitialize()
 
             Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedChar(")"c) = SymbolTypes.__x29
@@ -40,21 +40,19 @@ Namespace Parser
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
-
-            MyBase.SetRegisterWord()
         End Sub
 
-        Protected Overrides Function CreateEndOfToken() As IToken(Of INode)
+        Public Overrides Function CreateEndOfToken() As IToken(Of INode)
 
             Return New Token(SymbolTypes._END)
         End Function
 
-        Protected Overrides Function CreateCharToken(ByVal x As Integer) As IToken(Of INode)
+        Public Overrides Function CreateCharToken(ByVal x As Integer) As IToken(Of INode)
 
             Return New Token(CType(x, SymbolTypes))
         End Function
 
-        Protected Overrides Function CreateWordToken(ByVal x As Integer) As IToken(Of INode)
+        Public Overrides Function CreateWordToken(ByVal x As Integer) As IToken(Of INode)
 
             Return New Token(CType(x, SymbolTypes))
         End Function
