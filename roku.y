@@ -1,6 +1,7 @@
 
 %{
 Imports Roku.Node
+Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %}
@@ -23,6 +24,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list listn
 %type<VariableNode>   var varx atvar
+%type<VariableListNode> atvarn
 %type<NumericNode>    num
 %type<StringNode>     str
 
@@ -77,7 +79,8 @@ let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
 
 
 ########## struct ##########
-struct : STRUCT var EOL struct_block   {$4.Name = $2.Name : $$ = $4}
+struct : STRUCT var EOL struct_block                {$4.Name = $2.Name : $$ = $4}
+       | STRUCT var '(' atvarn ')' EOL struct_block {$7.Name = $2.Name : $7.Generics.AddRange($4.List) : $$ = $7}
 
 struct_block : struct_begin define END {$$ = Me.PopScope}
 struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber.Value))}
@@ -87,6 +90,8 @@ define : void
        | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
        | define sub
 
+atvarn : atvar                         {$$ = Me.CreateListNode($1)}
+       | atvarn ',' atvar              {$1.List.Add($3) : $$ = $1}
 
 ########## sub ##########
 sub   : SUB var '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}

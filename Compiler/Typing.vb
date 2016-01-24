@@ -80,13 +80,27 @@ Namespace Compiler
                         Return rk_function
                     End Function
 
+                Dim get_generic =
+                    Function(name As String, scope As INode)
+
+                        If TypeOf scope Is FunctionNode Then
+
+                            Return CType(scope, FunctionNode).Function.Generics.FindFirst(Function(x) name.Equals(x.Name))
+
+                        ElseIf TypeOf scope Is StructNode Then
+
+                            Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
+                        End If
+                        Throw New Exception("generic not found")
+                    End Function
+
                 Util.Traverse.NodesOnce(
                     node,
-                    New With {.Namespace = root, .Function = CType(Nothing, FunctionNode)},
+                    New With {.Namespace = root, .Scope = CType(Nothing, INode)},
                     Sub(parent, ref, child, current, isfirst, next_)
 
                         If Not isfirst Then Return
-                        next_(child, If(TypeOf child Is FunctionNode, New With {.Namespace = current.Namespace, .Function = CType(child, FunctionNode)}, current))
+                        next_(child, If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode, New With {.Namespace = current.Namespace, .Scope = child}, current))
 
                         If TypeOf child Is NumericNode Then
 
@@ -101,7 +115,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
-                            set_type(node_type, Function() If(node_type.IsGeneric, current.Function.Function.Generics.Find(Function(x) node_type.Name.Equals(x.Name)), current.Namespace.LoadLibrary(node_type.Name)))
+                            set_type(node_type, Function() If(node_type.IsGeneric, get_generic(node_type.Name, current.Scope), current.Namespace.LoadLibrary(node_type.Name)))
 
                         ElseIf TypeOf child Is LetNode Then
 
@@ -124,7 +138,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
-                            set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.Find(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
+                            set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.FindFirst(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
 
                         ElseIf TypeOf child Is DeclareNode Then
 

@@ -77,6 +77,9 @@ Namespace Parser
         ''' <summary>atvar</summary>
         atvar_1
 
+        ''' <summary>atvarn</summary>
+        atvarn
+
         ''' <summary>begin</summary>
         begin_1
 

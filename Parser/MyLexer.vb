@@ -1,5 +1,6 @@
 
 Imports Roku.Node
+Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
@@ -28,7 +29,6 @@ Namespace Parser
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ
-            Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
@@ -36,6 +36,7 @@ Namespace Parser
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR
+            Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
         End Sub
 
         Public Overrides Function CreateEndOfToken() As IToken(Of INode)

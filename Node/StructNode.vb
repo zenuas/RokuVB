@@ -32,6 +32,13 @@ Namespace Node
         Public Overridable Property Owner As IEvaluableNode Implements IScopeNode.Owner
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable ReadOnly Property Generics As New List(Of VariableNode)
+
+        Public Overridable ReadOnly Property Struct As RkStruct
+            Get
+                Return CType(Me.Type, RkStruct)
+            End Get
+        End Property
     End Class
 
 End Namespace

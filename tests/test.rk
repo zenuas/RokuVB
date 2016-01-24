@@ -1,4 +1,5 @@
-struct Hoge
+struct Hoge(@T)
+	var i: @T
 	var hello = "hello"
 	var hello_world = hello + " world"
 

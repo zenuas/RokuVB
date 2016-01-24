@@ -11,7 +11,7 @@ Namespace Util
         Public Function Car(Of T)(self As IEnumerable(Of T)) As T
 
             Dim e = self.GetEnumerator
-            e.MoveNext()
+            If Not e.MoveNext Then Throw New IndexOutOfRangeException
             Return e.Current
         End Function
 
@@ -232,13 +232,13 @@ Namespace Util
         End Function
 
         <Extension>
-        Public Function Find(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As T
+        Public Function FindFirst(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As T
 
             Return self.Where(f).Car
         End Function
 
         <Extension>
-        Public Function Find(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As T
+        Public Function FindFirst(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As T
 
             Return self.Where(f).Car
         End Function

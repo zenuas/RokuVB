@@ -26,7 +26,7 @@ Namespace Manager
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
-            Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
+            Dim x = Me.Generics.FindFirst(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
             x = New RkGenericEntry With {.Name = name}
@@ -68,7 +68,7 @@ Namespace Manager
 
             For Each fix In Me.Fixed
 
-                If fix.Apply.And(Function(g, i) values.Find(Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
+                If fix.Apply.And(Function(g, i) values.FindFirst(Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
             Next
 
             Dim x = CType(Me.CloneGeneric, RkFunction)
@@ -78,7 +78,7 @@ Namespace Manager
                 x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
             x.Body.AddRange(Me.Body)
-            x.Apply = Me.Generics.Map(Function(g) values.Find(Function(v) v.Name.Equals(g.Name)).Value)
+            x.Apply = Me.Generics.Map(Function(g) values.FindFirst(Function(v) v.Name.Equals(g.Name)).Value)
             x.FunctionNode = Me.FunctionNode
             Me.Fixed.Add(x)
             Return x
