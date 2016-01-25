@@ -11,7 +11,7 @@ Namespace Manager
 
 
         Public Overridable Property Name As String Implements IEntry.Name
-        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, RkStruct)
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct))
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of RkFunction))
         Public Overridable ReadOnly Property LoadPaths As New List(Of IEntry)
 
@@ -28,7 +28,7 @@ Namespace Manager
 
         Public Overridable Function LoadLibrary(name As String) As IType
 
-            If Me.Structs.ContainsKey(name) Then Return Me.Structs(name)
+            If Me.Structs.ContainsKey(name) Then Return Me.GetStruct(name)
 
             ' name format
             ' ok "Int"
@@ -50,7 +50,13 @@ Namespace Manager
 
         Public Overridable Sub AddStruct(x As RkStruct) Implements IAddStruct.AddStruct
 
-            Me.Structs.Add(x.Name, x)
+            Me.AddStruct(x, x.Name)
+        End Sub
+
+        Public Overridable Sub AddStruct(x As RkStruct, name As String) Implements IAddStruct.AddStruct
+
+            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of RkStruct))
+            Me.Structs(name).Add(x)
         End Sub
 
         Public Overridable Sub AddFunction(x As RkFunction) Implements IAddFunction.AddFunction
@@ -58,19 +64,16 @@ Namespace Manager
             Dim name = x.Name
             If Not Me.Functions.ContainsKey(name) Then Me.Functions.Add(name, New List(Of RkFunction))
             Me.Functions(name).Add(x)
-
-            'Dim name = x.CreateManglingName
-            'If Me.Local.ContainsKey(name) Then
-
-            '    If Me.Local(name) IsNot x Then
-
-            '        ' check
-            '    End If
-            'Else
-
-            '    Me.Local.Add(name, x)
-            'End If
         End Sub
+
+        Public Overridable Function GetStruct(name As String, ParamArray args() As IType) As RkStruct Implements IAddStruct.GetStruct
+
+            For Each f In Me.Structs(name).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
+
+                If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
+            Next
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
 
         Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
 
@@ -79,7 +82,7 @@ Namespace Manager
                 If f.Arguments.And(Function(x, i) x.Value Is args(i)) Then Return f
             Next
 
-            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric)
+            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) TypeOf arg.Value Is RkGenericEntry OrElse arg.Value Is args(i)))
 
                 Dim xs(f.Generics.Count - 1) As IType
                 For i = 0 To f.Arguments.Count - 1
@@ -97,9 +100,7 @@ Namespace Manager
                     End If
                 Next
 
-                Dim x = CType(f.FixedGeneric(xs), RkFunction)
-                Me.AddFunction(x)
-                Return x
+                Return CType(f.FixedGeneric(xs), RkFunction)
             Next
 
             Throw New ArgumentException($"``{name}'' was not found")

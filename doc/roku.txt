@@ -355,6 +355,53 @@ sub @T[].do(f: (@T))
 よりメソッドっぽくなる
 sub String.compare(a: String) Bool
 
+.構造体の総称型対応
+
+struct Hoge(@T1, @T2)
+
+sub fa(a: @Ta) Hoge(@Ta, Int)
+sub fb(a: @Tb) Hoge(String, @Tb)
+sub fc(a: @Tc, @Td) Hoge(@Tc, @Td)
+sub fd(a: @Te) Hoge(@Te, Int)
+
+x = fa(Int)
+y = fc(Int, Int)
+z = fb(Int)
+w = fd(String)
+
+関数の戻り値の型は
+fa(Int)->Hoge(Int, Int) と
+fc(Int, Int)->Hoge(Int, Int) は同じ型として扱いたい
+
+fb(Int)->Hoge(String, Int) と
+fd(String)->Hoge(String, Int) も同じ型になる
+
+ただしHoge(@Ta, Int) と Hoge(@Te, Int)は同じでもいい？？
+
+Applyは解決した型だけでなく、解決していない型も持つ
+FixedGenericは次の通り動く
++ 解決したい型のApplyをコピーする(a.Applyとする)
++ a.Applyの正しい位置に解決したい型を入れる
+  (Hoge(@Ta, Int) と Hoge(@Te, Int)を同型にしたければRkGenericEntryの箇所はnullを入れる)
++ Namespaceからa.Applyと同じ配列のApplyを探す
++ ユニークであればNamespaceに入れ、すでにあればそれを返す
+
+正しい位置に解決したい型をいれるのが難しい
+struct Hoge(@T1, @T2, @T3)            # Hoge(@T1,@T2,@T3)     Apply(nil,nil,nil)ができる
+sub Foo(@T4, @T5) Hoge(Int, @T4, @T5) # Hoge(Int,@T4,@T5)     Apply(Int,nil,nil)ができる
+sub Bar(@T6) Foo(String, @T6)         # Hoge(Int,String,@T6)  Apply(Int,String,nil)ができる
+sub Baz(@T7) Bar(@T7)                 # Hoge(Int,String,@T7)  Apply(Int,String,nil)ができる
+var a = Baz(Char)                     # Hoge(Int,String,Char) Apply(Int,String,Char)ができる
+これを@T7から見ると@T3の位置に直接つながるか、@T6->@T5->@T3のようにつながりHogeの3番目に入ることを
+決定できないといけない
+
+var t3 = Hoge.DefineGeneric("@T3") # t3 には3番目の位置であるマーク
+var t4 = Foo.DefineGeneric("@T4")  # t4 にはFooの1番目の位置であるマーク
+var t5 = Foo.DefineGeneric("@T5")  # t5 にはFooの2番目の位置であるマーク
+
+var foo_return = Hoge.FixedGeneric("@T1" => Int, "@T2" => t4, "@T3" => t5)
+# ここで@T2とt4を、@T3とt5を結び付けられる
+
 .ToDo
 
   テストケースのチェック自動化

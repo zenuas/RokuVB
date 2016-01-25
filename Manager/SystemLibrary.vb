@@ -13,11 +13,11 @@ Namespace Manager
 
             ' struct Numeric
             ' sub +(@T: Numeric)(@T, @T) @T
-            Dim num As New RkStruct With {.Name = "Numeric"}
+            Dim num As New RkStruct With {.Name = "Numeric", .Namespace = Me}
             Dim add_native_function =
                 Function(name As String, op As RkOperator) As RkNativeFunction
 
-                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op}
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
                     Dim f_t = f.DefineGeneric("@T")
                     f.Return = f_t
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
@@ -40,7 +40,7 @@ Namespace Manager
             Dim define_num =
                 Function(name As String, byte_size As Integer)
 
-                    Dim x As New RkStruct With {.Name = name}
+                    Dim x As New RkStruct With {.Name = name, .Namespace = Me}
                     x.Super = num
                     Me.AddStruct(x)
                     Return x
@@ -49,32 +49,32 @@ Namespace Manager
             Dim int32 = define_num("Int32", 4)
             Dim int16 = define_num("Int16", 2)
             Dim int8 = define_num("Int8", 1)
-            Me.Structs.Add("Int", int32)
+            Me.AddStruct(int32, "Int")
 
             ' struct Array(@T)
             ' struct Char : Int16
             ' struct String : Array(Char)
-            Dim arr As New RkStruct With {.Name = "Array"}
+            Dim arr As New RkStruct With {.Name = "Array", .Namespace = Me}
             Dim arr_t = arr.DefineGeneric("@T")
             Me.AddStruct(arr)
-            Dim chr As New RkStruct With {.Name = "Char", .Super = int16}
+            Dim chr As New RkStruct With {.Name = "Char", .Super = int16, .Namespace = Me}
             Me.AddStruct(chr)
-            Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr)}
+            Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
             Me.AddStruct(str)
 
             ' sub print(s: @T)
-            Dim print As New RkFunction With {.Name = "print"}
+            Dim print As New RkFunction With {.Name = "print", .Namespace = Me}
             Dim print_t = print.DefineGeneric("@T")
             print.Arguments.Add(New NamedValue With {.Name = "s", .Value = print_t})
             Me.AddFunction(print)
 
             ' sub return(s: @T)
-            Dim return_ As New RkFunction With {.Name = "return"}
+            Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
             Dim return_t = return_.DefineGeneric("@T")
             return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
             Me.AddFunction(return_)
 
-            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc}
+            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = Me}
             Dim alloc_t = alloc.DefineGeneric("@T")
             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
             alloc.Return = alloc_t

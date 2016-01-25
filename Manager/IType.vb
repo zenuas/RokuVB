@@ -7,6 +7,8 @@ Namespace Manager
     Public Interface IType
         Inherits IEntry
 
+        Property [Namespace] As RkNamespace
+
         Function GetValue(name As String) As IType
 
         Function DefineGeneric(name As String) As RkGenericEntry

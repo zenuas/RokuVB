@@ -8,7 +8,9 @@ Namespace Manager
     Public Class RkGenericEntry
         Implements IType
 
+        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IType.Name
+        Public Overridable Property ApplyIndex As Integer
         'Public Overridable Property Reference As IType = Nothing
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
@@ -43,7 +45,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} {Me.Name}"
+            Return Me.Name
         End Function
     End Class
 

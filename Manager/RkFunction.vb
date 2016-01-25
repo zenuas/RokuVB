@@ -9,13 +9,13 @@ Namespace Manager
     Public Class RkFunction
         Implements IType
 
+        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable ReadOnly Property Arguments As New List(Of NamedValue)
         Public Overridable Property [Return] As IType
         Public Overridable ReadOnly Property Body As New List(Of RkCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
-        Public Overridable Property Apply As IEnumerable(Of IType) = Nothing
-        Public Overridable ReadOnly Property Fixed As New List(Of RkFunction)
+        Public Overridable ReadOnly Property Apply As New List(Of IType)
         Public Overridable Property FunctionNode As FunctionNode = Nothing
 
 
@@ -29,8 +29,9 @@ Namespace Manager
             Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name}
+            x = New RkGenericEntry With {.Name = name, .Namespace = Me.Namespace, .ApplyIndex = Me.Generics.Count}
             Me.Generics.Add(x)
+            Me.Apply.Add(Nothing)
             Return x
         End Function
 
@@ -66,32 +67,37 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            For Each fix In Me.Fixed
+            Dim apply_map = values.ToHash_KeyDerivation(Function(x) Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
+            Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
+            For Each fix In Me.Namespace.Functions(Me.Name).Where(Function(g) g.Apply.Count = apply.Length)
 
-                If fix.Apply.And(Function(g, i) values.FindFirst(Function(v) v.Name.Equals(Me.Generics(i).Name)).Value Is g) Then Return fix
+                If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
 
-            Dim x = CType(Me.CloneGeneric, RkFunction)
-            If Me.Return IsNot Nothing Then x.Return = Me.Return.FixedGeneric(values)
+            Dim clone = CType(Me.CloneGeneric, RkFunction)
+            values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
+            If Me.Return IsNot Nothing Then clone.Return = Me.Return.FixedGeneric(values)
             For Each v In Me.Arguments
 
-                x.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
+                clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
             Next
-            x.Body.AddRange(Me.Body)
-            x.Apply = Me.Generics.Map(Function(g) values.FindFirst(Function(v) v.Name.Equals(g.Name)).Value)
-            x.FunctionNode = Me.FunctionNode
-            Me.Fixed.Add(x)
-            Return x
+            clone.Body.AddRange(Me.Body)
+            clone.Apply.Clear()
+            clone.Apply.AddRange(apply)
+            clone.FunctionNode = Me.FunctionNode
+            Return clone
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.Generics.Count > 0
+            Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Return New RkFunction With {.Name = Me.Name}
+            Dim x = New RkFunction With {.Name = Me.Name, .Namespace = Me.Namespace}
+            x.Namespace.AddFunction(x)
+            Return x
         End Function
 
         Public Overridable Function CreateCall(ParamArray args() As RkValue) As RkCode0()

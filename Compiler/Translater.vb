@@ -15,12 +15,13 @@ Namespace Compiler
             Dim returns = root.Functions("return")
 
             Dim make_func =
-                Sub(rk_func As RkFunction, node_func As FunctionNode, func_stmts As List(Of IEvaluableNode))
+                Sub(rk_func As RkFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
                     Dim fix_map As New Dictionary(Of String, IType)
-                    If rk_func.Apply IsNot Nothing AndAlso node_func IsNot Nothing Then rk_func.Apply.Do(Sub(x, i) fix_map(node_func.Function.Generics(i).Name) = x)
+                    If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)
+                    If TypeOf scope Is StructNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, StructNode).Struct.Generics(i).Name) = x)
 
                     Dim to_value =
                         Function(x As IEvaluableNode)
@@ -30,6 +31,7 @@ Namespace Compiler
                             If TypeOf x Is VariableNode Then Return New RkValue With {.Name = CType(x, VariableNode).Name, .Type = t, .Scope = rk_func}
                             If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
                             If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is StructNode Then Return New RkValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = rk_func}
                             Return New RkValue With {.Type = t, .Scope = rk_func}
                         End Function
 
@@ -92,12 +94,9 @@ Namespace Compiler
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
-                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then
-
-                                    Return func.Function.CreateCallReturn(to_value(let_.Var), to_value(func.Expression))
-                                Else
-                                    Return func.Function.CreateCallReturn(to_value(let_.Var), func.Arguments.Map(Function(x) to_value(x)).ToArray)
-                                End If
+                                Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
+                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then args.Insert(0, New RkValue With {.Type = func.Type, .Scope = rk_func})
+                                Return func.Function.CreateCallReturn(to_value(let_.Var), args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse
@@ -171,7 +170,7 @@ Namespace Compiler
 
             If TypeOf node Is BlockNode Then
 
-                Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}}
+                Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}, .Namespace = root}
                 make_func(ctor, Nothing, CType(node, BlockNode).Statements)
                 root.AddFunction(ctor)
             End If
@@ -185,8 +184,11 @@ Namespace Compiler
 
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
-                        rk_struct.Initializer = CType(current.GetFunction("#Alloc", rk_struct), RkNativeFunction)
-                        make_func(rk_struct.Initializer, Nothing, node_struct.Statements)
+                        For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
+
+                            struct.Initializer = CType(current.GetFunction("#Alloc", struct), RkNativeFunction)
+                            make_func(struct.Initializer, node_struct, node_struct.Statements)
+                        Next
 
                     ElseIf TypeOf child Is FunctionNode Then
 

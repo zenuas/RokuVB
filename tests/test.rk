@@ -3,5 +3,5 @@ struct Hoge(@T)
 	var hello = "hello"
 	var hello_world = hello + " world"
 
-var a = Hoge()
+var a = Hoge(Int)
 print(a.hello_world)

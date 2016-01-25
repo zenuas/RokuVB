@@ -104,14 +104,18 @@ Namespace Architecture.CIL
         Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            map(ns.Structs("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
-            map(ns.Structs("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
-            map(ns.Structs("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
-            map(ns.Structs("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
-            For Each struct In ns.Structs.Where(Function(x) x.Value.StructNode IsNot Nothing)
+            map(ns.GetStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
+            map(ns.GetStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
+            map(ns.GetStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
+            map(ns.GetStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
+            For Each ss In ns.Structs
 
-                map(struct.Value) = New TypeData With {.Type = Me.Module.DefineType(struct.Key)}
+                For Each struct In ss.Value.Where(Function(x) Not x.HasGeneric AndAlso x.StructNode IsNot Nothing)
+
+                    map(struct) = New TypeData With {.Type = Me.Module.DefineType(struct.CreateManglingName)}
+                Next
             Next
+
             For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
 
                 Dim builder = CType(v.Value.Type, TypeBuilder)

@@ -21,7 +21,7 @@ Namespace Compiler
                     If TypeOf child Is StructNode Then
 
                         Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct}
+                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct, .Namespace = current}
                         node_struct.Type = rk_struct
                         node_struct.Generics.Do(Sub(x) rk_struct.DefineGeneric(x.Name))
                         current.AddStruct(rk_struct)
@@ -31,14 +31,23 @@ Namespace Compiler
                             If TypeOf x Is LetNode Then
 
                                 Dim let_ = CType(x, LetNode)
-                                rk_struct.Local.Add(let_.Var.Name, let_.Type)
+                                rk_struct.Local.Add(let_.Var.Name, If(let_.Declare?.IsGeneric, rk_struct.Generics.FindFirst(Function(g) g.Name.Equals(let_.Declare.Name)), let_.Type))
                             End If
                         Next
+
+                        If rk_struct.HasGeneric Then
+
+                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = rk_struct.Namespace}
+                            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = rk_struct})
+                            node_struct.Generics.Do(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = alloc.DefineGeneric(x.Name)}))
+                            alloc.Return = rk_struct.FixedGeneric(alloc.Arguments.Range(1).ToArray)
+                            alloc.Namespace.AddFunction(alloc)
+                        End If
 
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func}
+                        Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Namespace = current}
                         node_func.Type = rk_func
                         rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
                         If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
@@ -93,6 +102,13 @@ Namespace Compiler
                             Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
                         End If
                         Throw New Exception("generic not found")
+                    End Function
+
+                Dim get_struct =
+                    Function(current As RkNamespace, n As IEvaluableNode)
+
+                        If TypeOf n Is VariableNode Then Return current.GetStruct(CType(n, VariableNode).Name)
+                        Throw New Exception("struct not found")
                     End Function
 
                 Util.Traverse.NodesOnce(
@@ -157,7 +173,13 @@ Namespace Compiler
 
                             If TypeOf node_call.Expression Is FunctionNode Then rk_function = set_func(CType(node_call.Expression, FunctionNode))
                             If TypeOf node_call.Expression Is VariableNode Then rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
-                            If TypeOf node_call.Expression Is StructNode Then rk_function = current.Namespace.GetFunction("#Alloc", node_call.Expression.Type)
+                            If TypeOf node_call.Expression Is StructNode Then
+
+                                Dim node_struct = CType(node_call.Expression, StructNode)
+                                Dim args = {node_call.Expression.Type}.ToList
+                                If node_struct.Struct.HasGeneric Then args.AddRange(node_call.Arguments.Map(Function(x) get_struct(current.Namespace, x)).ToArray)
+                                rk_function = current.Namespace.GetFunction("#Alloc", args.ToArray)
+                            End If
 
                             If node_call.Function Is Nothing AndAlso
                                 rk_function IsNot Nothing Then
@@ -177,7 +199,23 @@ Namespace Compiler
 
                             For Each s In node_struct.Scope.Where(Function(x) TypeOf x.Value Is LetNode)
 
-                                rk_struct.Local(s.Key) = CType(s.Value, LetNode).Type
+                                Dim t = CType(s.Value, LetNode).Type
+                                If rk_struct.Local(s.Key) Is Nothing Then
+
+                                    rk_struct.Local(s.Key) = t
+                                    If rk_struct.Local(s.Key) IsNot Nothing Then type_fix = True
+                                End If
+                                If TypeOf t IsNot RkGenericEntry Then
+
+                                    For Each fix In rk_struct.Namespace.Structs(rk_struct.Name)
+
+                                        If fix.Local(s.Key) Is Nothing Then
+
+                                            fix.Local(s.Key) = t
+                                            If fix.Local(s.Key) IsNot Nothing Then type_fix = True
+                                        End If
+                                    Next
+                                End If
                             Next
 
                         End If
