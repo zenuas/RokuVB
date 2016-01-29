@@ -173,12 +173,18 @@ RESTART_:
             ElseIf c = "="c Then
 
                 ' =    -> Equal
+                ' =>   -> Allow
                 ' ===? -> Operator
                 If Not Me.EndOfStream AndAlso Me.NextChar = "="c Then
 
                     buf.Append(Me.ReadChar())
                     If Not Me.EndOfStream AndAlso Me.NextChar = "="c Then buf.Append(Me.ReadChar())
                     Return New Token(SymbolTypes.OPE, buf.ToString)
+
+                ElseIf Not Me.EndOfStream AndAlso Me.NextChar = ">"c Then
+
+                    buf.Append(Me.ReadChar())
+                    Return New Token(SymbolTypes.ALLOW, buf.ToString)
                 Else
                     Return New Token(SymbolTypes.EQ, buf.ToString)
                 End If

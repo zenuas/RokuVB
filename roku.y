@@ -31,6 +31,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  ELSE
 %token<NumericNode>  NUM
 %left  OPE
+%left  '.'
+%left  ALLOW
 
 %left  '?'
 %right '(' '['
@@ -60,6 +62,7 @@ expr : var
      | str
      | num
      | call
+     | lambda
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
      | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}
@@ -73,6 +76,7 @@ list  : void             {$$ = Me.CreateListNode(Of IEvaluableNode)}
       | listn extra
 listn : expr             {$$ = Me.CreateListNode($1)}
       | listn ',' expr   {$1.List.Add($3) : $$ = $1}
+
 
 ########## let ##########
 let : LET var EQ expr    {$$ = Me.CreateLetNode($2, $4)}
@@ -93,6 +97,7 @@ define : void
 atvarn : atvar                         {$$ = Me.CreateListNode($1)}
        | atvarn ',' atvar              {$1.List.Add($3) : $$ = $1}
 
+
 ########## sub ##########
 sub   : SUB var '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
 args  : void           {$$ = Me.CreateListNode(Of DeclareNode)}
@@ -103,8 +108,25 @@ decla : var ':' type   {$$ = New DeclareNode($1, $3)}
 type  : var            {$$ = New TypeNode($1)}
       | '[' type ']'
       | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
+      | '{' types '}'            {}
+      | '{' types '}' ALLOW type {}
 typex : void
       | type
+types : void
+      | typen extra
+typen : type
+      | typen ',' type
+
+
+########## lambda ##########
+lambda      : '{' lambda_args '}' ALLOW lambda_func
+lambda_func : expr
+            | block
+lambda_arg  : var
+lambda_args : void
+            | lambda_argn extra
+lambda_argn : lambda_arg
+            | lambda_argn ',' lambda_arg
 
 
 ########## if ##########

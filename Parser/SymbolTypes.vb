@@ -26,6 +26,15 @@ Namespace Parser
         ''' <summary>']'</summary>
         __x5D
 
+        ''' <summary>'{'</summary>
+        __x7B
+
+        ''' <summary>'}'</summary>
+        __x7D
+
+        ''' <summary>ALLOW</summary>
+        ALLOW
+
         ''' <summary>ATVAR</summary>
         ATVAR
 
@@ -110,6 +119,21 @@ Namespace Parser
         ''' <summary>ifthen</summary>
         ifthen
 
+        ''' <summary>lambda</summary>
+        lambda
+
+        ''' <summary>lambda_arg</summary>
+        lambda_arg
+
+        ''' <summary>lambda_argn</summary>
+        lambda_argn
+
+        ''' <summary>lambda_args</summary>
+        lambda_args
+
+        ''' <summary>lambda_func</summary>
+        lambda_func
+
         ''' <summary>let</summary>
         let_1
 
@@ -148,6 +172,12 @@ Namespace Parser
 
         ''' <summary>type</summary>
         type
+
+        ''' <summary>typen</summary>
+        typen
+
+        ''' <summary>types</summary>
+        types
 
         ''' <summary>typex</summary>
         typex

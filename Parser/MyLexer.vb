@@ -23,6 +23,8 @@ Namespace Parser
             Me.ReservedChar("?"c) = SymbolTypes.__x3F
             Me.ReservedChar(":"c) = SymbolTypes.__x3A
             Me.ReservedChar(","c) = SymbolTypes.__x2C
+            Me.ReservedChar("{"c) = SymbolTypes.__x7B
+            Me.ReservedChar("}"c) = SymbolTypes.__x7D
             Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("END") = SymbolTypes.[END]
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
@@ -30,6 +32,7 @@ Namespace Parser
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
+            Me.ReservedWord("ALLOW") = SymbolTypes.ALLOW
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
