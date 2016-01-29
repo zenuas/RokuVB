@@ -11,7 +11,7 @@ REM set VBFLAGS=/debug+ /define:"Debug"
 
 if not exist %WORK% mkdir %WORK%
 
-call yanp.bat --quit
+call yanp.bat --make --quit
 vbc ^
 	/nologo ^
 	/out:%OUT% ^

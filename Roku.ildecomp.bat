@@ -3,17 +3,17 @@
 setlocal ENABLEDELAYEDEXPANSION
 
 set PATH=%PATH%;%PROGRAMFILES(X86)%\MSBuild\14.0\Bin;%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
-set  BAT=Roku.release.bat ildecomp.bat
+set  BAT=Roku.release.bat Roku.ildecomp.bat
 set WORK=bin\netf4
 set  OUT=%WORK%\roku.exe
 set   RK=tests/test.rk
 
 call :filelist SRCS *.vb
 
-call :make Compiler\MyParser.vb roku.y %BAT% || call :echoexec call yanp.bat --quit
-call :make %OUT% %SRCS%                %BAT% || call :echoexec call Roku.release.bat --quit
-call :make a.exe %OUT% %RK%            %BAT% || call :echoexec %OUT% %RK% -o a.exe -a CIL
-call :make a.il  a.exe                 %BAT% || call :echoexec ildasm a.exe /out:a.il /nobar
+call :make Parser\MyParser.vb roku.y %BAT% || call :echoexec call yanp.bat --quit
+call :make %OUT% %SRCS%              %BAT% || call :echoexec call Roku.release.bat --quit
+call :make a.exe %OUT% %RK%          %BAT% || call :echoexec %OUT% %RK% -o a.exe -a CIL
+call :make a.il  a.exe               %BAT% || call :echoexec ildasm a.exe /out:a.il /nobar
 
 call :echoexec .\a.exe
 

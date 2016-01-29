@@ -1,11 +1,22 @@
 @echo off
 prompt $$$S
 
+set MAKE=0
+set QUIT=0
+for %%v in (%*) do (
+  if "%%v" equ "--make" set MAKE=1
+  if "%%v" equ "--quit" set QUIT=1
+)
+
 mkdir Compiler 2> NUL
 
-cscript //nologo ..\legacy\build-tools\make.vbs Parser\MyParser.vb roku.y || call :yanp
+if "%MAKE%" equ "1" (
+  cscript //nologo ..\legacy\build-tools\make.vbs Parser\MyParser.vb roku.y || call :yanp
+) else (
+  call :yanp
+)
 
-if "%1" neq "--quit" pause
+if "%QUIT%" equ "0" pause
 exit /b 0
 
 
