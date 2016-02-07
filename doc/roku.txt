@@ -402,6 +402,136 @@ var t5 = Foo.DefineGeneric("@T5")  # t5 にはFooの2番目の位置であるマーク
 var foo_return = Hoge.FixedGeneric("@T1" => Int, "@T2" => t4, "@T3" => t5)
 # ここで@T2とt4を、@T3とt5を結び付けられる
 
+.CILで関数型を実装する方法
+
+CILでクロージャを見込んだ関数型を実装するためにはソースを変換する
+
+var a = 1
+func({x} => x + a)
+を定義するとき
+
+これではいけない、anonymous_functionにaをbindできていない
+ldc.i4.1
+stloc a
+ldftn anonymous_function(int32)
+call func
+
+CILでは関数にバインドはできないのでクラスを作ってaをフィールドにする
+高階関数はメソッドにする
+class Anonymous
+{
+	var a: int32
+	sub anonymous_function(x: int32) int32
+	{
+		ldarg.1 # x
+		ldarg.0 # self.a
+		ldfld Anonymous::a
+		add # x + self.a
+		ret
+	}
+}
+newobj Anonymous::.ctor # var obj = Anonymous()
+stloc obj
+ldloc obj # obj.a = 1
+ldc.i4.1
+stfld Anonymous::a
+ldloc obj # obj.anonymous_function
+ldftn anonymous_function(int32)
+call func # func(obj.anonymous_function)
+
+
+クロージャが入れ子になるともう少し複雑になる
+
+var a = 1
+var f1 = {x} =>
+	return({y} => x + y + a)
+func(f1(2)(3))
+
+案1 クロージャのメンバに変数を持つ
+class closure1
+	var closure: closure2
+	sub f1(x: int32) {int32}=>int32
+		closure.x = x
+		return(closure.anonymous_function)
+class closure2
+	var x: int32
+	var a: int32
+	sub anonymous_function(y: int32) int32
+		return(self.x + y + self.a)
+var obj1       = closure1()
+obj1.closure   = closure2()
+obj1.closure.a = 1
+func(obj1.f1(2)(3))
+
+ポイントは2つ
+* 入れ子になっている変数は最終の参照先のフィールドとする
+* クロージャを呼び出す関数(f1)はフィールドにクロージャのクラスを持つ
+
+一見closure2はclosure1が生成してもよいように思えるが
+class closure1
+	var closure = closure2() # NG
+同じクロージャを何回も呼ぶときに問題になる
+var a = 1
+var f1 = {x} =>
+	return({y} => x + y + a)
+func(f1(2)(3) + f1(4)(5))
+closure1がclosure2を生成するとaの実体が異なってしまう
+このケースではclosure2の生成は呼び出し側がすればよい
+
+ただし何段も入れ子のクロージャを作ると面倒になる
+このケースでは呼び出し側がclosure2を生成するコストは無駄に近い
+var a = 1
+var f1 = {x} =>
+	if x > 2
+		return({y} => x + y + a)
+	else
+		return({y} => y)
+func(f1(2)(3))
+
+
+
+案2 クロージャが手を出す変数を集めたクラス(Frame)を作る
+struct Frame
+	var a: int32
+	var x: int32
+class closure1
+	var frame: Frame
+	sub f1(x: int32) {int32}=>int32
+		frame.x = x
+		var closure = closure2()
+		closure.frame = self.frame
+		return(closure.anonymous_function)
+class closure2
+	var frame: Frame
+	sub anonymous_function(y: int32) int32
+		return(frame.x + y + frame.a)
+var obj1 = closure1()
+frame    = Frame()
+frame.a  = 1
+obj1.frame = frame
+func(obj1.f1(2)(3))
+
+ポイントは案1と大体同じ
+一見コード量は多いが変数がクロージャに参照されていればframe
+それ以外はローカル変数、と所属先を簡単に求めることができ単純になる
+案1の欠点であるclosure2の無駄な生成コストが比較的まし
+
+
+クロージャが参照しうる変数を一括でframeにまとめるため
+無駄な参照が残ってしまいGCが不利になる
+var a = 1
+var b = 2
+var f1 = {x} =>
+	if x > 2
+		return({y} => x + y + a)
+	else
+		return({y} => x + y + b)
+func(f1(0))
+この場合、「{y} => x + y + b」が戻り値になるが
+同一フレームにaも一緒におり、必要ないはずのaがGCされない
+
+
+
 .ToDo
 
   テストケースのチェック自動化

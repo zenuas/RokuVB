@@ -1,7 +1,6 @@
-struct Hoge(@T)
-	var i: @T
-	var hello = "hello"
-	var hello_world = hello + " world"
+sub f1() {}
+	return(f2)
+	sub f2()
+		print(1)
 
-var a = Hoge(Int)
-print(a.hello_world)
+f1()()

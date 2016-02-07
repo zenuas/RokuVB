@@ -2,6 +2,7 @@
 Imports Roku.Node
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
@@ -394,7 +395,7 @@ Namespace Parser
 
                 Case -44
                     System.Diagnostics.Debug.WriteLine("type : '[' type ']' .")
-                    yy_value = Me.DefaultAction(3)
+                    CType(Me.GetValue(-2), TypeNode).IsArray = True : yy_value = CType(Me.GetValue(-2), TypeNode)
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case -45
@@ -404,7 +405,7 @@ Namespace Parser
 
                 Case -46
                     System.Diagnostics.Debug.WriteLine("type : '{' types '}' ALLOW type .")
-                    yy_value = Me.DefaultAction(5)
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode).List.ToArray, CType(Me.GetValue(-1), TypeNode),      CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -47
@@ -419,7 +420,7 @@ Namespace Parser
 
                 Case -49
                     System.Diagnostics.Debug.WriteLine("types : void .")
-                    yy_value = Me.DefaultAction(1)
+                    yy_value = Me.CreateListNode(Of TypeNode)
                     yy_token = Me.DoAction(SymbolTypes.types, 1, yy_value)
 
                 Case -50
@@ -429,12 +430,12 @@ Namespace Parser
 
                 Case -51
                     System.Diagnostics.Debug.WriteLine("typen : type .")
-                    yy_value = Me.DefaultAction(1)
+                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.typen, 1, yy_value)
 
                 Case -52
                     System.Diagnostics.Debug.WriteLine("typen : typen ',' type .")
-                    yy_value = Me.DefaultAction(3)
+                    CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.typen, 3, yy_value)
 
                 Case -53
@@ -634,7 +635,7 @@ Namespace Parser
 
                 Case -92
                     System.Diagnostics.Debug.WriteLine("type : '{' types '}' .")
-                    yy_value = Me.DefaultAction(3)
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-2), TypeListNode).List.ToArray, Nothing, CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case Else

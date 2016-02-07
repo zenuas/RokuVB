@@ -129,6 +129,19 @@ Namespace Parser
             Return f
         End Function
 
+        Protected Overridable Function CreateFunctionTypeNode(
+                args() As TypeNode,
+                ret As TypeNode,
+                token As Token
+            ) As TypeFunctionNode
+
+            Dim t As New TypeFunctionNode
+            t.Arguments = args
+            t.Return = ret
+            t.AppendLineNumber(token)
+            Return t
+        End Function
+
         Protected Overridable Function ToBlock(if_ As IfNode) As BlockNode
 
             Dim block = New BlockNode(if_.LineNumber.Value)

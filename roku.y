@@ -3,6 +3,7 @@
 Imports Roku.Node
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %}
 
@@ -18,6 +19,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<DeclareNode>    decla
 %type<DeclareListNode> args argn
 %type<TypeNode>       type typex
+%type<TypeListNode>   types typen
 %type<IfNode>         if ifthen elseif
 %type<StructNode>     struct struct_block
 %type<IEvaluableNode> expr
@@ -106,16 +108,16 @@ argn  : decla          {$$ = Me.CreateListNode($1)}
       | argn ',' decla {$1.List.Add($3) : $$ = $1}
 decla : var ':' type   {$$ = New DeclareNode($1, $3)}
 type  : var            {$$ = New TypeNode($1)}
-      | '[' type ']'
+      | '[' type ']'   {$2.IsArray = True : $$ = $2}
       | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
-      | '{' types '}'            {}
-      | '{' types '}' ALLOW type {}
+      | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
+      | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
 typex : void
       | type
-types : void
+types : void           {$$ = Me.CreateListNode(Of TypeNode)}
       | typen extra
-typen : type
-      | typen ',' type
+typen : type           {$$ = Me.CreateListNode($1)}
+      | typen ',' type {$1.List.Add($3) : $$ = $1}
 
 
 ########## lambda ##########

@@ -101,9 +101,9 @@ Namespace Architecture.CIL
             End Try
         End Sub
 
-        Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of RkStruct, TypeData)
+        Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of IType, TypeData)
 
-            Dim map As New Dictionary(Of RkStruct, TypeData)
+            Dim map As New Dictionary(Of IType, TypeData)
             map(ns.GetStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
             map(ns.GetStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
             map(ns.GetStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
@@ -120,29 +120,29 @@ Namespace Architecture.CIL
 
                 Dim builder = CType(v.Value.Type, TypeBuilder)
                 v.Value.Constructor = builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes)
-                For Each x In v.Key.Local
+                For Each x In CType(v.Key, RkStruct).Local
 
-                    v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkStructToCILType(x.Value, map).Type, FieldAttributes.Public)
+                    v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
             Next
             Return map
         End Function
 
-        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
+        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of IType, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
 
             Dim map As New Dictionary(Of RkFunction, MethodInfo)
             For Each fs In ns.Functions
 
                 For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing)
 
-                    Dim args = Me.RkStructToCILType(f.Arguments, structs)
+                    Dim args = Me.RkToCILType(f.Arguments, structs)
                     Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                    map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkStructToCILType(f.Return, structs).Type, args)
+                    map(f) = Me.Module.DefineGlobalMethod(f.CreateManglingName, MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
                 Next
 
                 For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing)
 
-                    Dim args = Me.RkStructToCILType(f.Arguments, structs)
+                    Dim args = Me.RkToCILType(f.Arguments, structs)
                     Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
                     If Not export.IsNull Then
 
@@ -155,7 +155,7 @@ Namespace Architecture.CIL
             Return map
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
+        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of IType, TypeData))
 
             Dim gen_il_loadc =
                 Sub(il As ILGenerator, v As RkValue)
@@ -185,6 +185,10 @@ Namespace Architecture.CIL
 
                         Dim str = CType(v, RkString)
                         il.Emit(OpCodes.Ldstr, str.String)
+
+                    ElseIf TypeOf v.Type Is RkFunction Then
+
+                        il.Emit(OpCodes.Ldftn, Me.RkToCILFunction(CType(v.Type, RkFunction), functions, structs))
                     End If
                 End Sub
 
@@ -245,7 +249,7 @@ Namespace Architecture.CIL
 
                                Dim name = v.Name
                                If locals.ContainsKey(name) Then Return locals(name)
-                               il.DeclareLocal(Me.RkStructToCILType(v.Type, structs).Type).SetLocalSymInfo(name)
+                               il.DeclareLocal(Me.RkToCILType(v.Type, structs).Type).SetLocalSymInfo(name)
                                locals(name) = max_local
                                max_local += 1
                                Return max_local - 1
@@ -260,7 +264,8 @@ Namespace Architecture.CIL
                     Sub(il, v)
 
                         If TypeOf v Is RkNumeric32 OrElse
-                            TypeOf v Is RkString Then
+                            TypeOf v Is RkString OrElse
+                            TypeOf v.Type Is RkFunction Then
 
                             gen_il_loadc(il, v)
 
@@ -276,7 +281,7 @@ Namespace Architecture.CIL
                 )
             Next
 
-            For Each s In structs.Where(Function(x) x.Key.Initializer IsNot Nothing)
+            For Each s In structs.Where(Function(x) TypeOf x.Key Is RkStruct AndAlso CType(x.Key, RkStruct).Initializer IsNot Nothing)
 
                 Dim get_local = gen_local_store(New List(Of NamedValue))
                 Me.DeclareStatement(
@@ -284,7 +289,8 @@ Namespace Architecture.CIL
                     Sub(il, v)
 
                         If TypeOf v Is RkNumeric32 OrElse
-                            TypeOf v Is RkString Then
+                            TypeOf v Is RkString OrElse
+                            TypeOf v.Type Is RkFunction Then
 
                             gen_il_loadc(il, v)
                         Else
@@ -300,7 +306,7 @@ Namespace Architecture.CIL
                         gen_il_load(il, index)
                         il.Emit(OpCodes.Stfld, s.Value.GetField(v.Name))
                     End Sub,
-                    s.Key.Initializer.Body,
+                    CType(s.Key, RkStruct).Initializer.Body,
                     functions,
                     structs
                 )
@@ -313,7 +319,7 @@ Namespace Architecture.CIL
                 gen_il_store As Action(Of ILGenerator, RkValue),
                 stmts As List(Of RkCode0),
                 functions As Dictionary(Of RkFunction, MethodInfo),
-                structs As Dictionary(Of RkStruct, TypeData)
+                structs As Dictionary(Of IType, TypeData)
             )
 
             Dim gen_il_3op =
@@ -343,7 +349,7 @@ Namespace Architecture.CIL
                 Function(t As IType)
 
                     Dim r = CType(t, RkStruct)
-                    Return Me.RkStructToCILType(r, structs).Constructor
+                    Return Me.RkToCILType(r, structs).Constructor
                 End Function
 
             Dim labels = stmts.Where(Function(x) TypeOf x Is RkLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
@@ -369,13 +375,19 @@ Namespace Architecture.CIL
                     Case RkOperator.Dot
                         Dim dot = CType(stmt, RkCode)
                         gen_il_load(il, dot.Left)
-                        il.Emit(OpCodes.Ldfld, Me.RkStructToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
+                        il.Emit(OpCodes.Ldfld, Me.RkToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
                         gen_il_store(il, dot.Return)
 
                     Case RkOperator.Call
                         Dim cc = CType(stmt, RkCall)
                         cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
-                        il.Emit(OpCodes.Call, functions(cc.Function))
+                        Dim f = Me.RkToCILFunction(cc.Function, functions, structs)
+                        If f IsNot Nothing Then
+
+                            il.Emit(OpCodes.Call, f)
+                        Else
+                            il.EmitCalli(OpCodes.Calli, CType(CallingConventions.Standard, Runtime.InteropServices.CallingConvention), GetType(System.Void), Type.EmptyTypes)
+                        End If
                         If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
 
                     Case RkOperator.Return
@@ -405,16 +417,28 @@ Namespace Architecture.CIL
             If Not found_ret Then il.Emit(OpCodes.Ret)
         End Sub
 
-        Public Overridable Function RkStructToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
+        Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of IType, TypeData)) As TypeData
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function
 
-        Public Overridable Function RkStructToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeData)) As System.Type()
+        Public Overridable Function RkFunctionToCILType(r As RkFunction, structs As Dictionary(Of IType, TypeData)) As TypeData
 
-            Return r.Map(Function(x) Me.RkStructToCILType(x.Value, structs).Type).ToArray
+            Return New TypeData With {.Type = GetType(IntPtr), .Constructor = GetType(IntPtr).GetConstructor(Type.EmptyTypes)}
+        End Function
+
+        Public Overridable Function RkToCILType(r As List(Of NamedValue), structs As Dictionary(Of IType, TypeData)) As System.Type()
+
+            Return r.Map(Function(x) Me.RkToCILType(x.Value, structs).Type).ToArray
+        End Function
+
+        Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of IType, TypeData)) As MethodInfo
+
+            If functions.ContainsKey(f) Then Return functions(f)
+            Return Nothing
         End Function
     End Class
 

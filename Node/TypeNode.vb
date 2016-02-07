@@ -10,6 +10,11 @@ Namespace Node
         Implements IEvaluableNode
 
 
+        Public Sub New()
+
+            Me.Name = ""
+        End Sub
+
         Public Sub New(name As VariableNode)
 
             Me.Name = name.Name

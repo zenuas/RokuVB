@@ -129,6 +129,18 @@ Namespace Compiler
                             Dim node_str = CType(child, StringNode)
                             set_type(node_str, Function() root.LoadLibrary("String"))
 
+                        ElseIf TypeOf child Is TypeFunctionNode Then
+
+                            Dim node_typef = CType(child, TypeFunctionNode)
+                            set_type(node_typef,
+                                Function()
+
+                                    Dim rk_func As New RkFunction With {.Namespace = current.Namespace}
+                                    node_typef.Arguments.Do(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
+                                    rk_func.Return = node_typef.Return?.Type
+                                    Return rk_func
+                                End Function)
+
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
@@ -171,9 +183,20 @@ Namespace Compiler
                             Dim node_call = CType(child, FunctionCallNode)
                             Dim rk_function As RkFunction = Nothing
 
-                            If TypeOf node_call.Expression Is FunctionNode Then rk_function = set_func(CType(node_call.Expression, FunctionNode))
-                            If TypeOf node_call.Expression Is VariableNode Then rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
-                            If TypeOf node_call.Expression Is StructNode Then
+                            If TypeOf node_call.Expression Is FunctionNode Then
+
+                                rk_function = set_func(CType(node_call.Expression, FunctionNode))
+
+                            ElseIf TypeOf node_call.Expression Is VariableNode Then
+
+                                If TypeOf node_call.Expression.Type Is RkFunction Then
+
+                                    rk_function = CType(node_call.Expression.Type, RkFunction)
+                                Else
+                                    rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                End If
+
+                            ElseIf TypeOf node_call.Expression Is StructNode Then
 
                                 Dim node_struct = CType(node_call.Expression, StructNode)
                                 Dim args = {node_call.Expression.Type}.ToList

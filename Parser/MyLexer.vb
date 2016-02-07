@@ -2,6 +2,7 @@
 Imports Roku.Node
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
