@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Node
+Imports System.Diagnostics
 
 
 Namespace Util
@@ -172,6 +173,25 @@ Namespace Util
                             f("Condition", x.Condition)
                             f("Then", x.Then)
                             f("Else", x.Else)
+
+                        Case TypeOf node_ Is TypeFunctionNode
+
+                            Dim x = CType(node_, TypeFunctionNode)
+                            For i = 0 To x.Arguments.Length - 1
+
+                                f($"[{i}]", x.Arguments(i))
+                            Next
+                            f("Return", x.Return)
+
+                        Case TypeOf node_ Is VariableNode,
+                             TypeOf node_ Is NumericNode,
+                             TypeOf node_ Is TypeNode
+
+                            ' nothing
+
+                        Case Else
+
+                            Debug.Assert(False, "unknown node")
                     End Select
                 End Sub
 
@@ -272,6 +292,25 @@ Namespace Util
                             x.Condition = CType(f("Condition", x.Condition), IEvaluableNode)
                             x.Then = CType(f("Then", x.Then), BlockNode)
                             x.Else = CType(f("Else", x.Else), BlockNode)
+
+                        Case TypeOf node_ Is TypeFunctionNode
+
+                            Dim x = CType(node_, TypeFunctionNode)
+                            For i = 0 To x.Arguments.Length - 1
+
+                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeNode)
+                            Next
+                            x.Return = CType(f("Return", x.Return), TypeNode)
+
+                        Case TypeOf node_ Is VariableNode,
+                             TypeOf node_ Is NumericNode,
+                             TypeOf node_ Is TypeNode
+
+                            ' nothing
+
+                        Case Else
+
+                            Debug.Assert(False, "unknown node")
                     End Select
                 End Sub
 

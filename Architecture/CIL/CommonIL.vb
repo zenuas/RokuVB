@@ -265,7 +265,7 @@ Namespace Architecture.CIL
 
                         If TypeOf v Is RkNumeric32 OrElse
                             TypeOf v Is RkString OrElse
-                            TypeOf v.Type Is RkFunction Then
+                            (TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous) Then
 
                             gen_il_loadc(il, v)
 
@@ -290,7 +290,7 @@ Namespace Architecture.CIL
 
                         If TypeOf v Is RkNumeric32 OrElse
                             TypeOf v Is RkString OrElse
-                            TypeOf v.Type Is RkFunction Then
+                            (TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous) Then
 
                             gen_il_loadc(il, v)
                         Else
@@ -379,16 +379,19 @@ Namespace Architecture.CIL
                         gen_il_store(il, dot.Return)
 
                     Case RkOperator.Call
-                        Dim cc = CType(stmt, RkCall)
-                        cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
-                        Dim f = Me.RkToCILFunction(cc.Function, functions, structs)
-                        If f IsNot Nothing Then
+                        If TypeOf stmt Is RkLambdaCall Then
 
-                            il.Emit(OpCodes.Call, f)
+                            Dim cc = CType(stmt, RkLambdaCall)
+                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
+                            gen_il_load(il, cc.Value)
+                            il.EmitCalli(OpCodes.Calli, CType(CallingConventions.Standard, Runtime.InteropServices.CallingConvention), Me.RkToCILType(cc.Return?.Type, structs).Type, Me.RkToCILType(cc.Arguments, structs))
+                            If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
                         Else
-                            il.EmitCalli(OpCodes.Calli, CType(CallingConventions.Standard, Runtime.InteropServices.CallingConvention), GetType(System.Void), Type.EmptyTypes)
+                            Dim cc = CType(stmt, RkCall)
+                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
+                            il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
+                            If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
                         End If
-                        If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
 
                     Case RkOperator.Return
                         If TypeOf stmt Is RkCode Then gen_il_load(il, CType(stmt, RkCode).Left)
@@ -433,6 +436,11 @@ Namespace Architecture.CIL
         Public Overridable Function RkToCILType(r As List(Of NamedValue), structs As Dictionary(Of IType, TypeData)) As System.Type()
 
             Return r.Map(Function(x) Me.RkToCILType(x.Value, structs).Type).ToArray
+        End Function
+
+        Public Overridable Function RkToCILType(r As List(Of RkValue), structs As Dictionary(Of IType, TypeData)) As System.Type()
+
+            Return r.Map(Function(x) Me.RkToCILType(x.Type, structs).Type).ToArray
         End Function
 
         Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of IType, TypeData)) As MethodInfo

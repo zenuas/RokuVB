@@ -40,8 +40,7 @@ Namespace Compiler
 
                             If TypeOf stmt Is ExpressionNode Then
 
-                                Dim expr = CType(stmt, ExpressionNode)
-                                Return If(expr.Right Is Nothing, expr.Function.CreateCall(to_value(expr.Left)), expr.Function.CreateCall(to_value(expr.Left), to_value(expr.Right)))
+                                Throw New NotSupportedException
 
                             ElseIf TypeOf stmt Is PropertyNode Then
 
@@ -63,9 +62,9 @@ Namespace Compiler
 
                                     If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then
 
-                                        Return func.Function.CreateCall(to_value(func.Expression))
+                                        Throw New NotSupportedException
                                     Else
-                                        Return func.Function.CreateCall(func.Arguments.Map(Function(x) to_value(x)).ToArray)
+                                        Return func.Function.CreateCall(to_value(func.Expression), func.Arguments.Map(Function(x) to_value(x)).ToArray)
                                     End If
                                 End If
                             Else
@@ -84,7 +83,7 @@ Namespace Compiler
 
                                 Dim expr = CType(stmt, ExpressionNode)
                                 Dim ret = to_value(let_.Var)
-                                Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(ret, to_value(expr.Left)), expr.Function.CreateCallReturn(ret, to_value(expr.Left), to_value(expr.Right)))
+                                Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left)), expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left), to_value(expr.Right)))
 
                             ElseIf TypeOf stmt Is PropertyNode Then
 
@@ -96,7 +95,7 @@ Namespace Compiler
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
                                 If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then args.Insert(0, New RkValue With {.Type = func.Type, .Scope = rk_func})
-                                Return func.Function.CreateCallReturn(to_value(let_.Var), args.ToArray)
+                                Return func.Function.CreateCallReturn(to_value(func.Expression), to_value(let_.Var), args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse

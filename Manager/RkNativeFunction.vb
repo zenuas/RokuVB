@@ -10,12 +10,12 @@ Namespace Manager
 
         Public Overridable Property [Operator] As RkOperator = RkOperator.Nop
 
-        Public Overrides Function CreateCall(ParamArray args() As RkValue) As RkCode0()
+        Public Overrides Function CreateCall(self As RkValue, ParamArray args() As RkValue) As RkCode0()
 
             Throw New NotSupportedException
         End Function
 
-        Public Overrides Function CreateCallReturn(return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
+        Public Overrides Function CreateCallReturn(self As RkValue, return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
 
             If args.Length <> Me.Arguments.Count Then Throw New ArgumentException("argument count")
             Dim x As New RkCode With {.Operator = Me.Operator, .Left = If(args.Length > 0, args(0), Nothing), .Right = If(args.Length > 1, args(1), Nothing), .Return = return_}

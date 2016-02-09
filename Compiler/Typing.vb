@@ -113,11 +113,15 @@ Namespace Compiler
 
                 Util.Traverse.NodesOnce(
                     node,
-                    New With {.Namespace = root, .Scope = CType(Nothing, INode)},
+                    New With {.Namespace = root, .Scope = CType(Nothing, INode), .Function = CType(Nothing, FunctionNode)},
                     Sub(parent, ref, child, current, isfirst, next_)
 
                         If Not isfirst Then Return
-                        next_(child, If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode, New With {.Namespace = current.Namespace, .Scope = child}, current))
+                        next_(child,
+                            If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
+                                New With {.Namespace = current.Namespace, .Scope = child, .Function = If(TypeOf child Is FunctionNode, CType(child, FunctionNode), current.Function)},
+                                current)
+                            )
 
                         If TypeOf child Is NumericNode Then
 
@@ -134,7 +138,12 @@ Namespace Compiler
                             If Not (TypeOf parent Is LetNode AndAlso ref.Equals("Var")) Then
 
                                 Dim node_var = CType(child, VariableNode)
-                                set_type(node_var, Function() New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name})
+                                set_type(node_var,
+                                    Function()
+
+                                        Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
+                                        Return If(v IsNot Nothing, v.Type.Type, New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name})
+                                    End Function)
                             End If
 
                         ElseIf TypeOf child Is TypeFunctionNode Then

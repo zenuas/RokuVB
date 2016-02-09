@@ -1,6 +1,7 @@
-sub f1() {}
+sub f1() {Int}
 	return(f2)
-	sub f2()
-		print(1)
+	sub f2(x: Int)
+		var y = x
+		print(1 + y)
 
-f1()()
+f1()(2)

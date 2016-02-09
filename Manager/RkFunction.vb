@@ -19,6 +19,12 @@ Namespace Manager
         Public Overridable Property FunctionNode As FunctionNode = Nothing
 
 
+        Public Overridable ReadOnly Property IsAnonymous As Boolean
+            Get
+                Return String.IsNullOrEmpty(Me.Name)
+            End Get
+        End Property
+
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
             Throw New NotImplementedException()
@@ -100,16 +106,19 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Function CreateCall(ParamArray args() As RkValue) As RkCode0()
+        Public Overridable Function CreateCall(self As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Dim x As New RkCall With {.Function = Me}
+            Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
+            x.Function = Me
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function
 
-        Public Overridable Function CreateCallReturn(return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
+        Public Overridable Function CreateCallReturn(self As RkValue, return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Dim x As New RkCall With {.Function = Me, .Return = return_}
+            Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
+            x.Function = Me
+            x.Return = return_
             x.Arguments.AddRange(args)
             Return New RkCode0() {x}
         End Function
