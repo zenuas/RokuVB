@@ -81,6 +81,7 @@
     <Compile Include="Manager\IAddStruct.vb" />
     <Compile Include="Manager\IAddLet.vb" />
     <Compile Include="Manager\NamedValue.vb" />
+    <Compile Include="Manager\RkByName.vb" />
     <Compile Include="Manager\RkLabel.vb" />
     <Compile Include="Manager\RkGoto.vb" />
     <Compile Include="Manager\RkNativeFunction.vb" />

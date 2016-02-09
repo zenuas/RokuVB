@@ -129,6 +129,14 @@ Namespace Compiler
                             Dim node_str = CType(child, StringNode)
                             set_type(node_str, Function() root.LoadLibrary("String"))
 
+                        ElseIf TypeOf child Is VariableNode Then
+
+                            If Not (TypeOf parent Is LetNode AndAlso ref.Equals("Var")) Then
+
+                                Dim node_var = CType(child, VariableNode)
+                                set_type(node_var, Function() New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name})
+                            End If
+
                         ElseIf TypeOf child Is TypeFunctionNode Then
 
                             Dim node_typef = CType(child, TypeFunctionNode)
@@ -192,8 +200,10 @@ Namespace Compiler
                                 If TypeOf node_call.Expression.Type Is RkFunction Then
 
                                     rk_function = CType(node_call.Expression.Type, RkFunction)
-                                Else
-                                    rk_function = current.Namespace.GetFunction(CType(node_call.Expression, VariableNode).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+
+                                ElseIf TypeOf node_call.Expression.Type Is RkByName Then
+
+                                    rk_function = current.Namespace.GetFunction(CType(node_call.Expression.Type, RkByName).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
                                 End If
 
                             ElseIf TypeOf node_call.Expression Is StructNode Then
