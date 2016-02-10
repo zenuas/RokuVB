@@ -193,6 +193,20 @@ Namespace Compiler
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = node_func.Function
+                        Dim env As RkValue = Nothing
+                        node_func.Body.Scope.Do(
+                            Sub(x)
+                                If TypeOf x.Value Is VariableNode AndAlso CType(x.Value, VariableNode).ClosureEnvironment Then
+
+                                    If env Is Nothing Then
+
+                                        env = env
+                                    End If
+
+                                    If rk_func.Arguments.Or(Function(arg) arg.Name.Equals(x.Key)) Then
+                                    End If
+                                End If
+                            End Sub)
                         If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body.Statements)
 
                     ElseIf TypeOf child Is FunctionCallNode Then

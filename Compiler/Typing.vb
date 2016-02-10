@@ -51,6 +51,21 @@ Namespace Compiler
                         node_func.Type = rk_func
                         rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
                         If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
+                        Dim env As RkStruct = Nothing
+                        node_func.Bind.Do(
+                            Sub(x)
+
+                                If TypeOf x.Key Is VariableNode AndAlso CType(x.Key, VariableNode).ClosureEnvironment Then
+
+                                    If env Is Nothing Then
+
+                                        env = New RkStruct With {.Namespace = rk_func.Namespace, .Name = ""}
+                                        current.AddStruct(env)
+                                    End If
+
+                                    'env.AddLet()
+                                End If
+                            End Sub)
                         current.AddFunction(rk_func)
                     End If
 

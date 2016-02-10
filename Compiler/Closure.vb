@@ -19,14 +19,14 @@ Namespace Compiler
                     If TypeOf child Is VariableNode Then
 
                         Dim var = CType(child, VariableNode)
-                        If var.Scope IsNot current Then
+                        If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
 
                             var.ClosureEnvironment = True
                             Dim scope = current
                             Do
-                                If TypeOf scope Is FunctionNode Then
+                                If TypeOf scope.Owner Is FunctionNode Then
 
-                                    Dim func = CType(scope, FunctionNode)
+                                    Dim func = CType(scope.Owner, FunctionNode)
                                     If func.Bind.ContainsKey(var.Scope) Then Exit Do
                                     func.Bind.Add(scope, True)
                                 End If

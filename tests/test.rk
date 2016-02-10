@@ -1,7 +1,11 @@
+struct A
+	var a: Int
+	var b: String
 sub f1() {Int}
+	var z = 5
 	return(f2)
 	sub f2(x: Int)
 		var y = x
-		print(1 + y)
+		print(1 + y + z)
 
 f1()(2)
