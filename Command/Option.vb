@@ -10,7 +10,7 @@ Namespace Command
         Public Overridable Property Output As String = "a.exe"
 
         <CommandLine("a", "arch")>
-        Public Overridable Property Architecture As String = "cil"
+        Public Overridable Property Architecture As String = "CIL"
 
         <CommandLine("N", "node-dump")>
         Public Overridable Property NodeDump As IO.StreamWriter = Nothing
