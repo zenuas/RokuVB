@@ -11,6 +11,24 @@ Namespace Compiler
 
         Public Shared Sub Prototype(node As INode, root As RkNamespace)
 
+            Dim closures As New Dictionary(Of IScopeNode, RkStruct)
+            Dim make_closure =
+                Function(scope As IScopeNode)
+
+                    If closures.ContainsKey(scope) Then Return closures(scope)
+
+                    Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
+                    env.Name = $"#closure_{env.GetHashCode}"
+                    For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
+
+                        env.AddLet(var.Key, Nothing)
+                    Next
+                    closures.Add(scope, env)
+                    root.AddStruct(env)
+                    CType(scope.Owner, FunctionNode).Function.Closure = env
+                    Return env
+                End Function
+
             Util.Traverse.NodesOnce(
                 node,
                 root,
@@ -31,7 +49,7 @@ Namespace Compiler
                             If TypeOf x Is LetNode Then
 
                                 Dim let_ = CType(x, LetNode)
-                                rk_struct.Local.Add(let_.Var.Name, If(let_.Declare?.IsGeneric, rk_struct.Generics.FindFirst(Function(g) g.Name.Equals(let_.Declare.Name)), let_.Type))
+                                rk_struct.AddLet(let_.Var.Name, If(let_.Declare?.IsGeneric, rk_struct.Generics.FindFirst(Function(g) g.Name.Equals(let_.Declare.Name)), let_.Type))
                             End If
                         Next
 
@@ -51,20 +69,11 @@ Namespace Compiler
                         node_func.Type = rk_func
                         rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
                         If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
-                        Dim env As RkStruct = Nothing
                         node_func.Bind.Do(
                             Sub(x)
 
-                                If TypeOf x.Key Is VariableNode AndAlso CType(x.Key, VariableNode).ClosureEnvironment Then
-
-                                    If env Is Nothing Then
-
-                                        env = New RkStruct With {.Namespace = rk_func.Namespace, .Name = ""}
-                                        current.AddStruct(env)
-                                    End If
-
-                                    'env.AddLet()
-                                End If
+                                Dim env = make_closure(x.Key)
+                                rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
                             End Sub)
                         current.AddFunction(rk_func)
                     End If
@@ -95,9 +104,9 @@ Namespace Compiler
                         Dim rk_function = node_func.Function
                         If Not rk_function.HasGeneric Then
 
-                            For i = 0 To node_func.Arguments.Length - 1
+                            For Each arg In node_func.Arguments
 
-                                rk_function.Arguments(i).Value = node_func.Arguments(i).Type.Type
+                                rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
                             Next
                             rk_function.Return = node_func.Return?.Type
                         End If
@@ -124,6 +133,12 @@ Namespace Compiler
 
                         If TypeOf n Is VariableNode Then Return current.GetStruct(CType(n, VariableNode).Name)
                         Throw New Exception("struct not found")
+                    End Function
+
+                Dim get_closure =
+                    Function(current As IScopeNode) As RkStruct
+
+                        Return CType(current.Owner, FunctionNode).Function.Closure
                     End Function
 
                 Util.Traverse.NodesOnce(
@@ -184,6 +199,10 @@ Namespace Compiler
                             If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
 
                                 node_let.Var.Type = node_let.Type
+                                If node_let.Var.ClosureEnvironment Then
+
+                                    get_closure(node_let.Var.Scope).Local(node_let.Var.Name) = node_let.Type
+                                End If
                             End If
 
                         ElseIf TypeOf child Is ExpressionNode Then
@@ -204,7 +223,15 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            set_type(node_declare.Name, Function() node_declare.Type.Type)
+                            set_type(node_declare.Name,
+                                Function()
+
+                                    If node_declare.Name.ClosureEnvironment Then
+
+                                        get_closure(node_declare.Name.Scope).Local(node_declare.Name.Name) = node_declare.Type.Type
+                                    End If
+                                    Return node_declare.Type.Type
+                                End Function)
 
                         ElseIf TypeOf child Is FunctionNode Then
 

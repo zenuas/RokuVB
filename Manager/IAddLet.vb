@@ -5,7 +5,7 @@ Namespace Manager
 
     Public Interface IAddLet
 
-        Sub AddLet(x As LetNode)
+        Sub AddLet(name As String, t As IType)
 
     End Interface
 

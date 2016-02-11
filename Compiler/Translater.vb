@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Util.ArrayExtension
+Imports System.Diagnostics
 
 
 Namespace Compiler
@@ -19,14 +20,15 @@ Namespace Compiler
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
-                    Dim fix_map As New Dictionary(Of String, IType)
-                    If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)
-                    If TypeOf scope Is StructNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, StructNode).Struct.Generics(i).Name) = x)
+                    'Dim fix_map As New Dictionary(Of String, IType)
+                    'If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)
+                    'If TypeOf scope Is StructNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, StructNode).Struct.Generics(i).Name) = x)
 
                     Dim to_value =
                         Function(x As IEvaluableNode)
 
-                            Dim t = If(TypeOf x.Type Is RkGenericEntry, fix_map(x.Type.Name), x.Type)
+                            Debug.Assert(TypeOf x.Type IsNot RkGenericEntry)
+                            Dim t = x.Type
 
                             If TypeOf x Is VariableNode Then Return New RkValue With {.Name = CType(x, VariableNode).Name, .Type = t, .Scope = rk_func}
                             If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}

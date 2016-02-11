@@ -1,11 +1,11 @@
 struct A
 	var a: Int
 	var b: String
-sub f1() {Int}
+sub f1(w: Int) {Int}
 	var z = 5
 	return(f2)
 	sub f2(x: Int)
 		var y = x
-		print(1 + y + z)
+		print(10 + y + z + w)
 
-f1()(2)
+f1(1)(2)

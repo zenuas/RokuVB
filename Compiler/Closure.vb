@@ -28,7 +28,7 @@ Namespace Compiler
 
                                     Dim func = CType(scope.Owner, FunctionNode)
                                     If func.Bind.ContainsKey(var.Scope) Then Exit Do
-                                    func.Bind.Add(scope, True)
+                                    func.Bind.Add(var.Scope, True)
                                 End If
                                 scope = scope.Parent
 

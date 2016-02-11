@@ -17,6 +17,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable ReadOnly Property Apply As New List(Of IType)
         Public Overridable Property FunctionNode As FunctionNode = Nothing
+        Public Overridable Property Closure As RkStruct = Nothing
 
 
         Public Overridable ReadOnly Property IsAnonymous As Boolean

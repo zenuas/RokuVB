@@ -17,6 +17,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Apply As New List(Of IType)
         Public Overridable Property StructNode As StructNode = Nothing
         Public Overridable Property Initializer As RkNativeFunction = Nothing
+        Public Overridable Property ClosureEnvironment As Boolean = False
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -80,7 +81,9 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Sub AddLet(x As LetNode) Implements IAddLet.AddLet
+        Public Overridable Sub AddLet(name As String, t As IType) Implements IAddLet.AddLet
+
+            Me.Local.Add(name, t)
         End Sub
 
         Public Overridable Function CreateManglingName() As String
