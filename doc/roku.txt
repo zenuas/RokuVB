@@ -55,6 +55,31 @@ CatchErrorイベントを各 名前解決～翻訳までのインスタンスごとにAddHandlerしている
 .クロージャー変換(Closure)
 これもほぼそのまま使えるはず
 
+RIRでは次のようなクロージャをフレームとbindを使って変換する
+これを行うために旧 Rokuではbindをメソッドとして実装していた
+bindの実装を検討する
+
+sub f1(x: Int) {}
+	var y = 1
+	return(f2)
+	sub f2()
+		var z = 2
+		print(f3())
+		sub f3() Int
+			return(x + y + z)
+↓
+sub f1(x: Int) {}
+	var frame = f1_Frame()
+	frame.x = x
+	frame.y = 1
+	return(f2.bind(frame)) # return(bind(f2, frame))にするか？
+	sub f2(c1: f1_Frame)
+		var frame = f2_Frame()
+		frame.z = 2
+		print(f3.bind(c1, frame)()) # return(bind(f3, c1, frame))にするか？
+		sub f3(c1: f1_Frame, c2: f2_Frame) Int
+			return(c1.x + c1.y + c2.z)
+
 
 .型付け(Typing)
 だいぶ変えないといけない

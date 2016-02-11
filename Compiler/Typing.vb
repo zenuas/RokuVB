@@ -23,6 +23,7 @@ Namespace Compiler
 
                         env.AddLet(var.Key, Nothing)
                     Next
+                    env.Initializer = CType(root.GetFunction("#Alloc", env), RkNativeFunction)
                     closures.Add(scope, env)
                     root.AddStruct(env)
                     CType(scope.Owner, FunctionNode).Function.Closure = env
@@ -60,6 +61,9 @@ Namespace Compiler
                             node_struct.Generics.Do(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = alloc.DefineGeneric(x.Name)}))
                             alloc.Return = rk_struct.FixedGeneric(alloc.Arguments.Range(1).ToArray)
                             alloc.Namespace.AddFunction(alloc)
+                        Else
+
+                            rk_struct.Initializer = CType(current.GetFunction("#Alloc", rk_struct), RkNativeFunction)
                         End If
 
                     ElseIf TypeOf child Is FunctionNode Then

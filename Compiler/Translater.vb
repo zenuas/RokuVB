@@ -164,6 +164,7 @@ Namespace Compiler
                             Return body
                         End Function
 
+                    If rk_func.Closure IsNot Nothing Then rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, New RkValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}, New RkValue With {.Type = rk_func.Closure, .Scope = rk_func}))
                     If func_stmts IsNot Nothing Then rk_func.Body.AddRange(make_stmts(func_stmts))
 
                     compleat(rk_func) = True
@@ -187,7 +188,6 @@ Namespace Compiler
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
                         For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
-                            struct.Initializer = CType(current.GetFunction("#Alloc", struct), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
 
@@ -195,20 +195,6 @@ Namespace Compiler
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = node_func.Function
-                        Dim env As RkValue = Nothing
-                        node_func.Body.Scope.Do(
-                            Sub(x)
-                                If TypeOf x.Value Is VariableNode AndAlso CType(x.Value, VariableNode).ClosureEnvironment Then
-
-                                    If env Is Nothing Then
-
-                                        env = env
-                                    End If
-
-                                    If rk_func.Arguments.Or(Function(arg) arg.Name.Equals(x.Key)) Then
-                                    End If
-                                End If
-                            End Sub)
                         If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body.Statements)
 
                     ElseIf TypeOf child Is FunctionCallNode Then
