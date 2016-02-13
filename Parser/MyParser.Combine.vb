@@ -26,11 +26,22 @@ Namespace Parser
 
         Protected Overridable Function CreateLetNode(
                 var As VariableNode,
+                expr As IEvaluableNode,
+                binding As Boolean
+            ) As LetNode
+
+            Dim let_ As New LetNode With {.Var = var, .Expression = expr, .NameBinding = binding}
+            let_.AppendLineNumber(var)
+            Return let_
+        End Function
+
+        Protected Overridable Function CreateLetNode(
+                prop As PropertyNode,
                 expr As IEvaluableNode
             ) As LetNode
 
-            Dim let_ As New LetNode With {.Var = var, .Expression = expr}
-            let_.AppendLineNumber(var)
+            Dim let_ As New LetNode With {.Receiver = prop.Left, .Var = prop.Right, .Expression = expr}
+            let_.AppendLineNumber(prop)
             Return let_
         End Function
 

@@ -136,6 +136,7 @@ Namespace Util
                         Case TypeOf node_ Is LetNode
 
                             Dim x = CType(node_, LetNode)
+                            f("Receiver", x.Receiver)
                             f("Var", x.Var)
                             f("Declare", x.Declare)
                             f("Expression", x.Expression)
@@ -256,7 +257,9 @@ Namespace Util
                         Case TypeOf node_ Is LetNode
 
                             Dim x = CType(node_, LetNode)
+                            x.Receiver = CType(f("Receiver", x.Receiver), IEvaluableNode)
                             x.Var = CType(f("Var", x.Var), VariableNode)
+                            x.Declare = CType(f("Declare", x.Declare), TypeNode)
                             x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
 
                         Case TypeOf node_ Is ExpressionNode

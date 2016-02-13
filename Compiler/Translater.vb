@@ -77,33 +77,34 @@ Namespace Compiler
                     Dim make_stmt_let =
                         Function(let_ As LetNode, stmt As IEvaluableNode)
 
+                            Dim ret = If(let_.Receiver Is Nothing, to_value(let_.Var), New RkProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func})
+
                             If stmt Is Nothing Then
 
-                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = to_value(let_.Var)}}
+                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret}}
 
                             ElseIf TypeOf stmt Is ExpressionNode Then
 
                                 Dim expr = CType(stmt, ExpressionNode)
-                                Dim ret = to_value(let_.Var)
                                 Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left)), expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left), to_value(expr.Right)))
 
                             ElseIf TypeOf stmt Is PropertyNode Then
 
                                 Dim prop = CType(stmt, PropertyNode)
-                                Return {New RkCode With {.Operator = RkOperator.Dot, .Return = to_value(let_.Var), .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
+                                Return {New RkCode With {.Operator = RkOperator.Dot, .Return = ret, .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
 
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
                                 If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then args.Insert(0, New RkValue With {.Type = func.Type, .Scope = rk_func})
-                                Return func.Function.CreateCallReturn(to_value(func.Expression), to_value(let_.Var), args.ToArray)
+                                Return func.Function.CreateCallReturn(to_value(func.Expression), ret, args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse
                                     TypeOf stmt Is StringNode Then
 
-                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = to_value(let_.Var), .Left = to_value(stmt)}}
+                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
                             Else
 
@@ -164,7 +165,19 @@ Namespace Compiler
                             Return body
                         End Function
 
-                    If rk_func.Closure IsNot Nothing Then rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, New RkValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}, New RkValue With {.Type = rk_func.Closure, .Scope = rk_func}))
+                    If rk_func.Closure IsNot Nothing Then
+
+                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, New RkValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}, New RkValue With {.Type = rk_func.Closure, .Scope = rk_func}))
+                        rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Do(
+                            Sub(x)
+
+                                'rk_func.Body.Add(
+                                '    New RkCode With {
+                                '        .Operator = RkOperator.Bind,
+                                '        .Return = New RkValue With {},
+                                '        .Left = New RkValue With {.Name = x.Name}})
+                            End Sub)
+                    End If
                     If func_stmts IsNot Nothing Then rk_func.Body.AddRange(make_stmts(func_stmts))
 
                     compleat(rk_func) = True

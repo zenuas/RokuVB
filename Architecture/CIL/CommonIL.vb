@@ -275,7 +275,16 @@ Namespace Architecture.CIL
                             gen_il_load(il, get_local(il, v))
                         End If
                     End Sub,
-                    Sub(il, v) gen_il_store(il, get_local(il, v)),
+                    Sub(il, v)
+
+                        If TypeOf v Is RkProperty Then
+
+                            Dim prop = CType(v, RkProperty)
+                            il.Emit(OpCodes.Stfld, structs(CType(prop.Receiver.Type, RkStruct)).Fields(prop.Name))
+                        Else
+                            gen_il_store(il, get_local(il, v))
+                        End If
+                    End Sub,
                     f.Key.Body,
                     functions,
                     structs
@@ -356,6 +365,16 @@ Namespace Architecture.CIL
 
             Dim found_ret = False
             For Each stmt In stmts
+
+                If TypeOf stmt Is IReturnBind Then
+
+                    Dim bind = CType(stmt, IReturnBind)
+                    If TypeOf bind.Return Is RkProperty Then
+
+                        Dim prop = CType(bind.Return, RkProperty)
+                        If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver)
+                    End If
+                End If
 
                 Select Case stmt.Operator
                     Case RkOperator.Plus : gen_il_3ad(OpCodes.Add, CType(stmt, RkCode))

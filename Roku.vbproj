@@ -61,6 +61,8 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <Compile Include="Manager\IReturnBind.vb" />
+    <Compile Include="Manager\RkProperty.vb" />
     <None Include="roku.y" />
   </ItemGroup>
   <ItemGroup>

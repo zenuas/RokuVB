@@ -65,6 +65,7 @@ Namespace Compiler
                                 ElseIf TypeOf e Is LetNode Then
 
                                     Dim let_ = CType(e, LetNode)
+                                    let_.Receiver = insert_let(let_.Receiver)
                                     let_.Expression = insert_let(let_.Expression)
                                     Return let_
 
@@ -124,6 +125,7 @@ Namespace Compiler
                             ElseIf TypeOf v Is LetNode Then
 
                                 Dim let_ = CType(v, LetNode)
+                                let_.Receiver = to_flat(let_.Receiver)
                                 let_.Expression = to_flat(let_.Expression)
 
                             ElseIf TypeOf v Is IfNode Then

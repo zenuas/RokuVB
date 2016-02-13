@@ -8,4 +8,8 @@ sub f1(w: Int) {Int}
 		var y = x
 		print(10 + y + z + w)
 
+var sa = A()
+sa.a = 1
+print(sa.a)
+
 f1(1)(2)

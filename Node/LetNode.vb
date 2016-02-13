@@ -10,10 +10,12 @@ Namespace Node
         Implements IEvaluableNode
 
 
+        Public Overridable Property Receiver As IEvaluableNode
         Public Overridable Property Var As VariableNode
         Public Overridable Property [Declare] As TypeNode
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property NameBinding As Boolean = False
     End Class
 
 End Namespace

@@ -175,8 +175,12 @@ Namespace Compiler
                                 set_type(node_var,
                                     Function()
 
-                                        Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
-                                        Return If(v IsNot Nothing, v.Type.Type, New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name})
+                                        If current.Function IsNot Nothing Then
+
+                                            Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
+                                            If v IsNot Nothing Then Return v.Type.Type
+                                        End If
+                                        Return New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name}
                                     End Function)
                             End If
 

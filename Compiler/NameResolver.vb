@@ -54,7 +54,7 @@ Namespace Compiler
                         If TypeOf child Is VariableNode Then
 
                             Dim var = CType(child, VariableNode)
-                            If TypeOf parent Is LetNode AndAlso ref.Equals("Var") Then
+                            If TypeOf parent Is LetNode AndAlso CType(parent, LetNode).NameBinding AndAlso ref.Equals("Var") Then
 
                                 var.Scope = current
                                 If TypeOf current IsNot StructNode Then current.Scope.Add(var.Name, child)
