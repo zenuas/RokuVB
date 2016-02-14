@@ -1,15 +1,10 @@
-struct A
-	var a: Int
-	var b: String
 sub f1(w: Int) {Int}
 	var z = 5
-	return(f2)
-	sub f2(x: Int)
+	return(f2(20))
+	sub f2(x: Int) {Int}
 		var y = x
-		print(10 + y + z + w)
-
-var sa = A()
-sa.a = 1
-print(sa.a)
+		return(f3)
+		sub f3(v: Int)
+			print(10 + x + y + z + w + v)
 
 f1(1)(2)

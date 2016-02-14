@@ -270,6 +270,12 @@ Namespace Architecture.CIL
 
                             gen_il_loadc(il, v)
 
+                        ElseIf TypeOf v Is RkProperty Then
+
+                            Dim prop = CType(v, RkProperty)
+                            gen_il_load(il, get_local(il, prop.Receiver))
+                            il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
+
                         ElseIf TypeOf v Is RkValue Then
 
                             gen_il_load(il, get_local(il, v))
@@ -303,7 +309,14 @@ Namespace Architecture.CIL
                             (TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous) Then
 
                             gen_il_loadc(il, v)
-                        Else
+
+                        ElseIf TypeOf v Is RkProperty Then
+
+                            Dim prop = CType(v, RkProperty)
+                            gen_il_load(il, get_local(il, prop.Receiver))
+                            il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
+
+                        ElseIf TypeOf v Is RkValue Then
 
                             gen_il_load(il, get_local(il, v))
                         End If
