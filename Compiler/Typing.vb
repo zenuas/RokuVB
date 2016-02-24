@@ -18,7 +18,7 @@ Namespace Compiler
                     If closures.ContainsKey(scope) Then Return closures(scope)
 
                     Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
-                    env.Name = $"#closure_{env.GetHashCode}"
+                    env.Name = $"##{CType(scope.Owner, FunctionNode).Name}"
                     For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
 
                         env.AddLet(var.Key, Nothing)

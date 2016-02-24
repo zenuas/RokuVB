@@ -556,6 +556,40 @@ func(f1(0))
 同一フレームにaも一緒におり、必要ないはずのaがGCされない
 
 
+案3 クロージャが手を出す変数を集めたクラス(Frame)を作る
+クロージャに手を出す関数の引数にFrameを取りbindを実装する
+
+sub f1(x: Int) {}
+	var y = 1
+	return(f2)
+	sub f2()
+		var z = 2
+		print(f3())
+		sub f3() Int
+			return(x + y + z)
+↓
+sub f1(x: Int) {}
+	var frame = f1_Frame()
+	frame.x = x
+	frame.y = 1
+	return(f2.bind(frame)) # return(bind(f2, frame))にするか？
+	sub f2(c1: f1_Frame)
+		var frame = f2_Frame()
+		frame.z = 2
+		print(f3.bind(c1, frame)()) # return(bind(f3, c1, frame))にするか？
+		sub f3(c1: f1_Frame, c2: f2_Frame) Int
+			return(c1.x + c1.y + c2.z)
+
+
+2016.02.14 案3を実装する
+CILに翻訳する場合、bindの実装を以下のような関数として実装する
+
+Function curry(Of T1, T2, ... Tn, R)(f As Func(Of T1, T2, ... Tn, R), var As T1) As Func(Of T2, ... Tn, R)
+	
+	Return Function(x2, ...) f(var, x2, ...)
+End Function
+
+
 ..無名関数とクロージャ
 
 無名関数とクロージャは今回次のように定義する

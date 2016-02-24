@@ -192,7 +192,7 @@ Namespace Util
 
                         Case Else
 
-                            Debug.Assert(False, "unknown node")
+                            Debug.Fail("unknown node")
                     End Select
                 End Sub
 
@@ -313,7 +313,7 @@ Namespace Util
 
                         Case Else
 
-                            Debug.Assert(False, "unknown node")
+                            Debug.Fail("unknown node")
                     End Select
                 End Sub
 

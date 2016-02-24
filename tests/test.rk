@@ -5,6 +5,7 @@ sub f1(w: Int) {Int}
 		var y = x
 		return(f3)
 		sub f3(v: Int)
+			#print(10 + 20 + 20 + 5 + 1 + 2) => 58
 			print(10 + x + y + z + w + v)
 
 f1(1)(2)

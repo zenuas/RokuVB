@@ -138,7 +138,8 @@ Namespace Compiler
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse
-                                    TypeOf stmt Is StringNode Then
+                                    TypeOf stmt Is StringNode OrElse
+                                    TypeOf stmt Is FunctionNode Then
 
                                 Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
