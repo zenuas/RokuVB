@@ -43,32 +43,37 @@ Public Class Main
         Dim node As INode
         Using reader As New IO.StreamReader(f)
 
-            Dim parser As New MyParser
-            Dim lex As New MyLexer(reader) With {.Parser = parser}
-            Try
-                node = parser.Parse(lex)
-
-            Catch ex As SyntaxErrorException
-
-                Dim store = CType(lex.StoreToken, Token)
-                Console.WriteLine(ex.Message)
-                Console.WriteLine(lex.ReadLine)
-                Console.Write("".PadLeft(store.LineColumn.Value - 1))
-                Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
-                Return
-
-            End Try
+            node = Parse(New MyLexer(reader), opt)
         End Using
         Compile(node, opt)
-        'Compile(loader.AddImport(f).Node)
     End Sub
 
     Public Shared Sub CompileConsole(reader As System.IO.TextReader, opt As Command.Option)
 
-        Dim parser As New MyParser
-        Compile(parser.Parse(New MyLexer(reader) With {.Parser = parser}), opt)
-        'Compile((New MyParser).Parse(loader, reader))
+        Compile(Parse(New MyLexer(reader), opt), opt)
     End Sub
+
+    Public Shared Function Parse(lex As MyLexer, opt As Command.Option) As INode
+
+        Dim parser As New MyParser
+        lex.Parser = parser
+        Try
+            Return parser.Parse(lex)
+
+        Catch ex As SyntaxErrorException
+
+            Console.WriteLine(ex.Message)
+            Console.WriteLine(lex.ReadLine)
+            If lex.StoreToken IsNot Nothing Then
+
+                Dim store = CType(lex.StoreToken, Token)
+                Console.Write("".PadLeft(store.LineColumn.Value - 1))
+                Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
+            End If
+            Throw
+
+        End Try
+    End Function
 
     Public Shared Sub Compile(node As INode, opt As Command.Option)
 
