@@ -33,34 +33,6 @@ Namespace Util
             Return a
         End Function
 
-        Public Shared Function These(Of R)(ParamArray fs() As Func(Of R)) As R
-
-            For i = 0 To fs.Length - 1
-
-                Try
-                    Return fs(i)()
-
-                Catch
-
-                End Try
-            Next
-            Return Nothing
-        End Function
-
-        Public Shared Function These(Of T, R)(a As T, ParamArray fs() As Func(Of T, R)) As R
-
-            For i = 0 To fs.Length - 1
-
-                Try
-                    Return fs(i)(a)
-
-                Catch
-
-                End Try
-            Next
-            Return Nothing
-        End Function
-
     End Class
 
 End Namespace

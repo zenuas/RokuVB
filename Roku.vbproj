@@ -134,6 +134,7 @@
     <Compile Include="Manager\RkString.vb" />
     <Compile Include="Manager\RkValue.vb" />
     <Compile Include="Util\ArrayExtension.vb" />
+    <Compile Include="Util\Errors.vb" />
     <Compile Include="Util\Traverse.vb" />
     <Compile Include="Util\Functions.vb" />
   </ItemGroup>

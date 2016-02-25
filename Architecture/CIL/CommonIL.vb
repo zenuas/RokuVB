@@ -76,7 +76,7 @@ Namespace Architecture.CIL
                 Dim method = Me.Module.DefineGlobalMethod("__EntryPoint", MethodAttributes.Static Or MethodAttributes.Family, GetType(System.Void), System.Type.EmptyTypes)
 
                 Dim il = method.GetILGenerator
-                Dim ctor = Util.Functions.These(Function() Me.Root.GetFunction(".ctor"))
+                Dim ctor = Util.Errors.Default(CType(Nothing, RkFunction), Function() Me.Root.GetFunction(".ctor"))
                 If ctor IsNot Nothing Then il.EmitCall(OpCodes.Call, functions(ctor), System.Type.EmptyTypes)
                 'il.Emit(OpCodes.Newobj, Me.Module.GetType(Me.EntryPoint).GetConstructor(System.Type.EmptyTypes))
                 'il.Emit(OpCodes.Pop)
