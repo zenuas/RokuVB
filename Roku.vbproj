@@ -94,6 +94,7 @@
     <Compile Include="Manager\RkGenericEntry.vb" />
     <Compile Include="Manager\RkStruct.vb" />
     <Compile Include="Manager\RkNamespace.vb" />
+    <Compile Include="Node\RootNode.vb" />
     <Compile Include="Node\PropertyNode.vb" />
     <Compile Include="Node\StructNode.vb" />
     <Compile Include="Node\TypeFunctionNode.vb" />

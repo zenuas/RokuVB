@@ -190,6 +190,14 @@ Namespace Util
 
                             ' nothing
 
+                        Case TypeOf node_ Is RootNode
+
+                            Dim x = CType(node_, RootNode)
+                            For Each key In x.Namespaces.Keys
+
+                                f($"`{key}", x.Namespaces(key))
+                            Next
+
                         Case Else
 
                             Debug.Fail("unknown node")
@@ -310,6 +318,14 @@ Namespace Util
                              TypeOf node_ Is TypeNode
 
                             ' nothing
+
+                        Case TypeOf node_ Is RootNode
+
+                            Dim x = CType(node_, RootNode)
+                            For Each key In New List(Of String)(x.Namespaces.Keys)
+
+                                x.Namespaces(key) = f($"`{key}", x.Namespaces(key))
+                            Next
 
                         Case Else
 

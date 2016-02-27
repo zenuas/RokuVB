@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
@@ -11,26 +12,41 @@ Public Class Main
 
     Public Class Loader
 
-        'Public Overridable Function AddImport(f As String) As Roku.Node.INode
-        '    Return Nothing
-        'End Function
+        Public Overridable Property CurrentDirectory As String
+        Public Overridable Property Root As New RootNode
+
+        Public Overridable Function GetNamespace(name As String) As String
+
+            Return name
+        End Function
+
+        Public Overridable Sub AddNode(name As String, node As Func(Of INode))
+
+            Dim ns = Me.GetNamespace(name)
+            If Me.Root.Namespaces.ContainsKey(ns) Then Return
+
+            Me.Root.Namespaces(ns) = Nothing
+            Me.Root.Namespaces(ns) = node()
+        End Sub
     End Class
 
     Public Shared Sub Main(args() As String)
 
         Dim opt As New Command.Option
         Dim xs = Command.Parser.Parse(opt, args)
+        Dim loader As New Loader With {.CurrentDirectory = System.IO.Directory.GetCurrentDirectory}
 
         If xs.Length = 0 Then
 
-            CompileConsole(System.Console.In, opt)
+            LoadConsole(loader, System.Console.In, opt)
         Else
 
             For Each arg In xs
 
-                CompileFile(arg, opt)
+                LoadFile(loader, arg, opt)
             Next
         End If
+        Compile(loader, opt)
 
 #If DEBUG Then
         Console.WriteLine("push any key...")
@@ -38,54 +54,59 @@ Public Class Main
 #End If
     End Sub
 
-    Public Shared Sub CompileFile(f As String, opt As Command.Option)
+    Public Shared Sub LoadFile(loader As Loader, f As String, opt As Command.Option)
 
-        Dim node As INode
-        Using reader As New IO.StreamReader(f)
+        loader.AddNode(f,
+            Function()
+                Using reader As New IO.StreamReader(f)
 
-            node = Parse(New MyLexer(reader), opt)
-        End Using
-        Compile(node, opt)
+                    Return Parse(New MyLexer(reader), opt)
+                End Using
+            End Function)
     End Sub
 
-    Public Shared Sub CompileConsole(reader As System.IO.TextReader, opt As Command.Option)
+    Public Shared Sub LoadConsole(loader As Loader, reader As System.IO.TextReader, opt As Command.Option)
 
-        Compile(Parse(New MyLexer(reader), opt), opt)
+        loader.AddNode("", Function() Parse(New MyLexer(reader), opt))
     End Sub
 
     Public Shared Function Parse(lex As MyLexer, opt As Command.Option) As INode
 
         Dim parser As New MyParser
         lex.Parser = parser
-        Try
-            Return parser.Parse(lex)
+        Return Util.Errors.Logging(Function() parser.Parse(lex),
+            Sub(ex As SyntaxErrorException)
 
-        Catch ex As SyntaxErrorException
+                Console.WriteLine(ex.Message)
+                Console.WriteLine(lex.ReadLine)
+                If lex.StoreToken IsNot Nothing Then
 
-            Console.WriteLine(ex.Message)
-            Console.WriteLine(lex.ReadLine)
-            If lex.StoreToken IsNot Nothing Then
-
-                Dim store = CType(lex.StoreToken, Token)
-                Console.Write("".PadLeft(store.LineColumn.Value - 1))
-                Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
-            End If
-            Throw
-
-        End Try
+                    Dim store = CType(lex.StoreToken, Token)
+                    Console.Write("".PadLeft(store.LineColumn.Value - 1))
+                    Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
+                End If
+            End Sub)
     End Function
 
-    Public Shared Sub Compile(node As INode, opt As Command.Option)
+    Public Shared Sub Compile(loader As Loader, opt As Command.Option)
 
-        Compiler.NameResolver.ResolveName(node)
-        Compiler.Normalize.Normalization(node)
-        Compiler.Closure.Capture(node)
         Dim root = CreateRootNamespace("Global")
-        Compiler.Typing.Prototype(node, root)
-        Compiler.Typing.TypeInference(node, root)
-        Compiler.Translater.Translate(node, root)
-        If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, node)
 
+        For Each node_ In loader.Root.Namespaces.Values
+
+            Compiler.NameResolver.ResolveName(node_)
+            Compiler.Normalize.Normalization(node_)
+            Compiler.Closure.Capture(node_)
+            Compiler.Typing.Prototype(node_, root)
+        Next
+
+        For Each node_ In loader.Root.Namespaces.Values
+
+            Compiler.Typing.TypeInference(node_, root)
+            Compiler.Translater.Translate(node_, root)
+        Next
+
+        If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
         Dim arch = CreateArchitecture(opt.Architecture)
         arch.Assemble(root)
         arch.Optimize()
@@ -125,10 +146,20 @@ shape = record,
 align = left,
 ];")
 
+        Dim used As New Dictionary(Of INode, Boolean)
+
         Util.Traverse.NodesOnce(Of Object)(
             node,
             Nothing,
-            Function(parent, ref, child, user, isfirst, next_)
+            Sub(parent, ref, child, user, isfirst, next_)
+
+                If TypeOf parent Is RootNode Then
+
+                    out.WriteLine($"subgraph cluster_root_{child.GetHashCode} {{")
+                    out.WriteLine("  style=solid;")
+                    out.WriteLine("  color=black;")
+                    out.WriteLine($"  label = ""{ref}"";")
+                End If
 
                 If TypeOf child Is BlockNode Then
 
@@ -154,62 +185,52 @@ align = left,
                     out.WriteLine($"  label = ""{name} ({block.LineNumber}){args}"";")
                     out.WriteLine("  " + String.Join(" -> ", block.Statements.Map(Function(x) x.GetHashCode.ToString)))
                     out.WriteLine("}")
+
+                ElseIf parent IsNot Nothing AndAlso
+                    TypeOf parent IsNot BlockNode AndAlso
+                    TypeOf child IsNot DeclareNode AndAlso
+                    TypeOf parent IsNot DeclareNode Then
+
+                    out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
+                    used(parent) = True
+                    used(child) = True
                 End If
 
                 next_(child, user)
-                Return child
-            End Function)
+
+                If TypeOf parent Is RootNode Then
+
+                    out.WriteLine("}")
+                End If
+            End Sub)
 
         Util.Traverse.NodesOnce(Of Object)(
             node,
             Nothing,
-            Function(parent, ref, child, user, isfirst, next_)
+            Sub(parent, ref, child, user, isfirst, next_)
 
-                If (parent Is Nothing AndAlso TypeOf child Is BlockNode) OrElse
-                    TypeOf parent Is FunctionNode OrElse
-                    (TypeOf parent Is DeclareNode AndAlso TypeOf child Is TypeNode) OrElse
-                    TypeOf child Is FunctionNode Then
+                If isfirst AndAlso used.ContainsKey(child) Then
 
-                    ' nothing
-                Else
+                    Dim name = ""
+                    If child.LineNumber.HasValue Then name = $"\l( {child.LineNumber}, {child.LineColumn} )"
+                    Select Case True
+                        Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $"\l{v.Name}"
+                        Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $"\l{v.Numeric}"
+                        Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $"\l{v.String}"
+                        Case TypeOf child Is FunctionNode : Dim v = CType(child, FunctionNode) : name += $"\l{v.Name}"
+                        Case TypeOf child Is ExpressionNode : Dim v = CType(child, ExpressionNode) : name += $"\l{v.Operator}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is DeclareNode : Dim v = CType(child, DeclareNode) : name += $"\l{v.Name.Name}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is LetNode : Dim v = CType(child, LetNode) : name += $"\l{v.Var.Name}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is StructNode : Dim v = CType(child, StructNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is FunctionCallNode : Dim v = CType(child, FunctionCallNode) : name += $"\lsub {v.Function?.ToString}"
+                    End Select
 
-                    If isfirst AndAlso TypeOf child IsNot BlockNode Then
-
-                        Dim name = ""
-                        If child.LineNumber.HasValue Then name = $"\l( {child.LineNumber}, {child.LineColumn} )"
-                        Select Case True
-                            Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
-                            Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $"\l{v.Name}"
-                            Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $"\l{v.Numeric}"
-                            Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $"\l{v.String}"
-                            Case TypeOf child Is FunctionNode : Dim v = CType(child, FunctionNode) : name += $"\l{v.Name}"
-                            Case TypeOf child Is ExpressionNode : Dim v = CType(child, ExpressionNode) : name += $"\l{v.Operator}\l`{v.Type?.Name}`"
-                            Case TypeOf child Is DeclareNode : Dim v = CType(child, DeclareNode) : name += $"\l{v.Name.Name}\l`{v.Type?.Name}`"
-                            Case TypeOf child Is LetNode : Dim v = CType(child, LetNode) : name += $"\l{v.Var.Name}\l`{v.Type?.Name}`"
-                            Case TypeOf child Is StructNode : Dim v = CType(child, StructNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
-                            Case TypeOf child Is FunctionCallNode : Dim v = CType(child, FunctionCallNode) : name += $"\lsub {v.Function?.ToString}"
-                        End Select
-
-                        out.WriteLine($"{child.GetHashCode} [label = ""{child.GetType.Name}{name}""]")
-                    End If
-
-                    If parent IsNot Nothing AndAlso
-                        TypeOf parent IsNot BlockNode AndAlso
-                        Not (TypeOf parent Is DeclareNode AndAlso TypeOf child Is VariableNode) Then
-
-                        If TypeOf child Is BlockNode Then
-
-                            'out.WriteLine($"{parent.GetHashCode} -> {CType(child, BlockNode).Statements(0).GetHashCode} [label = ""{ref}"", lhead = cluster_block_stmt_{child.GetHashCode}];")
-                            out.WriteLine($"{parent.GetHashCode} -> {CType(child, BlockNode).Statements(0).GetHashCode} [label = ""{ref}""];")
-                        Else
-                            out.WriteLine($"{parent.GetHashCode} -> {child.GetHashCode} [label = ""{ref}""];")
-                        End If
-                    End If
+                    out.WriteLine($"{child.GetHashCode} [label = ""{child.GetType.Name}{name}""]")
                 End If
 
                 next_(child, user)
-                Return child
-            End Function)
+            End Sub)
 
         out.WriteLine("}")
     End Sub
