@@ -16,9 +16,9 @@ Namespace Parser
         Public Sub New(ByVal reader As System.IO.TextReader)
             MyBase.New(reader)
 
+            Me.ReservedChar("."c) = SymbolTypes.__x2E
             Me.ReservedChar("("c) = SymbolTypes.__x28
             Me.ReservedChar(")"c) = SymbolTypes.__x29
-            Me.ReservedChar("."c) = SymbolTypes.__x2E
             Me.ReservedChar("["c) = SymbolTypes.__x5B
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("?"c) = SymbolTypes.__x3F
@@ -26,17 +26,18 @@ Namespace Parser
             Me.ReservedChar(","c) = SymbolTypes.__x2C
             Me.ReservedChar("{"c) = SymbolTypes.__x7B
             Me.ReservedChar("}"c) = SymbolTypes.__x7D
-            Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("END") = SymbolTypes.[END]
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
+            Me.ReservedWord("EOL") = SymbolTypes.EOL
+            Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
-            Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("ALLOW") = SymbolTypes.ALLOW
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("VAR") = SymbolTypes.VAR
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
+            Me.ReservedWord("USE") = SymbolTypes.USE
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("STR") = SymbolTypes.STR

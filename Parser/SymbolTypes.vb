@@ -74,6 +74,9 @@ Namespace Parser
         ''' <summary>SUB</summary>
         [SUB]
 
+        ''' <summary>USE</summary>
+        USE
+
         ''' <summary>VAR</summary>
         VAR
 
@@ -146,8 +149,14 @@ Namespace Parser
         ''' <summary>listn</summary>
         listn
 
+        ''' <summary>namespace</summary>
+        [namespace]
+
         ''' <summary>num</summary>
         num_1
+
+        ''' <summary>program_begin</summary>
+        program_begin
 
         ''' <summary>start</summary>
         start
@@ -181,6 +190,12 @@ Namespace Parser
 
         ''' <summary>typex</summary>
         typex
+
+        ''' <summary>use</summary>
+        use_1
+
+        ''' <summary>uses</summary>
+        uses
 
         ''' <summary>var</summary>
         var_1

@@ -9,7 +9,7 @@ Namespace Node
         Inherits BaseNode
 
 
-        Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, INode)
+        Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, ProgramNode)
     End Class
 
 End Namespace

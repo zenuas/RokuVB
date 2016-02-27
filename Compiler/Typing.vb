@@ -9,7 +9,7 @@ Namespace Compiler
 
     Public Class Typing
 
-        Public Shared Sub Prototype(node As INode, root As RkNamespace)
+        Public Shared Sub Prototype(node As ProgramNode, root As RkNamespace)
 
             Dim closures As New Dictionary(Of IScopeNode, RkStruct)
             Dim make_closure =
@@ -86,7 +86,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub TypeInference(node As INode, root As RkNamespace)
+        Public Shared Sub TypeInference(node As ProgramNode, root As RkNamespace)
 
             Do While True
 

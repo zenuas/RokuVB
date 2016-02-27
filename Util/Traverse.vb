@@ -324,7 +324,7 @@ Namespace Util
                             Dim x = CType(node_, RootNode)
                             For Each key In New List(Of String)(x.Namespaces.Keys)
 
-                                x.Namespaces(key) = f($"`{key}", x.Namespaces(key))
+                                x.Namespaces(key) = CType(f($"`{key}", x.Namespaces(key)), ProgramNode)
                             Next
 
                         Case Else

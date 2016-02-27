@@ -6,7 +6,7 @@ Namespace Compiler
 
     Public Class Normalize
 
-        Public Shared Sub Normalization(node As INode)
+        Public Shared Sub Normalization(node As ProgramNode)
 
             Util.Traverse.NodesOnce(
                 node,

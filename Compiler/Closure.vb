@@ -6,7 +6,7 @@ Namespace Compiler
 
     Public Class Closure
 
-        Public Shared Sub Capture(node As INode)
+        Public Shared Sub Capture(node As ProgramNode)
 
             Util.Traverse.NodesOnce(
                 node,

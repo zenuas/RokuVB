@@ -5,6 +5,8 @@ Namespace Parser
 
     Partial Public Class MyParser
 
+        Public Overridable Property Loader As Loader
+
 #Region "scope"
 
         Protected Overridable Property CurrentScope As IScopeNode
@@ -23,6 +25,11 @@ Namespace Parser
         End Function
 
 #End Region
+
+        Protected Overridable Sub AddUse(use As UseNode)
+
+            CType(Me.CurrentScope, ProgramNode).Uses.Add(use)
+        End Sub
 
         Protected Overridable Function CreateLetNode(
                 var As VariableNode,

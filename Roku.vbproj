@@ -94,10 +94,13 @@
     <Compile Include="Manager\RkGenericEntry.vb" />
     <Compile Include="Manager\RkStruct.vb" />
     <Compile Include="Manager\RkNamespace.vb" />
+    <Compile Include="Node\ProgramNode.vb" />
     <Compile Include="Node\RootNode.vb" />
     <Compile Include="Node\PropertyNode.vb" />
     <Compile Include="Node\StructNode.vb" />
     <Compile Include="Node\TypeFunctionNode.vb" />
+    <Compile Include="Node\UseNode.vb" />
+    <Compile Include="Parser\Loader.vb" />
     <Compile Include="Parser\MyIToken.vb" />
     <Compile Include="Parser\Lexer.vb" />
     <Compile Include="Parser\MyLexer.Combine.vb" />

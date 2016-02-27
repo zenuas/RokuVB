@@ -10,7 +10,7 @@ Namespace Compiler
 
     Public Class Translater
 
-        Public Shared Sub Translate(node As INode, root As RkNamespace)
+        Public Shared Sub Translate(node As ProgramNode, root As RkNamespace)
 
             Dim compleat As New Dictionary(Of RkFunction, Boolean)
             Dim returns = root.Functions("return")
@@ -221,12 +221,9 @@ Namespace Compiler
                     compleat(rk_func) = True
                 End Sub
 
-            If TypeOf node Is BlockNode Then
-
-                Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}, .Namespace = root}
-                make_func(ctor, Nothing, CType(node, BlockNode).Statements)
-                root.AddFunction(ctor)
-            End If
+            Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}, .Namespace = root}
+            make_func(ctor, Nothing, node.Statements)
+            root.AddFunction(ctor)
 
             Util.Traverse.NodesOnce(
                 node,

@@ -10,26 +10,6 @@ Imports Roku.Util.ArrayExtension
 <Assembly: AssemblyVersion("0.0.*")>
 Public Class Main
 
-    Public Class Loader
-
-        Public Overridable Property CurrentDirectory As String
-        Public Overridable Property Root As New RootNode
-
-        Public Overridable Function GetNamespace(name As String) As String
-
-            Return name
-        End Function
-
-        Public Overridable Sub AddNode(name As String, node As Func(Of INode))
-
-            Dim ns = Me.GetNamespace(name)
-            If Me.Root.Namespaces.ContainsKey(ns) Then Return
-
-            Me.Root.Namespaces(ns) = Nothing
-            Me.Root.Namespaces(ns) = node()
-        End Sub
-    End Class
-
     Public Shared Sub Main(args() As String)
 
         Dim opt As New Command.Option
@@ -60,21 +40,21 @@ Public Class Main
             Function()
                 Using reader As New IO.StreamReader(f)
 
-                    Return Parse(New MyLexer(reader), opt)
+                    Return Parse(loader, New MyLexer(reader), opt)
                 End Using
             End Function)
     End Sub
 
     Public Shared Sub LoadConsole(loader As Loader, reader As System.IO.TextReader, opt As Command.Option)
 
-        loader.AddNode("", Function() Parse(New MyLexer(reader), opt))
+        loader.AddNode("", Function() Parse(loader, New MyLexer(reader), opt))
     End Sub
 
-    Public Shared Function Parse(lex As MyLexer, opt As Command.Option) As INode
+    Public Shared Function Parse(loader As Loader, lex As MyLexer, opt As Command.Option) As ProgramNode
 
-        Dim parser As New MyParser
+        Dim parser As New MyParser With {.Loader = loader}
         lex.Parser = parser
-        Return Util.Errors.Logging(Function() parser.Parse(lex),
+        Return Util.Errors.Logging(Function() CType(parser.Parse(lex), ProgramNode),
             Sub(ex As SyntaxErrorException)
 
                 Console.WriteLine(ex.Message)
@@ -92,18 +72,18 @@ Public Class Main
 
         Dim root = CreateRootNamespace("Global")
 
-        For Each node_ In loader.Root.Namespaces.Values
+        For Each pgm In loader.Root.Namespaces.Values
 
-            Compiler.NameResolver.ResolveName(node_)
-            Compiler.Normalize.Normalization(node_)
-            Compiler.Closure.Capture(node_)
-            Compiler.Typing.Prototype(node_, root)
+            Compiler.NameResolver.ResolveName(pgm)
+            Compiler.Normalize.Normalization(pgm)
+            Compiler.Closure.Capture(pgm)
+            Compiler.Typing.Prototype(pgm, root)
         Next
 
-        For Each node_ In loader.Root.Namespaces.Values
+        For Each pgm In loader.Root.Namespaces.Values
 
-            Compiler.Typing.TypeInference(node_, root)
-            Compiler.Translater.Translate(node_, root)
+            Compiler.Typing.TypeInference(pgm, root)
+            Compiler.Translater.Translate(pgm, root)
         Next
 
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)

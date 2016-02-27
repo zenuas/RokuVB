@@ -7,7 +7,7 @@ Namespace Compiler
 
     Public Class NameResolver
 
-        Public Shared Sub ResolveName(node As INode)
+        Public Shared Sub ResolveName(node As ProgramNode)
 
             Dim resolve_name As Func(Of IScopeNode, String, INode) =
                 Function(current As IScopeNode, name As String)

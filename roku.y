@@ -29,6 +29,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<VariableListNode> atvarn
 %type<NumericNode>    num
 %type<StringNode>     str
+%type<UseNode>        use
+%type<IEvaluableNode> namespace
 
 %left  ELSE
 %token<NumericNode>  NUM
@@ -41,8 +43,16 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %%
 
-start : block
+start : program_begin uses stmt END {$$ = Me.PopScope}
+program_begin : BEGIN               {Me.PushScope(New ProgramNode)}
 
+uses  : void
+      | uses use EOL           {Me.AddUse($2)}
+use   : USE namespace          {$$ = New UseNode With {.Namespace = $2}}
+      | USE var EQ namespace   {$$ = New UseNode With {.Namespace = $4, .Alias = $2.Name}}
+
+namespace : varx               {$$ = $1}
+          | namespace '.' varx {$$ = New ExpressionNode With {.Left = $1, .Operator = ".", .Right = $3}}
 
 ########## statement ##########
 stmt  : void        {$$ = Me.CurrentScope}
@@ -150,6 +160,7 @@ varx  : var
       | IF      {$$ = Me.CreateVariableNode($1)}
       | ELSE    {$$ = Me.CreateVariableNode($1)}
       | LET     {$$ = Me.CreateVariableNode($1)}
+      | USE     {$$ = Me.CreateVariableNode($1)}
 atvar : ATVAR   {$$ = Me.CreateVariableNode($1)}
 num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}

@@ -16,6 +16,7 @@ Namespace Parser
             Me.ReservedWord("struct") = SymbolTypes.STRUCT
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
+            Me.ReservedWord("use") = SymbolTypes.USE
         End Sub
 
 #Region "reader"
