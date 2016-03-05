@@ -37,14 +37,13 @@ test: $(RKIL)
 tests: $(RKTEST)
 
 .rk.exe: $(OUT)
-	build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
-	build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
-	echo $(OUT) $< -o $@ -a CIL
-	-$(OUT) $< -o $@ -a CIL
-	$@ < .stdin > $@.stdout
-	diff .stdout $@.stdout > $@.diff
-	del .stdout
-	del .stdin
+	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
+	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
+	@$(OUT) $< -o $@ -a CIL
+	-$@ < .stdin > $@.stdout
+	@diff .stdout $@.stdout | build-tools\tee $@.diff
+	@del .stdout
+	@del .stdin
 
 $(OUT): $(YANP_OUT) $(SRCS)
 	mkdir $(WORK)
