@@ -14,6 +14,7 @@ Namespace Node
         Sub AddLet(let_ As LetNode)
 
         Property Owner As IEvaluableNode
+        Property InnerScope As Boolean
 
     End Interface
 

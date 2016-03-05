@@ -19,6 +19,15 @@ Namespace Compiler
                     If TypeOf child Is VariableNode Then
 
                         Dim var = CType(child, VariableNode)
+
+                        If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
+
+                            Do While current IsNot Nothing AndAlso current.InnerScope
+
+                                current = current.Parent
+                            Loop
+                        End If
+
                         If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
 
                             var.ClosureEnvironment = True

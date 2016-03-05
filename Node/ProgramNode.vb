@@ -11,6 +11,7 @@ Namespace Node
         Public Sub New()
             MyBase.New(1)
 
+            Me.InnerScope = False
         End Sub
 
         Public Overridable ReadOnly Property Uses As New List(Of UseNode)

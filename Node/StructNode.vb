@@ -30,6 +30,7 @@ Namespace Node
         Public Overridable Property Name As String
         Public Overridable ReadOnly Property Statements As New List(Of IEvaluableNode)
         Public Overridable Property Owner As IEvaluableNode Implements IScopeNode.Owner
+        Public Overridable Property InnerScope As Boolean = False Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable ReadOnly Property Generics As New List(Of VariableNode)

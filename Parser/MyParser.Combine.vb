@@ -129,6 +129,8 @@ Namespace Parser
                 [else] As BlockNode
             ) As IfNode
 
+            If [then] IsNot Nothing Then [then].InnerScope = True
+            If [else] IsNot Nothing Then [else].InnerScope = True
             Dim [if] As New IfNode With {.Condition = cond, .Then = [then], .Else = [else]}
             [if].AppendLineNumber(cond)
             Return [if]
@@ -142,6 +144,7 @@ Namespace Parser
             ) As FunctionNode
 
             Dim f As New FunctionNode(name.Name) With {.Arguments = args, .Return = ret, .Body = body}
+            body.InnerScope = False
             body.Owner = f
             f.AppendLineNumber(name)
             Return f
