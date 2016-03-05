@@ -18,6 +18,8 @@ RKIL=a.il
 SRCS=$(wildcard %.vb)
 RKTEST:=$(patsubst %.rk,%.exe,$(wildcard tests\*.rk))
 
+.PHONY: all clean parser $(RKTEST)
+
 all: test
 
 clean:
@@ -68,8 +70,7 @@ $(OUT): $(YANP_OUT) $(SRCS)
 		/recurse:*.vb
 	ildasm $(OUT) /out:$(OUT).il /nobar
 
-parser: yanp
-yanp: $(YANP_OUT)
+parser: $(YANP_OUT)
 $(YANP_OUT): roku.y
 	$(YANP) \
 		-i roku.y \

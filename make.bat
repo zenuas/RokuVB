@@ -9,6 +9,7 @@ var eu = sh.Environment("Process");
 
 String.prototype.trim    = function ()  {return this.replace(/^\s+|\s+$/g, "");};
 String.prototype.trimEnd = function ()  {return this.replace(/\s+$/g,      "");};
+Array.prototype.indexOf  = function (v) {for(var i = 0; i < this.length; i++) {if(this[i] == v) {return(i);}} return(-1);};
 Array.prototype.map      = function (f) {var xs = []; for(var i = 0; i < this.length; i++) {xs.push(f(this[i]));} return(xs);};
 
 var opt  = {print : false, just_print : false, always_make : false};
@@ -106,14 +107,20 @@ function parse(makefile, env)
 					else if(target_index >= 0 && (expand_index < 0 || expand_index > target_index))
 					{
 						target = line.substring(0, target_index).trim();
-						var depends = line.substring(target_index + 1).trim().split(/\s+/);
 						
-						
-						if(env.$START == "") {env.$START = target;}
-						env.$TARGET[target] = {
-								depends  : depends,
-								commands : []
-							};
+						if(target == ".PHONY")
+						{
+							array_add(env.$PHONY, command_split(expand(env, line.substring(target_index + 1).trim()).value, " "));
+						}
+						else
+						{
+							var depends = line.substring(target_index + 1).trim().split(/\s+/);
+							if(env.$START == "") {env.$START = target;}
+							env.$TARGET[target] = {
+									depends  : depends,
+									commands : []
+								};
+						}
 					}
 					else
 					{
@@ -192,7 +199,7 @@ function run(env, target)
 	if(p)
 	{
 		var xs   = command_expand(env, p.depends);
-		var need = opt.always_make;
+		var need = opt.always_make || env.$PHONY.indexOf(target) >= 0;
 		if(xs.length == 0 || t == 0) {need = true;}
 		for(var i = 0; i < xs.length; i++)
 		{
@@ -295,7 +302,6 @@ function expand(env, s, i, quote)
 				{
 					// $(patsubst %.c,%.o,foo.c)
 					var param = command_split(xs[1], ",", 2);
-					//WScript.Echo(p.value);
 					var xxs   = command_split(expand(env, param[2] || "").value, " ");
 					var reg   = new RegExp(escape(expand(env, (param[0] || "").substring(1)).value), "");
 					for(var j = 0; j < xxs.length; j++)
