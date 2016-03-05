@@ -74,9 +74,7 @@ function parse(makefile, env)
 		var linenum = 0;
 		var parse_line = function (line)
 			{
-				var comment_index = line.indexOf("#");
-				if(comment_index >= 0) {line = line.substring(0, comment_index);}
-				
+				line = remove_comment(line);
 				if(line.length == 0) {target = ""; return;}
 				
 				if(line.substring(0, 1) == "\t")
@@ -157,11 +155,18 @@ function parse(makefile, env)
 	return(env);
 }
 
+function remove_comment(line)
+{
+	return(line.replace(/^((\\#|[^#])*)(#.*)?$/, function (match, s1) {return(s1.replace("\\#", "#"));}));
+}
+
 function run(env, target)
 {
 	var p;
 	if(!(p = env.$TARGET[target]))
 	{
+		var ext = get_exten(target);
+		
 		// "$(TARGET)" expand
 		for(var c in env.$TARGET)
 		{
@@ -169,7 +174,16 @@ function run(env, target)
 			if(t == target) {p = env.$TARGET[c]; break;}
 			else if(t.substring(0, 1) == ".")
 			{
-				// ".c.o" format
+				// ".c.o" suffix rule
+				var r = t.match(/^\.(\w+)\.(\w+)$/);
+				if(r && r[2] == ext)
+				{
+					p = {depends : [target.substring(0, target.length - ext.length) + r[1]], commands : env.$TARGET[c].commands};
+					for(var i = 0; i < env.$TARGET[c].depends.length; i++)
+					{
+						p.depends.push(env.$TARGET[c].depends[i]);
+					}
+				}
 			}
 		}
 	}
@@ -192,7 +206,7 @@ function run(env, target)
 			for(var i = 0; i < p.commands.length; i++)
 			{
 				var cmd = p.commands[i];
-				cmd = cmd.replace(/\$[@%<]/,
+				cmd = cmd.replace(/\$[@%<]/g,
 					function (v)
 					{
 						if     (v == "$@") {return(target);}
@@ -210,6 +224,15 @@ function run(env, target)
 		}
 	}
 	return(t);
+}
+
+function get_exten(name)
+{
+	var dir_sep = name.lastIndexOf("/");
+	dir_sep = dir_sep >= 0 ? dir_sep : name.lastIndexOf("\\");
+	
+	var ext_sep = name.lastIndexOf(".");
+	return(dir_sep > ext_sep ? "" : name.substring(ext_sep + 1));
 }
 
 function expand(env, s, i, quote)
@@ -245,6 +268,7 @@ function expand(env, s, i, quote)
 			{
 				// $(SRCS:%.c=$(WORK)%.obj)
 				r.value += "replace";
+				throw new Error("unknown command [" + p.value + "]");
 			}
 			else
 			{
@@ -271,7 +295,26 @@ function expand(env, s, i, quote)
 				{
 					// $(patsubst %.c,%.o,foo.c)
 					var param = command_split(xs[1], ",", 2);
-					throw new Error("not suported patsubst command [" + s + "]");
+					//WScript.Echo(p.value);
+					var xxs   = command_split(expand(env, param[2] || "").value, " ");
+					var reg   = new RegExp(escape(expand(env, (param[0] || "").substring(1)).value), "");
+					for(var j = 0; j < xxs.length; j++)
+					{
+						xxs[j] = xxs[j].replace(reg, expand(env, (param[1] || "").substring(1)).value);
+					}
+					r.value += xxs.join(" ");
+				}
+				else if(xs[0] == "wildcard")
+				{
+					// $(wildcard *.c)
+					// $(wildcard */*.c *.txt)
+					var param = command_split(xs[1], " ");
+					var xxs   = [];
+					for(var j = 0; j < param.length; j++)
+					{
+						array_add(xxs, wildcard(param[j]));
+					}
+					r.value += xxs.join(" ");
 				}
 				else
 				{
@@ -342,6 +385,56 @@ function command_split(s, splitter, maxsplit)
 	return(xs);
 }
 
+function escape(s)
+{
+	return(s.replace(/[.*+?^$\[\](){}\\]/g, "\\$&"));
+}
+
+function meta_match(target, meta)
+{
+	function match(ti, mi)
+	{
+		if(target.length <= ti && meta.length <= mi) {return(true);}
+		if(target.length <= ti || meta.length <= mi) {return(false);}
+		
+		var tc = target.substring(ti, ti + 1);
+		var mc = meta.substring(mi, mi + 1);
+		
+		if(mc == '%')
+		{
+			return(match(ti + 1, mi) ? true : match(ti + 1, mi + 1));
+		}
+		else if(tc != '/' && tc != '\\')
+		{
+			if(mc == '*')
+			{
+				return(match(ti + 1, mi) ? true : match(ti + 1, mi + 1));
+			}
+			else if(mc == '?')
+			{
+				return(match(ti + 1, mi + 1));
+			}
+		}
+		
+		return(tc == mc ? match(ti + 1, mi + 1) : false);
+	}
+	
+	return(match(0, 0));
+}
+
+function wildcard(meta)
+{
+	var current = fs.GetFolder(".").Path;
+	var files   = exec("cmd /d /c dir /B /S", true).split("\r\n");
+	var xs      = [];
+	for(var i = 0; i < files.length; i++)
+	{
+		var p = files[i].substring(current.length + 1);
+		meta_match(p, meta) && xs.push(p);
+	}
+	return(xs);
+}
+
 function array_add(xs, p)
 {
 	if(p instanceof Array)
@@ -394,13 +487,17 @@ function exec(s, subshell)
 	}
 	else
 	{
-		if(opt.print) {WScript.Echo("    " + s);}
+		if(!no_echo) {WScript.Echo(s);}
 		if(!opt.just_print)
 		{
 			var p = sh.Exec("cmd /d /c " + s);
-			while(!no_echo && !p.StdOut.AtEndOfStream)
+			while(!p.StdOut.AtEndOfStream)
 			{
 				WScript.Echo(p.StdOut.ReadLine());
+			}
+			while(!p.StdErr.AtEndOfStream)
+			{
+				WScript.Echo(p.StdErr.ReadLine());
 			}
 		}
 	}

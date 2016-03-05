@@ -1,5 +1,10 @@
 var a = fib(10)
+
+#=>55
 print(a)
+
+#=>89
+print(fib(11))
 
 sub fib(a: Int) Int
 	if a == 0

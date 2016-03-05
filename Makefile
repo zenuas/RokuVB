@@ -2,7 +2,7 @@
 # usage: make.bat
 #
 
-PATH:=$(PATH);$("PROGRAMFILES(X86)")\MSBuild\14.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
+PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\MSBuild\14.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
 WORK=bin\netf4
 OUT=$(WORK)\roku.exe
 RELEASE=Release
@@ -12,25 +12,41 @@ YANP=..\legacy\Yanp\bin\Debug\yanp.exe
 YANP_OUT=Parser\MyParser.vb
 
 RK=tests\test.rk
-RKOUT=.\a.exe
+RKOUT=a.exe
 RKIL=a.il
+
+SRCS=$(wildcard %.vb)
+RKTEST:=$(patsubst %.rk,%.exe,$(wildcard tests\*.rk))
 
 all: test
 
 clean:
 	rmdir /S /Q $(WORK)
-	del $(RKIL)
-	del $(RKOUT)
-	del $(subst exe,pdb,$(RKOUT))
+	del /F $(RKIL)
+	del /F $(RKOUT)
+	del /F $(subst exe,pdb,$(RKOUT))
+	del /F $(RKTEST)
+	del /F $(patsubst %.exe,%.pdb,$(RKTEST))
+	del /F $(patsubst %.exe,%.exe.stdout,$(RKTEST))
+	del /F $(patsubst %.exe,%.exe.diff,$(RKTEST))
 
 test: $(RKIL)
-	-$(RKOUT)
+	-.\$(RKOUT)
 	#-start $(RKIL)
 
-tests: $(RKIL)
-	
+tests: $(RKTEST)
 
-$(OUT): $(YANP_OUT)
+.rk.exe: $(OUT)
+	build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
+	build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
+	echo $(OUT) $< -o $@ -a CIL
+	-$(OUT) $< -o $@ -a CIL
+	$@ < .stdin > $@.stdout
+	diff .stdout $@.stdout > $@.diff
+	del .stdout
+	del .stdin
+
+$(OUT): $(YANP_OUT) $(SRCS)
 	mkdir $(WORK)
 	vbc \
 		/nologo \
@@ -53,6 +69,7 @@ $(OUT): $(YANP_OUT)
 		/recurse:*.vb
 	ildasm $(OUT) /out:$(OUT).il /nobar
 
+parser: yanp
 yanp: $(YANP_OUT)
 $(YANP_OUT): roku.y
 	$(YANP) \

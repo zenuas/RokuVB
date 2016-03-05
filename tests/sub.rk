@@ -1,2 +1,2 @@
-sub f(a:Int b:String) Int
-	a + b
+sub f(a:Int, b:Int) Int
+	return(a + b)
