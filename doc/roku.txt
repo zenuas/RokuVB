@@ -318,9 +318,6 @@ var h = Hoge() # \‘¢‘Ì‚Ìì¬‚ð‚·‚éAFunctionCallNode->StructNode‚Æ‚È‚éA#Alloc‚
 var y = Hoge
 y()            # •Ï”Œo—R‚Å\‘¢‘Ì‚Ìì¬‚ð‚·‚éAFunctionCallNode->VariableNode(RkStruct)‚Æ‚È‚é
 
-Œ»Žž“_‚Å‚Í
-FunctionCallNode->VariableNode(RkFunction) ‚Æ
-FunctionCallNode->VariableNode(RkStruct) ‚ª‘Î‰ž‚Å‚«‚Ä‚¢‚È‚¢
 
 ..ƒŒƒV[ƒo‚ð”º‚¤ŠÖ”‚ÌŒÄ‚Ño‚µ
 
@@ -472,48 +469,7 @@ var f1 = {x} =>
 	return({y} => x + y + a)
 func(f1(2)(3))
 
-ˆÄ1 ƒNƒ[ƒWƒƒ‚Ìƒƒ“ƒo‚É•Ï”‚ðŽ‚Â
-class closure1
-	var closure: closure2
-	sub f1(x: int32) {int32}=>int32
-		closure.x = x
-		return(closure.anonymous_function)
-class closure2
-	var x: int32
-	var a: int32
-	sub anonymous_function(y: int32) int32
-		return(self.x + y + self.a)
-var obj1       = closure1()
-obj1.closure   = closure2()
-obj1.closure.a = 1
-func(obj1.f1(2)(3))
-
-ƒ|ƒCƒ“ƒg‚Í2‚Â
-* “ü‚êŽq‚É‚È‚Á‚Ä‚¢‚é•Ï”‚ÍÅI‚ÌŽQÆæ‚ÌƒtƒB[ƒ‹ƒh‚Æ‚·‚é
-* ƒNƒ[ƒWƒƒ‚ðŒÄ‚Ño‚·ŠÖ”(f1)‚ÍƒtƒB[ƒ‹ƒh‚ÉƒNƒ[ƒWƒƒ‚ÌƒNƒ‰ƒX‚ðŽ‚Â
-
-ˆêŒ©closure2‚Íclosure1‚ª¶¬‚µ‚Ä‚à‚æ‚¢‚æ‚¤‚ÉŽv‚¦‚é‚ª
-class closure1
-	var closure = closure2() # NG
-“¯‚¶ƒNƒ[ƒWƒƒ‚ð‰½‰ñ‚àŒÄ‚Ô‚Æ‚«‚É–â‘è‚É‚È‚é
-var a = 1
-var f1 = {x} =>
-	return({y} => x + y + a)
-func(f1(2)(3) + f1(4)(5))
-closure1‚ªclosure2‚ð¶¬‚·‚é‚Æa‚ÌŽÀ‘Ì‚ªˆÙ‚È‚Á‚Ä‚µ‚Ü‚¤
-‚±‚ÌƒP[ƒX‚Å‚Íclosure2‚Ì¶¬‚ÍŒÄ‚Ño‚µ‘¤‚ª‚·‚ê‚Î‚æ‚¢
-
-‚½‚¾‚µ‰½’i‚à“ü‚êŽq‚ÌƒNƒ[ƒWƒƒ‚ðì‚é‚Æ–Ê“|‚É‚È‚é
-‚±‚ÌƒP[ƒX‚Å‚ÍŒÄ‚Ño‚µ‘¤‚ªclosure2‚ð¶¬‚·‚éƒRƒXƒg‚Í–³‘Ê‚É‹ß‚¢
-var a = 1
-var f1 = {x} =>
-	if x > 2
-		return({y} => x + y + a)
-	else
-		return({y} => y)
-func(f1(2)(3))
-
-
+ˆÄ1 ƒNƒ[ƒWƒƒ‚Ìƒƒ“ƒo‚É•Ï”‚ðŽ‚Â ¦ƒ{ƒc
 
 ˆÄ2 ƒNƒ[ƒWƒƒ‚ªŽè‚ðo‚·•Ï”‚ðW‚ß‚½ƒNƒ‰ƒX(Frame)‚ðì‚é
 struct Frame
@@ -626,7 +582,7 @@ RkLambdaCall‚ðì‚Á‚½‚ª¡Œ»Ý‚Í–³–¼ŠÖ”‚Ì“ü‚ê•¨‚É‚µ‚©Žg‚Á‚Ä‚È‚¢A‘Î‰ž‚Í‚ ‚Æ‚Ål‚¦
 
 .ToDo
 
-  ƒeƒXƒgƒP[ƒX‚Ìƒ`ƒFƒbƒNŽ©“®‰»
+! ƒeƒXƒgƒP[ƒX‚Ìƒ`ƒFƒbƒNŽ©“®‰»
 ! ‘g‚Ýž‚ÝŒ^(IntAFloatABoolAArrayACharAStringADate)
   ”z—ñ
 ! Žl‘¥‰‰ŽZ(Int‚Ì‚Ý‘Î‰ž)
