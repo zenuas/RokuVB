@@ -7,6 +7,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
 Imports System
+Imports System.Diagnostics
 Imports Roku.Parser
 
 Namespace Parser
@@ -739,6 +740,7 @@ Namespace Parser
 
         Protected Overrides Sub OnError(ByVal lex As Parser.Lexer(Of INode))
 
+            Debug.Fail("syntax error")
             Throw New SyntaxErrorException(lex.LineNumber, lex.LineColumn, "syntax error")
         End Sub
     End Class
