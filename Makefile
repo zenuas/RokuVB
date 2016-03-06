@@ -80,8 +80,8 @@ parser: $(YANP_OUT)
 $(YANP_OUT): roku.y
 	$(YANP) \
 		-i roku.y \
-		-v tests\\roku.txt \
-		-c tests\\roku.csv \
+		-v tests\\parser\\roku.txt \
+		-c tests\\parser\\roku.csv \
 		-p .\\Parser\\ \
 		-b ..\\legacy\\Yanp \
 		-t vb
