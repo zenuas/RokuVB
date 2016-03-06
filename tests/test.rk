@@ -1,1 +1,2 @@
 use Test
+print(1)

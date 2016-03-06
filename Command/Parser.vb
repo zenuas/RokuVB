@@ -131,8 +131,8 @@ ExecuteOption:
         Public Shared Function ToArgType(o As Object, [type] As System.Type) As Object
 
             If _
-            type Is GetType(System.IO.TextReader) OrElse
-            type Is GetType(System.IO.StreamReader) Then
+                type Is GetType(System.IO.TextReader) OrElse
+                type Is GetType(System.IO.StreamReader) Then
 
                 If o.ToString.Equals("-") Then
 
@@ -142,8 +142,8 @@ ExecuteOption:
                 End If
 
             ElseIf _
-            type Is GetType(System.IO.TextWriter) OrElse
-            type Is GetType(System.IO.StreamWriter) Then
+                type Is GetType(System.IO.TextWriter) OrElse
+                type Is GetType(System.IO.StreamWriter) Then
 
                 If o.ToString.Equals("-") Then
 

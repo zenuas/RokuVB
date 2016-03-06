@@ -13,7 +13,7 @@ Namespace Command
         Public Overridable Property Architecture As String = "CIL"
 
         <CommandLine("N", "node-dump")>
-        Public Overridable Property NodeDump As IO.StreamWriter = Nothing
+        Public Overridable Property NodeDump As IO.TextWriter = Nothing
 
         Public Overridable Sub LoadPath(path As String)
 

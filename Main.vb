@@ -114,7 +114,7 @@ Public Class Main
         Throw New Exception($"not found architecture {name}")
     End Function
 
-    Public Shared Sub NodeDumpGraph(out As IO.StreamWriter, node As INode)
+    Public Shared Sub NodeDumpGraph(out As IO.TextWriter, node As INode)
 
         out.WriteLine("
 digraph roku {
