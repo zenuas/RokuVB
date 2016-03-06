@@ -505,6 +505,11 @@ function exec(s, subshell)
 			{
 				WScript.Echo(p.StdErr.ReadLine());
 			}
+			if(!no_error && p.ExitCode != 0)
+			{
+				WScript.Echo("Error " + p.ExitCode);
+				WScript.Quit(p.ExitCode);
+			}
 		}
 	}
 }

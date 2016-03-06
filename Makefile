@@ -23,7 +23,7 @@ RKTEST:=$(patsubst %.rk,%.exe,$(wildcard tests\*.rk))
 all: test
 
 clean:
-	rmdir /S /Q $(WORK)
+	rmdir /S /Q $(WORK) || exit /B 0
 	del /F $(RKIL)
 	del /F $(RKOUT)
 	del /F $(subst exe,pdb,$(RKOUT))
@@ -32,6 +32,10 @@ clean:
 	del /F $(patsubst %.exe,%.pdb,$(RKTEST))
 	del /F $(patsubst %.exe,%.exe.stdout,$(RKTEST))
 	del /F $(patsubst %.exe,%.exe.diff,$(RKTEST))
+
+distclean: clean
+	del /F $(YANP_OUT)
+	rmdir /S /Q tests\\parser || exit /B 0
 
 test: $(RKIL)
 	-.\$(RKOUT)
@@ -54,7 +58,7 @@ node: $(OUT)
 	start a.png
 
 $(OUT): $(YANP_OUT) $(SRCS)
-	mkdir $(WORK)
+	mkdir $(WORK) 2>NUL || exit /B 0
 	vbc \
 		/nologo \
 		/out:$(OUT) \
@@ -78,6 +82,7 @@ $(OUT): $(YANP_OUT) $(SRCS)
 
 parser: $(YANP_OUT)
 $(YANP_OUT): roku.y
+	mkdir tests\parser 2>NUL || exit /B 0
 	$(YANP) \
 		-i roku.y \
 		-v tests\\parser\\roku.txt \
@@ -86,7 +91,7 @@ $(YANP_OUT): roku.y
 		-b ..\\legacy\\Yanp \
 		-t vb
 	
-	find /n "/reduce" < tests\roku.txt
+	find /n "/reduce" < tests\parser\roku.txt || exit /B 0
 	
 	del Parser\ParserSample.vb8.sln
 	del Parser\ParserSample.vbproj
