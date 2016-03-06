@@ -42,7 +42,8 @@ tests: $(RKTEST)
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
 	@$(OUT) $< -o $@ -a CIL
-	-$@ < .stdin > $@.stdout
+	@echo $@
+	-@$@ < .stdin > $@.stdout
 	@diff .stdout $@.stdout | build-tools\tee $@.diff
 	@del .stdout
 	@del .stdin

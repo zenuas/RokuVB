@@ -116,6 +116,13 @@ RESTART_:
 
                 indent += 1
                 Me.ReadChar()
+                If c = Convert.ToChar(13) Then
+
+                    If Me.NextChar = Convert.ToChar(10) Then
+
+                        Me.ReadChar()
+                    End If
+                End If
                 If c = Convert.ToChar(10) OrElse c = Convert.ToChar(13) Then
 
                     If Me.Parser.IsAccept(Me.eol_) Then Return Me.CreateEndOfLine

@@ -1,11 +1,1 @@
-sub f1(w: Int) {Int}
-	var z = 5
-	return(f2(20))
-	sub f2(x: Int) {Int}
-		var y = x
-		return(f3)
-		sub f3(v: Int)
-			#=>58
-			print(10 + x + y + z + w + v)
-
-f1(1)(2)
+use Test
