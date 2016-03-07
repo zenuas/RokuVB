@@ -81,7 +81,8 @@ function parse(makefile, env)
 				if(line.substring(0, 1) == "\t")
 				{
 					if(target == "") {throw new Error("parse error, none target(" + linenum + ")");}
-					env.$TARGET[target].commands.push(line.replace(/^\t+/, ""));
+					line = line.replace(/^\t+/, "");
+					if(line != "") {env.$TARGET[target].commands.push(line);}
 				}
 				else
 				{

@@ -26,6 +26,12 @@ Namespace Parser
 
 #End Region
 
+        Protected Overridable Function AppendLineNumber(Of T As BaseNode)(node As T, token As Token) As T
+
+            node.AppendLineNumber(token)
+            Return node
+        End Function
+
         Protected Overridable Sub AddUse(use As UseNode)
 
             CType(Me.CurrentScope, ProgramNode).Uses.Add(use)

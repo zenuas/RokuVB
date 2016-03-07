@@ -234,7 +234,7 @@ Namespace Parser
 
                 Case -7
                     System.Diagnostics.Debug.WriteLine("namespace : namespace '.' varx .")
-                    yy_value = New ExpressionNode With {.Left = CType(Me.GetValue(-3), IEvaluableNode), .Operator = ".", .Right = CType(Me.GetValue(-1), VariableNode)}
+                    yy_value = Me.CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), ".", CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 3, yy_value)
 
                 Case -8
@@ -624,12 +624,12 @@ Namespace Parser
 
                 Case -85
                     System.Diagnostics.Debug.WriteLine("use : USE namespace .")
-                    yy_value = New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}
+                    yy_value = Me.AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}, CType(Me.GetToken(-2), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 2, yy_value)
 
                 Case -86
                     System.Diagnostics.Debug.WriteLine("use : USE var EQ namespace .")
-                    yy_value = New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}
+                    yy_value = Me.AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 4, yy_value)
 
                 Case -87

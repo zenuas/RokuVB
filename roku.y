@@ -48,11 +48,11 @@ program_begin : BEGIN               {Me.PushScope(New ProgramNode)}
 
 uses  : void
       | uses use EOL           {Me.AddUse($2)}
-use   : USE namespace          {$$ = New UseNode With {.Namespace = $2}}
-      | USE var EQ namespace   {$$ = New UseNode With {.Namespace = $4, .Alias = $2.Name}}
+use   : USE namespace          {$$ = Me.AppendLineNumber(New UseNode With {.Namespace = $2}, $1)}
+      | USE var EQ namespace   {$$ = Me.AppendLineNumber(New UseNode With {.Namespace = $4, .Alias = $2.Name}, $1)}
 
 namespace : varx               {$$ = $1}
-          | namespace '.' varx {$$ = New ExpressionNode With {.Left = $1, .Operator = ".", .Right = $3}}
+          | namespace '.' varx {$$ = Me.CreateExpressionNode($1, ".", $3)}
 
 ########## statement ##########
 stmt  : void        {$$ = Me.CurrentScope}
