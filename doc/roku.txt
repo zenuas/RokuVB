@@ -580,6 +580,76 @@ Translater.Translateで処理することになる
 あとラムダ式は無名関数のシンタックスシュガーということにする
 RkLambdaCallを作ったが今現在は無名関数の入れ物にしか使ってない、対応はあとで考える
 
+.パーサのEOL読み込み問題
+
+現在のLexは次にParserがEOLよ要求する場合のみEOLを渡すように作っている
+構文定義はおおむねこんな感じ
+| start : program_begin uses stmt END
+| uses  : void
+|       | uses use EOL
+| use   : USE var
+| stmt  : void
+|       | stmt line
+| line  : expr EOL
+
+これに対してソースこんなソースでuseの下に1行空けると構文エラーになる、なぜか
+| use Test
+| 
+| print(1)
+
+Lexは「USE VAR EOL EOL_2 VAR '(' NUM ')'」のようにスキャンする
+なぜEOL_2が発生するのか?
+
+まずEOLを要求している時のパーサのスタックは
+「program_begin uses USE VAR」であった、これは狙い通り
+
+対してEOL_2を要求している時のパーサのスタックは
+「program_begin uses use EOL」であった
+まだusesが還元前だが、これは還元時の先読み記号の要求なのでスタックの形は正しい
+
+この時の先読みの受け入れ状態を見ると、確かにEOLが入っている・・・
+8.
+uses : uses use EOL .
+  reduce -> uses : uses use EOL . [USE, '(', LET, SUB, VAR, STR, NUM, '{', IF, BEGIN, END, STRUCT, EOL]
+
+ということで晴れてEOL_2をLexが読み込んで
+「program_begin uses use EOL [EOL_2]」
+「program_begin uses [EOL_2]」パーサはusesを還元する
+
+この状態になるとEOLは受け入れられない
+127.
+uses : uses . use EOL
+use : . USE namespace
+use : . USE var EQ namespace
+start : program_begin uses . stmt END
+stmt : . void
+stmt : . stmt line
+void : .
+  reduce -> void : . ['(', LET, SUB, VAR, STR, NUM, '{', IF, BEGIN, END, STRUCT]
+  shift use, goto 7
+  shift void, goto 13
+  shift USE, goto 129
+  shift stmt, goto 128
+
+というわけで8番の先読み記号がおかしい
+8番の先読み記号はどこから来たのか??
+127番を見てみても先読みEOLを受け入れるわけがない
+
+
+2016.03.07 解決
+先読み記号は必ずシフトできるわけではないので、しょうがない
+(前述の例は先読みEOLがなくてもよさそうだがアルゴリズム上回避不可)
+
+例えばこんなケースで合法的に先読み記号を間違える
+| start : A x EOL $EOF
+|       | B x $EOF
+| x     : C
+この場合「x : C . [$EOF, EOL]」となるが、読み込み記号がBで始まる場合EOLの先読みなんて無い
+ただ先読み記号で状態が増えるわけではないので、若干誤判定はありうる
+
+EOLが2度続く場合は2個目以降を捨てるようLexを改造する
+
+
 .ToDo
 
 ! テストケースのチェック自動化

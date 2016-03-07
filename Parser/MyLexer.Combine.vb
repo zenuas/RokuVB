@@ -34,6 +34,11 @@ Namespace Parser
 
             If Me.next_.InputToken = SymbolTypes.EOL Then
 
+                If Me.prev_.InputToken = SymbolTypes.EOL Then
+
+                    Me.next_ = Nothing
+                    Me.next_ = Me.Reader
+                End If
                 Me.next_.Indent = 0
                 If Me.indent_stack_.Count > 0 Then Me.next_.Indent = Me.indent_stack_(Me.indent_stack_.Count - 1)
                 Me.prev_ = Me.next_
