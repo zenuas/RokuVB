@@ -34,6 +34,7 @@ Namespace Parser
 
         Protected Overridable Sub AddUse(use As UseNode)
 
+            Me.Loader.LoadModule(use.GetNamespace)
             CType(Me.CurrentScope, ProgramNode).Uses.Add(use)
         End Sub
 

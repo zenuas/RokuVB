@@ -100,7 +100,7 @@ $(YANP_OUT): roku.y
 	del Parser\Token.vb
 
 $(RKOUT): $(OUT) $(RK)
-	$(OUT) $(RK) -o $(RKOUT) -a CIL
+	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o ..\$(RKOUT) -a CIL
 
 $(RKIL): $(RKOUT)
 	ildasm $(RKOUT) /out:$(RKIL) /nobar

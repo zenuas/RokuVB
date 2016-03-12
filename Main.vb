@@ -18,12 +18,12 @@ Public Class Main
 
         If xs.Length = 0 Then
 
-            LoadConsole(loader, System.Console.In, opt)
+            loader.LoadModule("", System.Console.In)
         Else
 
             For Each arg In xs
 
-                LoadFile(loader, arg, opt)
+                loader.LoadModule(arg)
             Next
         End If
         Compile(loader, opt)
@@ -33,40 +33,6 @@ Public Class Main
         Console.ReadKey()
 #End If
     End Sub
-
-    Public Shared Sub LoadFile(loader As Loader, f As String, opt As Command.Option)
-
-        loader.AddNode(f,
-            Function()
-                Using reader As New IO.StreamReader(f)
-
-                    Return Parse(loader, New MyLexer(reader), opt)
-                End Using
-            End Function)
-    End Sub
-
-    Public Shared Sub LoadConsole(loader As Loader, reader As System.IO.TextReader, opt As Command.Option)
-
-        loader.AddNode("", Function() Parse(loader, New MyLexer(reader), opt))
-    End Sub
-
-    Public Shared Function Parse(loader As Loader, lex As MyLexer, opt As Command.Option) As ProgramNode
-
-        Dim parser As New MyParser With {.Loader = loader}
-        lex.Parser = parser
-        Return Util.Errors.Logging(Function() CType(parser.Parse(lex), ProgramNode),
-            Sub(ex As SyntaxErrorException)
-
-                Console.WriteLine(ex.Message)
-                Console.WriteLine(lex.ReadLine)
-                If lex.StoreToken IsNot Nothing Then
-
-                    Dim store = CType(lex.StoreToken, Token)
-                    Console.Write("".PadLeft(store.LineColumn.Value - 1))
-                    Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
-                End If
-            End Sub)
-    End Function
 
     Public Shared Sub Compile(loader As Loader, opt As Command.Option)
 

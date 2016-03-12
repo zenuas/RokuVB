@@ -356,7 +356,7 @@ function command_split(s, splitter, maxsplit)
 		var c = s.substring(i, i + 1);
 		if(quote.length == 0 && c == splitter)
 		{
-			if(command != "")
+			if(splitter != " " || command != "")
 			{
 				xs.push(command);
 				if(maxsplit > 0 && maxsplit == xs.length)
