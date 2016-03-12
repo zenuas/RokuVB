@@ -46,7 +46,7 @@ tests: $(RKTEST)
 .rk.exe: $(OUT)
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
-	@$(OUT) $< -o $@ -a CIL
+	@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) -a CIL
 	@echo $@
 	-@$@ < .stdin > $@.stdout
 	@diff .stdout $@.stdout | build-tools\tee $@.diff
