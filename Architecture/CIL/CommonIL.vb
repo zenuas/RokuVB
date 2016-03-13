@@ -49,14 +49,14 @@ Namespace Architecture.CIL
 
 #End Region
 
-        Public Overridable Property Root As RkNamespace
+        Public Overridable Property Root As SystemLirary
         Public Overridable Property EntryPoint As String = "Global"
         Public Overridable Property Subsystem As PEFileKinds = PEFileKinds.ConsoleApplication
         Public Overridable Property Assembly As AssemblyBuilder
         Public Overridable Property [Module] As ModuleBuilder
         Public Overridable Property IsDebug As Boolean = True
 
-        Public Overridable Sub Assemble(ns As RkNamespace) Implements IArchitecture.Assemble
+        Public Overridable Sub Assemble(ns As SystemLirary) Implements IArchitecture.Assemble
 
             Me.Root = ns
 
@@ -76,7 +76,7 @@ Namespace Architecture.CIL
                 Dim method = Me.Module.DefineGlobalMethod("__EntryPoint", MethodAttributes.Static Or MethodAttributes.Family, GetType(System.Void), System.Type.EmptyTypes)
 
                 Dim il = method.GetILGenerator
-                Dim ctor = Util.Errors.Default(CType(Nothing, RkFunction), Function() Me.Root.GetFunction(".ctor"))
+                Dim ctor = Util.Errors.Default(CType(Nothing, RkFunction), Function() Me.Root.LoadFunction(".ctor"))
                 If ctor IsNot Nothing Then il.EmitCall(OpCodes.Call, functions(ctor), System.Type.EmptyTypes)
                 'il.Emit(OpCodes.Newobj, Me.Module.GetType(Me.EntryPoint).GetConstructor(System.Type.EmptyTypes))
                 'il.Emit(OpCodes.Pop)
@@ -113,56 +113,62 @@ Namespace Architecture.CIL
             Return If(System.Text.RegularExpressions.Regex.IsMatch(s, "^_*[a-zA-Z]+[_0-9a-zA-Z]*$"), s, $"###{s}")
         End Function
 
-        Public Overridable Function DeclareStructs(ns As RkNamespace) As Dictionary(Of RkStruct, TypeData)
+        Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            map(ns.GetStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
-            map(ns.GetStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
-            map(ns.GetStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
-            map(ns.GetStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
-            For Each ss In ns.Structs
+            map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
+            map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
+            map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
+            map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
+            For Each ns In root.AllNamespace
 
-                For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing) OrElse x.ClosureEnvironment)
+                For Each ss In ns.Structs
 
-                    map(struct) = New TypeData With {.Type = Me.Module.DefineType(struct.CreateManglingName)}
+                    For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing) OrElse x.ClosureEnvironment)
+
+                        map(struct) = New TypeData With {.Type = Me.Module.DefineType(struct.CreateManglingName)}
+                    Next
                 Next
-            Next
 
-            For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
+                For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
 
-                Dim builder = CType(v.Value.Type, TypeBuilder)
-                v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
-                For Each x In v.Key.Local
+                    Dim builder = CType(v.Value.Type, TypeBuilder)
+                    v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
+                    For Each x In v.Key.Local
 
-                    v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
+                        v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
+                    Next
                 Next
             Next
 
             Return map
         End Function
 
-        Public Overridable Function DeclareMethods(ns As RkNamespace, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
+        Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
 
             Dim map As New Dictionary(Of RkFunction, MethodInfo)
-            For Each fs In ns.Functions
+            For Each ns In root.AllNamespace
 
-                Dim fxs = fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
-                For Each f In fxs
+                For Each fs In ns.Functions
 
-                    Dim args = Me.RkToCILType(f.Arguments, structs)
-                    Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                    map(f) = Me.Module.DefineGlobalMethod(If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName), MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
-                Next
+                    Dim fxs = fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
+                    For Each f In fxs
 
-                For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing)
+                        Dim args = Me.RkToCILType(f.Arguments, structs)
+                        Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
+                        map(f) = Me.Module.DefineGlobalMethod(If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName), MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
+                    Next
 
-                    Dim args = Me.RkToCILType(f.Arguments, structs)
-                    Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
-                    If Not export.IsNull Then
+                    For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing)
 
-                        Dim e = export.Car
-                        map(f) = System.Reflection.Assembly.Load(e.Assembly).GetType(e.Class).GetMethod(e.Method, e.Arguments)
-                    End If
+                        Dim args = Me.RkToCILType(f.Arguments, structs)
+                        Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
+                        If Not export.IsNull Then
+
+                            Dim e = export.Car
+                            map(f) = System.Reflection.Assembly.Load(e.Assembly).GetType(e.Class).GetMethod(e.Method, e.Arguments)
+                        End If
+                    Next
                 Next
             Next
 

@@ -36,20 +36,23 @@ Public Class Main
 
     Public Shared Sub Compile(loader As Loader, opt As Command.Option)
 
-        Dim root = CreateRootNamespace("Global")
+        Dim root As New Manager.SystemLirary With {.Name = "Global"}
 
-        For Each pgm In loader.Root.Namespaces.Values
+        For Each ns In loader.Root.Namespaces
 
+            Dim pgm = ns.Value
             Compiler.NameResolver.ResolveName(pgm)
             Compiler.Normalize.Normalization(pgm)
             Compiler.Closure.Capture(pgm)
-            Compiler.Typing.Prototype(pgm, root)
+            Compiler.Typing.Prototype(pgm, root, root.CreateNamespace(ns.Key))
         Next
 
-        For Each pgm In loader.Root.Namespaces.Values
+        For Each ns In loader.Root.Namespaces
 
-            Compiler.Typing.TypeInference(pgm, root)
-            Compiler.Translater.Translate(pgm, root)
+            Dim pgm = ns.Value
+            Dim current = root.GetNamespace(ns.Key)
+            Compiler.Typing.TypeInference(pgm, root, current)
+            Compiler.Translater.Translate(pgm, root, current)
         Next
 
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
@@ -58,11 +61,6 @@ Public Class Main
         arch.Optimize()
         arch.Emit(opt.Output)
     End Sub
-
-    Public Shared Function CreateRootNamespace(name As String) As Manager.RkNamespace
-
-        Return New Manager.SystemLirary With {.Name = name}
-    End Function
 
     Public Shared Function CreateArchitecture(name As String) As IArchitecture
 

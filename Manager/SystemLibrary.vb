@@ -1,8 +1,13 @@
-﻿
+﻿Imports System.Collections.Generic
+
+
 Namespace Manager
 
     Public Class SystemLirary
         Inherits RkNamespace
+
+
+        Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, RkNamespace)
 
         Public Sub New()
 
@@ -81,6 +86,31 @@ Namespace Manager
             Me.AddFunction(alloc)
 
         End Sub
+
+        Public Overridable Function CreateNamespace(name As String) As RkNamespace
+
+            If Not Me.Namespaces.ContainsKey(name) Then
+
+                Dim ns As New RkNamespace With {.Name = name}
+                ns.AddLoadPath(Me)
+                Me.Namespaces.Add(name, ns)
+            End If
+            Return Me.Namespaces(name)
+        End Function
+
+        Public Overridable Function GetNamespace(name As String) As RkNamespace
+
+            Return Me.Namespaces(name)
+        End Function
+
+        Public Overridable Iterator Function AllNamespace() As IEnumerable(Of RkNamespace)
+
+            Yield Me
+            For Each ns In Me.Namespaces.Values
+
+                Yield ns
+            Next
+        End Function
 
     End Class
 

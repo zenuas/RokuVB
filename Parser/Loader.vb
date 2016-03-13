@@ -9,25 +9,41 @@ Namespace Parser
         Public Overridable Property CurrentDirectory As String
         Public Overridable Property Root As New RootNode
 
+        Public Overridable Function GetExactFullPath(name As String) As String
+
+            Dim fname = Path.GetFileName(name)
+            For Each f In New FileInfo(name).Directory.GetFiles
+
+                If String.Compare(fname, f.Name, True) = 0 Then Return f.FullName
+            Next
+
+            Throw New FileNotFoundException
+        End Function
+
+        Public Overridable Function GetRelativePath(name As String, current As String) As String
+
+            Return If(name.Length > current.Length AndAlso name.StartsWith(current, True, Nothing) AndAlso name(current.Length) = Path.DirectorySeparatorChar, name.Substring(current.Length + 1), name)
+        End Function
+
         Public Overridable Function GetFileName(name As String) As String
 
             If name.Length = 0 Then Return name
-            If File.Exists(name) Then Return Path.GetFullPath(name)
-            If Path.GetExtension(name).Length = 0 AndAlso File.Exists($"{name}.rk") Then Return Path.GetFullPath($"{name}.rk")
+            If File.Exists(name) Then Return Me.GetExactFullPath(name)
+            If Path.GetExtension(name).Length = 0 AndAlso File.Exists($"{name}.rk") Then Return Me.GetExactFullPath($"{name}.rk")
 
             Throw New FileNotFoundException
         End Function
 
         Public Overridable Function GetNamespace(name As String) As String
 
-            Dim fn = Me.GetFileName(name)
+            Dim fn = Me.GetRelativePath(Me.GetFileName(name), Me.CurrentDirectory)
             If fn.Length = 0 Then Return fn
-            Return Path.GetFileNameWithoutExtension(fn)
+            Return Path.GetFileNameWithoutExtension(fn).Replace(Path.DirectorySeparatorChar, "."c)
         End Function
 
         Public Overridable Function LoadModule(name As String) As ProgramNode
 
-            Me.AddNode(name,
+            Return Me.AddNode(name,
                 Function()
 
                     Using reader As New StreamReader(Me.GetFileName(name))
@@ -35,15 +51,11 @@ Namespace Parser
                         Return Me.Parse(reader)
                     End Using
                 End Function)
-
-            Return Me.Root.Namespaces(Me.GetNamespace(name))
         End Function
 
         Public Overridable Function LoadModule(name As String, reader As TextReader) As ProgramNode
 
-            Me.AddNode(name, Function() Me.Parse(reader))
-
-            Return Me.Root.Namespaces(Me.GetNamespace(name))
+            Return Me.AddNode(name, Function() Me.Parse(reader))
         End Function
 
         Public Overridable Function Parse(reader As TextReader) As ProgramNode

@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports System.Collections.Generic
 Imports System.Reflection
 
 
@@ -15,8 +16,12 @@ Namespace Command
         <CommandLine("N", "node-dump")>
         Public Overridable Property NodeDump As IO.TextWriter = Nothing
 
-        Public Overridable Sub LoadPath(path As String)
+        Public Overridable ReadOnly Property Libraries As New List(Of String)
 
+        <CommandLine("l", "lib")>
+        Public Overridable Sub LoadLibrary(path As String)
+
+            If Not Me.Libraries.Contains(path) Then Me.Libraries.Add(path)
         End Sub
 
         <CommandLine("h", "help")>

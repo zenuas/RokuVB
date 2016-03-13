@@ -7,9 +7,9 @@ Namespace Architecture.RIR
     Public Class RokuIR
         Implements IArchitecture
 
-        Public Overridable Property Root As RkNamespace
+        Public Overridable Property Root As SystemLirary
 
-        Public Overridable Sub Assemble(ns As RkNamespace) Implements IArchitecture.Assemble
+        Public Overridable Sub Assemble(ns As SystemLirary) Implements IArchitecture.Assemble
 
             Me.Root = ns
         End Sub

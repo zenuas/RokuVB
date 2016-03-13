@@ -10,7 +10,7 @@ Namespace Compiler
 
     Public Class Translater
 
-        Public Shared Sub Translate(node As ProgramNode, root As RkNamespace)
+        Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
             Dim compleat As New Dictionary(Of RkFunction, Boolean)
             Dim returns = root.Functions("return")

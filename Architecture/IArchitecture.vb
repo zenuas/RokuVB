@@ -5,7 +5,7 @@ Namespace Architecture
 
     Public Interface IArchitecture
 
-        Sub Assemble(ns As RkNamespace)
+        Sub Assemble(ns As SystemLirary)
         Sub Optimize()
         Sub Emit(path As String)
 

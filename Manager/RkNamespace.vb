@@ -26,14 +26,9 @@ Namespace Manager
             If Not Me.LoadPaths.Contains(path) Then Me.LoadPaths.Add(path)
         End Sub
 
-        Public Overridable Function LoadLibrary(name As String) As IType
+        Public Overridable Function LoadStruct(name As String, ParamArray args() As IType) As RkStruct
 
-            If Me.Structs.ContainsKey(name) Then Return Me.GetStruct(name)
-
-            ' name format
-            ' ok "Int"
-            ' -- "System.Int"
-            ' -- "System.Math.max"
+            If Me.Structs.ContainsKey(name) Then Return Me.GetStruct(name, args)
 
             For Each path In Me.LoadPaths
 
@@ -41,7 +36,46 @@ Namespace Manager
 
                     Dim struct = CType(path, RkStruct)
                     If struct.Name.Equals(name) Then Return struct
-                    If struct.Local.ContainsKey(name) Then Return struct.Local(name)
+
+                ElseIf TypeOf path Is RkNamespace Then
+
+                    Dim ns = CType(path, RkNamespace)
+                    Try
+
+                        Return ns.LoadStruct(name, args)
+
+                    Catch ex As ArgumentException
+
+                        ' nothing
+                    End Try
+                End If
+            Next
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function LoadFunction(name As String, ParamArray args() As IType) As RkFunction
+
+            If Me.Functions.ContainsKey(name) Then Return Me.GetFunction(name, args)
+
+            For Each path In Me.LoadPaths
+
+                If TypeOf path Is RkFunction Then
+
+                    Dim func = CType(path, RkFunction)
+                    If func.Name.Equals(name) Then Return func
+
+                ElseIf TypeOf path Is RkNamespace Then
+
+                    Dim ns = CType(path, RkNamespace)
+                    Try
+
+                        Return ns.LoadFunction(name, args)
+
+                    Catch ex As ArgumentException
+
+                        ' nothing
+                    End Try
                 End If
             Next
 
