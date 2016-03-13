@@ -129,15 +129,15 @@ Namespace Architecture.CIL
                         map(struct) = New TypeData With {.Type = Me.Module.DefineType(struct.CreateManglingName)}
                     Next
                 Next
+            Next
 
-                For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
+            For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
 
-                    Dim builder = CType(v.Value.Type, TypeBuilder)
-                    v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
-                    For Each x In v.Key.Local
+                Dim builder = CType(v.Value.Type, TypeBuilder)
+                v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
+                For Each x In v.Key.Local
 
-                        v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
-                    Next
+                    v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
             Next
 
