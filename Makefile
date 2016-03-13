@@ -16,7 +16,7 @@ RKOUT=a.exe
 RKIL=a.il
 
 SRCS=$(wildcard %.vb)
-RKTEST:=$(patsubst %.rk,%.exe,$(wildcard tests\*.rk))
+RKTEST:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 
 .PHONY: all clean parser node $(RKTEST)
 
@@ -27,6 +27,7 @@ clean:
 	del /F $(RKIL)
 	del /F $(RKOUT)
 	del /F $(subst exe,pdb,$(RKOUT))
+	del /F .stdin .stdout
 	del /F a.dot a.png
 	del /F $(RKTEST)
 	del /F $(patsubst %.exe,%.pdb,$(RKTEST))
@@ -43,7 +44,8 @@ test: $(RKIL)
 
 tests: $(RKTEST)
 
-.rk.exe: $(OUT)
+$(RKTEST): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
+	@mkdir tests\obj 2>NUL || exit /B 0
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
 	@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) -a CIL
@@ -53,8 +55,8 @@ tests: $(RKTEST)
 	@del .stdout
 	@del .stdin
 
-node: $(OUT)
-	$(OUT) $(RK) -o $(RKOUT) -N - -a CIL | dot -Tpng > a.png
+node: $(RKOUT)
+	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o ..\$(RKOUT) -N - -a CIL | dot -Tpng > ..\a.png
 	start a.png
 
 $(OUT): $(YANP_OUT) $(SRCS)

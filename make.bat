@@ -7,10 +7,11 @@ var fs = WScript.CreateObject("Scripting.FileSystemObject");
 var sh = WScript.CreateObject("WScript.Shell");
 var eu = sh.Environment("Process");
 
-String.prototype.trim    = function ()  {return this.replace(/^\s+|\s+$/g, "");};
-String.prototype.trimEnd = function ()  {return this.replace(/\s+$/g,      "");};
-Array.prototype.indexOf  = function (v) {for(var i = 0; i < this.length; i++) {if(this[i] == v) {return(i);}} return(-1);};
-Array.prototype.map      = function (f) {var xs = []; for(var i = 0; i < this.length; i++) {xs.push(f(this[i]));} return(xs);};
+String.prototype.trim       = function ()    {return this.replace(/^\s+|\s+$/g, "");};
+String.prototype.trimEnd    = function ()    {return this.replace(/\s+$/g,      "");};
+String.prototype.replaceAll = function (a,b) {return this.replace(new RegExp(escape(a), "g"), b);};
+Array.prototype.indexOf     = function (v)   {for(var i = 0; i < this.length; i++) {if(this[i] == v) {return(i);}} return(-1);};
+Array.prototype.map         = function (f)   {var xs = []; for(var i = 0; i < this.length; i++) {xs.push(f(this[i]));} return(xs);};
 
 var opt  = {print : false, just_print : false, always_make : false};
 var args = [];
@@ -115,7 +116,7 @@ function parse(makefile, env)
 						}
 						else
 						{
-							var depends = line.substring(target_index + 1).trim().split(/\s+/);
+							var depends = command_split(line.substring(target_index + 1).trim(), " ");
 							if(env.$START == "") {env.$START = target;}
 							env.$TARGET[target] = {
 									depends  : depends,
@@ -193,13 +194,14 @@ function run(env, target)
 					}
 				}
 			}
+			else if(command_split(t, " ").indexOf(target) >= 0) {p = env.$TARGET[c]; break;}
 		}
 	}
 	
 	var t = fs.FileExists(target) ? fs.GetFile(target).DateLastModified : 0;
 	if(p)
 	{
-		var xs   = command_expand(env, p.depends);
+		var xs   = command_expand(env, p.depends, function (x) {return(x.replace(/\$@/g, target));});
 		var need = opt.always_make || env.$PHONY.indexOf(target) >= 0;
 		if(xs.length == 0 || t == 0) {need = true;}
 		for(var i = 0; i < xs.length; i++)
@@ -297,7 +299,7 @@ function expand(env, s, i, quote)
 				{
 					// $(subst from,to,text)
 					var param = command_split(xs[1], ",", 2);
-					r.value += expand(env, param[2] || "").value.replace(expand(env, param[0] || "").value, expand(env, param[1] || "").value);
+					r.value += expand(env, param[2] || "").value.replaceAll(expand(env, param[0] || "").value, expand(env, param[1] || "").value);
 				}
 				else if(xs[0] == "patsubst")
 				{
@@ -454,22 +456,22 @@ function array_add(xs, p)
 	}
 }
 
-function command_expand(env, c)
+function command_expand(env, c, f)
 {
 	if(c instanceof Array)
 	{
 		var xs = [];
 		for(var i = 0; i < c.length; i++)
 		{
-			array_add(xs, command_expand(env, c[i]));
+			array_add(xs, command_expand(env, c[i], f));
 		}
 		return(xs);
 	}
 	else
 	{
-		var xs = command_split(expand(env, c).value);
+		var xs = command_split(expand(env, f(c)).value);
 		if(xs.length == 1 && xs[0] == c) {return(xs);}
-		return(command_expand(env, xs));
+		return(command_expand(env, xs, f));
 	}
 }
 
