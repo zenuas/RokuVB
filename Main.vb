@@ -18,9 +18,11 @@ Public Class Main
 
         If xs.Length = 0 Then
 
+            opt.EntryPoiny = ""
             loader.LoadModule("", System.Console.In)
         Else
 
+            If opt.EntryPoiny Is Nothing Then opt.EntryPoiny = xs(0)
             For Each arg In xs
 
                 loader.LoadModule(arg)
@@ -51,13 +53,27 @@ Public Class Main
 
             Dim pgm = ns.Value
             Dim current = root.GetNamespace(ns.Key)
-            Compiler.Typing.TypeInference(pgm, root, current)
-            Compiler.Translater.Translate(pgm, root, current)
+
+            For Each use In pgm.Uses
+
+                current.AddLoadPath(root.GetNamespace(loader.GetNamespace(use.GetNamespace)))
+            Next
+            Compiler.Typing.TypeStatic(pgm, root, current)
+        Next
+
+        For Each ns In loader.Root.Namespaces
+
+            Compiler.Typing.TypeInference(ns.Value, root, root.GetNamespace(ns.Key))
+        Next
+
+        For Each ns In loader.Root.Namespaces
+
+            Compiler.Translater.Translate(ns.Value, root, root.GetNamespace(ns.Key))
         Next
 
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
         Dim arch = CreateArchitecture(opt.Architecture)
-        arch.Assemble(root)
+        arch.Assemble(root, root.Namespaces(loader.GetNamespace(opt.EntryPoiny)))
         arch.Optimize()
         arch.Emit(opt.Output)
     End Sub

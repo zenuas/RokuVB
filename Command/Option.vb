@@ -13,6 +13,9 @@ Namespace Command
         <CommandLine("a", "arch")>
         Public Overridable Property Architecture As String = "CIL"
 
+        <CommandLine("e", "entrypoint")>
+        Public Overridable Property EntryPoiny As String = Nothing
+
         <CommandLine("N", "node-dump")>
         Public Overridable Property NodeDump As IO.TextWriter = Nothing
 

@@ -9,7 +9,7 @@ Namespace Architecture.RIR
 
         Public Overridable Property Root As SystemLirary
 
-        Public Overridable Sub Assemble(ns As SystemLirary) Implements IArchitecture.Assemble
+        Public Overridable Sub Assemble(ns As SystemLirary, entrypoint As RkNamespace) Implements IArchitecture.Assemble
 
             Me.Root = ns
         End Sub

@@ -50,19 +50,18 @@ Namespace Architecture.CIL
 #End Region
 
         Public Overridable Property Root As SystemLirary
-        Public Overridable Property EntryPoint As String = "Global"
         Public Overridable Property Subsystem As PEFileKinds = PEFileKinds.ConsoleApplication
         Public Overridable Property Assembly As AssemblyBuilder
         Public Overridable Property [Module] As ModuleBuilder
         Public Overridable Property IsDebug As Boolean = True
 
-        Public Overridable Sub Assemble(ns As SystemLirary) Implements IArchitecture.Assemble
+        Public Overridable Sub Assemble(ns As SystemLirary, entrypoint As RkNamespace) Implements IArchitecture.Assemble
 
             Me.Root = ns
 
-            Dim name As New AssemblyName(Me.EntryPoint)
+            Dim name As New AssemblyName(entrypoint.Name)
             Me.Assembly = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-            Me.Module = Me.Assembly.DefineDynamicModule(Me.EntryPoint, System.IO.Path.GetRandomFileName, Me.IsDebug)
+            Me.Module = Me.Assembly.DefineDynamicModule(entrypoint.Name, System.IO.Path.GetRandomFileName, Me.IsDebug)
 
             Dim structs = Me.DeclareStructs(Me.Root)
             Dim functions = Me.DeclareMethods(Me.Root, structs)
@@ -72,17 +71,9 @@ Namespace Architecture.CIL
 
             If Me.Subsystem <> PEFileKinds.Dll Then
 
-                ' global sub main() {EntryPoint.new();}
-                Dim method = Me.Module.DefineGlobalMethod("__EntryPoint", MethodAttributes.Static Or MethodAttributes.Family, GetType(System.Void), System.Type.EmptyTypes)
-
-                Dim il = method.GetILGenerator
-                Dim ctor = Util.Errors.Default(CType(Nothing, RkFunction), Function() Me.Root.LoadFunction(".ctor"))
-                If ctor IsNot Nothing Then il.EmitCall(OpCodes.Call, functions(ctor), System.Type.EmptyTypes)
-                'il.Emit(OpCodes.Newobj, Me.Module.GetType(Me.EntryPoint).GetConstructor(System.Type.EmptyTypes))
-                'il.Emit(OpCodes.Pop)
-                il.Emit(OpCodes.Ret)
-
-                Me.Assembly.SetEntryPoint(method, Me.Subsystem)
+                ' global sub main() {entrypoint.###.ctor();}
+                Dim ctor = entrypoint.LoadFunction(".ctor")
+                If ctor IsNot Nothing Then Me.Assembly.SetEntryPoint(functions(ctor), Me.Subsystem)
             End If
             Me.Module.CreateGlobalFunctions()
         End Sub
@@ -126,7 +117,7 @@ Namespace Architecture.CIL
 
                     For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing) OrElse x.ClosureEnvironment)
 
-                        map(struct) = New TypeData With {.Type = Me.Module.DefineType(struct.CreateManglingName)}
+                        map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{struct.Namespace.Name}.{struct.CreateManglingName}")}
                     Next
                 Next
             Next
@@ -155,8 +146,8 @@ Namespace Architecture.CIL
                     For Each f In fxs
 
                         Dim args = Me.RkToCILType(f.Arguments, structs)
-                        Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                        map(f) = Me.Module.DefineGlobalMethod(If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName), MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
+                        'Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
+                        map(f) = Me.Module.DefineGlobalMethod($"{f.Namespace.Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
                     Next
 
                     For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing)

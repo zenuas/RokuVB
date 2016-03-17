@@ -1,4 +1,4 @@
-use Test
+use Sub_mod
 
 struct A
 	var a: Int
@@ -11,3 +11,6 @@ sub print_A(y: A)
 var x = A()
 x.a = 1
 print_A(x)
+
+#=>100
+print(sub_mod_f(10))

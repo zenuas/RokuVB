@@ -1,0 +1,3 @@
+
+sub sub_mod_f(a: Int) Int
+	return(a * a)

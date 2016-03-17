@@ -28,7 +28,19 @@ Namespace Manager
 
         Public Overridable Function LoadStruct(name As String, ParamArray args() As IType) As RkStruct
 
-            If Me.Structs.ContainsKey(name) Then Return Me.GetStruct(name, args)
+            Dim x = Me.TryLoadStruct(name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryLoadStruct(name As String, ParamArray args() As IType) As RkStruct
+
+            If Me.Structs.ContainsKey(name) Then
+
+                Dim x = Me.TryGetStruct(name, args)
+                If x IsNot Nothing Then Return x
+            End If
 
             For Each path In Me.LoadPaths
 
@@ -39,24 +51,29 @@ Namespace Manager
 
                 ElseIf TypeOf path Is RkNamespace Then
 
-                    Dim ns = CType(path, RkNamespace)
-                    Try
-
-                        Return ns.LoadStruct(name, args)
-
-                    Catch ex As ArgumentException
-
-                        ' nothing
-                    End Try
+                    Dim x = CType(path, RkNamespace).TryLoadStruct(name, args)
+                    If x IsNot Nothing Then Return x
                 End If
             Next
 
-            Throw New ArgumentException($"``{name}'' was not found")
+            Return Nothing
         End Function
 
         Public Overridable Function LoadFunction(name As String, ParamArray args() As IType) As RkFunction
 
-            If Me.Functions.ContainsKey(name) Then Return Me.GetFunction(name, args)
+            Dim x = Me.TryLoadFunction(name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryLoadFunction(name As String, ParamArray args() As IType) As RkFunction
+
+            If Me.Functions.ContainsKey(name) Then
+
+                Dim x = Me.TryGetFunction(name, args)
+                If x IsNot Nothing Then Return x
+            End If
 
             For Each path In Me.LoadPaths
 
@@ -67,19 +84,12 @@ Namespace Manager
 
                 ElseIf TypeOf path Is RkNamespace Then
 
-                    Dim ns = CType(path, RkNamespace)
-                    Try
-
-                        Return ns.LoadFunction(name, args)
-
-                    Catch ex As ArgumentException
-
-                        ' nothing
-                    End Try
+                    Dim x = CType(path, RkNamespace).TryLoadFunction(name, args)
+                    If x IsNot Nothing Then Return x
                 End If
             Next
 
-            Throw New ArgumentException($"``{name}'' was not found")
+            Return Nothing
         End Function
 
         Public Overridable Sub AddStruct(x As RkStruct) Implements IAddStruct.AddStruct
@@ -102,14 +112,30 @@ Namespace Manager
 
         Public Overridable Function GetStruct(name As String, ParamArray args() As IType) As RkStruct Implements IAddStruct.GetStruct
 
+            Dim x = Me.TryGetStruct(name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryGetStruct(name As String, ParamArray args() As IType) As RkStruct
+
             For Each f In Me.Structs(name).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
 
                 If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
             Next
-            Throw New ArgumentException($"``{name}'' was not found")
+            Return Nothing
         End Function
 
         Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
+
+            Dim x = Me.TryGetFunction(name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryGetFunction(name As String, ParamArray args() As IType) As RkFunction
 
             For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
 
@@ -137,7 +163,7 @@ Namespace Manager
                 Return CType(f.FixedGeneric(xs), RkFunction)
             Next
 
-            Throw New ArgumentException($"``{name}'' was not found")
+            Return Nothing
         End Function
 
         'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T

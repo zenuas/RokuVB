@@ -49,6 +49,7 @@ $(RKTEST): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
 	@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) -a CIL
+	@ildasm $@ /out:$@.il /nobar
 	@echo $@
 	-@$@ < .stdin > $@.stdout
 	@diff .stdout $@.stdout | build-tools\tee $@.diff

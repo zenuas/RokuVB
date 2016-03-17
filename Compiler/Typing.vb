@@ -86,6 +86,65 @@ Namespace Compiler
                 End Sub)
         End Sub
 
+        Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                node,
+                New With {.Namespace = ns, .Scope = CType(Nothing, INode), .Function = CType(Nothing, FunctionNode)},
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+                    next_(child,
+                        If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
+                            New With {.Namespace = current.Namespace, .Scope = child, .Function = If(TypeOf child Is FunctionNode, CType(child, FunctionNode), current.Function)},
+                            current)
+                        )
+
+                    If TypeOf child Is NumericNode Then
+
+                        Dim node_num = CType(child, NumericNode)
+                        node_num.Type = root.LoadStruct("Int32")
+
+                    ElseIf TypeOf child Is StringNode Then
+
+                        Dim node_str = CType(child, StringNode)
+                        node_str.Type = root.LoadStruct("String")
+
+                    ElseIf TypeOf child Is TypeFunctionNode Then
+
+                        Dim node_typef = CType(child, TypeFunctionNode)
+                        Dim rk_func As New RkFunction With {.Namespace = current.Namespace}
+                        node_typef.Arguments.Do(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
+                        rk_func.Return = node_typef.Return?.Type
+                        node_typef.Type = rk_func
+
+                    ElseIf TypeOf child Is TypeNode Then
+
+                        Dim node_type = CType(child, TypeNode)
+                        If Not node_type.IsGeneric Then node_type.Type = CType(current.Namespace.LoadStruct(node_type.Name), IType)
+
+                    ElseIf TypeOf child Is DeclareNode Then
+
+                        Dim node_declare = CType(child, DeclareNode)
+                        node_declare.Name.Type = node_declare.Type.Type
+
+                    ElseIf TypeOf child Is FunctionNode Then
+
+                        Dim node_func = CType(child, FunctionNode)
+                        Dim rk_function = node_func.Function
+                        If Not rk_function.HasGeneric Then
+
+                            For Each arg In node_func.Arguments
+
+                                rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
+                            Next
+                            rk_function.Return = node_func.Return?.Type
+                        End If
+
+                    End If
+                End Sub)
+        End Sub
+
         Public Shared Sub TypeInference(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
             Do While True
@@ -157,17 +216,7 @@ Namespace Compiler
                                 current)
                             )
 
-                        If TypeOf child Is NumericNode Then
-
-                            Dim node_num = CType(child, NumericNode)
-                            set_type(node_num, Function() root.LoadStruct("Int32"))
-
-                        ElseIf TypeOf child Is StringNode Then
-
-                            Dim node_str = CType(child, StringNode)
-                            set_type(node_str, Function() root.LoadStruct("String"))
-
-                        ElseIf TypeOf child Is VariableNode Then
+                        If TypeOf child Is VariableNode Then
 
                             If Not (TypeOf parent Is LetNode AndAlso ref.Equals("Var")) Then
 
@@ -184,22 +233,10 @@ Namespace Compiler
                                     End Function)
                             End If
 
-                        ElseIf TypeOf child Is TypeFunctionNode Then
-
-                            Dim node_typef = CType(child, TypeFunctionNode)
-                            set_type(node_typef,
-                                Function()
-
-                                    Dim rk_func As New RkFunction With {.Namespace = current.Namespace}
-                                    node_typef.Arguments.Do(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
-                                    rk_func.Return = node_typef.Return?.Type
-                                    Return rk_func
-                                End Function)
-
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node_type = CType(child, TypeNode)
-                            set_type(node_type, Function() If(node_type.IsGeneric, get_generic(node_type.Name, current.Scope), CType(current.Namespace.LoadStruct(node_type.Name), IType)))
+                            If node_type.IsGeneric Then set_type(node_type, Function() get_generic(node_type.Name, current.Scope))
 
                         ElseIf TypeOf child Is LetNode Then
 
@@ -231,15 +268,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            set_type(node_declare.Name,
-                                Function()
-
-                                    If node_declare.Name.ClosureEnvironment Then
-
-                                        get_closure(node_declare.Name.Scope).Local(node_declare.Name.Name) = node_declare.Type.Type
-                                    End If
-                                    Return node_declare.Type.Type
-                                End Function)
+                            If node_declare.Name.ClosureEnvironment Then get_closure(node_declare.Name.Scope).Local(node_declare.Name.Name) = node_declare.Type.Type
 
                         ElseIf TypeOf child Is FunctionNode Then
 
@@ -263,6 +292,7 @@ Namespace Compiler
                                 ElseIf TypeOf node_call.Expression.Type Is RkByName Then
 
                                     rk_function = current.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                    node_call.Expression.Type = rk_function
                                 End If
 
                             ElseIf TypeOf node_call.Expression Is StructNode Then
