@@ -12,8 +12,7 @@ YANP=..\legacy\Yanp\bin\Debug\yanp.exe
 YANP_OUT=Parser\MyParser.vb
 
 RK=tests\test.rk
-RKOUT=a.exe
-RKIL=a.il
+RKOUT=tests\obj\test.exe
 
 SRCS=$(wildcard %.vb)
 RKTEST:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
@@ -24,41 +23,40 @@ all: test
 
 clean:
 	rmdir /S /Q $(WORK) || exit /B 0
-	del /F $(RKIL)
-	del /F $(RKOUT)
-	del /F $(subst exe,pdb,$(RKOUT))
-	del /F .stdin .stdout
-	del /F a.dot a.png
-	del /F $(RKTEST)
-	del /F $(patsubst %.exe,%.pdb,$(RKTEST))
-	del /F $(patsubst %.exe,%.exe.stdout,$(RKTEST))
-	del /F $(patsubst %.exe,%.exe.diff,$(RKTEST))
+	del /F $(RKOUT) 2>NUL
+	del /F $(subst exe,pdb,$(RKOUT)) 2>NUL
+	del /F tests\obj\.stdin tests\obj\.stdout 2>NUL
+	del /F tests\obj\node.png 2>NUL
+	del /F $(RKTEST) 2>NUL
+	del /F $(patsubst %.exe,%.pdb,$(RKTEST)) 2>NUL
+	del /F $(patsubst %.exe,%.exe.il,$(RKTEST)) 2>NUL
+	del /F $(patsubst %.exe,%.exe.stdout,$(RKTEST)) 2>NUL
+	del /F $(patsubst %.exe,%.exe.diff,$(RKTEST)) 2>NUL
 
 distclean: clean
-	del /F $(YANP_OUT)
+	del /F $(YANP_OUT) 2>NUL
 	rmdir /S /Q tests\\parser || exit /B 0
 
-test: $(RKIL)
-	-.\$(RKOUT)
-	#-start $(RKIL)
+test: $(RKOUT)
+	-@$(RKOUT)
 
 tests: $(RKTEST)
 
 $(RKTEST): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
-	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > .stdout
-	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > .stdin
+	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $< > tests\obj\.stdout
+	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $< > tests\obj\.stdin
 	@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) -a CIL
 	@ildasm $@ /out:$@.il /nobar
 	@echo $@
-	-@$@ < .stdin > $@.stdout
-	@diff .stdout $@.stdout | build-tools\tee $@.diff
-	@del .stdout
-	@del .stdin
+	-@$@ < tests\obj\.stdin > $@.stdout
+	@diff tests\obj\.stdout $@.stdout | build-tools\tee $@.diff
+	@del tests\obj\.stdout 2>NUL
+	@del tests\obj\.stdin  2>NUL
 
 node: $(RKOUT)
-	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o ..\$(RKOUT) -N - -a CIL | dot -Tpng > ..\a.png
-	start a.png
+	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o ..\$(RKOUT) -N - -a CIL | dot -Tpng > obj\node.png
+	start tests\obj\node.png
 
 $(OUT): $(YANP_OUT) $(SRCS)
 	mkdir $(WORK) 2>NUL || exit /B 0
@@ -96,11 +94,11 @@ $(YANP_OUT): roku.y
 	
 	find /n "/reduce" < tests\parser\roku.txt || exit /B 0
 	
-	del Parser\ParserSample.vb8.sln
-	del Parser\ParserSample.vbproj
-	del Parser\Main.vb
-	del Parser\IToken.vb
-	del Parser\Token.vb
+	del Parser\ParserSample.vb8.sln 2>NUL
+	del Parser\ParserSample.vbproj  2>NUL
+	del Parser\Main.vb   2>NUL
+	del Parser\IToken.vb 2>NUL
+	del Parser\Token.vb  2>NUL
 
 $(RKOUT): $(OUT) $(RK)
 	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o ..\$(RKOUT) -a CIL
