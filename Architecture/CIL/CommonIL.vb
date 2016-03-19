@@ -49,7 +49,6 @@ Namespace Architecture.CIL
 
 #End Region
 
-        Public Overridable Property Root As SystemLirary
         Public Overridable Property Subsystem As PEFileKinds = PEFileKinds.ConsoleApplication
         Public Overridable Property Assembly As AssemblyBuilder
         Public Overridable Property [Module] As ModuleBuilder
@@ -57,14 +56,12 @@ Namespace Architecture.CIL
 
         Public Overridable Sub Assemble(ns As SystemLirary, entrypoint As RkNamespace) Implements IArchitecture.Assemble
 
-            Me.Root = ns
-
             Dim name As New AssemblyName(entrypoint.Name)
             Me.Assembly = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
             Me.Module = Me.Assembly.DefineDynamicModule(entrypoint.Name, System.IO.Path.GetRandomFileName, Me.IsDebug)
 
-            Dim structs = Me.DeclareStructs(Me.Root)
-            Dim functions = Me.DeclareMethods(Me.Root, structs)
+            Dim structs = Me.DeclareStructs(ns)
+            Dim functions = Me.DeclareMethods(ns, structs)
             Me.DeclareStatements(functions, structs)
             structs.Do(Sub(x) If TypeOf x.Value.Type Is TypeBuilder Then CType(x.Value.Type, TypeBuilder).CreateType())
             Me.Binders.Do(Sub(x) CType(x.Value.Type, TypeBuilder).CreateType())
