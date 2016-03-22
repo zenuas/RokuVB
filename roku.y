@@ -54,6 +54,7 @@ use   : USE namespace          {$$ = Me.AppendLineNumber(New UseNode With {.Name
 namespace : varx               {$$ = $1}
           | namespace '.' varx {$$ = Me.CreateExpressionNode($1, ".", $3)}
 
+
 ########## statement ##########
 stmt  : void        {$$ = Me.CurrentScope}
       | stmt line   {$1.AddStatement($2) : $$ = $1}
@@ -75,6 +76,7 @@ expr : var
      | num
      | call
      | lambda
+     | '[' list ']'      {$$ = $2}
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
      | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}

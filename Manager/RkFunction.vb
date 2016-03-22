@@ -31,6 +31,11 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
+        Public Function [Is](t As IType) As Boolean Implements IType.Is
+
+            Throw New NotImplementedException()
+        End Function
+
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
             Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
@@ -131,7 +136,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value.Name))})" + If(Me.Return IsNot Nothing, $" {Me.Return.Name}", "")
+            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value.ToString))})" + If(Me.Return IsNot Nothing, $" {Me.Return.ToString}", "")
         End Function
     End Class
 

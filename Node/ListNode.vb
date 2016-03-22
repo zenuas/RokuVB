@@ -5,7 +5,7 @@ Imports Roku.Manager
 
 Namespace Node
 
-    Public Class ListNode(Of T)
+    Public Class ListNode(Of T As INode)
         Inherits BaseNode
         Implements IEvaluableNode
 

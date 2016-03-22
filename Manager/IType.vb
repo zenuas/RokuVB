@@ -10,6 +10,7 @@ Namespace Manager
         Property [Namespace] As RkNamespace
 
         Function GetValue(name As String) As IType
+        Function [Is](t As IType) As Boolean
 
         Function DefineGeneric(name As String) As RkGenericEntry
         Function FixedGeneric(ParamArray values() As IType) As IType

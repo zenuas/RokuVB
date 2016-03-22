@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports System.Diagnostics
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Util.ArrayExtension
@@ -340,6 +341,18 @@ Namespace Compiler
                                 End If
                             Next
 
+                        ElseIf child.GetType.Name.Equals("ListNode`1") Then
+
+                            set_type(CType(child, IEvaluableNode),
+                                Function()
+
+                                    Dim list = child.GetType.GetProperty("List").GetValue(child)
+                                    Dim count = list.GetType.GetProperty("Count")
+                                    If CInt(count.GetValue(list)) = 0 Then Debug.Fail("not yet")
+
+                                    Dim item = list.GetType.GetProperty("Item")
+                                    Return root.LoadStruct("Array", CType(item.GetValue(list, New Object() {0}), IEvaluableNode).Type)
+                                End Function)
                         End If
                     End Sub)
 

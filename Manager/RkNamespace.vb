@@ -124,6 +124,12 @@ Namespace Manager
 
                 If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
             Next
+
+            For Each f In Me.Structs(name).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
+
+                Return CType(f.FixedGeneric(args), RkStruct)
+            Next
+
             Return Nothing
         End Function
 
@@ -142,22 +148,37 @@ Namespace Manager
                 If f.Arguments.And(Function(x, i) x.Value Is args(i)) Then Return f
             Next
 
-            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) TypeOf arg.Value Is RkGenericEntry OrElse arg.Value Is args(i)))
+            Dim generic_match As Action(Of IType, IType, Action(Of String, IType)) =
+                Sub(arg, p, f)
+
+                    If TypeOf arg Is RkGenericEntry Then
+
+                        f(arg.Name, p)
+
+                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
+
+                        Dim struct = CType(arg, RkStruct)
+                        struct.Generics.Do(Sub(x, i) generic_match(x, CType(CType(p, RkStruct).Apply(i), RkStruct), f))
+                    End If
+                End Sub
+
+            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
 
                 Dim xs(f.Generics.Count - 1) As IType
                 For i = 0 To f.Arguments.Count - 1
 
-                    Dim arg = f.Arguments(i)
-                    If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
+                    generic_match(f.Arguments(i).Value, args(i),
+                        Sub(atname, p)
 
-                    Dim xs_i = f.Generics.IndexOf(Function(g) g.Name.Equals(arg.Value.Name))
-                    If xs(xs_i) Is Nothing Then
+                            Dim xs_i = f.Generics.IndexOf(Function(g) g.Name.Equals(atname))
+                            If xs(xs_i) Is Nothing Then
 
-                        xs(xs_i) = args(i)
-                    Else
+                                xs(xs_i) = p
+                            Else
 
-                        Debug.Assert(xs(xs_i) Is args(i))
-                    End If
+                                Debug.Assert(xs(xs_i) Is p)
+                            End If
+                        End Sub)
                 Next
 
                 Return CType(f.FixedGeneric(xs), RkFunction)

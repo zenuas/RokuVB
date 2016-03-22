@@ -26,6 +26,14 @@ Namespace Manager
             Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
+        Public Function [Is](t As IType) As Boolean Implements IType.Is
+
+            If Me Is t Then Return True
+            If Me.Namespace Is t.Namespace AndAlso Me.Name.Equals(t.Name) Then Return True
+
+            Return False
+        End Function
+
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
             Dim x = Me.Generics.FindFirstOrNull(Function(a) a.Name.Equals(name))
@@ -93,7 +101,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}{If(Me.Apply.IsNull, "", $" {"(" + String.Join(", ", Me.Apply.Map(Function(x) x.ToString)) + ")"}")}"
+            Return $"{Me.Name}{If(Me.Apply.IsNull, "", $"{"(" + String.Join(", ", Me.Apply.Map(Function(x) If(x Is Nothing, "_", x.ToString))) + ")"}")}"
         End Function
 
     End Class

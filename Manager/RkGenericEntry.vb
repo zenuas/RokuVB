@@ -18,6 +18,11 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
+        Public Function [Is](t As IType) As Boolean Implements IType.Is
+
+            Return True
+        End Function
+
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
 
             Throw New NotImplementedException()

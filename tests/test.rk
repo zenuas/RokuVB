@@ -1,16 +1,9 @@
-use Sub_mod
 
-struct A
-	var a: Int
-	var b = "Hello"
 
-sub print_A(y: A)
-	print(y.a)
+var xs = [0, 1, 2, 3, 4]
 
-#=>1
-var x = A()
-x.a = 1
-print_A(x)
+#=>5
+show(xs[2] + xs[3])
 
-#=>100
-print(sub_mod_f(10))
+sub show(a: Int)
+	print(a)

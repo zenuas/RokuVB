@@ -38,7 +38,6 @@ distclean: clean
 	rmdir /S /Q tests\\parser || exit /B 0
 
 test: $(RKOUT)
-	-@$(RKOUT)
 
 tests: $(RKTEST)
 

@@ -1,0 +1,16 @@
+use Sub_mod
+
+struct A
+	var a: Int
+	var b = "Hello"
+
+sub print_A(y: A)
+	print(y.a)
+
+#=>1
+var x = A()
+x.a = 1
+print_A(x)
+
+#=>100
+print(sub_mod_f(10))

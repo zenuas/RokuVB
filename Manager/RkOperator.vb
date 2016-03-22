@@ -114,20 +114,17 @@ Namespace Manager
         ''' <remarks>greater than equal</remarks>
         Gte
 
+        [Alloc]
         [Call]
-
         [If]
         [Goto]
         Label
+        Array
 
         [Try]
         [Catch]
         [Finally]
         [Throw]
-
-        [New]
-        [Alloc]
-        [ReAlloc]
 
     End Enum
 

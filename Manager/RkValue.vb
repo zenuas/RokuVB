@@ -10,11 +10,6 @@ Namespace Manager
         Public Overridable Property Name As String
         Public Overridable Property Type As IType
 
-        Public Shared Widening Operator CType(node As VariableNode) As RkValue
-
-            Return New RkValue With {.Name = node.Name, .Type = node.Type}
-        End Operator
-
         Public Overrides Function ToString() As String
 
             Return $"{Me.Name}: {Me.Type}"

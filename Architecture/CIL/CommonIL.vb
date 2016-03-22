@@ -104,6 +104,7 @@ Namespace Architecture.CIL
         Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
+            map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
             map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
             map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
             map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
@@ -127,6 +128,12 @@ Namespace Architecture.CIL
 
                     v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
+            Next
+
+            For Each p In root.Structs("Array").Where(Function(x) Not x.HasGeneric)
+
+                Dim t = Me.RkArrayToCILArray(p, map)
+                map(p) = New TypeData With {.Type = t, .Constructor = t.GetConstructor(Type.EmptyTypes)}
             Next
 
             Return map
@@ -527,6 +534,18 @@ Namespace Architecture.CIL
                         il.Emit(OpCodes.Newobj, get_ctor(CType(alloc.Left.Type, RkStruct)))
                         gen_il_store(il, alloc.Return)
 
+                    Case RkOperator.Array
+                        Dim alloc = CType(stmt, RkCode)
+                        Dim array = CType(alloc.Left, RkArray)
+                        il.Emit(OpCodes.Newobj, get_ctor(CType(array.Type, RkStruct)))
+                        For Each x In array.List
+
+                            il.Emit(OpCodes.Dup)
+                            gen_il_load(il, x)
+                            il.Emit(OpCodes.Call, Me.RkArrayToCILArray(array.Type, structs).GetMethod("Add"))
+                        Next
+                        gen_il_store(il, alloc.Return)
+
                     Case RkOperator.If
                         Dim if_ = CType(stmt, RkIf)
                         gen_il_load(il, if_.Condition)
@@ -539,6 +558,9 @@ Namespace Architecture.CIL
                     Case RkOperator.Label
                         il.MarkLabel(labels(stmt))
 
+
+                    Case Else
+                        Debug.Fail("not yet")
                 End Select
             Next
             If Not found_ret Then il.Emit(OpCodes.Ret)
@@ -582,7 +604,26 @@ Namespace Architecture.CIL
         Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
 
             If functions.ContainsKey(f) Then Return functions(f)
-            Return Nothing
+
+            If Not functions.ContainsKey(f) Then
+
+                ' Array => List
+                If f.Arguments.Count > 0 AndAlso f.Arguments(0).Value.Name.Equals("Array") Then
+
+                    Dim arr = Me.RkArrayToCILArray(f.Arguments(0).Value, structs)
+                    If f.Name.Equals("[]") Then
+
+                        Return arr.GetMethod("get_Item")
+                    End If
+                End If
+            End If
+
+            Throw New MissingMethodException
+        End Function
+
+        Public Overridable Function RkArrayToCILArray(arr As IType, structs As Dictionary(Of RkStruct, TypeData)) As Type
+
+            Return GetType(List(Of )).MakeGenericType(New Type() {structs(CType(CType(arr, RkStruct).Apply(0), RkStruct)).Type})
         End Function
     End Class
 

@@ -67,6 +67,14 @@ Namespace Manager
             Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
             Me.AddStruct(str)
 
+            ' sub [](self: Array(@T), index: Int32) @T
+            Dim array_index As New RkFunction With {.Name = "[]", .Namespace = Me}
+            Dim array_index_t = array_index.DefineGeneric("@T")
+            array_index.Arguments.Add(New NamedValue With {.Name = "self", .Value = arr})
+            array_index.Arguments.Add(New NamedValue With {.Name = "index", .Value = int32})
+            array_index.Return = array_index_t
+            Me.AddFunction(array_index)
+
             ' sub print(s: @T)
             Dim print As New RkFunction With {.Name = "print", .Namespace = Me}
             Dim print_t = print.DefineGeneric("@T")

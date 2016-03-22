@@ -199,6 +199,18 @@ Namespace Util
                                 f($"`{key}", x.Namespaces(key))
                             Next
 
+                        Case node_.GetType.Name.Equals("ListNode`1")
+
+                            Dim list = node_.GetType.GetProperty("List").GetValue(node_)
+                            Dim count = list.GetType.GetProperty("Count")
+                            Dim item = list.GetType.GetProperty("Item")
+                            Dim index = New Object() {0}
+                            For i = 0 To CInt(count.GetValue(list)) - 1
+
+                                index(0) = i
+                                f($"`{i}", CType(item.GetValue(list, index), INode))
+                            Next
+
                         Case Else
 
                             Debug.Fail("unknown node")
@@ -327,6 +339,18 @@ Namespace Util
                             For Each key In New List(Of String)(x.Namespaces.Keys)
 
                                 x.Namespaces(key) = CType(f($"`{key}", x.Namespaces(key)), ProgramNode)
+                            Next
+
+                        Case node_.GetType.Name.Equals("ListNode`1")
+
+                            Dim list = node_.GetType.GetProperty("List").GetValue(node_)
+                            Dim count = list.GetType.GetProperty("Count")
+                            Dim item = list.GetType.GetProperty("Item")
+                            Dim index = New Object() {0}
+                            For i = 0 To CInt(count.GetValue(list)) - 1
+
+                                index(0) = i
+                                item.SetValue(list, f($"`{i}", CType(item.GetValue(list, index), INode)), index)
                             Next
 
                         Case Else

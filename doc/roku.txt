@@ -424,6 +424,29 @@ var t5 = Foo.DefineGeneric("@T5")  # t5 にはFooの2番目の位置であるマーク
 var foo_return = Hoge.FixedGeneric("@T1" => Int, "@T2" => t4, "@T3" => t5)
 # ここで@T2とt4を、@T3とt5を結び付けられる
 
+..配列への総称型対応
+
+引数が総称型をもつ型をとる場合、呼び出し側のパラメータを見て型解決する必要がある
+
+struct Array(@T)
+
+sub length(self: Array(@T)) Int
+sub add(self: Array(@T), x: @T)
+sub index(self: Array(@T), x: Int) @T
+
+var xs = [1, 2, 3]
+index(xs, 0) # sub index(self: Array(Int), x: Int) Int に解決する
+add(xs, 4)   # sub add(self: Array(Int), x: Int)       に解決する
+
+関数の定義上の引数をargとし
+呼び出し時のパラメータをpとし、こういう定義が必要
+  arg->p->[(String, RkStruct)]
+Stringが@Tとかの名前になるので、このatvarからApplyを作る
+
+配列で返るのはargで複数の総称型を持つ恐れがあるから、Dictionary(@TKey, @TValue)とか
+  sub contains_key(self: Dictionary(@TKey, @TValue), key: @TKey) Bool
+  contains_key(xs, "String")
+
 .CILで関数型を実装する方法
 
 CILでクロージャを見込んだ関数型を実装するためにはソースを変換する

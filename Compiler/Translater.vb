@@ -143,6 +143,20 @@ Namespace Compiler
 
                                 Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
+                            ElseIf stmt.GetType.Name.Equals("ListNode`1") Then
+
+                                Dim xs As New RkArray With {.Type = stmt.Type}
+                                Dim list = stmt.GetType.GetProperty("List").GetValue(stmt)
+                                Dim count = list.GetType.GetProperty("Count")
+                                Dim item = list.GetType.GetProperty("Item")
+                                Dim index = New Object() {0}
+                                For i = 0 To CInt(count.GetValue(list)) - 1
+
+                                    index(0) = i
+                                    xs.List.Add(to_value(CType(item.GetValue(list, index), IEvaluableNode)))
+                                Next
+                                Return {New RkCode With {.Operator = RkOperator.Array, .Return = ret, .Left = xs}}
+
                             Else
 
                                 Throw New Exception("unknown stmt")

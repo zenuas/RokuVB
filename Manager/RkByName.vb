@@ -16,6 +16,11 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
+        Public Function [Is](t As IType) As Boolean Implements IType.Is
+
+            Throw New NotImplementedException()
+        End Function
+
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
             Throw New NotImplementedException()

@@ -96,12 +96,12 @@ Namespace Parser
             Return Me.CreateExpressionNode(left, "", Nothing)
         End Function
 
-        Protected Overridable Function CreateListNode(Of T)() As ListNode(Of T)
+        Protected Overridable Function CreateListNode(Of T As INode)() As ListNode(Of T)
 
             Return New ListNode(Of T)
         End Function
 
-        Protected Overridable Function CreateListNode(Of T)(expr As T) As ListNode(Of T)
+        Protected Overridable Function CreateListNode(Of T As INode)(expr As T) As ListNode(Of T)
 
             Dim list = Me.CreateListNode(Of T)
             list.List.Add(expr)
