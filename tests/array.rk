@@ -1,0 +1,9 @@
+
+
+var xs = [0, 1, 2, 3, 4]
+
+#=>5
+show(xs[2] + xs[3])
+
+sub show(a: Int)
+	print(a)
