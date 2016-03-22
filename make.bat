@@ -431,10 +431,11 @@ function meta_match(target, meta)
 	return(match(0, 0));
 }
 
+var dir_cache = null;
 function wildcard(meta)
 {
 	var current = fs.GetFolder(".").Path;
-	var files   = exec("cmd /d /c dir /B /S", true).split("\r\n");
+	var files   = (dir_cache ? dir_cache : dir_cache = exec("cmd /d /c dir /B /S", true).split("\r\n"));
 	var xs      = [];
 	for(var i = 0; i < files.length; i++)
 	{
@@ -496,7 +497,7 @@ function exec(s, subshell)
 	}
 	else
 	{
-		if(!no_echo) {WScript.Echo(s);}
+		if(!no_echo || opt.print) {WScript.Echo(s);}
 		if(!opt.just_print)
 		{
 			var p = sh.Exec("cmd /d /c " + s);
