@@ -264,7 +264,18 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
-                            set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.FindFirst(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
+                            If TypeOf node_prop.Left.Type Is RkStruct Then
+
+                                set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.FindFirst(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
+
+                            ElseIf TypeOf node_prop.Left.Type Is RkByName OrElse
+                                node_prop.Left.Type Is Nothing Then
+
+                                ' nothing
+                            Else
+
+                                Debug.Fail("not yet")
+                            End If
 
                         ElseIf TypeOf child Is DeclareNode Then
 

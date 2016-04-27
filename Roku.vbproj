@@ -67,14 +67,10 @@
     <None Include="roku.y" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Architecture\ArchitectureNameAttribute.vb" />
-    <Compile Include="Architecture\CIL\CommonIL.vb" />
+    <Compile Include="Architecture\CommonIL.vb" />
     <Compile Include="Command\CommandLineAttribute.vb" />
     <Compile Include="Command\Parser.vb" />
     <Compile Include="Command\Option.vb" />
-    <Compile Include="Architecture\IArchitecture.vb" />
-    <Compile Include="Architecture\RIR\RokuIR.vb" />
-    <Compile Include="Architecture\SourceWriter.vb" />
     <Compile Include="Compiler\Closure.vb" />
     <Compile Include="Compiler\NameResolver.vb" />
     <Compile Include="Compiler\Normalize.vb" />

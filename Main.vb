@@ -72,27 +72,9 @@ Public Class Main
         Next
 
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
-        Dim arch = CreateArchitecture(opt.Architecture)
-        arch.Assemble(root, root.Namespaces(loader.GetNamespace(opt.EntryPoiny)))
-        arch.Optimize()
-        arch.Emit(opt.Output)
+        Dim arch As New Architecture.CommonIL
+        arch.Assemble(root, root.Namespaces(loader.GetNamespace(opt.EntryPoiny)), opt.Output, Emit.PEFileKinds.ConsoleApplication)
     End Sub
-
-    Public Shared Function CreateArchitecture(name As String) As IArchitecture
-
-        Dim separate = name.LastIndexOf(":"c)
-        Dim asm = If(separate < 0, System.Reflection.Assembly.GetExecutingAssembly, System.Reflection.Assembly.LoadFrom(name.Substring(0, separate)))
-        Dim arch = If(separate < 0, name, name.Substring(separate + 1))
-
-        For Each x In asm.GetTypes
-
-            If Not x.GetInterfaces.Or(Function(inter) inter.Equals(GetType(IArchitecture))) Then Continue For
-            Dim attr = CType(x.GetCustomAttribute(GetType(ArchitectureNameAttribute)), ArchitectureNameAttribute)
-            If (attr IsNot Nothing AndAlso attr.Name.Equals(arch)) OrElse x.FullName.Equals(arch) Then Return CType(x.GetConstructor(New Type() {}).Invoke(New Object() {}), IArchitecture)
-        Next
-
-        Throw New Exception($"not found architecture {name}")
-    End Function
 
     Public Shared Sub NodeDumpGraph(out As IO.TextWriter, node As INode)
 

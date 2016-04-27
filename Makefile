@@ -55,11 +55,11 @@ $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	mkdir tests\obj 2>NUL || exit /B 0
-	cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) -a CIL
+	cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@)
 	ildasm $@ /out:$@.il /nobar
 
 node: $(OUT)
-	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - -a CIL | dot -Tpng > obj\node.png
+	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - | dot -Tpng > obj\node.png
 	start tests\obj\node.png
 
 $(OUT): $(YANP_OUT) $(SRCS)
