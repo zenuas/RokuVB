@@ -41,7 +41,7 @@ function parse(makefile, env)
 	{
 		env = this;
 		
-		env.$ENV     = {};
+		env.$ENV     = {MAKE : WScript.ScriptFullName};
 		env.$START   = "";
 		env.$TARGET  = {};
 		env.$PHONY   = [];

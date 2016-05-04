@@ -18,7 +18,7 @@ SRCS:=$(wildcard %.vb)
 RKTEST:=$(subst .rk,,$(wildcard tests\*.rk))
 RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 
-.PHONY: all clean parser node
+.PHONY: all clean parser parserd node
 
 all: test
 
@@ -80,6 +80,9 @@ $(OUT): $(YANP_OUT) $(SRCS)
 
 parser: $(YANP_OUT)
 $(YANP_OUT): roku.y
+	@$(MAKE) parser
+
+parserd:
 	mkdir tests\parser 2>NUL || exit /B 0
 	$(YANP) \
 		-i roku.y \
