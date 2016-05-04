@@ -83,6 +83,7 @@ $(YANP_OUT): roku.y
 	@$(MAKE) parser
 
 parserd:
+	cd ..\Yanp && msbuild Yanp.sln /nologo /v:q /t:build /p:Configuration=Debug
 	mkdir tests\parser 2>NUL || exit /B 0
 	$(YANP) \
 		-i roku.y \
