@@ -134,8 +134,8 @@ Namespace Parser
 #Region "reader"
 
         Public MustOverride Function CreateEndOfToken() As IToken(Of T)
-        Public MustOverride Function CreateCharToken(x As Integer) As IToken(Of T)
-        Public MustOverride Function CreateWordToken(x As Integer) As IToken(Of T)
+        Public MustOverride Function CreateCharToken(x As SymbolTypes) As IToken(Of T)
+        Public MustOverride Function CreateWordToken(x As SymbolTypes) As IToken(Of T)
 
         Public Overridable Function Reader() As IToken(Of T)
 
@@ -153,13 +153,17 @@ Namespace Parser
 
             ' lex word
             Dim s As New System.Text.StringBuilder(c.ToString())
-            c = Me.ReadChar
-            Do While Not Char.IsWhiteSpace(c) AndAlso Not Me.ReservedChar.ContainsKey(c)
+            If Not Me.EndOfStream Then
 
-                s.Append(c)
-                If Me.EndOfStream() Then Exit Do
-                c = Me.ReadChar
-            Loop
+                c = Me.NextChar
+                Do While Not Char.IsWhiteSpace(c) AndAlso Not Me.ReservedChar.ContainsKey(c)
+
+                    s.Append(c)
+                    Me.ReadChar()
+                    If Me.EndOfStream() Then Exit Do
+                    c = Me.NextChar
+                Loop
+            End If
 
             Dim word = s.ToString
             If Me.ReservedWord.ContainsKey(word) Then Return Me.CreateWordToken(Me.ReservedWord(word))
@@ -167,8 +171,8 @@ Namespace Parser
             Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
         End Function
 
-        Public Overridable ReadOnly Property ReservedChar As New Dictionary(Of Char, Integer)
-        Public Overridable ReadOnly Property ReservedWord As New Dictionary(Of String, Integer)
+        Public Overridable ReadOnly Property ReservedChar As New Dictionary(Of Char, SymbolTypes)
+        Public Overridable ReadOnly Property ReservedWord As New Dictionary(Of String, SymbolTypes)
 
 #End Region
 

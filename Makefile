@@ -8,7 +8,7 @@ OUT=$(WORK)\roku.exe
 RELEASE=Release
 VBFLAGS=/debug-
 
-YANP=..\legacy\Yanp\bin\Debug\yanp.exe
+YANP=..\Yanp\bin\Debug\yanp.exe
 YANP_OUT=Parser\MyParser.vb
 
 RK=tests\test.rk
@@ -23,16 +23,9 @@ RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 all: test
 
 clean:
-	rmdir /S /Q $(WORK) || exit /B 0
-	del /F $(RKOUT) 2>NUL
-	del /F $(subst exe,pdb,$(RKOUT)) 2>NUL
-	del /F tests\obj\.stdin tests\obj\.stdout 2>NUL
-	del /F tests\obj\node.png 2>NUL
-	del /F $(RKOUT) 2>NUL
-	del /F $(patsubst %.exe,%.pdb,$(RKOUT)) 2>NUL
-	del /F $(patsubst %.exe,%.exe.il,$(RKOUT)) 2>NUL
-	del /F $(patsubst %.exe,%.exe.stdout,$(RKOUT)) 2>NUL
-	del /F $(patsubst %.exe,%.exe.diff,$(RKOUT)) 2>NUL
+	rmdir /S /Q $(WORK) 2>NUL || exit /B 0
+	rmdir /S /Q tests\obj 2>NUL || exit /B 0
+	rmdir /S /Q tests\parser 2>NUL || exit /B 0
 
 distclean: clean
 	del /F $(YANP_OUT) 2>NUL
@@ -93,13 +86,13 @@ $(YANP_OUT): roku.y
 		-v tests\\parser\\roku.txt \
 		-c tests\\parser\\roku.csv \
 		-p .\\Parser\\ \
-		-b ..\\legacy\\Yanp \
+		-b ..\\Yanp \
 		-t vb
 	
 	find /n "/reduce" < tests\parser\roku.txt || exit /B 0
 	
-	del Parser\ParserSample.vb8.sln 2>NUL
-	del Parser\ParserSample.vbproj  2>NUL
+	del Parser\ParserGenerator.sln 2>NUL
+	del Parser\ParserSample.vbproj 2>NUL
 	del Parser\Main.vb   2>NUL
 	del Parser\IToken.vb 2>NUL
 	del Parser\Token.vb  2>NUL

@@ -1,3 +1,4 @@
+
 Namespace Parser
 
     Public Enum SymbolTypes As Integer
@@ -79,6 +80,9 @@ Namespace Parser
 
         ''' <summary>VAR</summary>
         VAR
+
+        ''' <summary>$END</summary>
+        _END
 
         ''' <summary>argn</summary>
         argn
@@ -205,9 +209,6 @@ Namespace Parser
 
         ''' <summary>void</summary>
         void
-
-        ''' <summary>$END</summary>
-        _END
 
         ''' <summary>$ACCEPT</summary>
         _ACCEPT
