@@ -3,7 +3,6 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
-Imports Roku.Architecture
 Imports Roku.Util.ArrayExtension
 
 
@@ -15,6 +14,7 @@ Public Class Main
         Dim opt As New Command.Option
         Dim xs = Command.Parser.Parse(opt, args)
         Dim loader As New Loader With {.CurrentDirectory = System.IO.Directory.GetCurrentDirectory}
+        loader.LoadAssembly("mscorlib")
 
         If xs.Length = 0 Then
 
@@ -49,6 +49,11 @@ Public Class Main
             Compiler.Typing.Prototype(pgm, root, root.CreateNamespace(ns.Key))
         Next
 
+        For Each asm In loader.Assemblies
+
+            root.LoadAssembly(asm)
+        Next
+
         For Each ns In loader.Root.Namespaces
 
             Dim pgm = ns.Value
@@ -56,7 +61,8 @@ Public Class Main
 
             For Each use In pgm.Uses
 
-                current.AddLoadPath(root.GetNamespace(loader.GetNamespace(use.GetNamespace)))
+                Dim use_ns = root.TryGetNamespace(loader.GetNamespace(use.GetNamespace))
+                If use_ns IsNot Nothing Then current.AddLoadPath(use_ns)
             Next
             Compiler.Typing.TypeStatic(pgm, root, current)
         Next

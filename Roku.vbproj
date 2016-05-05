@@ -61,6 +61,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <Compile Include="Manager\IAddNamespace.vb" />
     <Compile Include="Manager\IReturnBind.vb" />
     <Compile Include="Manager\RkArray.vb" />
     <Compile Include="Manager\RkProperty.vb" />

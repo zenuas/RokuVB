@@ -7,12 +7,14 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkNamespace
-        Implements IEntry, IAddStruct, IAddFunction
+        Implements IEntry, IAddStruct, IAddFunction, IAddNamespace
 
 
         Public Overridable Property Name As String Implements IEntry.Name
+        Public Overridable Property Parent As RkNamespace
         Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct))
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of RkFunction))
+        Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, RkNamespace)
         Public Overridable ReadOnly Property LoadPaths As New List(Of IEntry)
 
         Public Overridable Sub AddLoadPath(path As IEntry)
@@ -110,13 +112,13 @@ Namespace Manager
             Me.Functions(name).Add(x)
         End Sub
 
-        Public Overridable Function GetStruct(name As String, ParamArray args() As IType) As RkStruct Implements IAddStruct.GetStruct
+        'Public Overridable Function GetStruct(name As String, ParamArray args() As IType) As RkStruct Implements IAddStruct.GetStruct
 
-            Dim x = Me.TryGetStruct(name, args)
-            If x IsNot Nothing Then Return x
+        '    Dim x = Me.TryGetStruct(name, args)
+        '    If x IsNot Nothing Then Return x
 
-            Throw New ArgumentException($"``{name}'' was not found")
-        End Function
+        '    Throw New ArgumentException($"``{name}'' was not found")
+        'End Function
 
         Public Overridable Function TryGetStruct(name As String, ParamArray args() As IType) As RkStruct
 
@@ -133,13 +135,13 @@ Namespace Manager
             Return Nothing
         End Function
 
-        Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
+        'Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
 
-            Dim x = Me.TryGetFunction(name, args)
-            If x IsNot Nothing Then Return x
+        '    Dim x = Me.TryGetFunction(name, args)
+        '    If x IsNot Nothing Then Return x
 
-            Throw New ArgumentException($"``{name}'' was not found")
-        End Function
+        '    Throw New ArgumentException($"``{name}'' was not found")
+        'End Function
 
         Public Overridable Function TryGetFunction(name As String, ParamArray args() As IType) As RkFunction
 
@@ -184,6 +186,21 @@ Namespace Manager
                 Return CType(f.FixedGeneric(xs), RkFunction)
             Next
 
+            Return Nothing
+        End Function
+
+        Public Overridable Sub AddNamespace(x As RkNamespace) Implements IAddNamespace.AddNamespace
+
+            Me.Namespaces.Add(x.Name, x)
+        End Sub
+
+        Public Overridable Function TryGetNamespace(name As String) As RkNamespace
+
+            'Return Me.Namespaces.FindFirstOrNull(Function(x) x.Key.Equals(name))?.Value
+            For Each kv In Me.Namespaces
+
+                If kv.Key.Equals(name) Then Return kv.Value
+            Next
             Return Nothing
         End Function
 

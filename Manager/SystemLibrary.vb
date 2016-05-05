@@ -1,4 +1,6 @@
-﻿Imports System.Collections.Generic
+﻿Imports System
+Imports System.Collections.Generic
+Imports System.Reflection
 
 
 Namespace Manager
@@ -6,8 +8,6 @@ Namespace Manager
     Public Class SystemLirary
         Inherits RkNamespace
 
-
-        Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, RkNamespace)
 
         Public Sub New()
 
@@ -97,13 +97,29 @@ Namespace Manager
 
         Public Overridable Function CreateNamespace(name As String) As RkNamespace
 
-            If Not Me.Namespaces.ContainsKey(name) Then
+            Return Me.CreateNamespace(name, Me)
+        End Function
 
-                Dim ns As New RkNamespace With {.Name = name}
-                ns.AddLoadPath(Me)
-                Me.Namespaces.Add(name, ns)
+        Public Overridable Function CreateNamespace(name As String, current As RkNamespace) As RkNamespace
+
+            Dim make_ns =
+                Function(s As String, parent As RkNamespace)
+
+                    Dim ns = parent.TryGetNamespace(s)
+                    If ns IsNot Nothing Then Return ns
+                    ns = New RkNamespace With {.Name = s, .Parent = parent}
+                    parent.AddNamespace(ns)
+                    Return ns
+                End Function
+
+            Dim index = name.IndexOf("."c)
+            If index < 0 Then
+
+                Return make_ns(name, current)
+            Else
+
+                Return Me.CreateNamespace(name.Substring(index + 1), make_ns(name.Substring(0, index), current))
             End If
-            Return Me.Namespaces(name)
         End Function
 
         Public Overridable Function GetNamespace(name As String) As RkNamespace
@@ -119,6 +135,23 @@ Namespace Manager
                 Yield ns
             Next
         End Function
+
+        Public Overridable Sub LoadAssembly(asm As Assembly)
+
+            For Each t In asm.ExportedTypes
+
+                Dim ti = CType(t, TypeInfo)
+                Dim full_ns = t.Namespace
+                Dim type_name = t.Name
+                If ti.GenericTypeParameters.Length > 0 Then
+
+                    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
+                    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
+                End If
+
+                Dim ns = Me.CreateNamespace(full_ns)
+            Next
+        End Sub
 
     End Class
 

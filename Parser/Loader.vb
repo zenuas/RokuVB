@@ -1,6 +1,9 @@
 ﻿Imports System
 Imports System.IO
+Imports System.Collections.Generic
+Imports System.Reflection
 Imports Roku.Node
+Imports Roku.Util
 
 Namespace Parser
 
@@ -8,6 +11,7 @@ Namespace Parser
 
         Public Overridable Property CurrentDirectory As String
         Public Overridable Property Root As New RootNode
+        Public Overridable ReadOnly Property Assemblies As New List(Of Assembly)
 
         Public Overridable Function GetExactFullPath(name As String) As String
 
@@ -31,7 +35,7 @@ Namespace Parser
             If File.Exists(name) Then Return Me.GetExactFullPath(name)
             If Path.GetExtension(name).Length = 0 AndAlso File.Exists($"{name}.rk") Then Return Me.GetExactFullPath($"{name}.rk")
 
-            Throw New FileNotFoundException
+            Return name
         End Function
 
         Public Overridable Function GetNamespace(name As String) As String
@@ -41,9 +45,11 @@ Namespace Parser
             Return Path.GetFileNameWithoutExtension(fn).Replace(Path.DirectorySeparatorChar, "."c)
         End Function
 
-        Public Overridable Function LoadModule(name As String) As ProgramNode
+        Public Overridable Sub LoadModule(name As String)
 
-            Return Me.AddNode(name,
+            If Me.Assemblies.FindFirstOrNull(Function(x) x.GetName.Name.Equals(name)) IsNot Nothing Then Return
+
+            Me.AddNode(name,
                 Function()
 
                     Using reader As New StreamReader(Me.GetFileName(name))
@@ -51,12 +57,12 @@ Namespace Parser
                         Return Me.Parse(reader)
                     End Using
                 End Function)
-        End Function
+        End Sub
 
-        Public Overridable Function LoadModule(name As String, reader As TextReader) As ProgramNode
+        Public Overridable Sub LoadModule(name As String, reader As TextReader)
 
-            Return Me.AddNode(name, Function() Me.Parse(reader))
-        End Function
+            Me.AddNode(name, Function() Me.Parse(reader))
+        End Sub
 
         Public Overridable Function Parse(reader As TextReader) As ProgramNode
 
@@ -87,6 +93,13 @@ Namespace Parser
             End If
 
             Return Me.Root.Namespaces(ns)
+        End Function
+
+        Public Overridable Function LoadAssembly(path As String) As Assembly
+
+            Dim asm = Assembly.Load(path)
+            If Not Me.Assemblies.Contains(asm) Then Me.Assemblies.Add(asm)
+            Return asm
         End Function
     End Class
 

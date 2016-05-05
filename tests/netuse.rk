@@ -1,0 +1,4 @@
+use mscorlib
+
+#=>hello
+System.Console.WriteLine("hello")
