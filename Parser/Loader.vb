@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Node
-Imports Roku.Util
+
 
 Namespace Parser
 
@@ -35,7 +35,7 @@ Namespace Parser
             If File.Exists(name) Then Return Me.GetExactFullPath(name)
             If Path.GetExtension(name).Length = 0 AndAlso File.Exists($"{name}.rk") Then Return Me.GetExactFullPath($"{name}.rk")
 
-            Return name
+            Throw New FileNotFoundException
         End Function
 
         Public Overridable Function GetNamespace(name As String) As String
@@ -45,9 +45,19 @@ Namespace Parser
             Return Path.GetFileNameWithoutExtension(fn).Replace(Path.DirectorySeparatorChar, "."c)
         End Function
 
-        Public Overridable Sub LoadModule(name As String)
+        Public Overridable Function AddUse(name As String) As String
 
-            If Me.Assemblies.FindFirstOrNull(Function(x) x.GetName.Name.Equals(name)) IsNot Nothing Then Return
+            Return Util.Errors.These(
+                    Function()
+                        Me.LoadModule(name)
+                        Return Me.GetNamespace(name)
+                    End Function,
+                    Function() name
+                )
+
+        End Function
+
+        Public Overridable Sub LoadModule(name As String)
 
             Me.AddNode(name,
                 Function()

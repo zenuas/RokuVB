@@ -129,8 +129,20 @@ Namespace Manager
 
         Public Overridable Iterator Function AllNamespace() As IEnumerable(Of RkNamespace)
 
-            Yield Me
-            For Each ns In Me.Namespaces.Values
+            Dim nswalk As Func(Of RkNamespace, IEnumerable(Of RkNamespace)) =
+                Iterator Function(ns As RkNamespace) As IEnumerable(Of RkNamespace)
+
+                    Yield ns
+                    For Each child In ns.Namespaces.Values
+
+                        For Each x In nswalk(child)
+
+                            Yield x
+                        Next
+                    Next
+                End Function
+
+            For Each ns In nswalk(Me)
 
                 Yield ns
             Next
@@ -141,15 +153,33 @@ Namespace Manager
             For Each t In asm.ExportedTypes
 
                 Dim ti = CType(t, TypeInfo)
-                Dim full_ns = t.Namespace
-                Dim type_name = t.Name
-                If ti.GenericTypeParameters.Length > 0 Then
+                'Dim type_name = t.Name
+                'If ti.GenericTypeParameters.Length > 0 Then
 
-                    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
-                    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
-                End If
+                '    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
+                '    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
+                'End If
 
-                Dim ns = Me.CreateNamespace(full_ns)
+                Dim ns = Me.CreateNamespace(t.Namespace)
+                Dim s = New RkCILStruct With {.Namespace = ns, .Name = t.Name, .TypeInfo = ti}
+                ns.AddStruct(s)
+                For Each method In t.GetMethods
+
+                    Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
+                    If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
+                    For Each arg In method.GetParameters
+
+                        f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = New RkByName With {.Name = arg.ParameterType.Name}})
+                    Next
+                    If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = New RkByName With {.Name = method.ReturnType.Name}
+
+                    If method.IsStatic Then
+
+                        Me.CreateNamespace(t.Name, ns).AddFunction(f)
+                    Else
+                        ns.AddFunction(f)
+                    End If
+                Next
             Next
         End Sub
 

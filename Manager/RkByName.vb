@@ -45,6 +45,11 @@ Namespace Manager
 
             Throw New NotImplementedException()
         End Function
+
+        Public Overrides Function ToString() As String
+
+            Return Me.Name
+        End Function
     End Class
 
 End Namespace

@@ -61,8 +61,7 @@ Public Class Main
 
             For Each use In pgm.Uses
 
-                Dim use_ns = root.TryGetNamespace(loader.GetNamespace(use.GetNamespace))
-                If use_ns IsNot Nothing Then current.AddLoadPath(use_ns)
+                current.AddLoadPath(root.TryGetNamespace(use.GetNamespace))
             Next
             Compiler.Typing.TypeStatic(pgm, root, current)
         Next

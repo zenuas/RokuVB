@@ -1,4 +1,4 @@
-use mscorlib
+use System
 
 #=>hello
 System.Console.WriteLine("hello")

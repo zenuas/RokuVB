@@ -229,7 +229,19 @@ Namespace Compiler
 
                                             Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
                                             If v IsNot Nothing Then Return v.Type.Type
+
+                                        ElseIf Not (TypeOf parent Is PropertyNode AndAlso ref.Equals("Right")) Then
+
+                                            Dim t = current.Namespace.TryLoadStruct(node_var.Name)
+                                            If t IsNot Nothing Then Return t
+
+                                            Dim f = current.Namespace.TryLoadFunction(node_var.Name)
+                                            If f IsNot Nothing Then Return f
+
+                                            Dim n = current.Namespace.TryLoadNamespace(node_var.Name)
+                                            If n IsNot Nothing Then Return n
                                         End If
+
                                         Return New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name}
                                     End Function)
                             End If
@@ -266,7 +278,43 @@ Namespace Compiler
                             Dim node_prop = CType(child, PropertyNode)
                             If TypeOf node_prop.Left.Type Is RkStruct Then
 
-                                set_type(node_prop, Function() CType(node_prop.Left.Type, RkStruct).Local.FindFirst(Function(x) x.Key.Equals(node_prop.Right.Name)).Value)
+                                set_type(node_prop,
+                                    Function()
+
+                                        Dim v = CType(node_prop.Left.Type, RkStruct).Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
+                                        If v IsNot Nothing Then Return v
+
+                                        ' DotNET static-function support
+                                        Dim dotnet_static_ns = node_prop.Left.Type.Namespace?.TryGetNamespace(node_prop.Left.Type.Name)
+                                        If dotnet_static_ns IsNot Nothing Then
+
+                                            Dim f = dotnet_static_ns.TryGetFunction(node_prop.Right.Name)
+                                            If f IsNot Nothing Then Return f
+                                        End If
+
+                                        Debug.Fail("not yet")
+                                        Return Nothing
+                                    End Function)
+
+                            ElseIf TypeOf node_prop.Left.Type Is RkNamespace Then
+
+                                set_type(node_prop,
+                                    Function()
+
+                                        Dim left = CType(node_prop.Left.Type, RkNamespace)
+                                        Dim right = node_prop.Right.Name
+
+                                        Dim t = left.TryGetStruct(right)
+                                        If t IsNot Nothing Then Return t
+
+                                        Dim f = left.TryGetFunction(right)
+                                        If f IsNot Nothing Then Return f
+
+                                        Dim n = left.TryGetNamespace(right)
+                                        If n IsNot Nothing Then Return n
+
+                                        Return Nothing
+                                    End Function)
 
                             ElseIf TypeOf node_prop.Left.Type Is RkByName OrElse
                                 node_prop.Left.Type Is Nothing Then

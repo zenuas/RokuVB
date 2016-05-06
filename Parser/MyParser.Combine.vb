@@ -34,7 +34,7 @@ Namespace Parser
 
         Protected Overridable Sub AddUse(use As UseNode)
 
-            Me.Loader.LoadModule(use.GetNamespace)
+            use.Namespace = New VariableNode(Me.Loader.AddUse(use.GetNamespace))
             CType(Me.CurrentScope, ProgramNode).Uses.Add(use)
         End Sub
 

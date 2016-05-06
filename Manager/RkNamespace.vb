@@ -7,7 +7,7 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkNamespace
-        Implements IEntry, IAddStruct, IAddFunction, IAddNamespace
+        Implements IType, IAddStruct, IAddFunction, IAddNamespace
 
 
         Public Overridable Property Name As String Implements IEntry.Name
@@ -94,6 +94,36 @@ Namespace Manager
             Return Nothing
         End Function
 
+        Public Overridable Function LoadNamespace(name As String, ParamArray args() As IType) As RkNamespace
+
+            Dim x = Me.TryLoadNamespace(name)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryLoadNamespace(name As String) As RkNamespace
+
+            If Me.Namespaces.ContainsKey(name) Then
+
+                Dim x = Me.TryGetNamespace(name)
+                If x IsNot Nothing Then Return x
+            End If
+
+            For Each path In Me.LoadPaths
+
+                If TypeOf path Is RkNamespace Then
+
+                    Dim ns = CType(path, RkNamespace)
+                    If ns.Name.Equals(name) Then Return ns
+                    Dim x = ns.TryLoadNamespace(name)
+                    If x IsNot Nothing Then Return x
+                End If
+            Next
+
+            Return Nothing
+        End Function
+
         Public Overridable Sub AddStruct(x As RkStruct) Implements IAddStruct.AddStruct
 
             Me.AddStruct(x, x.Name)
@@ -122,6 +152,8 @@ Namespace Manager
 
         Public Overridable Function TryGetStruct(name As String, ParamArray args() As IType) As RkStruct
 
+            If Not Me.Structs.ContainsKey(name) Then Return Nothing
+
             For Each f In Me.Structs(name).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
 
                 If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
@@ -144,6 +176,8 @@ Namespace Manager
         'End Function
 
         Public Overridable Function TryGetFunction(name As String, ParamArray args() As IType) As RkFunction
+
+            If Not Me.Functions.ContainsKey(name) Then Return Nothing
 
             For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
 
@@ -196,12 +230,7 @@ Namespace Manager
 
         Public Overridable Function TryGetNamespace(name As String) As RkNamespace
 
-            'Return Me.Namespaces.FindFirstOrNull(Function(x) x.Key.Equals(name))?.Value
-            For Each kv In Me.Namespaces
-
-                If kv.Key.Equals(name) Then Return kv.Value
-            Next
-            Return Nothing
+            Return Me.Namespaces.FindFirstOrNull(Function(x) x.Key.Equals(name)).Value
         End Function
 
         'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T
@@ -233,9 +262,60 @@ Namespace Manager
         '    Return CType(x, T)
         'End Function
 
+        Public Overridable Function FullName() As String
+
+            If Me.Parent Is Nothing Then Return $"{Me.Name}"
+            Return $"{Me.Parent.FullName}.{Me.Name}"
+        End Function
+
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} {Me.Name}"
+            Return $"{Me.FullName}"
+        End Function
+
+        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+            Get
+                Return Me
+            End Get
+            Set(value As RkNamespace)
+
+                Throw New NotSupportedException()
+            End Set
+        End Property
+
+        Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
+
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
+
+            Throw New NotImplementedException()
         End Function
     End Class
 

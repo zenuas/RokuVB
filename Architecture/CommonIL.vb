@@ -100,7 +100,7 @@ Namespace Architecture
 
                 For Each ss In ns.Structs
 
-                    For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing) OrElse x.ClosureEnvironment)
+                    For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
                         map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{struct.Namespace.Name}.{struct.CreateManglingName}")}
                     Next
@@ -141,7 +141,7 @@ Namespace Architecture
                         map(f) = Me.Module.DefineGlobalMethod($"{f.Namespace.Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
                     Next
 
-                    For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing)
+                    For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing AndAlso TypeOf x IsNot RkCILFunction)
 
                         Dim args = Me.RkToCILType(f.Arguments, structs)
                         Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
