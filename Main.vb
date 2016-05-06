@@ -43,10 +43,12 @@ Public Class Main
         For Each ns In loader.Root.Namespaces
 
             Dim pgm = ns.Value
+            Dim current = root.CreateNamespace(ns.Key)
+            current.AddLoadPath(root)
             Compiler.NameResolver.ResolveName(pgm)
             Compiler.Normalize.Normalization(pgm)
             Compiler.Closure.Capture(pgm)
-            Compiler.Typing.Prototype(pgm, root, root.CreateNamespace(ns.Key))
+            Compiler.Typing.Prototype(pgm, root, current)
         Next
 
         For Each asm In loader.Assemblies
