@@ -278,7 +278,7 @@ Namespace Compiler
                             Dim node_prop = CType(child, PropertyNode)
                             If TypeOf node_prop.Left.Type Is RkStruct Then
 
-                                set_type(node_prop,
+                                If set_type(node_prop,
                                     Function()
 
                                         Dim v = CType(node_prop.Left.Type, RkStruct).Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
@@ -294,11 +294,14 @@ Namespace Compiler
 
                                         Debug.Fail("not yet")
                                         Return Nothing
-                                    End Function)
+                                    End Function) Then
+
+                                    node_prop.Right.Type = node_prop.Type
+                                End If
 
                             ElseIf TypeOf node_prop.Left.Type Is RkNamespace Then
 
-                                set_type(node_prop,
+                                If set_type(node_prop,
                                     Function()
 
                                         Dim left = CType(node_prop.Left.Type, RkNamespace)
@@ -314,7 +317,10 @@ Namespace Compiler
                                         If n IsNot Nothing Then Return n
 
                                         Return Nothing
-                                    End Function)
+                                    End Function) Then
+
+                                    node_prop.Right.Type = node_prop.Type
+                                End If
 
                             ElseIf TypeOf node_prop.Left.Type Is RkByName OrElse
                                 node_prop.Left.Type Is Nothing Then
