@@ -26,7 +26,7 @@ Namespace Manager
             Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
-        Public Function [Is](t As IType) As Boolean Implements IType.Is
+        Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
             If Me Is t Then Return True
             If Me.Namespace Is t.Namespace AndAlso Me.Name.Equals(t.Name) Then Return True

@@ -18,7 +18,7 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
-        Public Function [Is](t As IType) As Boolean Implements IType.Is
+        Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
             Return True
         End Function

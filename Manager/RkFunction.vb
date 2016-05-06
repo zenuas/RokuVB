@@ -31,7 +31,7 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
-        Public Function [Is](t As IType) As Boolean Implements IType.Is
+        Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
             Throw New NotImplementedException()
         End Function
@@ -47,7 +47,7 @@ Namespace Manager
             Return x
         End Function
 
-        Public Function FixedGenericCall(fcall As FunctionCallNode) As IType
+        Public Overridable Function FixedGenericCall(fcall As FunctionCallNode) As IType
 
             Dim xs As New Dictionary(Of String, IType)
             For i = 0 To Me.Arguments.Count - 1
