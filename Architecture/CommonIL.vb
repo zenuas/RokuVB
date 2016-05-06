@@ -483,9 +483,27 @@ Namespace Architecture
 
                     Case RkOperator.Dot
                         Dim dot = CType(stmt, RkCode)
-                        gen_il_load(il, dot.Left)
-                        il.Emit(OpCodes.Ldfld, Me.RkToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
-                        gen_il_store(il, dot.Return)
+                        If TypeOf dot.Return.Type Is RkNamespace Then
+
+                            Debug.Fail("not yet")
+
+                        ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkByName Then
+
+                            ' nothing
+
+                        ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkStruct Then
+
+                            ' nothing
+
+                        ElseIf TypeOf dot.Left.Type Is RkStruct AndAlso TypeOf dot.Right.Type Is RkByName Then
+
+                            ' nothing
+                        Else
+
+                            gen_il_load(il, dot.Left)
+                            il.Emit(OpCodes.Ldfld, Me.RkToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
+                            gen_il_store(il, dot.Return)
+                        End If
 
                     Case RkOperator.Call
                         If TypeOf stmt Is RkLambdaCall Then
@@ -590,6 +608,7 @@ Namespace Architecture
 
         Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
 
+            If TypeOf f Is RkCILFunction Then Return CType(f, RkCILFunction).MethodInfo
             If functions.ContainsKey(f) Then Return functions(f)
 
             If Not functions.ContainsKey(f) Then

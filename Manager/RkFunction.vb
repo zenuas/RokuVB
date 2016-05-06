@@ -33,7 +33,7 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Throw New NotImplementedException()
+            Return Me Is t
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric

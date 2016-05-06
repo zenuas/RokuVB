@@ -285,15 +285,7 @@ Namespace Compiler
                                         If v IsNot Nothing Then Return v
 
                                         ' DotNET static-function support
-                                        Dim dotnet_static_ns = node_prop.Left.Type.Namespace?.TryGetNamespace(node_prop.Left.Type.Name)
-                                        If dotnet_static_ns IsNot Nothing Then
-
-                                            Dim f = dotnet_static_ns.TryGetFunction(node_prop.Right.Name)
-                                            If f IsNot Nothing Then Return f
-                                        End If
-
-                                        Debug.Fail("not yet")
-                                        Return Nothing
+                                        Return New RkByName With {.Namespace = node_prop.Left.Type.Namespace?.TryGetNamespace(node_prop.Left.Type.Name), .Name = node_prop.Right.Name}
                                     End Function) Then
 
                                     node_prop.Right.Type = node_prop.Type
@@ -357,7 +349,7 @@ Namespace Compiler
 
                                 ElseIf TypeOf node_call.Expression.Type Is RkByName Then
 
-                                    rk_function = current.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                    rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
                                     node_call.Expression.Type = rk_function
                                 End If
 

@@ -169,7 +169,7 @@ Namespace Manager
                     If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
                     For Each arg In method.GetParameters
 
-                        f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = New RkByName With {.Name = arg.ParameterType.Name}})
+                        f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = New RkCILByName With {.Name = arg.ParameterType.Name}})
                     Next
                     If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = New RkByName With {.Name = method.ReturnType.Name}
 

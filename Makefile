@@ -46,9 +46,9 @@ $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	@del tests\obj\.stdin  2>NUL
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
-	mkdir tests\obj 2>NUL || exit /B 0
-	-cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@)
-	-ildasm $@ /out:$@.il /nobar
+	@mkdir tests\obj 2>NUL || exit /B 0
+	-@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@)
+	-@ildasm $@ /out:$@.il /nobar
 
 node: $(OUT)
 	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - | dot -Tpng > obj\node.png

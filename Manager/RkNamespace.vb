@@ -181,7 +181,7 @@ Namespace Manager
 
             For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
 
-                If f.Arguments.And(Function(x, i) x.Value Is args(i)) Then Return f
+                If f.Arguments.And(Function(x, i) x.Value.Is(args(i))) Then Return f
             Next
 
             Dim generic_match As Action(Of IType, IType, Action(Of String, IType)) =
