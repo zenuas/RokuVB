@@ -327,7 +327,7 @@ Namespace Architecture
                                     gen_il_load(il, index)
                                     If x.Key.Equals("f") Then
 
-                                        il.Emit(OpCodes.Ldftn, functions(CType(v.Type, RkFunction)))
+                                        il.Emit(OpCodes.Ldftn, Me.RkToCILFunction(CType(v.Type, RkFunction), functions, structs))
                                     Else
 
                                         gen_il_load(il, get_local(il, New RkValue With {.Name = x.Key}))
@@ -575,6 +575,7 @@ Namespace Architecture
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
+            If TypeOf r Is RkCILStruct Then Return New TypeData With {.Type = CType(r, RkCILStruct).TypeInfo, .Constructor = Nothing}
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function

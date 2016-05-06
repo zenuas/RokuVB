@@ -2,3 +2,10 @@ use System
 
 #=>hello
 System.Console.WriteLine("hello")
+
+#<=world
+var r = System.Console.ReadLine
+var input = r()
+
+#=>world
+System.Console.WriteLine(input)
