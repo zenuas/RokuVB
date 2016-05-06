@@ -9,3 +9,9 @@ var input = r()
 
 #=>world
 System.Console.WriteLine(input)
+
+#<=!!
+var input2 = System.Console.ReadLine()
+
+#=>!!
+System.Console.WriteLine(input2)

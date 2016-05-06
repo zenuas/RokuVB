@@ -92,6 +92,13 @@ Namespace Compiler
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
+                                    Dim func = CType(e, FunctionCallNode)
+                                    func.Expression = insert_let(func.Expression)
+                                    For i = 0 To func.Arguments.Length - 1
+
+                                        func.Arguments(i) = insert_let(func.Arguments(i))
+                                    Next
+
                                 ElseIf TypeOf e Is VariableNode Then
 
                                 End If
@@ -115,12 +122,7 @@ Namespace Compiler
 
                             ElseIf TypeOf v Is FunctionCallNode Then
 
-                                Dim func = CType(v, FunctionCallNode)
-                                func.Expression = insert_let(func.Expression)
-                                For i = 0 To func.Arguments.Length - 1
-
-                                    func.Arguments(i) = insert_let(func.Arguments(i))
-                                Next
+                                to_flat(v)
 
                             ElseIf TypeOf v Is LetNode Then
 
