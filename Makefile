@@ -39,7 +39,6 @@ tests: $(RKTEST)
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $@.rk > tests\obj\.stdout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $@.rk > tests\obj\.stdin
-	@ildasm $< /out:$<.il /nobar
 	@echo $<
 	-@$< < tests\obj\.stdin > $<.stdout
 	@diff tests\obj\.stdout $<.stdout | build-tools\tee $<.diff
@@ -48,8 +47,8 @@ $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	mkdir tests\obj 2>NUL || exit /B 0
-	cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@)
-	ildasm $@ /out:$@.il /nobar
+	-cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@)
+	-ildasm $@ /out:$@.il /nobar
 
 node: $(OUT)
 	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - | dot -Tpng > obj\node.png
