@@ -158,8 +158,15 @@ Namespace Compiler
                         If n.Type IsNot Nothing Then Return False
 
                         n.Type = f()
-                        If n.Type IsNot Nothing Then type_fix = True
-                        Return True
+                        If n.Type IsNot Nothing Then
+
+                            type_fix = True
+                            Return True
+                        Else
+
+                            Debug.Fail("not yet")
+                            Return False
+                        End If
                     End Function
 
                 Dim set_func =
