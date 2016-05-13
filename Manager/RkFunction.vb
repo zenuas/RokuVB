@@ -122,7 +122,7 @@ Namespace Manager
 
         Public Overridable Function CreateCallReturn(self As RkValue, return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Dim x As RkCall = If(self.Name IsNot Nothing OrElse Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
+            Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
             x.Function = Me
             x.Return = return_
             x.Arguments.AddRange(args)

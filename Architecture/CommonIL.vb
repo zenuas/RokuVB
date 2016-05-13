@@ -525,7 +525,22 @@ Namespace Architecture
                                     End If
                                 End Sub)
                             cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
-                            il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
+                            If TypeOf cc.Function Is RkCILConstructor Then
+
+                                Dim f = CType(cc.Function, RkCILConstructor)
+                                If f.ConstructorInfo Is Nothing Then
+
+                                    Debug.Assert(cc.Arguments.Count = 0, "invalid arguments")
+                                    Debug.Assert(cc.Return IsNot Nothing, "invalid return")
+                                    Debug.Fail("not yet")
+                                    'il.Emit(OpCodes.Ldloca, ) <- cc.Return
+                                    il.Emit(OpCodes.Initobj, f.TypeInfo)
+                                Else
+                                    il.Emit(OpCodes.Newobj, f.ConstructorInfo)
+                                End If
+                            Else
+                                il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
+                            End If
                             If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
                         End If
 

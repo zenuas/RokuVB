@@ -9,6 +9,8 @@ Namespace Manager
         Inherits RkNamespace
 
 
+        Public Overridable ReadOnly Property TypeCache As New Dictionary(Of TypeInfo, RkCILStruct)
+
         Public Sub New()
 
             Me.Initialize()
@@ -64,7 +66,7 @@ Namespace Manager
             Me.AddStruct(arr)
             Dim chr As New RkStruct With {.Name = "Char", .Super = int16, .Namespace = Me}
             Me.AddStruct(chr)
-            Dim str As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
+            Dim str = Me.LoadType(GetType(String).GetTypeInfo) 'As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
             Me.AddStruct(str)
 
             ' sub [](self: Array(@T), index: Int32) @T
@@ -152,36 +154,45 @@ Namespace Manager
 
             For Each t In asm.ExportedTypes
 
-                Dim ti = CType(t, TypeInfo)
-                'Dim type_name = t.Name
-                'If ti.GenericTypeParameters.Length > 0 Then
-
-                '    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
-                '    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
-                'End If
-
-                Dim ns = Me.CreateNamespace(t.Namespace)
-                Dim s = New RkCILStruct With {.Namespace = ns, .Name = t.Name, .TypeInfo = ti}
-                ns.AddStruct(s)
-                For Each method In t.GetMethods
-
-                    Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
-                    If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
-                    For Each arg In method.GetParameters
-
-                        f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = New RkCILStruct With {.Namespace = Me.CreateNamespace(arg.ParameterType.Namespace), .Name = arg.ParameterType.Name, .TypeInfo = CType(arg.ParameterType, TypeInfo)}})
-                    Next
-                    If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = New RkCILStruct With {.Namespace = Me.CreateNamespace(method.ReturnType.Namespace), .Name = method.ReturnType.Name, .TypeInfo = CType(method.ReturnType, TypeInfo)}
-
-                    If method.IsStatic Then
-
-                        Me.CreateNamespace(t.Name, ns).AddFunction(f)
-                    Else
-                        ns.AddFunction(f)
-                    End If
-                Next
+                Me.LoadType(CType(t, TypeInfo))
             Next
         End Sub
+
+        Public Overridable Function LoadType(ti As TypeInfo) As RkCILStruct
+
+            If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
+            'Dim type_name = ti.Name
+            'If ti.GenericTypeParameters.Length > 0 Then
+
+            '    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
+            '    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
+            'End If
+
+            Dim ns = Me.CreateNamespace(ti.Namespace)
+            Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
+            Me.TypeCache(ti) = s
+            ns.AddStruct(s)
+
+            For Each method In ti.GetMethods
+
+                Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
+                If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
+                For Each arg In method.GetParameters
+
+                    f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = Me.LoadType(CType(arg.ParameterType, TypeInfo))})
+                Next
+                If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = Me.LoadType(CType(method.ReturnType, TypeInfo))
+
+                If method.IsStatic Then
+
+                    Me.CreateNamespace(ti.Name, ns).AddFunction(f)
+                Else
+                    ns.AddFunction(f)
+                End If
+            Next
+
+            Return s
+        End Function
 
     End Class
 

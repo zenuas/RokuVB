@@ -1,0 +1,14 @@
+use System
+
+var d = DateTime(2016, 5, 10)
+
+System.Console.WriteLine("hello")
+
+##=>2000
+#System.Console.WriteLine(d.Year)
+#
+##=>5
+#System.Console.WriteLine(d.Month)
+#
+##=>9
+#System.Console.WriteLine(d.Day)

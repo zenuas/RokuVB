@@ -10,8 +10,7 @@ Namespace Manager
 
         Public Overrides Function [Is](t As IType) As Boolean
 
-            If t.Name.Equals(Me.Name) Then Return True
-            Return False
+            Return t Is Me
         End Function
 
     End Class
