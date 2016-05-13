@@ -353,7 +353,7 @@ Namespace Compiler
                                 ElseIf TypeOf node_call.Expression.Type Is RkCILStruct Then
 
                                     Dim struct = CType(node_call.Expression.Type, RkCILStruct)
-                                    Dim ctor = struct.TypeInfo.GetConstructor({GetType(Integer), GetType(Integer), GetType(Integer)})
+                                    Dim ctor = struct.LoadConstructor(node_call.Arguments.Map(Function(x) x.Type).ToArray)
                                     rk_function = New RkCILConstructor With {.Name = ctor.Name, .TypeInfo = struct.TypeInfo, .ConstructorInfo = ctor, .Return = struct}
 
                                 ElseIf TypeOf node_call.Expression Is VariableNode Then

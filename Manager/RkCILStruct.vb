@@ -13,6 +13,11 @@ Namespace Manager
             Return t Is Me
         End Function
 
+        Public Overridable Function LoadConstructor(ParamArray args() As IType) As ConstructorInfo
+
+            Return Me.TypeInfo.GetConstructor({GetType(Integer), GetType(Integer), GetType(Integer)})
+        End Function
+
     End Class
 
 End Namespace
