@@ -45,17 +45,17 @@ Namespace Manager
 
             ' struct Int32 : Numeric
             Dim define_num =
-                Function(name As String, byte_size As Integer)
+                Function(t As Type)
 
-                    Dim x As New RkStruct With {.Name = name, .Namespace = Me}
+                    Dim x = Me.LoadType(t.GetTypeInfo)
                     x.Super = num
                     Me.AddStruct(x)
                     Return x
                 End Function
-            Dim int64 = define_num("Int64", 8)
-            Dim int32 = define_num("Int32", 4)
-            Dim int16 = define_num("Int16", 2)
-            Dim int8 = define_num("Int8", 1)
+            Dim int64 = define_num(GetType(Int64))
+            Dim int32 = define_num(GetType(Int32))
+            Dim int16 = define_num(GetType(Int16))
+            Dim int8 = define_num(GetType(Byte))
             Me.AddStruct(int32, "Int")
 
             ' struct Array(@T)

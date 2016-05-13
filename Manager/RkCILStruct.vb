@@ -1,4 +1,5 @@
 ﻿Imports System.Reflection
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -13,9 +14,9 @@ Namespace Manager
             Return t Is Me
         End Function
 
-        Public Overridable Function LoadConstructor(ParamArray args() As IType) As ConstructorInfo
+        Public Overridable Function LoadConstructor(root As SystemLirary, ParamArray args() As IType) As ConstructorInfo
 
-            Return Me.TypeInfo.GetConstructor({GetType(Integer), GetType(Integer), GetType(Integer)})
+            Return Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
         End Function
 
     End Class
