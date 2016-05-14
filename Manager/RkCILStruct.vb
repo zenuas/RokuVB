@@ -1,4 +1,5 @@
 ﻿Imports System.Reflection
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -10,8 +11,12 @@ Namespace Manager
 
         Public Overrides Function [Is](t As IType) As Boolean
 
-            If t.Name.Equals(Me.Name) Then Return True
-            Return False
+            Return t Is Me
+        End Function
+
+        Public Overridable Function LoadConstructor(root As SystemLirary, ParamArray args() As IType) As ConstructorInfo
+
+            Return Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
         End Function
 
     End Class

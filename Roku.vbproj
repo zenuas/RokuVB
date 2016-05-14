@@ -64,7 +64,7 @@
     <Compile Include="Manager\IAddNamespace.vb" />
     <Compile Include="Manager\IReturnBind.vb" />
     <Compile Include="Manager\RkArray.vb" />
-    <Compile Include="Manager\RkCILByName.vb" />
+    <Compile Include="Manager\RkCILConstructor.vb" />
     <Compile Include="Manager\RkCILStruct.vb" />
     <Compile Include="Manager\RkCILFunction.vb" />
     <Compile Include="Manager\RkProperty.vb" />
