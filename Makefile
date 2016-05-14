@@ -3,9 +3,8 @@
 #
 
 PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\MSBuild\14.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
-WORK=bin\netf4
-OUT=$(WORK)\roku.exe
 RELEASE=Release
+OUT=bin\$(RELEASE)\roku.exe
 VBFLAGS=/debug-
 
 YANP=..\Yanp\bin\Debug\yanp.exe
@@ -23,7 +22,7 @@ RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 all: test
 
 clean:
-	rmdir /S /Q $(WORK) 2>NUL || exit /B 0
+	msbuild Roku.sln /t:Clean /p:Configuration=$(RELEASE) /v:q /nologo
 	rmdir /S /Q tests\obj 2>NUL || exit /B 0
 	rmdir /S /Q tests\parser 2>NUL || exit /B 0
 
@@ -55,26 +54,7 @@ node: $(OUT)
 	start tests\obj\node.png
 
 $(OUT): $(YANP_OUT) $(SRCS)
-	mkdir $(WORK) 2>NUL || exit /B 0
-	vbc \
-		/nologo \
-		/out:$(OUT) \
-		/t:exe \
-		/noconfig \
-		/nostdlib \
-		/novbruntimeref \
-		/vbruntime* \
-		/optimize+ \
-		/optionstrict+ \
-		/optioninfer+ \
-		/filealign:512 \
-		/rootnamespace:Roku \
-		/define:"CONFIG=\"$(RELEASE)\",TRACE=-1,_MyType=\"Empty\",PLATFORM=\"AnyCPU\"" \
-		/r:System.dll \
-		/warnaserror+ \
-		$(VBFLAGS) \
-		\
-		/recurse:*.vb
+	msbuild Roku.sln /t:Build /p:Configuration=$(RELEASE) /v:q /nologo
 	ildasm $(OUT) /out:$(OUT).il /nobar
 
 parser: $(YANP_OUT)
