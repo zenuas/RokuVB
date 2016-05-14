@@ -64,7 +64,7 @@ Namespace Manager
             Dim arr As New RkStruct With {.Name = "Array", .Namespace = Me}
             Dim arr_t = arr.DefineGeneric("@T")
             Me.AddStruct(arr)
-            Dim chr As New RkStruct With {.Name = "Char", .Super = int16, .Namespace = Me}
+            Dim chr = Me.LoadType(GetType(Char).GetTypeInfo)
             Me.AddStruct(chr)
             Dim str = Me.LoadType(GetType(String).GetTypeInfo) 'As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
             Me.AddStruct(str)

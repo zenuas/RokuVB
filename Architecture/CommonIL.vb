@@ -91,11 +91,11 @@ Namespace Architecture
         Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
             For Each ns In root.AllNamespace
 
                 For Each ss In ns.Structs
@@ -645,7 +645,7 @@ Namespace Architecture
 
         Public Overridable Function RkArrayToCILArray(arr As IType, structs As Dictionary(Of RkStruct, TypeData)) As Type
 
-            Return GetType(List(Of )).MakeGenericType(New Type() {structs(CType(CType(arr, RkStruct).Apply(0), RkStruct)).Type})
+            Return GetType(List(Of )).MakeGenericType(New Type() {Me.RkToCILType(CType(arr, RkStruct).Apply(0), structs).Type})
         End Function
     End Class
 
