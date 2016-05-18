@@ -240,7 +240,7 @@ Namespace Compiler
                                         ElseIf Not (TypeOf parent Is PropertyNode AndAlso ref.Equals("Right")) Then
 
                                             Dim t = current.Namespace.TryLoadStruct(node_var.Name)
-                                            If t IsNot Nothing Then Return t
+                                            If t IsNot Nothing Then Return New RkLateBind With {.Value = t}
 
                                             Dim f = current.Namespace.TryLoadFunction(node_var.Name)
                                             If f IsNot Nothing Then Return f
@@ -288,11 +288,34 @@ Namespace Compiler
                                 If set_type(node_prop,
                                     Function()
 
-                                        Dim v = CType(node_prop.Left.Type, RkStruct).Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
+                                        Dim struct = CType(node_prop.Left.Type, RkStruct)
+                                        Dim v = struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
                                         If v IsNot Nothing Then Return v
 
+                                        ' method call syntax sugar
+                                        Return New RkByNameWithReceiver With {.Namespace = struct.Namespace?.TryGetNamespace(struct.Name), .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                    End Function) Then
+
+                                    node_prop.Right.Type = node_prop.Type
+                                End If
+
+                            ElseIf TypeOf node_prop.Left.Type Is RkLateBind AndAlso TypeOf CType(node_prop.Left.Type, RkLateBind).Value Is RkStruct Then
+
+                                If set_type(node_prop,
+                                    Function()
+
+                                        Dim struct = CType(CType(node_prop.Left.Type, RkLateBind).Value, RkStruct)
+                                        Dim v = struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
+                                        If v IsNot Nothing Then
+
+                                            node_prop.Left.Type = struct
+                                            Return v
+                                        End If
+
                                         ' DotNET static-function support
-                                        Return New RkByName With {.Namespace = node_prop.Left.Type.Namespace?.TryGetNamespace(node_prop.Left.Type.Name), .Name = node_prop.Right.Name}
+                                        Dim n = struct.Namespace?.TryGetNamespace(struct.Name)
+                                        node_prop.Left.Type = n
+                                        Return New RkByNameWithReceiver With {.Namespace = n, .Name = node_prop.Right.Name}
                                     End Function) Then
 
                                     node_prop.Right.Type = node_prop.Type
@@ -307,7 +330,7 @@ Namespace Compiler
                                         Dim right = node_prop.Right.Name
 
                                         Dim t = left.TryGetStruct(right)
-                                        If t IsNot Nothing Then Return t
+                                        If t IsNot Nothing Then Return New RkLateBind With {.Value = t}
 
                                         Dim f = left.TryGetFunction(right)
                                         If f IsNot Nothing Then Return f
@@ -353,8 +376,15 @@ Namespace Compiler
                                 ElseIf TypeOf node_call.Expression.Type Is RkCILStruct Then
 
                                     Dim struct = CType(node_call.Expression.Type, RkCILStruct)
-                                    Dim ctor = struct.LoadConstructor(root, node_call.Arguments.Map(Function(x) x.Type).ToArray)
-                                    rk_function = New RkCILConstructor With {.Name = ctor.Name, .TypeInfo = struct.TypeInfo, .ConstructorInfo = ctor, .Return = struct}
+                                    Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
+                                    rk_function = struct.LoadConstructor(root, args)
+
+                                ElseIf TypeOf node_call.Expression.Type Is RkLateBind AndAlso TypeOf CType(node_call.Expression.Type, RkLateBind).Value Is RkCILStruct Then
+
+                                    Dim struct = CType(CType(node_call.Expression.Type, RkLateBind).Value, RkCILStruct)
+                                    Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
+                                    rk_function = struct.LoadConstructor(root, args)
+                                    node_call.Expression.Type = struct
 
                                 ElseIf TypeOf node_call.Expression Is VariableNode Then
 
@@ -364,8 +394,24 @@ Namespace Compiler
 
                                     ElseIf TypeOf node_call.Expression.Type Is RkByName Then
 
-                                        rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                        Dim args = node_call.Arguments.Map(Function(x) x.Type).ToList
+                                        If TypeOf node_call.Expression.Type Is RkByNameWithReceiver Then
+
+                                            Dim v = CType(node_call.Expression.Type, RkByNameWithReceiver)
+                                            If TypeOf v.Receiver?.Type Is RkStruct Then
+
+                                                args.Insert(0, v.Receiver.Type)
+                                                node_call.Arguments = {v.Receiver}.Join(node_call.Arguments).ToArray
+                                            End If
+                                        End If
+                                        rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, args.ToArray)
                                         node_call.Expression.Type = rk_function
+
+                                    ElseIf TypeOf node_call.Expression.Type Is RkLateBind Then
+
+                                        rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkLateBind).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                        node_call.Expression.Type = rk_function
+                                        Debug.Fail("??")
                                     End If
 
                                 ElseIf TypeOf node_call.Expression Is StructNode Then
@@ -374,8 +420,18 @@ Namespace Compiler
                                     Dim args = {node_call.Expression.Type}.ToList
                                     If node_struct.Struct.HasGeneric Then args.AddRange(node_call.Arguments.Map(Function(x) get_struct(current.Namespace, x)).ToArray)
                                     rk_function = root.LoadFunction("#Alloc", args.ToArray)
+
+                                ElseIf TypeOf node_call.Expression Is PropertyNode Then
+
+                                    Dim prop = CType(node_call.Expression, PropertyNode)
+                                    Dim args = {prop.Left.Type}.Join(node_call.Arguments.Map(Function(x) x.Type)).ToArray
+                                    rk_function = prop.Left.Type.Namespace.TryGetFunction(prop.Right.Name, args)
+
+                                    ' DotNET method-function support
+                                    If rk_function Is Nothing Then rk_function = prop.Left.Type.Namespace.TryGetNamespace(prop.Left.Type.Name)?.TryGetFunction(prop.Right.Name, args)
                                 End If
 
+                                Debug.Assert(rk_function IsNot Nothing, "function is not found")
                                 If rk_function IsNot Nothing Then
 
                                     If rk_function.HasGeneric Then

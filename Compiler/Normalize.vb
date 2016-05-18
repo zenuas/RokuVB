@@ -56,6 +56,7 @@ Namespace Compiler
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
                                     Dim call_ = CType(e, FunctionCallNode)
+                                    call_.Expression = insert_let(call_.Expression)
                                     For i = 0 To call_.Arguments.Length - 1
 
                                         call_.Arguments(i) = insert_let(call_.Arguments(i))

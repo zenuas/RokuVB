@@ -176,19 +176,14 @@ Namespace Manager
             For Each method In ti.GetMethods
 
                 Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
-                If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
+                If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self", .Value = s})
                 For Each arg In method.GetParameters
 
                     f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = Me.LoadType(CType(arg.ParameterType, TypeInfo))})
                 Next
                 If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = Me.LoadType(CType(method.ReturnType, TypeInfo))
 
-                If method.IsStatic Then
-
-                    Me.CreateNamespace(ti.Name, ns).AddFunction(f)
-                Else
-                    ns.AddFunction(f)
-                End If
+                Me.CreateNamespace(ti.Name, ns).AddFunction(f)
             Next
 
             Return s
