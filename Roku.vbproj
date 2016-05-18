@@ -66,6 +66,7 @@
     <Compile Include="Manager\RkArray.vb" />
     <Compile Include="Manager\RkByNameWithReceiver.vb" />
     <Compile Include="Manager\RkCILConstructor.vb" />
+    <Compile Include="Manager\RkCILNamespace.vb" />
     <Compile Include="Manager\RkCILStruct.vb" />
     <Compile Include="Manager\RkCILFunction.vb" />
     <Compile Include="Manager\RkLateBind.vb" />

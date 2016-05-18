@@ -172,19 +172,12 @@ Namespace Manager
             Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.TypeCache(ti) = s
             ns.AddStruct(s)
+            If ns.Namespaces.ContainsKey(ti.Name) Then
 
-            For Each method In ti.GetMethods
-
-                Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
-                If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self", .Value = s})
-                For Each arg In method.GetParameters
-
-                    f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = Me.LoadType(CType(arg.ParameterType, TypeInfo))})
-                Next
-                If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = Me.LoadType(CType(method.ReturnType, TypeInfo))
-
-                Me.CreateNamespace(ti.Name, ns).AddFunction(f)
-            Next
+                'ToDo: generics suport
+            Else
+                ns.AddNamespace(New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s})
+            End If
 
             Return s
         End Function
