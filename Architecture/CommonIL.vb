@@ -570,7 +570,13 @@ Namespace Architecture
                             Else
                                 il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
                             End If
-                            If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
+
+                            If cc.Return Is Nothing Then
+
+                                If cc.Function.Return IsNot Nothing Then il.Emit(OpCodes.Pop)
+                            Else
+                                gen_il_store(il, cc.Return)
+                            End If
                         End If
 
                     Case RkOperator.Return
