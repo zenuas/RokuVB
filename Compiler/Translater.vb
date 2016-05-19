@@ -62,6 +62,23 @@ Namespace Compiler
                             Return New RkValue With {.Type = t, .Scope = rk_func}
                         End Function
 
+                    Dim get_receiver As Func(Of IEvaluableNode, IEnumerable(Of RkValue)) =
+                        Function(e As IEvaluableNode)
+
+                            If TypeOf e Is VariableNode Then
+
+                                Return {to_value(e)}
+
+                            ElseIf TypeOf e Is PropertyNode Then
+
+                                Dim prop = CType(e, PropertyNode)
+                                Return get_receiver(prop.Left)
+                            End If
+
+                            Debug.Fail("do not convert receiver")
+                            Return Nothing
+                        End Function
+
                     Dim make_stmt =
                         Function(stmt As IEvaluableNode)
 
@@ -91,7 +108,9 @@ Namespace Compiler
 
                                         Throw New NotSupportedException
                                     Else
-                                        Return func.Function.CreateCall(to_value(func.Expression), func.Arguments.Map(Function(x) to_value(x)).ToArray)
+
+                                        Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
+                                        Return func.Function.CreateCall(to_value(func.Expression), args.ToArray)
                                     End If
                                 End If
                             Else

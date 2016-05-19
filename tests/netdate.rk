@@ -2,7 +2,19 @@ use System
 
 var d = DateTime(2016, 5, 10)
 
-System.Console.WriteLine("hello")
+DateTime(2000, 1, 1)
+d.ToString("yyyy-MM-dd")
+
+#=>05/10
+var x = d.ToString("MM/dd")
+System.Console.WriteLine(x)
+
+#=>2016/05/10
+System.Console.WriteLine(d.ToString("yyyy/MM/dd"))
+
+#=>2016/05
+var s = d.ToString
+System.Console.WriteLine(s("yyyy/MM"))
 
 ##=>2000
 #System.Console.WriteLine(d.Year)

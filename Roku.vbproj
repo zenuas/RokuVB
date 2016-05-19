@@ -64,9 +64,12 @@
     <Compile Include="Manager\IAddNamespace.vb" />
     <Compile Include="Manager\IReturnBind.vb" />
     <Compile Include="Manager\RkArray.vb" />
+    <Compile Include="Manager\RkByNameWithReceiver.vb" />
     <Compile Include="Manager\RkCILConstructor.vb" />
+    <Compile Include="Manager\RkCILNamespace.vb" />
     <Compile Include="Manager\RkCILStruct.vb" />
     <Compile Include="Manager\RkCILFunction.vb" />
+    <Compile Include="Manager\RkLateBind.vb" />
     <Compile Include="Manager\RkProperty.vb" />
     <None Include="roku.y" />
   </ItemGroup>

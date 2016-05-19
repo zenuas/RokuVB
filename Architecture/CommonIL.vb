@@ -91,11 +91,11 @@ Namespace Architecture
         Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
-            map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
+            'map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
             For Each ns In root.AllNamespace
 
                 For Each ss In ns.Structs
@@ -244,30 +244,42 @@ Namespace Architecture
                 End Sub
 
             Dim gen_il_load =
-                Sub(il As ILGenerator, index As Integer)
+                Sub(il As ILGenerator, index As Integer, ref As Boolean)
 
-                    Select Case index
+                    If ref Then
 
-                        Case 0 : il.Emit(OpCodes.Ldloc_0)
-                        Case 1 : il.Emit(OpCodes.Ldloc_1)
-                        Case 2 : il.Emit(OpCodes.Ldloc_2)
-                        Case 3 : il.Emit(OpCodes.Ldloc_3)
+                        If index >= 0 Then
 
-                        Case -1 : il.Emit(OpCodes.Ldarg_0)
-                        Case -2 : il.Emit(OpCodes.Ldarg_1)
-                        Case -3 : il.Emit(OpCodes.Ldarg_2)
-                        Case -4 : il.Emit(OpCodes.Ldarg_3)
+                            il.Emit(OpCodes.Ldloca, index)
+                        Else
 
-                        Case Else
+                            il.Emit(OpCodes.Ldarga, -(index + 1))
+                        End If
+                    Else
 
-                            If index >= 0 Then
+                        Select Case index
 
-                                il.Emit(OpCodes.Ldloc, index)
-                            Else
+                            Case 0 : il.Emit(OpCodes.Ldloc_0)
+                            Case 1 : il.Emit(OpCodes.Ldloc_1)
+                            Case 2 : il.Emit(OpCodes.Ldloc_2)
+                            Case 3 : il.Emit(OpCodes.Ldloc_3)
 
-                                il.Emit(OpCodes.Ldarg, -(index + 1))
-                            End If
-                    End Select
+                            Case -1 : il.Emit(OpCodes.Ldarg_0)
+                            Case -2 : il.Emit(OpCodes.Ldarg_1)
+                            Case -3 : il.Emit(OpCodes.Ldarg_2)
+                            Case -4 : il.Emit(OpCodes.Ldarg_3)
+
+                            Case Else
+
+                                If index >= 0 Then
+
+                                    il.Emit(OpCodes.Ldloc, index)
+                                Else
+
+                                    il.Emit(OpCodes.Ldarg, -(index + 1))
+                                End If
+                        End Select
+                    End If
                 End Sub
 
             Dim gen_il_store =
@@ -312,7 +324,7 @@ Namespace Architecture
                 Dim get_local = gen_local_store(f.Key.Arguments)
                 Me.DeclareStatement(
                     CType(f.Value, MethodBuilder).GetILGenerator,
-                    Sub(il, v)
+                    Sub(il, v, ref)
 
                         If TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous Then
 
@@ -324,20 +336,19 @@ Namespace Architecture
                             bind.Fields.Do(
                                 Sub(x)
 
-                                    gen_il_load(il, index)
+                                    gen_il_load(il, index, ref)
                                     If x.Key.Equals("f") Then
 
                                         il.Emit(OpCodes.Ldftn, Me.RkToCILFunction(CType(v.Type, RkFunction), functions, structs))
                                     Else
 
-                                        gen_il_load(il, get_local(il, New RkValue With {.Name = x.Key}))
+                                        gen_il_load(il, get_local(il, New RkValue With {.Name = x.Key}), ref)
                                     End If
                                     il.Emit(OpCodes.Stfld, x.Value)
                                 End Sub)
-                            gen_il_load(il, index)
+                            gen_il_load(il, index, ref)
                             il.Emit(OpCodes.Ldftn, bind.GetMethod("Invoke"))
                             il.Emit(OpCodes.Newobj, Me.RkFunctionToCILType(CType(v.Type, RkFunction), structs).Constructor)
-
 
                         ElseIf TypeOf v Is RkNumeric32 OrElse
                             TypeOf v Is RkString Then
@@ -347,12 +358,12 @@ Namespace Architecture
                         ElseIf TypeOf v Is RkProperty Then
 
                             Dim prop = CType(v, RkProperty)
-                            gen_il_load(il, get_local(il, prop.Receiver))
+                            gen_il_load(il, get_local(il, prop.Receiver), ref)
                             il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
 
                         ElseIf TypeOf v Is RkValue Then
 
-                            gen_il_load(il, get_local(il, v))
+                            gen_il_load(il, get_local(il, v), ref)
                         End If
                     End Sub,
                     Sub(il, v)
@@ -376,7 +387,7 @@ Namespace Architecture
                 Dim get_local = gen_local_store(New List(Of NamedValue))
                 Me.DeclareStatement(
                     CType(s.Value.Constructor, ConstructorBuilder).GetILGenerator,
-                    Sub(il, v)
+                    Sub(il, v, ref)
 
                         If TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous Then
 
@@ -390,12 +401,12 @@ Namespace Architecture
                         ElseIf TypeOf v Is RkProperty Then
 
                             Dim prop = CType(v, RkProperty)
-                            gen_il_load(il, get_local(il, prop.Receiver))
+                            gen_il_load(il, get_local(il, prop.Receiver), ref)
                             il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
 
                         ElseIf TypeOf v Is RkValue Then
 
-                            gen_il_load(il, get_local(il, v))
+                            gen_il_load(il, get_local(il, v), ref)
                         End If
                     End Sub,
                     Sub(il, v)
@@ -403,7 +414,7 @@ Namespace Architecture
                         Dim index = get_local(il, v)
                         gen_il_store(il, index)
                         il.Emit(OpCodes.Ldarg_0)
-                        gen_il_load(il, index)
+                        gen_il_load(il, index, False)
                         il.Emit(OpCodes.Stfld, s.Value.GetField(v.Name))
                     End Sub,
                     s.Key.Initializer.Body,
@@ -415,7 +426,7 @@ Namespace Architecture
 
         Public Overridable Sub DeclareStatement(
                 il As ILGenerator,
-                gen_il_load As Action(Of ILGenerator, RkValue),
+                gen_il_load As Action(Of ILGenerator, RkValue, Boolean),
                 gen_il_store As Action(Of ILGenerator, RkValue),
                 stmts As List(Of RkCode0),
                 functions As Dictionary(Of RkFunction, MethodInfo),
@@ -425,8 +436,8 @@ Namespace Architecture
             Dim gen_il_3op =
                 Sub(ope As OpCode, code As RkCode)
 
-                    gen_il_load(il, code.Left)
-                    gen_il_load(il, code.Right)
+                    gen_il_load(il, code.Left, False)
+                    gen_il_load(il, code.Right, False)
                     il.Emit(ope)
                     If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
                 End Sub
@@ -436,8 +447,8 @@ Namespace Architecture
 
                     If code.Left.Type.Name.Equals("String") Then
 
-                        gen_il_load(il, code.Left)
-                        gen_il_load(il, code.Right)
+                        gen_il_load(il, code.Left, False)
+                        gen_il_load(il, code.Right, False)
                         il.EmitCall(OpCodes.Call, GetType(System.String).GetMethod("Concat", {GetType(String), GetType(String)}), {GetType(String), GetType(String)})
                         If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
                     Else
@@ -462,7 +473,7 @@ Namespace Architecture
                     If TypeOf bind.Return Is RkProperty Then
 
                         Dim prop = CType(bind.Return, RkProperty)
-                        If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver)
+                        If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver, False)
                     End If
                 End If
 
@@ -477,7 +488,7 @@ Namespace Architecture
                         Dim bind = CType(stmt, RkCode)
                         If bind.Left IsNot Nothing Then
 
-                            gen_il_load(il, bind.Left)
+                            gen_il_load(il, bind.Left, False)
                             gen_il_store(il, bind.Return)
                         End If
 
@@ -485,7 +496,7 @@ Namespace Architecture
                         Dim dot = CType(stmt, RkCode)
                         If TypeOf dot.Return.Type Is RkNamespace Then
 
-                            Debug.Fail("not yet")
+                            ' nothing
 
                         ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkByName Then
 
@@ -500,7 +511,7 @@ Namespace Architecture
                             ' nothing
                         Else
 
-                            gen_il_load(il, dot.Left)
+                            gen_il_load(il, dot.Left, False)
                             il.Emit(OpCodes.Ldfld, Me.RkToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
                             gen_il_store(il, dot.Return)
                         End If
@@ -510,21 +521,39 @@ Namespace Architecture
 
                             Dim cc = CType(stmt, RkLambdaCall)
                             Dim bind = Me.RkFunctionToCILType(cc.Function, structs)
-                            gen_il_load(il, cc.Value)
-                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
+                            gen_il_load(il, cc.Value, False)
+                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg, False))
                             il.EmitCall(OpCodes.Callvirt, bind.GetMethod("Invoke"), Nothing)
                             If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
                         Else
+
                             Dim cc = CType(stmt, RkCall)
                             cc.Function.Arguments.Do(
                                 Sub(x)
 
                                     If TypeOf x.Value Is RkStruct AndAlso CType(x.Value, RkStruct).ClosureEnvironment Then
 
-                                        gen_il_load(il, New RkValue With {.Name = x.Name, .Type = x.Value})
+                                        gen_il_load(il, New RkValue With {.Name = x.Name, .Type = x.Value}, False)
                                     End If
                                 End Sub)
-                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg))
+                            cc.Arguments.Do(
+                                Sub(arg, i)
+
+                                    Dim ref = False
+                                    If TypeOf cc.Function Is RkCILFunction Then
+
+                                        Dim f = CType(cc.Function, RkCILFunction)
+                                        If f.MethodInfo.IsStatic OrElse i > 0 Then
+
+                                            Dim p = f.MethodInfo.GetParameters(If(Not f.MethodInfo.IsStatic, i - 1, i))
+                                            If p.IsOut Then ref = True
+                                        Else
+
+                                            ref = f.MethodInfo.DeclaringType.IsValueType
+                                        End If
+                                    End If
+                                    gen_il_load(il, arg, ref)
+                                End Sub)
                             If TypeOf cc.Function Is RkCILConstructor Then
 
                                 Dim f = CType(cc.Function, RkCILConstructor)
@@ -541,11 +570,17 @@ Namespace Architecture
                             Else
                                 il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
                             End If
-                            If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
+
+                            If cc.Return Is Nothing Then
+
+                                If cc.Function.Return IsNot Nothing Then il.Emit(OpCodes.Pop)
+                            Else
+                                gen_il_store(il, cc.Return)
+                            End If
                         End If
 
                     Case RkOperator.Return
-                        If TypeOf stmt Is RkCode Then gen_il_load(il, CType(stmt, RkCode).Left)
+                        If TypeOf stmt Is RkCode Then gen_il_load(il, CType(stmt, RkCode).Left, False)
                         il.Emit(OpCodes.Ret)
                         found_ret = True
 
@@ -561,14 +596,14 @@ Namespace Architecture
                         For Each x In array.List
 
                             il.Emit(OpCodes.Dup)
-                            gen_il_load(il, x)
+                            gen_il_load(il, x, False)
                             il.Emit(OpCodes.Call, Me.RkArrayToCILArray(array.Type, structs).GetMethod("Add"))
                         Next
                         gen_il_store(il, alloc.Return)
 
                     Case RkOperator.If
                         Dim if_ = CType(stmt, RkIf)
-                        gen_il_load(il, if_.Condition)
+                        gen_il_load(il, if_.Condition, False)
                         il.Emit(OpCodes.Brtrue, labels(if_.Then))
                         il.Emit(OpCodes.Br, labels(if_.Else))
 
@@ -645,7 +680,7 @@ Namespace Architecture
 
         Public Overridable Function RkArrayToCILArray(arr As IType, structs As Dictionary(Of RkStruct, TypeData)) As Type
 
-            Return GetType(List(Of )).MakeGenericType(New Type() {structs(CType(CType(arr, RkStruct).Apply(0), RkStruct)).Type})
+            Return GetType(List(Of )).MakeGenericType(New Type() {Me.RkToCILType(CType(arr, RkStruct).Apply(0), structs).Type})
         End Function
     End Class
 

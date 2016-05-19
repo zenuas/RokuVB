@@ -64,7 +64,7 @@ Namespace Manager
             Dim arr As New RkStruct With {.Name = "Array", .Namespace = Me}
             Dim arr_t = arr.DefineGeneric("@T")
             Me.AddStruct(arr)
-            Dim chr As New RkStruct With {.Name = "Char", .Super = int16, .Namespace = Me}
+            Dim chr = Me.LoadType(GetType(Char).GetTypeInfo)
             Me.AddStruct(chr)
             Dim str = Me.LoadType(GetType(String).GetTypeInfo) 'As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
             Me.AddStruct(str)
@@ -172,24 +172,12 @@ Namespace Manager
             Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.TypeCache(ti) = s
             ns.AddStruct(s)
+            If ns.Namespaces.ContainsKey(ti.Name) Then
 
-            For Each method In ti.GetMethods
-
-                Dim f As New RkCILFunction With {.Namespace = ns, .Name = method.Name, .MethodInfo = method}
-                If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self"})
-                For Each arg In method.GetParameters
-
-                    f.Arguments.Add(New NamedValue With {.Name = arg.Name, .Value = Me.LoadType(CType(arg.ParameterType, TypeInfo))})
-                Next
-                If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = Me.LoadType(CType(method.ReturnType, TypeInfo))
-
-                If method.IsStatic Then
-
-                    Me.CreateNamespace(ti.Name, ns).AddFunction(f)
-                Else
-                    ns.AddFunction(f)
-                End If
-            Next
+                'ToDo: generics suport
+            Else
+                ns.AddNamespace(New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s})
+            End If
 
             Return s
         End Function
