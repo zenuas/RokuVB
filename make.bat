@@ -13,7 +13,7 @@ String.prototype.replaceAll = function (a,b) {return this.replace(new RegExp(esc
 Array.prototype.indexOf     = function (v)   {for(var i = 0; i < this.length; i++) {if(this[i] == v) {return(i);}} return(-1);};
 Array.prototype.map         = function (f)   {var xs = []; for(var i = 0; i < this.length; i++) {xs.push(f(this[i]));} return(xs);};
 
-var opt  = {print : false, just_print : false, always_make : false};
+var opt  = {print : false, just_print : false, always_make : false, cmd_opt : {}};
 var args = [];
 for(var i = 0; i < WScript.Arguments.Length; i++)
 {
@@ -21,6 +21,11 @@ for(var i = 0; i < WScript.Arguments.Length; i++)
 	if     (arg == "-p") {opt.print       = true;}
 	else if(arg == "-n") {opt.just_print  = true;}
 	else if(arg == "-B") {opt.always_make = true;}
+	else if(arg.indexOf("=") >= 0)
+	{
+		var eq = arg.indexOf("=");
+		opt.cmd_opt[arg.substring(0, eq)] = arg.substring(eq + 1);
+	}
 	else
 	{
 		args.push(arg);
@@ -52,7 +57,8 @@ function parse(makefile, env)
 			};
 		env.get_val = function (s)
 			{
-				if(s in env.$ENV) {return(env.$ENV[s]);}
+				if(s in opt.cmd_opt) {return(opt.cmd_opt[s]);}
+				if(s in env.$ENV)    {return(env.$ENV[s]);}
 				
 				var key   = "%" + s + "%";
 				var value = sh.ExpandEnvironmentStrings(key);
