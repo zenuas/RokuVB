@@ -3,7 +3,7 @@
 #
 
 PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\MSBuild\14.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
-RELEASE=Release
+RELEASE=Trace
 OUT=bin\$(RELEASE)\roku.exe
 VBFLAGS=/debug-
 
@@ -17,9 +17,9 @@ SRCS:=$(wildcard %.vb)
 RKTEST:=$(subst .rk,,$(wildcard tests\*.rk))
 RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 
-.PHONY: all clean parser parserd node
+.PHONY: all clean distclean test tests parser parserd node
 
-all: test
+all: $(OUT)
 
 clean:
 	msbuild Roku.sln /t:Clean /p:Configuration=$(RELEASE) /v:q /nologo
@@ -30,8 +30,10 @@ distclean: clean
 	del /F $(YANP_OUT) 2>NUL
 	rmdir /S /Q tests\\parser || exit /B 0
 
-test: $(RKOBJ)
-	$<
+test: clean
+	del /F bin\$(RELEASE)\coverage.txt 2>NUL
+	$(MAKE) tests
+	@xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | xargs.bat grep.bat -n -e "^ *Coverage.Case" | coverage.bat bin\$(RELEASE)\coverage.txt Coverage.Case
 
 tests: $(RKTEST)
 

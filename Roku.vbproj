@@ -57,6 +57,19 @@
   <PropertyGroup>
     <StartupObject>Sub Main</StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Trace|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Trace\</OutputPath>
+    <DocumentationFile>roku.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
@@ -142,6 +155,7 @@
     <Compile Include="Manager\RkString.vb" />
     <Compile Include="Manager\RkValue.vb" />
     <Compile Include="Util\ArrayExtension.vb" />
+    <Compile Include="Util\Coverage.vb" />
     <Compile Include="Util\Errors.vb" />
     <Compile Include="Util\Traverse.vb" />
     <Compile Include="Util\Functions.vb" />
