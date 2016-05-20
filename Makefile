@@ -17,7 +17,7 @@ SRCS:=$(wildcard %.vb)
 RKTEST:=$(subst .rk,,$(wildcard tests\*.rk))
 RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(wildcard tests\*.rk)))
 
-.PHONY: all clean distclean test tests parser parserd node
+.PHONY: all clean distclean release test tests parser parserd node
 
 all: $(OUT)
 
@@ -29,6 +29,11 @@ clean:
 distclean: clean
 	del /F $(YANP_OUT) 2>NUL
 	rmdir /S /Q tests\\parser || exit /B 0
+
+release:
+	$(MAKE) RELEASE=Release all
+	git archive HEAD --output=Roku_$(subst /,.,$(shell cmd /c date /T)).zip
+	zip Roku_$(subst /,.,$(shell cmd /c date /T)).zip bin\Release\roku.exe
 
 test: clean
 	del /F bin\$(RELEASE)\coverage.txt 2>NUL
