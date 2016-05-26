@@ -1,0 +1,41 @@
+use System
+
+#=>false
+print_true_or_false(10 == 5)
+
+#=>true
+print_true_or_false(10 == 10)
+
+#=>true
+#=>true
+#=>false
+print_true_or_false(10 >= 10)
+print_true_or_false(10 >= 5)
+print_true_or_false(10 >= 15)
+
+#=>false
+#=>true
+#=>false
+print_true_or_false(10 > 10)
+print_true_or_false(10 > 5)
+print_true_or_false(10 > 15)
+
+#=>true
+#=>false
+#=>true
+print_true_or_false(10 <= 10)
+print_true_or_false(10 <= 5)
+print_true_or_false(10 <= 15)
+
+#=>false
+#=>false
+#=>true
+print_true_or_false(10 < 10)
+print_true_or_false(10 < 5)
+print_true_or_false(10 < 15)
+
+sub print_true_or_false(b: Boolean)
+	if b
+		print("true")
+	else
+		print("false")

@@ -442,6 +442,17 @@ Namespace Architecture
                     If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
                 End Sub
 
+            Dim gen_il_3op_not =
+                Sub(ope As OpCode, code As RkCode)
+
+                    gen_il_load(il, code.Left, False)
+                    gen_il_load(il, code.Right, False)
+                    il.Emit(ope)
+                    il.Emit(OpCodes.Ldc_I4_0)
+                    il.Emit(OpCodes.Ceq)
+                    If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
+                End Sub
+
             Dim gen_il_3ad =
                 Sub(ope As OpCode, code As RkCode)
 
@@ -483,6 +494,10 @@ Namespace Architecture
                     Case RkOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, RkCode))
                     Case RkOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, RkCode))
                     Case RkOperator.Equal : gen_il_3op(OpCodes.Ceq, CType(stmt, RkCode))
+                    Case RkOperator.Lt : gen_il_3op(OpCodes.Clt, CType(stmt, RkCode))
+                    Case RkOperator.Lte : gen_il_3op_not(OpCodes.Cgt, CType(stmt, RkCode))
+                    Case RkOperator.Gt : gen_il_3op(OpCodes.Cgt, CType(stmt, RkCode))
+                    Case RkOperator.Gte : gen_il_3op_not(OpCodes.Clt, CType(stmt, RkCode))
 
                     Case RkOperator.Bind
                         Dim bind = CType(stmt, RkCode)
