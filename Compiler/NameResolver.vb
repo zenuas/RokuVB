@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports Roku.Node
+Imports Roku.Util
 
 
 Namespace Compiler
@@ -41,12 +42,14 @@ Namespace Compiler
                             body.Scope.Add(x.Name.Name, x.Name)
                         Next
                         next_(child, body)
+                        Coverage.Case()
 
                     ElseIf TypeOf child Is StructNode Then
 
                         Dim struct = CType(child, StructNode)
                         struct.Parent = current
                         next_(child, struct)
+                        Coverage.Case()
                     Else
 
                         next_(child, current)
@@ -57,12 +60,15 @@ Namespace Compiler
 
                                 var.Scope = current
                                 If TypeOf current IsNot StructNode Then current.Scope.Add(var.Name, child)
+                                Coverage.Case()
                             Else
 
+                                Coverage.Case()
                                 Return resolve_var(current, var)
                             End If
 
                         End If
+                        Coverage.Case()
                     End If
 
                     Return child

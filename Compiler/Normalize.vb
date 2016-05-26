@@ -33,6 +33,7 @@ Namespace Compiler
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
                                 block.Statements.Insert(program_pointer, let_)
                                 program_pointer += 1
+                                Coverage.Case()
                                 Return var
                             End Function
 
@@ -46,12 +47,14 @@ Namespace Compiler
 
                                     expr.Left = insert_let(expr.Left)
                                     expr.Right = insert_let(expr.Right)
+                                    Coverage.Case()
                                     Return to_let(expr)
 
                                 ElseIf TypeOf e Is PropertyNode Then
 
                                     Dim prop = CType(e, PropertyNode)
                                     prop.Left = insert_let(prop.Left)
+                                    Coverage.Case()
                                     Return to_let(prop)
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
@@ -62,17 +65,12 @@ Namespace Compiler
 
                                         call_.Arguments(i) = insert_let(call_.Arguments(i))
                                     Next
+                                    Coverage.Case()
                                     Return to_let(call_)
-
-                                ElseIf TypeOf e Is LetNode Then
-
-                                    Dim let_ = CType(e, LetNode)
-                                    let_.Receiver = insert_let(let_.Receiver)
-                                    let_.Expression = insert_let(let_.Expression)
-                                    Return let_
 
                                 ElseIf TypeOf e Is VariableNode Then
 
+                                    Coverage.Case()
                                 End If
 
                                 Return e
@@ -86,11 +84,13 @@ Namespace Compiler
                                     Dim expr = CType(e, ExpressionNode)
                                     expr.Left = insert_let(expr.Left)
                                     expr.Right = insert_let(expr.Right)
+                                    'Coverage.Case()
 
                                 ElseIf TypeOf e Is PropertyNode Then
 
                                     Dim prop = CType(e, PropertyNode)
                                     prop.Left = insert_let(prop.Left)
+                                    Coverage.Case()
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
@@ -100,9 +100,11 @@ Namespace Compiler
 
                                         func.Arguments(i) = insert_let(func.Arguments(i))
                                     Next
+                                    Coverage.Case()
 
                                 ElseIf TypeOf e Is VariableNode Then
 
+                                    Coverage.Case()
                                 End If
 
                                 Return e

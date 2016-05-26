@@ -1,5 +1,5 @@
-﻿Imports System
-Imports Roku.Node
+﻿Imports Roku.Node
+Imports Roku.Util
 
 
 Namespace Compiler
@@ -26,6 +26,7 @@ Namespace Compiler
 
                                 current = current.Parent
                             Loop
+                            Coverage.Case()
                         End If
 
                         If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
@@ -42,6 +43,7 @@ Namespace Compiler
                                 scope = scope.Parent
 
                             Loop While var.Scope IsNot scope
+                            Coverage.Case()
                         End If
                     End If
 
