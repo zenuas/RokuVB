@@ -2,7 +2,8 @@ use System
 
 var d = DateTime(2016, 5, 10)
 
-DateTime(2000, 1, 1)
+if 1 == 1
+	DateTime(2000, 1, 1)
 d.ToString("yyyy-MM-dd")
 
 #=>05/10

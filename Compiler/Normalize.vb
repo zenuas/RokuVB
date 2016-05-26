@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports Roku.Node
+Imports Roku.Util
 
 
 Namespace Compiler
@@ -116,25 +117,30 @@ Namespace Compiler
                                 'expr.Left = to_flat(expr.Left)
                                 'expr.Right = to_flat(expr.Right)
                                 to_flat(v)
+                                'Coverage.Case()
 
                             ElseIf TypeOf v Is PropertyNode Then
 
                                 to_flat(v)
+                                'Coverage.Case()
 
                             ElseIf TypeOf v Is FunctionCallNode Then
 
                                 to_flat(v)
+                                Coverage.Case()
 
                             ElseIf TypeOf v Is LetNode Then
 
                                 Dim let_ = CType(v, LetNode)
                                 let_.Receiver = to_flat(let_.Receiver)
                                 let_.Expression = to_flat(let_.Expression)
+                                Coverage.Case()
 
                             ElseIf TypeOf v Is IfNode Then
 
                                 Dim if_ = CType(v, IfNode)
                                 if_.Condition = insert_let(if_.Condition)
+                                Coverage.Case()
                             End If
                             program_pointer += 1
                         Loop
