@@ -137,7 +137,11 @@ Namespace Manager
 
         Public Overridable Sub AddFunction(x As RkFunction) Implements IAddFunction.AddFunction
 
-            Dim name = x.Name
+            Me.AddFunction(x, x.Name)
+        End Sub
+
+        Public Overridable Sub AddFunction(x As RkFunction, name As String) Implements IAddFunction.AddFunction
+
             If Not Me.Functions.ContainsKey(name) Then Me.Functions.Add(name, New List(Of RkFunction))
             Me.Functions(name).Add(x)
         End Sub
@@ -184,12 +188,12 @@ Namespace Manager
                 If f.Arguments.And(Function(x, i) x.Value.Is(args(i))) Then Return f
             Next
 
-            Dim generic_match As Action(Of IType, IType, Action(Of String, IType)) =
+            Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
                 Sub(arg, p, f)
 
                     If TypeOf arg Is RkGenericEntry Then
 
-                        f(arg.Name, p)
+                        f(CType(arg, RkGenericEntry), p)
 
                     ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
 
@@ -206,18 +210,17 @@ Namespace Manager
                     generic_match(f.Arguments(i).Value, args(i),
                         Sub(atname, p)
 
-                            Dim xs_i = f.Generics.IndexOf(Function(g) g.Name.Equals(atname))
-                            If xs(xs_i) Is Nothing Then
+                            If xs(atname.ApplyIndex) Is Nothing Then
 
-                                xs(xs_i) = p
+                                xs(atname.ApplyIndex) = p
                             Else
 
-                                Debug.Assert(xs(xs_i) Is p)
+                                Debug.Assert(xs(atname.ApplyIndex) Is p)
                             End If
                         End Sub)
                 Next
 
-                Return CType(f.FixedGeneric(xs), RkFunction)
+                Return CType(f.FixedGeneric(args, xs), RkFunction)
             Next
 
             Return Nothing

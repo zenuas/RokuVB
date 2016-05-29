@@ -59,7 +59,7 @@ Namespace Manager
 
             Dim apply_map = values.ToHash_KeyDerivation(Function(x) Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
             Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
-            For Each fix In Me.Namespace.Structs(Me.Name).Where(Function(g) g.Apply.Count = apply.Length)
+            For Each fix In Me.GetBaseTypes.Where(Function(g) g.Apply.Count = apply.Length)
 
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
@@ -82,11 +82,22 @@ Namespace Manager
             Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
         End Function
 
+        Public Overridable Function HasGenericFixed() As Boolean
+
+            Return Me.Generics.Count > 0 AndAlso Me.Apply.And(Function(x) x IsNot Nothing AndAlso TypeOf x IsNot RkGenericEntry AndAlso Not x.HasGeneric)
+        End Function
+
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
             Dim x = New RkStruct With {.Name = Me.Name, .Namespace = Me.Namespace}
             x.Namespace.AddStruct(x)
             Return x
+        End Function
+
+        Public Overridable Function GetBaseTypes() As List(Of RkStruct)
+
+            If Me.Namespace.Structs.ContainsKey(Me.Name) AndAlso Me.Namespace.Structs(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Namespace.Structs(Me.Name)
+            Return Me.Namespace.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
         Public Overridable Sub AddLet(name As String, t As IType) Implements IAddLet.AddLet

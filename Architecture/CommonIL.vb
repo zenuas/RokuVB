@@ -11,42 +11,6 @@ Namespace Architecture
 
     Public Class CommonIL
 
-#Region "libs"
-
-        Public Class Export
-
-            Public Overridable Property Name As String
-            Public Overridable Property Assembly As String
-            Public Overridable Property [Class] As String
-            Public Overridable Property Method As String
-            Public Overridable Property Arguments As Type()
-        End Class
-
-        Public Overridable ReadOnly Property Exports As Export() = New Export() {
-                New Export With {.Name = "print", .Assembly = "mscorlib", .Class = "System.Console", .Method = "WriteLine", .Arguments = New Type() {GetType(String)}},
-                New Export With {.Name = "print", .Assembly = "mscorlib", .Class = "System.Console", .Method = "WriteLine", .Arguments = New Type() {GetType(Integer)}}
-            }
-
-        Public Class TypeData
-
-            Public Overridable Property Type As System.Type
-            Public Overridable Property Constructor As ConstructorInfo
-            Public Overridable Property Fields As New Dictionary(Of String, FieldInfo)
-            Public Overridable Property Methods As New Dictionary(Of String, MethodInfo)
-
-            Public Overridable Function GetField(name As String) As FieldInfo
-
-                Return If(Me.Fields.ContainsKey(name), Me.Fields(name), Me.Type.GetField(name))
-            End Function
-
-            Public Overridable Function GetMethod(name As String) As MethodInfo
-
-                Return If(Me.Methods.ContainsKey(name), Me.Methods(name), Me.Type.GetMethod(name))
-            End Function
-        End Class
-
-#End Region
-
         Public Overridable Property [Module] As ModuleBuilder
 
         Public Overridable Sub Assemble(ns As SystemLirary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
@@ -91,23 +55,15 @@ Namespace Architecture
         Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            'map(root.LoadStruct("Char")) = New TypeData With {.Type = GetType(Char), .Constructor = GetType(Char).GetConstructor(Type.EmptyTypes)}
-            'map(root.LoadStruct("Int16")) = New TypeData With {.Type = GetType(Int16), .Constructor = GetType(Int16).GetConstructor(Type.EmptyTypes)}
-            'map(root.LoadStruct("Int32")) = New TypeData With {.Type = GetType(Int32), .Constructor = GetType(Int32).GetConstructor(Type.EmptyTypes)}
-            'map(root.LoadStruct("Int64")) = New TypeData With {.Type = GetType(Int64), .Constructor = GetType(Int64).GetConstructor(Type.EmptyTypes)}
-            'map(root.LoadStruct("String")) = New TypeData With {.Type = GetType(String), .Constructor = GetType(String).GetConstructor(Type.EmptyTypes)}
-            For Each ns In root.AllNamespace
+            For Each struct In root.AllNamespace.
+                    Map(Function(x) x.Structs.Values.Flatten).
+                    Flatten.
+                    Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
-                For Each ss In ns.Structs
-
-                    For Each struct In ss.Value.Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
-
-                        map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{struct.Namespace.Name}.{struct.CreateManglingName}")}
-                    Next
-                Next
+                map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{struct.Namespace.Name}.{struct.CreateManglingName}")}
             Next
 
-            For Each v In map.Where(Function(x) TypeOf x.Value.Type Is TypeBuilder)
+            For Each v In map
 
                 Dim builder = CType(v.Value.Type, TypeBuilder)
                 v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
@@ -117,40 +73,20 @@ Namespace Architecture
                 Next
             Next
 
-            For Each p In root.Structs("Array").Where(Function(x) Not x.HasGeneric)
-
-                Dim t = Me.RkArrayToCILArray(p, map)
-                map(p) = New TypeData With {.Type = t, .Constructor = t.GetConstructor(Type.EmptyTypes)}
-            Next
-
             Return map
         End Function
 
         Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
 
             Dim map As New Dictionary(Of RkFunction, MethodInfo)
-            For Each ns In root.AllNamespace
+            For Each fs In root.AllNamespace.Map(Function(x) x.Functions.Values.Flatten)
 
-                For Each fs In ns.Functions
+                Dim fxs = fs.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
+                For Each f In fxs
 
-                    Dim fxs = fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
-                    For Each f In fxs
-
-                        Dim args = Me.RkToCILType(f.Arguments, structs)
-                        'Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                        map(f) = Me.Module.DefineGlobalMethod($"{f.Namespace.Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
-                    Next
-
-                    For Each f In fs.Value.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode Is Nothing AndAlso TypeOf x IsNot RkCILFunction)
-
-                        Dim args = Me.RkToCILType(f.Arguments, structs)
-                        Dim export = Me.Exports.Where(Function(x) f.Name.Equals(x.Name) AndAlso args.And(Function(arg, i) arg Is x.Arguments(i)))
-                        If Not export.IsNull Then
-
-                            Dim e = export.Car
-                            map(f) = System.Reflection.Assembly.Load(e.Assembly).GetType(e.Class).GetMethod(e.Method, e.Arguments)
-                        End If
-                    Next
+                    Dim args = Me.RkToCILType(f.Arguments, structs)
+                    'Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
+                    map(f) = Me.Module.DefineGlobalMethod($"{f.Namespace.Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
                 Next
             Next
 
@@ -607,12 +543,13 @@ Namespace Architecture
                     Case RkOperator.Array
                         Dim alloc = CType(stmt, RkCode)
                         Dim array = CType(alloc.Left, RkArray)
+                        Dim array_type = Me.RkToCILType(array.Type, structs)
                         il.Emit(OpCodes.Newobj, get_ctor(CType(array.Type, RkStruct)))
                         For Each x In array.List
 
                             il.Emit(OpCodes.Dup)
                             gen_il_load(il, x, False)
-                            il.Emit(OpCodes.Call, Me.RkArrayToCILArray(array.Type, structs).GetMethod("Add"))
+                            il.Emit(OpCodes.Call, array_type.GetMethod("Add"))
                         Next
                         gen_il_store(il, alloc.Return)
 
@@ -640,7 +577,17 @@ Namespace Architecture
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
-            If TypeOf r Is RkCILStruct Then Return New TypeData With {.Type = CType(r, RkCILStruct).TypeInfo, .Constructor = Nothing}
+            If TypeOf r Is RkCILStruct Then
+
+                Dim s = CType(r, RkCILStruct)
+                If s.Apply.Count > 0 Then
+
+                    Dim a = s.TypeInfo.MakeGenericType(s.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray)
+                    Return New TypeData With {.Type = a.GetTypeInfo, .Constructor = a.GetConstructor(New Type() {})}
+                Else
+                    Return New TypeData With {.Type = s.TypeInfo, .Constructor = s.TypeInfo.GetConstructor(New Type() {})}
+                End If
+            End If
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function
@@ -674,28 +621,20 @@ Namespace Architecture
 
         Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
 
-            If TypeOf f Is RkCILFunction Then Return CType(f, RkCILFunction).MethodInfo
-            If functions.ContainsKey(f) Then Return functions(f)
+            If TypeOf f Is RkCILFunction Then
 
-            If Not functions.ContainsKey(f) Then
+                If f.Apply.Count > 0 Then
 
-                ' Array => List
-                If f.Arguments.Count > 0 AndAlso f.Arguments(0).Value.Name.Equals("Array") Then
-
-                    Dim arr = Me.RkArrayToCILArray(f.Arguments(0).Value, structs)
-                    If f.Name.Equals("[]") Then
-
-                        Return arr.GetMethod("get_Item")
-                    End If
+                    Return CType(f, RkCILFunction).MethodInfo.DeclaringType.MakeGenericType(f.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray).GetMethod(f.Name)
+                    'Return CType(f, RkCILFunction).MethodInfo.MakeGenericMethod(f.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray)
+                Else
+                    Return CType(f, RkCILFunction).MethodInfo
                 End If
             End If
 
+            If functions.ContainsKey(f) Then Return functions(f)
+
             Throw New MissingMethodException
-        End Function
-
-        Public Overridable Function RkArrayToCILArray(arr As IType, structs As Dictionary(Of RkStruct, TypeData)) As Type
-
-            Return GetType(List(Of )).MakeGenericType(New Type() {Me.RkToCILType(CType(arr, RkStruct).Apply(0), structs).Type})
         End Function
     End Class
 

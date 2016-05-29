@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Reflection
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -58,30 +59,25 @@ Namespace Manager
             Dim int8 = define_num(GetType(Byte))
             Me.AddStruct(int32, "Int")
 
-            ' struct Array(@T)
-            ' struct Char : Int16
-            ' struct String : Array(Char)
-            Dim arr As New RkStruct With {.Name = "Array", .Namespace = Me}
-            Dim arr_t = arr.DefineGeneric("@T")
-            Me.AddStruct(arr)
+            ' struct Array(@T) : List(@T)
+            ' struct Char : Char
+            ' struct String : String
+            Dim arr = Me.LoadType(GetType(List(Of )).GetTypeInfo)
+            Me.AddStruct(arr, "Array")
             Dim chr = Me.LoadType(GetType(Char).GetTypeInfo)
             Me.AddStruct(chr)
-            Dim str = Me.LoadType(GetType(String).GetTypeInfo) 'As New RkStruct With {.Name = "String", .Super = arr.FixedGeneric(chr), .Namespace = Me}
+            Dim str = Me.LoadType(GetType(String).GetTypeInfo)
             Me.AddStruct(str)
 
             ' sub [](self: Array(@T), index: Int32) @T
-            Dim array_index As New RkFunction With {.Name = "[]", .Namespace = Me}
-            Dim array_index_t = array_index.DefineGeneric("@T")
-            array_index.Arguments.Add(New NamedValue With {.Name = "self", .Value = arr})
-            array_index.Arguments.Add(New NamedValue With {.Name = "index", .Value = int32})
-            array_index.Return = array_index_t
-            Me.AddFunction(array_index)
+            Dim array_index = arr.FunctionNamespace.LoadFunction("get_Item", arr, int32)
+            Me.AddFunction(array_index, "[]")
 
             ' sub print(s: @T)
-            Dim print As New RkFunction With {.Name = "print", .Namespace = Me}
-            Dim print_t = print.DefineGeneric("@T")
-            print.Arguments.Add(New NamedValue With {.Name = "s", .Value = print_t})
-            Me.AddFunction(print)
+            Dim print_str = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", str)
+            Dim print_int = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", int32)
+            Me.AddFunction(print_str, "print")
+            Me.AddFunction(print_int, "print")
 
             ' sub return(s: @T)
             Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
@@ -161,22 +157,27 @@ Namespace Manager
         Public Overridable Function LoadType(ti As TypeInfo) As RkCILStruct
 
             If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
-            'Dim type_name = ti.Name
-            'If ti.GenericTypeParameters.Length > 0 Then
-
-            '    Dim suffix = $"`{ti.GenericTypeParameters.Length}"
-            '    If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
-            'End If
 
             Dim ns = Me.CreateNamespace(ti.Namespace)
             Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.TypeCache(ti) = s
             ns.AddStruct(s)
+
+            If ti.IsGenericType Then
+
+                Dim type_name = ti.Name
+                Dim gens = ti.GenericTypeParameters
+                Dim suffix = $"`{gens.Length}"
+                If type_name.EndsWith(suffix) Then s.Name = type_name.Substring(0, type_name.Length - suffix.Length)
+                gens.Do(Sub(x) s.DefineGeneric(x.Name))
+            End If
+
             If ns.Namespaces.ContainsKey(ti.Name) Then
 
                 'ToDo: generics suport
             Else
-                ns.AddNamespace(New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s})
+                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                ns.AddNamespace(s.FunctionNamespace)
             End If
 
             Return s

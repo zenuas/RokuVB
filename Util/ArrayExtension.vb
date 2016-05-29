@@ -363,6 +363,111 @@ Namespace Util
             Return -1
         End Function
 
+        <Extension>
+        Public Function SortToList(Of T)(self As IEnumerable(Of T)) As List(Of T)
+
+            Dim xs = self.ToList
+            xs.Sort()
+            Return xs
+        End Function
+
+        <Extension>
+        Public Function SortToList(Of T)(self As IEnumerable(Of T), f As Func(Of T, T, Integer)) As List(Of T)
+
+            Dim xs = self.ToList
+            xs.Sort(New Comparison(Of T)(Function(a, b) f(a, b)))
+            Return xs
+        End Function
+
+        <Extension>
+        Public Iterator Function Unique(Of T)(self As IEnumerable(Of T)) As IEnumerable(Of T)
+
+            Dim first = True
+            Dim prev As T = Nothing
+            For Each x In self
+
+                If first OrElse Not Object.Equals(prev, x) Then
+
+                    Yield x
+                    prev = x
+                    first = False
+                End If
+            Next
+        End Function
+
+        <Extension>
+        Public Iterator Function Unique(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As IEnumerable(Of T)
+
+            Dim first = True
+            Dim prev As R = Nothing
+            For Each x In self
+
+                Dim m = f(x)
+                If first OrElse Not Object.Equals(prev, m) Then
+
+                    Yield x
+                    prev = m
+                    first = False
+                End If
+            Next
+        End Function
+
+        <Extension>
+        Public Iterator Function Unique(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As IEnumerable(Of T)
+
+            Dim i = 0
+            Dim prev As R = Nothing
+            For Each x In self
+
+                Dim m = f(x, i)
+                If i = 0 OrElse Not Object.Equals(prev, m) Then
+
+                    Yield x
+                    prev = m
+                End If
+                i += 1
+            Next
+        End Function
+
+        <Extension>
+        Public Iterator Function Flatten(Of T)(self As IEnumerable(Of IEnumerable(Of T))) As IEnumerable(Of T)
+
+            For Each xs In self
+
+                For Each x In xs
+
+                    Yield x
+                Next
+            Next
+        End Function
+
+        <Extension>
+        Public Function FoldLeft(Of T, R)(self As IEnumerable(Of T), f As Func(Of R, T, R), acc As R) As R
+
+            Dim xs = self.GetEnumerator
+            Do While xs.MoveNext
+
+                acc = f(acc, xs.Current)
+            Loop
+            Return acc
+        End Function
+
+        <Extension>
+        Public Function FoldRight(Of T, R)(xs As IEnumerable(Of T), f As Func(Of T, R, R), acc As R) As R
+
+            Dim xf As Func(Of IEnumerator(Of T), R) =
+            Function(a As IEnumerator(Of T)) As R
+
+                If a.MoveNext Then
+
+                    Return f(a.Current, xf(a))
+                Else
+                    Return acc
+                End If
+            End Function
+            Return xf(xs.GetEnumerator)
+        End Function
+
     End Module
 
 End Namespace

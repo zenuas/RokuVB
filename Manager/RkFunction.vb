@@ -48,35 +48,15 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Function FixedGenericCall(fcall As FunctionCallNode) As IType
-
-            Dim xs As New Dictionary(Of String, IType)
-            For i = 0 To Me.Arguments.Count - 1
-
-                Dim arg = Me.Arguments(i)
-                If TypeOf arg.Value IsNot RkGenericEntry Then Continue For
-
-                If xs.ContainsKey(arg.Value.Name) Then
-
-                    ' type check
-                Else
-                    xs.Add(arg.Value.Name, fcall.Arguments(i).Type)
-                End If
-            Next
-
-            Return Me.FixedGeneric(xs.Keys.Map(Function(x) New NamedValue With {.Name = x, .Value = xs(x)}).ToArray)
-
-        End Function
-
-        Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
+        Public Overridable Function FixedGeneric(args() As IType, ParamArray values() As IType) As IType
 
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
+            Return Me.FixedGeneric(args, values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
         End Function
 
-        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
+        Public Overridable Function FixedGeneric(args() As IType, ParamArray values() As NamedValue) As IType
 
             If Not Me.HasGeneric Then Return Me
 
@@ -90,15 +70,24 @@ Namespace Manager
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
             If Me.Return IsNot Nothing Then clone.Return = Me.Return.FixedGeneric(values)
-            For Each v In Me.Arguments
-
-                clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)})
-            Next
+            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = args(i)}))
             clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
             Return clone
+        End Function
+
+        <Obsolete>
+        Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
+
+            Throw New NotSupportedException
+        End Function
+
+        <Obsolete>
+        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
+
+            Throw New NotSupportedException
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
