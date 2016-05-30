@@ -43,13 +43,11 @@ test: clean
 tests: $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
-	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $@.rk > tests\obj\.stdout
-	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $@.rk > tests\obj\.stdin
+	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $@.rk > $<.testout
+	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $@.rk > $<.testin
 	@echo $<
-	-@$< < tests\obj\.stdin > $<.stdout
-	@diff tests\obj\.stdout $<.stdout | build-tools\tee $<.diff
-	@del tests\obj\.stdout 2>NUL
-	@del tests\obj\.stdin  2>NUL
+	-@$< < $<.testin > $<.stdout
+	@diff $<.testout $<.stdout | build-tools\tee $<.diff
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
