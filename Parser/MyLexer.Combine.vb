@@ -34,7 +34,7 @@ Namespace Parser
 
             If Me.next_.InputToken = SymbolTypes.EOL Then
 
-                If Me.prev_.InputToken = SymbolTypes.EOL Then
+                If Me.prev_ IsNot Nothing AndAlso Me.prev_.InputToken = SymbolTypes.EOL Then
 
                     Me.next_ = Nothing
                     Me.next_ = Me.Reader

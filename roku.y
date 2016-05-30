@@ -43,7 +43,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %%
 
-start : program_begin uses stmt END {$$ = Me.PopScope}
+start :                             {$$ = New ProgramNode}
+      | program_begin uses stmt END {$$ = Me.PopScope}
 program_begin : BEGIN               {Me.PushScope(New ProgramNode)}
 
 uses  : void
