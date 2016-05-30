@@ -100,6 +100,8 @@ Namespace Manager
 
         Public Overridable Function CreateNamespace(name As String, current As RkNamespace) As RkNamespace
 
+            If String.IsNullOrEmpty(name) Then Return current
+
             Dim make_ns =
                 Function(s As String, parent As RkNamespace)
 
