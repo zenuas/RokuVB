@@ -64,7 +64,7 @@ $(OUT): $(YANP_OUT) $(SRCS)
 
 parser: $(YANP_OUT)
 $(YANP_OUT): roku.y
-	@$(MAKE) parser
+	@$(MAKE) parserd
 
 parserd:
 	cd ..\Yanp && msbuild Yanp.sln /nologo /v:q /t:build /p:Configuration=Debug
