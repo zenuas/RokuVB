@@ -20,16 +20,23 @@ function main(args)
 {
 	var stdin = WScript.StdIn;
 	var xs    = [];
-	while(!stdin.AtEndOfStream)
+	if(stdin.AtEndOfStream)
 	{
-		xs.push(stdin.ReadLine());
-		if(opt.num == xs.length)
-		{
-			exec(args.concat(xs));
-			xs = [];
-		}
+		exec(args);
 	}
-	if(xs.length > 0) {exec(args.concat(xs));}
+	else
+	{
+		while(!stdin.AtEndOfStream)
+		{
+			xs.push(stdin.ReadLine());
+			if(opt.num == xs.length)
+			{
+				exec(args.concat(xs));
+				xs = [];
+			}
+		}
+		if(xs.length > 0) {exec(args.concat(xs));}
+	}
 	return(0);
 }
 
