@@ -1,0 +1,4 @@
+##!-l lib\TestGen.dll
+use System
+
+var x = TestGen(1, DateTime(2000, 1, 1))

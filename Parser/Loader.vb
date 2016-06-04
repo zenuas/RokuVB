@@ -107,7 +107,7 @@ Namespace Parser
 
         Public Overridable Function LoadAssembly(path As String) As Assembly
 
-            Dim asm = Assembly.Load(path)
+            Dim asm = If(File.Exists(path), Assembly.LoadFrom(path), Assembly.Load(path))
             If Not Me.Assemblies.Contains(asm) Then Me.Assemblies.Add(asm)
             Return asm
         End Function

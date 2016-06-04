@@ -10,7 +10,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Receiver}.{Me.Name}"
+            Return If(Me.Receiver Is Nothing, $"{Me.Name}", $"{Me.Receiver}.{Me.Name}")
         End Function
     End Class
 

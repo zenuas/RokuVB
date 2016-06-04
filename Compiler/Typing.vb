@@ -61,14 +61,16 @@ Namespace Compiler
                         If rk_struct.HasGeneric Then
 
                             Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = rk_struct.Namespace}
-                            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = rk_struct})
-                            node_struct.Generics.Do(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = alloc.DefineGeneric(x.Name)}))
-                            alloc.Return = rk_struct.FixedGeneric(alloc.Arguments.Range(1).ToArray)
+                            Dim gens = node_struct.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
+                            Dim self = rk_struct.FixedGeneric(gens)
+                            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
+                            gens.Do(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = x}))
+                            alloc.Return = self
                             alloc.Namespace.AddFunction(alloc)
                             Coverage.Case()
                         Else
 
-                            rk_struct.Initializer = CType(root.LoadFunction("#Alloc", rk_struct), RkNativeFunction)
+                            'rk_struct.Initializer = CType(root.LoadFunction("#Alloc", rk_struct), RkNativeFunction)
                             Coverage.Case()
                         End If
 
@@ -434,6 +436,7 @@ Namespace Compiler
                                     ElseIf TypeOf node_call.Expression.Type Is RkByName Then
 
                                         Dim args = node_call.Arguments.Map(Function(x) x.Type).ToList
+                                        Dim name = CType(node_call.Expression.Type, RkByName).Name
                                         If TypeOf node_call.Expression.Type Is RkByNameWithReceiver Then
 
                                             Dim v = CType(node_call.Expression.Type, RkByNameWithReceiver)
@@ -444,9 +447,19 @@ Namespace Compiler
                                                 Coverage.Case()
                                             End If
                                         End If
-                                        rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkByName).Name, args.ToArray)
+
+                                        Dim args_with_receiver = args.ToArray
+                                        Dim struct = node_call.Expression.Type.Namespace.TryLoadStruct(name, args_with_receiver)
+                                        If TypeOf struct Is RkCILStruct Then
+
+                                            rk_function = CType(struct, RkCILStruct).LoadConstructor(root, args_with_receiver)
+                                            Coverage.Case()
+                                        Else
+
+                                            rk_function = node_call.Expression.Type.Namespace.LoadFunction(name, args_with_receiver)
+                                            Coverage.Case()
+                                        End If
                                         node_call.Expression.Type = rk_function
-                                        Coverage.Case()
 
                                     ElseIf TypeOf node_call.Expression.Type Is RkLateBind Then
 
@@ -460,7 +473,7 @@ Namespace Compiler
                                     Dim node_struct = CType(node_call.Expression, StructNode)
                                     Dim args = {node_call.Expression.Type}.ToList
                                     If node_struct.Struct.HasGeneric Then args.AddRange(node_call.Arguments.Map(Function(x) get_struct(current.Namespace, x)).ToArray)
-                                    rk_function = root.LoadFunction("#Alloc", args.ToArray)
+                                    rk_function = node_struct.Struct.Namespace.LoadFunction("#Alloc", args.ToArray)
                                     Coverage.Case()
 
                                 ElseIf TypeOf node_call.Expression Is PropertyNode Then

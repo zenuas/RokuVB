@@ -42,8 +42,8 @@ Namespace Compiler
                     Dim to_value =
                         Function(x As IEvaluableNode)
 
-                            Debug.Assert(TypeOf x.Type IsNot RkGenericEntry)
                             Dim t = x.Type
+                            If TypeOf t Is RkGenericEntry Then Return New RkValue With {.Name = t.Name, .Type = rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex), .Scope = rk_func}
 
                             If TypeOf x Is VariableNode Then
 
@@ -285,6 +285,7 @@ Namespace Compiler
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
                         For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
+                            struct.Initializer = CType(struct.Namespace.LoadFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
                         Coverage.Case()

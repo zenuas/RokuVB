@@ -1,0 +1,11 @@
+struct Hoge(@T)
+	var i: @T
+	var hello = "hello"
+	var hello_world = hello + " world"
+
+struct A
+	var i = 0
+
+var a = Hoge(Int)
+#=>hello world
+print(a.hello_world)

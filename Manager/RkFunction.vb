@@ -48,15 +48,15 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Function FixedGeneric(args() As IType, ParamArray values() As IType) As IType
+        Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
 
             If Not Me.HasGeneric Then Throw New Exception("not generics")
             If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
 
-            Return Me.FixedGeneric(args, values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
+            Return Me.FixedGeneric(values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
         End Function
 
-        Public Overridable Function FixedGeneric(args() As IType, ParamArray values() As NamedValue) As IType
+        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
             If Not Me.HasGeneric Then Return Me
 
@@ -70,24 +70,12 @@ Namespace Manager
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
             If Me.Return IsNot Nothing Then clone.Return = Me.Return.FixedGeneric(values)
-            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = args(i)}))
+            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)}))
             clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
             Return clone
-        End Function
-
-        <Obsolete>
-        Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
-
-            Throw New NotSupportedException
-        End Function
-
-        <Obsolete>
-        Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
-
-            Throw New NotSupportedException
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

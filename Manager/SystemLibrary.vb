@@ -163,15 +163,19 @@ Namespace Manager
             Dim ns = Me.CreateNamespace(ti.Namespace)
             Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.TypeCache(ti) = s
-            ns.AddStruct(s)
 
             If ti.IsGenericType Then
 
                 Dim type_name = ti.Name
                 Dim gens = ti.GenericTypeParameters
                 Dim suffix = $"`{gens.Length}"
-                If type_name.EndsWith(suffix) Then s.Name = type_name.Substring(0, type_name.Length - suffix.Length)
+                If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
                 gens.Do(Sub(x) s.DefineGeneric(x.Name))
+
+                ns.AddStruct(s, type_name)
+            Else
+
+                ns.AddStruct(s)
             End If
 
             If ns.Namespaces.ContainsKey(ti.Name) Then

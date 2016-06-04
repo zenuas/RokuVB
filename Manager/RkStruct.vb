@@ -74,6 +74,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.StructNode = Me.StructNode
+            If Me.Initializer IsNot Nothing Then clone.Initializer = CType(Me.Initializer.FixedGeneric(values), RkNativeFunction)
             Return clone
         End Function
 

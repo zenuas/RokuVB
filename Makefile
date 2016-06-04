@@ -45,8 +45,8 @@ tests: $(RKTEST)
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $@.rk > $<.testout
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $@.rk > $<.testin
-	@echo $<
-	-@$< < $<.testin > $<.stdout
+	@build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $@.rk | build-tools\xargs echo $<
+	-@$(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $@.rk | build-tools\xargs echo $<) < $<.testin > $<.stdout
 	@diff $<.testout $<.stdout | build-tools\tee $<.diff
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)

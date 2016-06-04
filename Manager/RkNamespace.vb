@@ -220,7 +220,7 @@ Namespace Manager
                         End Sub)
                 Next
 
-                Return CType(f.FixedGeneric(args, xs), RkFunction)
+                Return CType(f.FixedGeneric(xs), RkFunction)
             Next
 
             Return Nothing
