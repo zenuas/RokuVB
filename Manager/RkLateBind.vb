@@ -62,6 +62,11 @@ Namespace Manager
 
             Return Me.Value.Is(t)
         End Function
+
+        Public Overrides Function ToString() As String
+
+            Return Me.Name
+        End Function
     End Class
 
 End Namespace
