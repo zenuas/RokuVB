@@ -452,7 +452,8 @@ Namespace Compiler
                                         Dim struct = node_call.Expression.Type.Namespace.TryLoadStruct(name, args_with_receiver)
                                         If TypeOf struct Is RkCILStruct Then
 
-                                            rk_function = CType(struct, RkCILStruct).LoadConstructor(root, args_with_receiver)
+                                            rk_function = CType(struct, RkCILStruct).LoadConstructor(root)
+                                            node_call.Arguments = New IEvaluableNode() {}
                                             Coverage.Case()
                                         Else
 

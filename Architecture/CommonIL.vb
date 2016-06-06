@@ -516,7 +516,7 @@ Namespace Architecture
                                     'il.Emit(OpCodes.Ldloca, ) <- cc.Return
                                     il.Emit(OpCodes.Initobj, f.TypeInfo)
                                 Else
-                                    il.Emit(OpCodes.Newobj, f.ConstructorInfo)
+                                    il.Emit(OpCodes.Newobj, Me.RkToCILConstructor(f, structs))
                                 End If
                             Else
                                 il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
@@ -576,6 +576,7 @@ Namespace Architecture
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            If TypeOf r Is RkLateBind Then Return Me.RkToCILType(CType(r, RkLateBind).Value, structs)
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then
 
@@ -636,6 +637,19 @@ Namespace Architecture
 
             Throw New MissingMethodException
         End Function
+
+        Public Overridable Function RkToCILConstructor(f As RkCILConstructor, structs As Dictionary(Of RkStruct, TypeData)) As ConstructorInfo
+
+            If f.ConstructorInfo.DeclaringType.IsGenericType Then
+
+                ' ToDo: parameter match
+                Dim r = Me.RkToCILType(f.Return, structs)
+                f.ConstructorInfo = r.Type.GetConstructors.FindFirst(Function(x) x.GetParameters.Length = f.ConstructorInfo.GetParameters.Length)
+            End If
+            Return f.ConstructorInfo
+        End Function
+
+
     End Class
 
 End Namespace

@@ -14,7 +14,7 @@ Namespace Manager
 
         Public Overridable Function LoadConstructor(root As SystemLirary, ParamArray args() As IType) As RkCILConstructor
 
-            Dim ci = Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
+            Dim ci = Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.Length = args.Length AndAlso ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
             If Me.ConstructorCache.ContainsKey(ci) Then Return Me.ConstructorCache(ci)
 
             Dim rk_ctor As New RkCILConstructor With {.Name = ci.Name, .TypeInfo = Me.TypeInfo, .ConstructorInfo = ci, .Return = Me}

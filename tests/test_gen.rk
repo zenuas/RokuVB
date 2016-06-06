@@ -1,4 +1,5 @@
 ##!-l lib\TestGen.dll
+##? copy tests\lib\TestGen.dll tests\obj\
 use System
 
-var x = TestGen(1, DateTime(2000, 1, 1))
+var x = TestGen(Int, DateTime)

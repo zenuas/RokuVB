@@ -55,7 +55,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Throw New NotImplementedException()
+            Return Me.Value.HasGeneric
         End Function
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
