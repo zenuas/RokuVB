@@ -198,7 +198,28 @@ Namespace Manager
                     ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
 
                         Dim struct = CType(arg, RkStruct)
-                        struct.Generics.Do(Sub(x, i) generic_match(x, CType(CType(p, RkStruct).Apply(i), RkStruct), f))
+                        struct.Generics.Do(
+                            Sub(x, i)
+
+                                Dim apply = CType(p, RkStruct).Apply(i)
+                                Dim v As RkStruct
+                                If apply Is Nothing Then
+
+                                    v = Nothing
+
+                                ElseIf TypeOf apply Is RkStruct Then
+
+                                    v = CType(apply, RkStruct)
+
+                                ElseIf TypeOf apply Is RkLateBind Then
+
+                                    v = CType(CType(apply, RkLateBind).Value, RkStruct)
+                                Else
+
+                                    Throw New Exception("unknown apply")
+                                End If
+                                generic_match(x, v, f)
+                            End Sub)
                     End If
                 End Sub
 

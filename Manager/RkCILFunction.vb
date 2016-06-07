@@ -10,7 +10,7 @@ Namespace Manager
 
         Public Overrides Function CloneGeneric() As IType
 
-            Dim x = New RkCILFunction With {.Name = Me.Name, .Namespace = Me.Namespace, .MethodInfo = Me.MethodInfo}
+            Dim x = New RkCILFunction With {.Name = Me.Name, .Namespace = Me.Namespace, .MethodInfo = Me.MethodInfo, .GenericBase = Me}
             x.Namespace.AddFunction(x)
             Return x
         End Function

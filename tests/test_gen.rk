@@ -2,4 +2,15 @@
 ##? copy tests\lib\TestGen.dll tests\obj\
 use System
 
-var x = TestGen(Int, DateTime)
+var x = TestGen(DateTime, Int)
+
+#=>2000/05/06 00:00:00
+#=>1
+#=>str
+#=>str return
+print(x.GenMethod(DateTime(2000, 5, 6), 1, "str") + " return")
+
+#=>2000/05/06 00:00:00
+#=>1
+#=>1
+print(x.NotGenMethod(DateTime(2000, 5, 6), 1))

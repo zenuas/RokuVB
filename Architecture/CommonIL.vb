@@ -626,8 +626,17 @@ Namespace Architecture
 
                 If f.Apply.Count > 0 Then
 
-                    Return CType(f, RkCILFunction).MethodInfo.DeclaringType.MakeGenericType(f.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray).GetMethod(f.Name)
-                    'Return CType(f, RkCILFunction).MethodInfo.MakeGenericMethod(f.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray)
+                    Dim method = CType(f, RkCILFunction).MethodInfo
+                    If method.IsStatic Then
+
+                        Return method.DeclaringType.MakeGenericType(f.Apply.Map(Function(x) Me.RkToCILType(x, structs).Type).ToArray).GetMethod(f.Name)
+                    Else
+
+                        ' ToDo: generic match
+                        Dim m = Me.RkToCILType(f.Arguments(0).Value, structs).Type.GetMethods.FindFirst(Function(x) x.Name.Equals(f.Name))
+                        If Not m.IsGenericMethod Then Return m
+                        Return m.MakeGenericMethod(m.GetGenericArguments.Map(Function(x) Me.RkToCILType(f.Apply(f.GenericBase.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex), structs).Type).ToArray)
+                    End If
                 Else
                     Return CType(f, RkCILFunction).MethodInfo
                 End If

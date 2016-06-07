@@ -16,6 +16,7 @@ Namespace Manager
         Public Overridable Property [Return] As IType
         Public Overridable ReadOnly Property Body As New List(Of RkCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable Property GenericBase As RkFunction = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType)
         Public Overridable Property FunctionNode As FunctionNode = Nothing
         Public Overridable Property Closure As RkStruct = Nothing
@@ -60,7 +61,8 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            Dim apply_map = values.ToHash_KeyDerivation(Function(x) Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
+            Dim apply_map As New Dictionary(Of Integer, NamedValue)
+            Me.Generics.Do(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
             Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
             For Each fix In Me.Namespace.Functions(Me.Name).Where(Function(g) g.Apply.Count = apply.Length)
 
@@ -85,7 +87,7 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkFunction With {.Name = Me.Name, .Namespace = Me.Namespace}
+            Dim x = New RkFunction With {.Name = Me.Name, .Namespace = Me.Namespace, .GenericBase = Me}
             x.Namespace.AddFunction(x)
             Return x
         End Function
