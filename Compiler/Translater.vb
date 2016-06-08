@@ -135,6 +135,8 @@ Namespace Compiler
                                 Coverage.Case()
                             End If
 
+                            If TypeOf ret.Type Is RkNativeFunction AndAlso CType(ret.Type, RkNativeFunction).Operator = RkOperator.Nop Then Return New RkCode0() {}
+
                             If stmt Is Nothing Then
 
                                 Coverage.Case()

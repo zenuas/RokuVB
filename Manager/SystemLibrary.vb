@@ -79,17 +79,24 @@ Namespace Manager
             Me.AddFunction(print_str, "print")
             Me.AddFunction(print_int, "print")
 
-            ' sub return(s: @T)
+            ' sub return(x: @T)
             Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
             Dim return_t = return_.DefineGeneric("@T")
             return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
             Me.AddFunction(return_)
 
+            ' sub #Alloc(x: @T) @T
             Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = Me}
             Dim alloc_t = alloc.DefineGeneric("@T")
             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
             alloc.Return = alloc_t
             Me.AddFunction(alloc)
+
+            ' sub #Type() @T
+            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = RkOperator.Nop, .Namespace = Me}
+            Dim type_t = type.DefineGeneric("@T")
+            type.Return = type_t
+            Me.AddFunction(type)
 
         End Sub
 

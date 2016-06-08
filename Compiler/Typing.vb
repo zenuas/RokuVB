@@ -382,6 +382,7 @@ Namespace Compiler
                                 node_prop.Left.Type Is Nothing Then
 
                                 ' nothing
+                                set_type(node_prop, Function() New RkByNameWithReceiver With {.Namespace = Nothing, .Name = node_prop.Right.Name, .Receiver = node_prop.Left})
                                 Coverage.Case()
                             Else
 
@@ -435,20 +436,30 @@ Namespace Compiler
 
                                     ElseIf TypeOf node_call.Expression.Type Is RkByName Then
 
-                                        Dim args = node_call.Arguments.Map(Function(x) x.Type).ToList
+                                        Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
+                                        Dim receiver As IEvaluableNode = Nothing
                                         Dim name = CType(node_call.Expression.Type, RkByName).Name
                                         If TypeOf node_call.Expression.Type Is RkByNameWithReceiver Then
 
                                             Dim v = CType(node_call.Expression.Type, RkByNameWithReceiver)
                                             If TypeOf v.Receiver?.Type Is RkStruct Then
 
-                                                args.Insert(0, v.Receiver.Type)
-                                                node_call.Arguments = {v.Receiver}.Join(node_call.Arguments).ToArray
+                                                receiver = v.Receiver
+                                                'args.Insert(0, v.Receiver.Type)
+                                                'node_call.Arguments = {v.Receiver}.Join(node_call.Arguments).ToArray
                                                 Coverage.Case()
+
+                                            ElseIf v.Name.Equals("of") Then
+
+                                                node_call.Expression.Type = current.Namespace.TryLoadStruct(CType(v.Receiver, VariableNode).Name, args)
+                                                node_call.Arguments = New IEvaluableNode() {}
+                                                rk_function = CType(root.Functions("#Type")(0).FixedGeneric(node_call.Expression.Type), RkFunction)
+                                                Coverage.Case()
+                                                GoTo CIL_OF_FIX_
                                             End If
                                         End If
 
-                                        Dim args_with_receiver = args.ToArray
+                                        Dim args_with_receiver = If(receiver Is Nothing, args, {receiver.Type}.Join(args).ToArray)
                                         Dim struct = node_call.Expression.Type.Namespace.TryLoadStruct(name, args_with_receiver)
                                         If TypeOf struct Is RkCILStruct Then
 
@@ -457,9 +468,17 @@ Namespace Compiler
                                             Coverage.Case()
                                         Else
 
-                                            rk_function = node_call.Expression.Type.Namespace.LoadFunction(name, args_with_receiver)
+                                            rk_function = node_call.Expression.Type.Namespace.TryLoadFunction(name, args)
+
+                                            If rk_function Is Nothing AndAlso receiver IsNot Nothing Then
+
+                                                rk_function = node_call.Expression.Type.Namespace.LoadFunction(name, args_with_receiver)
+                                                node_call.Arguments = {receiver}.Join(node_call.Arguments).ToArray
+                                                Coverage.Case()
+                                            End If
                                             Coverage.Case()
                                         End If
+CIL_OF_FIX_:
                                         node_call.Expression.Type = rk_function
 
                                     ElseIf TypeOf node_call.Expression.Type Is RkLateBind Then
