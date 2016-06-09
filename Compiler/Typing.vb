@@ -479,7 +479,7 @@ Namespace Compiler
                                             Coverage.Case()
                                         End If
 CIL_OF_FIX_:
-                                        node_call.Expression.Type = rk_function
+                                        If rk_function IsNot Nothing Then node_call.Expression.Type = rk_function
 
                                     ElseIf TypeOf node_call.Expression.Type Is RkLateBind Then
 
