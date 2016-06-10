@@ -64,7 +64,7 @@ Namespace Manager
             Dim apply_map As New Dictionary(Of Integer, NamedValue)
             Me.Generics.Do(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
             Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
-            For Each fix In Me.Namespace.Functions(Me.Name).Where(Function(g) g.Apply.Count = apply.Length)
+            For Each fix In Me.GetBaseFunctions().Where(Function(g) g.Apply.Count = apply.Length)
 
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
@@ -90,6 +90,12 @@ Namespace Manager
             Dim x = New RkFunction With {.Name = Me.Name, .Namespace = Me.Namespace, .GenericBase = Me}
             x.Namespace.AddFunction(x)
             Return x
+        End Function
+
+        Public Overridable Function GetBaseFunctions() As List(Of RkFunction)
+
+            If Me.Namespace.Functions.ContainsKey(Me.Name) AndAlso Me.Namespace.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Namespace.Functions(Me.Name)
+            Return Me.Namespace.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
         Public Overridable Function CreateCall(self As RkValue, ParamArray args() As RkValue) As RkCode0()

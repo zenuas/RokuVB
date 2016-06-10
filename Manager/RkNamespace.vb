@@ -25,6 +25,7 @@ Namespace Manager
             ' -- "use System.Int"
             ' -- "use System.Math.max"
 
+            Debug.Assert(path IsNot Nothing, "loadpath is null")
             If Not Me.LoadPaths.Contains(path) Then Me.LoadPaths.Add(path)
         End Sub
 
@@ -94,7 +95,7 @@ Namespace Manager
             Return Nothing
         End Function
 
-        Public Overridable Function LoadNamespace(name As String, ParamArray args() As IType) As RkNamespace
+        Public Overridable Function LoadNamespace(name As String) As RkNamespace
 
             Dim x = Me.TryLoadNamespace(name)
             If x IsNot Nothing Then Return x
@@ -255,6 +256,13 @@ Namespace Manager
         Public Overridable Function TryGetNamespace(name As String) As RkNamespace
 
             Return Me.Namespaces.FindFirstOrNull(Function(x) x.Key.Equals(name)).Value
+        End Function
+
+        Public Overridable Function TryGetNamespace(names As IEnumerable(Of String)) As RkNamespace
+
+            If names.IsNull Then Return Me
+            Dim first = names.First
+            Return Me.TryGetNamespace(first)?.TryGetNamespace(names.Cdr)
         End Function
 
         'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T

@@ -1,0 +1,11 @@
+##!-l System.Drawing
+use System.Drawing
+
+var p = Point(10, 20)
+
+#=>10
+print(p.X())
+
+#=>15
+p.X(15)
+print(p.X())

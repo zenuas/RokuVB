@@ -11,6 +11,7 @@ Namespace Node
 
         Public Overridable Property [Alias] As String = ""
         Public Overridable Property [Namespace] As IEvaluableNode
+        Public Overridable Property [Module] As String
 
         Public Overridable Function GetNamespace() As String
 

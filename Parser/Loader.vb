@@ -107,9 +107,15 @@ Namespace Parser
 
         Public Overridable Function LoadAssembly(path As String) As Assembly
 
-            Dim asm = If(File.Exists(path), Assembly.LoadFrom(path), Assembly.Load(path))
+            Dim asm = If(File.Exists(path), Assembly.LoadFrom(path), Me.LoadWithPartialName(path))
             If Not Me.Assemblies.Contains(asm) Then Me.Assemblies.Add(asm)
             Return asm
+        End Function
+
+#Disable Warning BC40000
+        Public Overridable Function LoadWithPartialName(dll As String) As Assembly
+
+            Return Assembly.LoadWithPartialName(dll)
         End Function
     End Class
 

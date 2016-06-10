@@ -1,6 +1,8 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports System.Diagnostics
 Imports System.Reflection
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Manager
@@ -12,11 +14,48 @@ Namespace Manager
         Public Overridable Property BaseType As RkCILStruct
         Public Overridable Property FunctionCached As Boolean = False
 
+        Public Shared ReadOnly SpecialNames As String() = {"get_", "set_", "add_", "remove_"}
+        Public Shared ReadOnly SpecialOpNames As Tuple(Of String, String)() = {
+                Tuple.Create("op_Addition", "+"),
+                Tuple.Create("op_Subtraction", "-"),
+                Tuple.Create("op_Equality", "=="),
+                Tuple.Create("op_Inequality", "!="),
+                Tuple.Create("op_LessThan", "<"),
+                Tuple.Create("op_LessThanOrEqual", "<="),
+                Tuple.Create("op_GreaterThan", ">"),
+                Tuple.Create("op_GreaterThanOrEqual", ">=")
+            }
+
         Public Overrides Function LoadFunction(name As String, ParamArray args() As IType) As RkFunction
 
             If Not Me.FunctionCached Then
 
                 For Each method In Me.BaseType.TypeInfo.GetMethods
+
+                    Dim method_name = method.Name
+                    If method.IsSpecialName Then
+
+                        Dim prefix = SpecialNames.FindFirstOrNull(Function(x) method_name.StartsWith(x))
+                        If prefix IsNot Nothing Then
+
+                            method_name = method_name.Substring(prefix.Length)
+                        Else
+
+                            Dim op = SpecialOpNames.FindFirstOrNull(Function(x) method_name.Equals(x.Item1))
+                            If op IsNot Nothing Then
+
+                                method_name = op.Item2
+
+                            ElseIf method_name.Equals("op_Implicit") OrElse method_name.Equals("op_Explicit") Then
+
+                                ' not yet
+                                Continue For
+                            Else
+
+                                Debug.Fail("special-name unknown case")
+                            End If
+                        End If
+                    End If
 
                     Dim f As New RkCILFunction With {.Namespace = Me, .Name = method.Name, .MethodInfo = method}
                     If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self", .Value = Me.BaseType})
@@ -39,7 +78,7 @@ Namespace Manager
                     Next
                     If method.ReturnType IsNot Nothing AndAlso Not method.ReturnType.Equals(GetType(System.Void)) Then f.Return = get_type(method.ReturnType)
 
-                    Me.AddFunction(f)
+                    Me.AddFunction(f, method_name)
                 Next
 
                 Me.FunctionCached = True

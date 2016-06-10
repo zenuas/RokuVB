@@ -64,7 +64,7 @@ Public Class Main
 
             For Each use In pgm.Uses
 
-                current.AddLoadPath(root.TryGetNamespace(use.GetNamespace))
+                current.AddLoadPath(root.TryGetNamespace(use.GetNamespaceHierarchy))
             Next
             Compiler.Typing.TypeStatic(pgm, root, current)
         Next

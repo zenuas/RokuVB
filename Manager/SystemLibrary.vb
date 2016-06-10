@@ -70,7 +70,7 @@ Namespace Manager
             Me.AddStruct(str)
 
             ' sub [](self: Array(@T), index: Int32) @T
-            Dim array_index = arr.FunctionNamespace.LoadFunction("get_Item", arr, int32)
+            Dim array_index = arr.FunctionNamespace.LoadFunction("Item", arr, int32)
             Me.AddFunction(array_index, "[]")
 
             ' sub print(s: @T)
