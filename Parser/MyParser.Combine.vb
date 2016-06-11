@@ -1,4 +1,5 @@
 ﻿Imports Roku.Node
+Imports Roku.Util.ArrayExtension
 
 
 Namespace Parser
@@ -157,6 +158,20 @@ Namespace Parser
             Return f
         End Function
 
+        Protected Overridable Function CreateFunctionNode(
+                args() As DeclareNode,
+                ret As TypeNode,
+                body As BlockNode
+            ) As FunctionNode
+
+            args.Do(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
+            Dim f As New FunctionNode("") With {.Arguments = args, .Return = ret, .Body = body}
+            body.InnerScope = False
+            body.Owner = f
+            f.AppendLineNumber(body)
+            Return f
+        End Function
+
         Protected Overridable Function CreateFunctionTypeNode(
                 args() As TypeNode,
                 ret As TypeNode,
@@ -168,6 +183,14 @@ Namespace Parser
             t.Return = ret
             t.AppendLineNumber(token)
             Return t
+        End Function
+
+        Protected Overridable Function ToBlock(expr As IEvaluableNode) As BlockNode
+
+            Dim block = New BlockNode(expr.LineNumber.Value)
+            block.Statements.Add(expr)
+            block.Parent = Me.CurrentScope
+            Return block
         End Function
 
         Protected Overridable Function ToBlock(if_ As IfNode) As BlockNode

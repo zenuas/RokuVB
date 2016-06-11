@@ -179,7 +179,7 @@ Namespace Compiler
                             Return True
                         Else
 
-                            Debug.Fail("not yet")
+                            Coverage.Case()
                             Return False
                         End If
                     End Function
@@ -235,6 +235,8 @@ Namespace Compiler
                     Sub(parent, ref, child, current, isfirst, next_)
 
                         If Not isfirst Then Return
+                        If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
+
                         next_(child,
                             If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
                                 New With {.Namespace = current.Namespace, .Scope = child, .Function = If(TypeOf child Is FunctionNode, CType(child, FunctionNode), current.Function)},

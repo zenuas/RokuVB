@@ -12,12 +12,12 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %define YYNAMESPACE     Parser
 %define YYMYNAMESPACE   Parser
 
-%type<BlockNode>      block stmt
+%type<BlockNode>      block stmt lambda_func
 %type<IEvaluableNode> line
 %type<LetNode>        let
 %type<FunctionNode>   sub
-%type<DeclareNode>    decla
-%type<DeclareListNode> args argn
+%type<DeclareNode>    decla lambda_arg
+%type<DeclareListNode> args argn lambda_args lambda_argn
 %type<TypeNode>       type typex
 %type<TypeListNode>   types typen
 %type<IfNode>         if ifthen elseif
@@ -136,14 +136,15 @@ typen : type           {$$ = Me.CreateListNode($1)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args '}' ALLOW lambda_func
-lambda_func : expr
+lambda      : '{' lambda_args '}' typex ALLOW lambda_func {$$ = Me.CreateFunctionNode($2.List.ToArray, $4, $6)}
+lambda_func : expr                       {$$ = Me.ToBlock($1)}
             | block
-lambda_arg  : var
-lambda_args : void
+lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
+            | decla
+lambda_args : void                       {$$ = Me.CreateListNode(Of DeclareNode)}
             | lambda_argn extra
-lambda_argn : lambda_arg
-            | lambda_argn ',' lambda_arg
+lambda_argn : lambda_arg                 {$$ = Me.CreateListNode($1)}
+            | lambda_argn ',' lambda_arg {$1.List.Add($3) : $$ = $1}
 
 
 ########## if ##########
