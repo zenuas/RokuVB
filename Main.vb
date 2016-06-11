@@ -9,7 +9,31 @@ Imports Roku.Util.ArrayExtension
 <Assembly: AssemblyVersion("0.0.*")>
 Public Class Main
 
-    Public Shared Sub Main(args() As String)
+    Public Shared Function Main(args() As String) As Integer
+
+#If DEBUG Then
+        Run(args)
+        Return 0
+#Else
+        Try
+            Run(args)
+
+            Return 0
+
+        Catch ex As Exception
+
+            Do While ex IsNot Nothing
+
+                Console.Error.WriteLine(ex.Message)
+                ex = ex.InnerException
+            Loop
+            Return 1
+
+        End Try
+#End If
+    End Function
+
+    Public Shared Sub Run(args() As String)
 
         Dim opt As New Command.Option
         Dim xs = Command.Parser.Parse(opt, args)
@@ -30,11 +54,6 @@ Public Class Main
             Next
         End If
         Compile(loader, opt)
-
-#If DEBUG Then
-        Console.WriteLine("push any key...")
-        Console.ReadKey()
-#End If
     End Sub
 
     Public Shared Sub Compile(loader As Loader, opt As Command.Option)
