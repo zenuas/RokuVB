@@ -48,7 +48,7 @@ $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $@.rk | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
 	@echo $<
 	-@$< < $<.testin > $<.stdout
-	@diff $<.testout $<.stdout | build-tools\tee $<.diff
+	@fc $<.testout $<.stdout >$<.diff || type $<.diff
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
