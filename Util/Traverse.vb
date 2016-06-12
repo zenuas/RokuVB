@@ -32,6 +32,20 @@ Namespace Util
 
         End Function
 
+        Public Shared Iterator Function Properties(
+                x As Object,
+                Optional flag As BindingFlags = BindingFlags.FlattenHierarchy Or BindingFlags.Public Or BindingFlags.NonPublic Or BindingFlags.Instance Or BindingFlags.GetProperty
+            ) As IEnumerable(Of Tuple(Of Object, PropertyInfo))
+
+            If x Is Nothing Then Return
+
+            For Each m In x.GetType.GetProperties(flag)
+
+                Yield Tuple.Create(m.GetValue(x), m)
+            Next
+
+        End Function
+
         Public Delegate Sub NodesNext(Of T)(node As INode, user As T)
         Public Delegate Sub NodesCallback(Of T)(parent As INode, ref As String, node As INode, user As T, next_ As NodesNext(Of T))
         Public Delegate Function NodesReplaceCallback(Of T)(parent As INode, ref As String, node As INode, user As T, next_ As NodesNext(Of T)) As INode
