@@ -29,6 +29,7 @@ Namespace Node
         End Property
 
         Public Overridable Property [Function] As RkFunction
+        Public Overridable Property FixedGenericFunction As FunctionNode
     End Class
 
 End Namespace

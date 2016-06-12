@@ -165,7 +165,7 @@ Namespace Parser
             ) As FunctionNode
 
             args.Do(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
-            Dim f As New FunctionNode("") With {.Arguments = args, .Return = ret, .Body = body}
+            Dim f As New FunctionNode($"#{body.LineNumber},{body.LineColumn}") With {.Arguments = args, .Return = ret, .Body = body}
             body.InnerScope = False
             body.Owner = f
             f.AppendLineNumber(body)

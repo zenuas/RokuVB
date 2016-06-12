@@ -1,11 +1,12 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Diagnostics
+Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Util
 Imports Roku.Util.ArrayExtension
-
+Imports Roku.Util.TypeHelper
 
 Namespace Compiler
 
@@ -180,33 +181,97 @@ Namespace Compiler
                 End Function
 
             Dim get_generic =
-                    Function(name As String, scope As INode)
+                Function(name As String, scope As INode)
 
-                        If TypeOf scope Is FunctionNode Then
+                    If TypeOf scope Is FunctionNode Then
 
-                            Coverage.Case()
-                            Return CType(scope, FunctionNode).Function.Generics.FindFirst(Function(x) name.Equals(x.Name))
+                        Coverage.Case()
+                        Return CType(scope, FunctionNode).Function.Generics.FindFirst(Function(x) name.Equals(x.Name))
 
-                        ElseIf TypeOf scope Is StructNode Then
+                    ElseIf TypeOf scope Is StructNode Then
 
-                            Coverage.Case()
-                            Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
-                        End If
-                        Throw New Exception("generic not found")
-                    End Function
+                        Coverage.Case()
+                        Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
+                    End If
+                    Throw New Exception("generic not found")
+                End Function
 
             Dim get_struct =
-                    Function(current As RkNamespace, n As IEvaluableNode)
+                Function(current As RkNamespace, n As IEvaluableNode)
 
-                        If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
-                        Throw New Exception("struct not found")
-                    End Function
+                    If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
+                    Throw New Exception("struct not found")
+                End Function
 
             Dim get_closure =
-                    Function(current As IScopeNode) As RkStruct
+                Function(current As IScopeNode) As RkStruct
 
-                        Return CType(current.Owner, FunctionNode).Function.Closure
-                    End Function
+                    Return CType(current.Owner, FunctionNode).Function.Closure
+                End Function
+
+            Dim node_deep_copy =
+                Function(n As INode)
+
+                    Dim cache As New Dictionary(Of INode, INode)
+                    Dim copy As Func(Of INode, INode) =
+                        Function(v)
+
+                            If cache.ContainsKey(v) Then Return cache(v)
+                            Dim clone = v.Clone
+                            cache(v) = clone
+
+                            For Each p In Util.Traverse.Fields(clone)
+
+                                If TypeOf p.Item1 Is INode Then
+
+                                    p.Item2.SetValue(clone, copy(CType(p.Item1, INode)))
+                                Else
+
+                                    Dim t = p.Item2.FieldType
+                                    If t.IsArray AndAlso IsInterface(t.GetElementType, GetType(INode)) Then
+
+                                        Dim arr = CType(CType(p.Item1, Array).Clone, Array)
+                                        For i = 0 To arr.Length - 1
+
+                                            arr.SetValue(copy(CType(arr.GetValue(i), INode)), i)
+                                        Next
+                                        p.Item2.SetValue(clone, arr)
+
+                                    ElseIf IsGeneric(t, GetType(List(Of ))) AndAlso IsInterface(t.GenericTypeArguments(0), GetType(INode)) Then
+
+                                        Dim base = CType(p.Item1, System.Collections.IList)
+                                        Dim arr = CType(Activator.CreateInstance(GetType(List(Of )).MakeGenericType(t.GenericTypeArguments(0))), System.Collections.IList)
+                                        For i = 0 To base.Count - 1
+
+                                            arr.Add(copy(CType(base(i), INode)))
+                                        Next
+                                        p.Item2.SetValue(clone, arr)
+                                    End If
+                                End If
+                            Next
+
+                            Return clone
+                        End Function
+
+                    Return copy(n)
+                End Function
+
+            Dim function_generic_fixed_to_node =
+                Function(f As RkFunction)
+
+                    Dim base = f.GenericBase.FunctionNode
+                    Dim clone = CType(node_deep_copy(base), FunctionNode)
+
+                    For i = 0 To clone.Arguments.Length - 1
+
+                        clone.Arguments(i).Type.Type = f.Arguments(i).Value
+                    Next
+                    If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
+                    clone.Type = f
+                    f.FunctionNode = clone
+
+                    Return clone
+                End Function
 
             Do While True
 
@@ -516,6 +581,7 @@ CIL_OF_FIX_:
                                     If rk_function.HasGeneric Then
 
                                         rk_function = current.Namespace.LoadFunction(rk_function.Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                        node_call.FixedGenericFunction = function_generic_fixed_to_node(rk_function)
                                         Coverage.Case()
                                     End If
                                     node_call.Function = rk_function

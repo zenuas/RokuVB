@@ -302,7 +302,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-                        If node_call.Function.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Body.Statements)
+                        If node_call.Function?.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Body.Statements)
                         Coverage.Case()
 
                     End If

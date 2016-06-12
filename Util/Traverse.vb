@@ -175,6 +175,7 @@ Namespace Util
 
                                 f($"[{i}]", x.Arguments(i))
                             Next
+                            f($"FixedGenericFunction", x.FixedGenericFunction)
 
                         Case TypeOf node_ Is DeclareNode
 
@@ -317,6 +318,7 @@ Namespace Util
 
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), IEvaluableNode)
                             Next
+                            x.FixedGenericFunction = CType(f($"FixedGenericFunction", x.FixedGenericFunction), FunctionNode)
 
                         Case TypeOf node_ Is DeclareNode
 

@@ -9,6 +9,8 @@ Namespace Node
         Property LineNumber As Integer?
         Property LineColumn As Integer?
 
+        Function Clone() As INode
+
     End Interface
 
 End Namespace

@@ -1,3 +1,4 @@
+Imports System.Reflection
 Imports Roku.Parser
 
 
@@ -22,6 +23,11 @@ Namespace Node
             Me.LineNumber = token.LineNumber
             Me.LineColumn = token.LineColumn
         End Sub
+
+        Public Overridable Function Clone() As INode Implements INode.Clone
+
+            Return CType(Me.MemberwiseClone, INode)
+        End Function
     End Class
 
 End Namespace

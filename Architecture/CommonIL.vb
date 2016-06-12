@@ -421,6 +421,10 @@ Namespace Architecture
 
                         Dim prop = CType(bind.Return, RkProperty)
                         If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver, False)
+
+                    ElseIf TypeOf bind.Return?.Type Is RkFunction AndAlso CType(bind.Return.Type, RkFunction).HasGeneric Then
+
+                        Continue For
                     End If
                 End If
 
