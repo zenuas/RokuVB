@@ -163,6 +163,51 @@ Namespace Compiler
 
         Public Shared Sub TypeInference(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
+            Dim set_func =
+                Function(node_func As FunctionNode) As RkFunction
+
+                    Dim rk_function = node_func.Function
+                    If Not rk_function.HasGeneric Then
+
+                        For Each arg In node_func.Arguments
+
+                            rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
+                        Next
+                        rk_function.Return = node_func.Return?.Type
+                    End If
+
+                    Return rk_function
+                End Function
+
+            Dim get_generic =
+                    Function(name As String, scope As INode)
+
+                        If TypeOf scope Is FunctionNode Then
+
+                            Coverage.Case()
+                            Return CType(scope, FunctionNode).Function.Generics.FindFirst(Function(x) name.Equals(x.Name))
+
+                        ElseIf TypeOf scope Is StructNode Then
+
+                            Coverage.Case()
+                            Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
+                        End If
+                        Throw New Exception("generic not found")
+                    End Function
+
+            Dim get_struct =
+                    Function(current As RkNamespace, n As IEvaluableNode)
+
+                        If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
+                        Throw New Exception("struct not found")
+                    End Function
+
+            Dim get_closure =
+                    Function(current As IScopeNode) As RkStruct
+
+                        Return CType(current.Owner, FunctionNode).Function.Closure
+                    End Function
+
             Do While True
 
                 Dim type_fix = False
@@ -182,51 +227,6 @@ Namespace Compiler
                             Coverage.Case()
                             Return False
                         End If
-                    End Function
-
-                Dim set_func =
-                    Function(node_func As FunctionNode) As RkFunction
-
-                        Dim rk_function = node_func.Function
-                        If Not rk_function.HasGeneric Then
-
-                            For Each arg In node_func.Arguments
-
-                                rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
-                            Next
-                            rk_function.Return = node_func.Return?.Type
-                        End If
-
-                        Return rk_function
-                    End Function
-
-                Dim get_generic =
-                    Function(name As String, scope As INode)
-
-                        If TypeOf scope Is FunctionNode Then
-
-                            Coverage.Case()
-                            Return CType(scope, FunctionNode).Function.Generics.FindFirst(Function(x) name.Equals(x.Name))
-
-                        ElseIf TypeOf scope Is StructNode Then
-
-                            Coverage.Case()
-                            Return CType(scope, StructNode).Struct.Generics.FindFirst(Function(x) name.Equals(x.Name))
-                        End If
-                        Throw New Exception("generic not found")
-                    End Function
-
-                Dim get_struct =
-                    Function(current As RkNamespace, n As IEvaluableNode)
-
-                        If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
-                        Throw New Exception("struct not found")
-                    End Function
-
-                Dim get_closure =
-                    Function(current As IScopeNode) As RkStruct
-
-                        Return CType(current.Owner, FunctionNode).Function.Closure
                     End Function
 
                 Util.Traverse.NodesOnce(
