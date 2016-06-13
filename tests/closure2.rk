@@ -1,0 +1,6 @@
+var a = 1
+
+sub show()
+	print(a)
+
+show()
