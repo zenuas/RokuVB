@@ -1,0 +1,14 @@
+sub f1_int(a: @T)
+	f2(a, 2)
+
+sub f1_str(a: @T)
+	f2(a, "world")
+
+sub f2(a: @T1, b: @T2)
+	print(a + b)
+
+#=>3
+f1_int(1)
+
+#=>hello world
+f1_str("hello ")

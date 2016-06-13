@@ -1,0 +1,10 @@
+
+var f2 = {a, b} => print(a + b)
+var f1_int = {a} => f2(a, 2)
+var f1_str = {a} => f2(a, "world")
+
+#=>3
+f1_int(1)
+
+#=>hello world
+f1_str("hello ")
