@@ -272,9 +272,7 @@ Namespace Compiler
                     compleat(rk_func) = True
                 End Sub
 
-            Dim ctor As New RkFunction With {.Name = ".ctor", .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}, .Namespace = ns}
-            make_func(ctor, Nothing, node.Statements)
-            ns.AddFunction(ctor)
+            make_func(node.Function, Nothing, node.Statements)
 
             Util.Traverse.NodesOnce(
                 node,

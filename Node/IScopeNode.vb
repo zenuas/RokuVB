@@ -13,7 +13,7 @@ Namespace Node
         Sub AddFunction(func As FunctionNode)
         Sub AddLet(let_ As LetNode)
 
-        Property Owner As IEvaluableNode
+        Property Owner As IBlock
         Property InnerScope As Boolean
 
     End Interface

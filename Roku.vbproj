@@ -71,6 +71,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Node\IBlock.vb" />
     <Compile Include="Util\TypeHelper.vb" />
     <None Include="App.config">
       <SubType>Designer</SubType>

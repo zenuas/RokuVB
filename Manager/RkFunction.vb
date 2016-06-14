@@ -100,7 +100,7 @@ Namespace Manager
 
         Public Overridable Function CreateCall(self As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
+            'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
             Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
             x.Function = Me
             x.Arguments.AddRange(args)
@@ -109,7 +109,7 @@ Namespace Manager
 
         Public Overridable Function CreateCallReturn(self As RkValue, return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
 
-            Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
+            'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
             Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
             x.Function = Me
             x.Return = return_

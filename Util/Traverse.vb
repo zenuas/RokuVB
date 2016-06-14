@@ -260,7 +260,7 @@ Namespace Util
                         Case TypeOf node_ Is BlockNode
 
                             Dim x = CType(node_, BlockNode)
-                            x.Owner = CType(f("Owner", x.Owner), IEvaluableNode)
+                            x.Owner = CType(f("Owner", x.Owner), IBlock)
                             For i = 0 To x.Statements.Count - 1
 
                                 x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IEvaluableNode)
@@ -274,7 +274,7 @@ Namespace Util
                         Case TypeOf node_ Is StructNode
 
                             Dim x = CType(node_, StructNode)
-                            x.Owner = CType(f("Owner", x.Owner), IEvaluableNode)
+                            x.Owner = CType(f("Owner", x.Owner), IBlock)
                             For Each key In New List(Of String)(x.Scope.Keys)
 
                                 x.Scope(key) = f($"`{key}", x.Scope(key))

@@ -21,7 +21,7 @@ Namespace Compiler
                     If closures.ContainsKey(scope) Then Return closures(scope)
 
                     Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
-                    env.Name = $"##{CType(scope.Owner, FunctionNode).Name}"
+                    env.Name = $"##{scope.Owner.Name}"
                     For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
 
                         env.AddLet(var.Key, Nothing)
@@ -29,7 +29,7 @@ Namespace Compiler
                     env.Initializer = CType(root.LoadFunction("#Alloc", env), RkNativeFunction)
                     closures.Add(scope, env)
                     root.AddStruct(env)
-                    CType(scope.Owner, FunctionNode).Function.Closure = env
+                    scope.Owner.Function.Closure = env
                     Coverage.Case()
                     Return env
                 End Function
@@ -74,6 +74,14 @@ Namespace Compiler
                             'rk_struct.Initializer = CType(root.LoadFunction("#Alloc", rk_struct), RkNativeFunction)
                             Coverage.Case()
                         End If
+
+                    ElseIf TypeOf child Is ProgramNode Then
+
+                        Dim node_pgm = CType(child, ProgramNode)
+                        Dim ctor As New RkFunction With {.Name = node_pgm.Name, .FunctionNode = New FunctionNode("") With {.Body = CType(node, BlockNode)}, .Namespace = current}
+                        node_pgm.Function = ctor
+                        node_pgm.Owner = node_pgm
+                        current.AddFunction(ctor)
 
                     ElseIf TypeOf child Is FunctionNode Then
 
@@ -206,7 +214,7 @@ Namespace Compiler
             Dim get_closure =
                 Function(current As IScopeNode) As RkStruct
 
-                    Return CType(current.Owner, FunctionNode).Function.Closure
+                    Return current.Owner.Function.Closure
                 End Function
 
             Dim node_deep_copy =
