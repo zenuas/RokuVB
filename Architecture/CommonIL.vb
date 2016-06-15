@@ -417,14 +417,12 @@ Namespace Architecture
                 If TypeOf stmt Is IReturnBind Then
 
                     Dim bind = CType(stmt, IReturnBind)
+                    If TypeOf bind.Return?.Type Is RkFunction AndAlso bind.Return.Type.HasGeneric Then Continue For
+
                     If TypeOf bind.Return Is RkProperty Then
 
                         Dim prop = CType(bind.Return, RkProperty)
                         If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver, False)
-
-                    ElseIf TypeOf bind.Return?.Type Is RkFunction AndAlso CType(bind.Return.Type, RkFunction).HasGeneric Then
-
-                        Continue For
                     End If
                 End If
 
@@ -593,6 +591,7 @@ Namespace Architecture
                     Return New TypeData With {.Type = s.TypeInfo, .Constructor = s.TypeInfo.GetConstructor(New Type() {})}
                 End If
             End If
+            If TypeOf r Is RkGenericEntry Then Return New TypeData With {.Type = GetType(System.Object), .Constructor = Nothing}
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function

@@ -272,7 +272,7 @@ Namespace Compiler
 
                     For i = 0 To clone.Arguments.Length - 1
 
-                        clone.Arguments(i).Type.Type = f.Arguments(i).Value
+                        clone.Arguments(i).Type.Type = f.Arguments(base.Bind.Count + i).Value
                     Next
                     If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
                     clone.Type = f
@@ -588,7 +588,7 @@ CIL_OF_FIX_:
 
                                     If rk_function.HasGeneric Then
 
-                                        rk_function = current.Namespace.LoadFunction(rk_function.Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                                        rk_function = CType(rk_function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
                                         node_call.FixedGenericFunction = function_generic_fixed_to_node(rk_function)
                                         Coverage.Case()
                                     End If
