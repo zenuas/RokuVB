@@ -1,3 +1,7 @@
 
 sub sub_mod_f(a: Int) Int
 	return(a * a)
+
+
+#=>25
+print(sub_mod_f(5))
