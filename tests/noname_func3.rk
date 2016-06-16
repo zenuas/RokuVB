@@ -1,0 +1,12 @@
+
+var x = 2
+var z = "world"
+var f2 = {a, b} => print(a + b)
+var f1_int = {a} => f2(a, x)
+var f1_str = {a} => f2(a, z)
+
+#=>3
+f1_int(1)
+
+#=>hello world
+f1_str("hello ")
