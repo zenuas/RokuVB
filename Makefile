@@ -43,9 +43,6 @@ test: clean
 tests: $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
-	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/" $@.rk > $<.testout
-	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/" $@.rk > $<.testin
-	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $@.rk | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
 	@echo $<
 	-@$< < $<.testin > $<.stdout
 	@fc $<.testout $<.stdout >$<.diff || type $<.diff
@@ -54,6 +51,9 @@ $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
 	-@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) $(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $< | build-tools\xargs echo)
 	-@ildasm $@ /out:$@.il /nobar
+	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/"   $< > $@.testout
+	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/"   $< > $@.testin
+	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $< | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
 
 node: $(OUT)
 	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - | dot -Tpng > obj\node.png
