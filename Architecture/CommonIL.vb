@@ -173,6 +173,10 @@ Namespace Architecture
                         Dim str = CType(v, RkString)
                         il.Emit(OpCodes.Ldstr, str.String)
 
+                    ElseIf TypeOf v Is RkNull Then
+
+                        il.Emit(OpCodes.Ldnull)
+
                     Else
 
                         Debug.Fail("miss load value")
@@ -287,7 +291,8 @@ Namespace Architecture
                             il.Emit(OpCodes.Newobj, Me.RkFunctionToCILType(CType(v.Type, RkFunction), structs).Constructor)
 
                         ElseIf TypeOf v Is RkNumeric32 OrElse
-                            TypeOf v Is RkString Then
+                            TypeOf v Is RkString OrElse
+                            TypeOf v Is RkNull Then
 
                             gen_il_loadc(il, v)
 
@@ -330,7 +335,8 @@ Namespace Architecture
                             Debug.Fail("not yet")
 
                         ElseIf TypeOf v Is RkNumeric32 OrElse
-                            TypeOf v Is RkString Then
+                            TypeOf v Is RkString OrElse
+                            TypeOf v Is RkNull Then
 
                             gen_il_loadc(il, v)
 

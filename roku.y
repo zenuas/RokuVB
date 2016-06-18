@@ -32,11 +32,10 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
 
-%left  VAR
+%left  VAR STR NULL
 %left  USE
 %left  ELSE
-%left  STR
-%token<NumericNode>  NUM
+%token<NumericNode> NUM
 %left  OPE
 %left  '.'
 %left  ALLOW
@@ -87,6 +86,7 @@ expr : var
      | expr OPE expr     {$$ = Me.CreateExpressionNode($1, $2.Name, $3)}
      | expr '[' expr ']' {$$ = Me.CreateExpressionNode($1, "[]", $3)}
      | expr '?' expr ':' expr
+     | null
 
 call : expr '(' list ')' {$$ = New FunctionCallNode($1, $3.List.ToArray)}
 
@@ -172,6 +172,7 @@ atvar : ATVAR   {$$ = Me.CreateVariableNode($1)}
 num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.String.Append($2.Name) : $$ = $1}
+null  : NULL    {$$ = New NullNode($1)}
 
 extra : void
       | ','

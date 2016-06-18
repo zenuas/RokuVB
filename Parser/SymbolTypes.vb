@@ -60,6 +60,9 @@ Namespace Parser
         ''' <summary>LET</summary>
         [LET]
 
+        ''' <summary>NULL</summary>
+        NULL
+
         ''' <summary>NUM</summary>
         NUM
 
@@ -155,6 +158,9 @@ Namespace Parser
 
         ''' <summary>namespace</summary>
         [namespace]
+
+        ''' <summary>null</summary>
+        null_1
 
         ''' <summary>num</summary>
         num_1

@@ -131,6 +131,12 @@ Namespace Compiler
                         node_str.Type = root.LoadStruct("String")
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is NullNode Then
+
+                        Dim node_null = CType(child, NullNode)
+                        node_null.Type = root.LoadType(GetType(Object).GetTypeInfo)
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is TypeFunctionNode Then
 
                         Dim node_typef = CType(child, TypeFunctionNode)

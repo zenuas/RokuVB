@@ -60,6 +60,7 @@ Namespace Compiler
                             If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
                             If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
                             If TypeOf x Is StructNode Then Return New RkValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is NullNode Then Return New RkNull With {.Type = t, .Scope = rk_func}
                             Return New RkValue With {.Type = t, .Scope = rk_func}
                         End Function
 
@@ -165,7 +166,8 @@ Namespace Compiler
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse
                                     TypeOf stmt Is StringNode OrElse
-                                    TypeOf stmt Is FunctionNode Then
+                                    TypeOf stmt Is FunctionNode OrElse
+                                    TypeOf stmt Is NullNode Then
 
                                 Coverage.Case()
                                 Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret, .Left = to_value(stmt)}}

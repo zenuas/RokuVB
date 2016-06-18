@@ -17,6 +17,7 @@ Namespace Parser
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
             Me.ReservedWord("use") = SymbolTypes.USE
+            Me.ReservedWord("null") = SymbolTypes.NULL
         End Sub
 
 #Region "reader"

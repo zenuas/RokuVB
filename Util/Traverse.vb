@@ -202,7 +202,8 @@ Namespace Util
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
-                             TypeOf node_ Is TypeNode
+                             TypeOf node_ Is TypeNode,
+                             TypeOf node_ Is NullNode
 
                             ' nothing
 
@@ -345,7 +346,8 @@ Namespace Util
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
-                             TypeOf node_ Is TypeNode
+                             TypeOf node_ Is TypeNode,
+                             TypeOf node_ Is NullNode
 
                             ' nothing
 
