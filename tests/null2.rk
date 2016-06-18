@@ -1,0 +1,8 @@
+struct Hoge
+	var a = 1
+
+sub f(hoge: Hoge?)
+	print(hoge.a)
+
+var x = null
+f(x)

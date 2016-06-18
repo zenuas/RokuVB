@@ -126,8 +126,10 @@ argn  : decla          {$$ = Me.CreateListNode($1)}
       | argn ',' decla {$1.List.Add($3) : $$ = $1}
 decla : var ':' type   {$$ = New DeclareNode($1, $3)}
 type  : var            {$$ = New TypeNode($1)}
+      | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
       | '[' type ']'   {$2.IsArray = True : $$ = $2}
       | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
+      | atvar '?'      {$$ = New TypeNode($1) With {.IsGeneric = True, .Nullable = True}}
       | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
       | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
 typex : void
