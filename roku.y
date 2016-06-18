@@ -32,14 +32,17 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
 
+%left  VAR
+%left  USE
 %left  ELSE
+%left  STR
 %token<NumericNode>  NUM
 %left  OPE
 %left  '.'
 %left  ALLOW
 
 %left  '?'
-%right '(' '['
+%right '(' '[' '{'
 
 %%
 
