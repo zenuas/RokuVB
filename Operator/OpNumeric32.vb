@@ -1,12 +1,10 @@
 Imports System
-Imports Roku.Node
-Imports Roku.Manager
 
 
-Namespace Manager
+Namespace [Operator]
 
-    Public Class RkNumeric32
-        Inherits RkValue
+    Public Class OpNumeric32
+        Inherits OpValue
 
         Public Overridable Property Numeric As UInt32
 

@@ -1,8 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
-
-
-Namespace Manager
+﻿Namespace Manager
 
     Public Interface IType
         Inherits IEntry

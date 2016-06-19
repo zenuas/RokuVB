@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Reflection
+Imports Roku.IntermediateCode
 Imports Roku.Util.ArrayExtension
 
 
@@ -23,7 +24,7 @@ Namespace Manager
             ' sub +(@T: Numeric)(@T, @T) @T
             Dim num As New RkStruct With {.Name = "Numeric", .Namespace = Me}
             Dim add_native_function =
-                Function(name As String, op As RkOperator) As RkNativeFunction
+                Function(name As String, op As InOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
                     Dim f_t = f.DefineGeneric("@T")
@@ -33,15 +34,15 @@ Namespace Manager
                     Me.AddFunction(f)
                     Return f
                 End Function
-            Dim num_plus = add_native_function("+", RkOperator.Plus)
-            Dim num_minus = add_native_function("-", RkOperator.Minus)
-            Dim num_mul = add_native_function("*", RkOperator.Mul)
-            Dim num_div = add_native_function("/", RkOperator.Div)
-            Dim num_eq = add_native_function("==", RkOperator.Equal)
-            Dim num_gt = add_native_function(">", RkOperator.Gt)
-            Dim num_gte = add_native_function(">=", RkOperator.Gte)
-            Dim num_lt = add_native_function("<", RkOperator.Lt)
-            Dim num_lte = add_native_function("<=", RkOperator.Lte)
+            Dim num_plus = add_native_function("+", InOperator.Plus)
+            Dim num_minus = add_native_function("-", InOperator.Minus)
+            Dim num_mul = add_native_function("*", InOperator.Mul)
+            Dim num_div = add_native_function("/", InOperator.Div)
+            Dim num_eq = add_native_function("==", InOperator.Equal)
+            Dim num_gt = add_native_function(">", InOperator.Gt)
+            Dim num_gte = add_native_function(">=", InOperator.Gte)
+            Dim num_lt = add_native_function("<", InOperator.Lt)
+            Dim num_lte = add_native_function("<=", InOperator.Lte)
             Me.AddStruct(num)
 
             ' struct Int32 : Numeric
@@ -86,14 +87,14 @@ Namespace Manager
             Me.AddFunction(return_)
 
             ' sub #Alloc(x: @T) @T
-            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = Me}
+            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Namespace = Me}
             Dim alloc_t = alloc.DefineGeneric("@T")
             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
             alloc.Return = alloc_t
             Me.AddFunction(alloc)
 
             ' sub #Type() @T
-            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = RkOperator.Nop, .Namespace = Me}
+            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Namespace = Me}
             Dim type_t = type.DefineGeneric("@T")
             type.Return = type_t
             Me.AddFunction(type)

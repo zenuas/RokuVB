@@ -1,6 +1,6 @@
-Namespace Manager
+Namespace IntermediateCode
 
-    Public Enum RkOperator
+    Public Enum InOperator
 
         Nop
 

@@ -2,10 +2,10 @@ Imports Roku.Node
 Imports Roku.Manager
 
 
-Namespace Manager
+Namespace [Operator]
 
-    Public Class RkNull
-        Inherits RkValue
+    Public Class OpNull
+        Inherits OpValue
 
         Public Overrides Function ToString() As String
 

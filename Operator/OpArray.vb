@@ -1,13 +1,12 @@
 ﻿Imports System.Collections.Generic
-Imports Roku.Manager
 
 
-Namespace Manager
+Namespace [Operator]
 
-    Public Class RkArray
-        Inherits RkValue
+    Public Class OpArray
+        Inherits OpValue
 
-        Public Overridable ReadOnly Property List As New List(Of RkValue)
+        Public Overridable ReadOnly Property List As New List(Of OpValue)
 
         Public Overrides Function ToString() As String
 

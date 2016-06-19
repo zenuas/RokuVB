@@ -1,12 +1,12 @@
-﻿Imports Roku.Manager
+﻿Imports Roku.Operator
 
 
 Namespace Manager
 
     Public Class RkProperty
-        Inherits RkValue
+        Inherits OpValue
 
-        Public Overridable Property Receiver As RkValue
+        Public Overridable Property Receiver As OpValue
     End Class
 
 End Namespace

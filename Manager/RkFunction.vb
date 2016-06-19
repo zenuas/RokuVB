@@ -1,7 +1,8 @@
 ﻿Imports System
 Imports System.Collections.Generic
-Imports System.Diagnostics
 Imports Roku.Node
+Imports Roku.Operator
+Imports Roku.IntermediateCode
 Imports Roku.Util.ArrayExtension
 
 
@@ -14,7 +15,7 @@ Namespace Manager
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable ReadOnly Property Arguments As New List(Of NamedValue)
         Public Overridable Property [Return] As IType
-        Public Overridable ReadOnly Property Body As New List(Of RkCode0)
+        Public Overridable ReadOnly Property Body As New List(Of InCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable Property GenericBase As RkFunction = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType)
@@ -98,23 +99,23 @@ Namespace Manager
             Return Me.Namespace.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
-        Public Overridable Function CreateCall(self As RkValue, ParamArray args() As RkValue) As RkCode0()
+        Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0()
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
-            Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
+            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
             x.Function = Me
             x.Arguments.AddRange(args)
-            Return New RkCode0() {x}
+            Return New InCode0() {x}
         End Function
 
-        Public Overridable Function CreateCallReturn(self As RkValue, return_ As RkValue, ParamArray args() As RkValue) As RkCode0()
+        Public Overridable Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0()
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
-            Dim x As RkCall = If(Me.IsAnonymous, New RkLambdaCall With {.Value = self}, New RkCall)
+            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
             x.Function = Me
             x.Return = return_
             x.Arguments.AddRange(args)
-            Return New RkCode0() {x}
+            Return New InCode0() {x}
         End Function
 
         Public Overridable Function CreateManglingName() As String

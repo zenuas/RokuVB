@@ -2,6 +2,8 @@
 Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Operator
+Imports Roku.IntermediateCode
 Imports Roku.Util
 Imports Roku.Util.ArrayExtension
 Imports System.Diagnostics
@@ -25,7 +27,7 @@ Namespace Compiler
                     'If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)
                     'If TypeOf scope Is StructNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, StructNode).Struct.Generics(i).Name) = x)
 
-                    Dim closure As RkValue = Nothing
+                    Dim closure As OpValue = Nothing
 
                     Dim get_closure =
                         Function(var As VariableNode)
@@ -36,14 +38,14 @@ Namespace Compiler
                                         CType(arg.Value, RkStruct).ClosureEnvironment AndAlso
                                         CType(arg.Value, RkStruct).Local.Or(Function(x) x.Key.Equals(var.Name))
                                     ).Value
-                            Return New RkValue With {.Name = v.Name, .Type = v, .Scope = rk_func}
+                            Return New OpValue With {.Name = v.Name, .Type = v, .Scope = rk_func}
                         End Function
 
                     Dim to_value =
                         Function(x As IEvaluableNode)
 
                             Dim t = x.Type
-                            If TypeOf t Is RkGenericEntry Then Return New RkValue With {.Name = t.Name, .Type = rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex), .Scope = rk_func}
+                            If TypeOf t Is RkGenericEntry Then Return New OpValue With {.Name = t.Name, .Type = rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex), .Scope = rk_func}
 
                             If TypeOf x Is VariableNode Then
 
@@ -53,18 +55,18 @@ Namespace Compiler
                                     Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = t, .Scope = rk_func}
                                 Else
 
-                                    Return New RkValue With {.Name = var.Name, .Type = t, .Scope = rk_func}
+                                    Return New OpValue With {.Name = var.Name, .Type = t, .Scope = rk_func}
                                 End If
                             End If
 
-                            If TypeOf x Is StringNode Then Return New RkString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is NumericNode Then Return New RkNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is StructNode Then Return New RkValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is NullNode Then Return New RkNull With {.Type = t, .Scope = rk_func}
-                            Return New RkValue With {.Type = t, .Scope = rk_func}
+                            If TypeOf x Is StringNode Then Return New OpString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is NumericNode Then Return New OpNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is StructNode Then Return New OpValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = rk_func}
+                            If TypeOf x Is NullNode Then Return New OpNull With {.Type = t, .Scope = rk_func}
+                            Return New OpValue With {.Type = t, .Scope = rk_func}
                         End Function
 
-                    Dim get_receiver As Func(Of IEvaluableNode, IEnumerable(Of RkValue)) =
+                    Dim get_receiver As Func(Of IEvaluableNode, IEnumerable(Of OpValue)) =
                         Function(e As IEvaluableNode)
 
                             If TypeOf e Is VariableNode Then
@@ -96,13 +98,13 @@ Namespace Compiler
                                     Coverage.Case()
                                     If func.Arguments.Length > 0 Then
 
-                                        Return {New RkCode With {.Operator = RkOperator.Return, .Left = to_value(func.Arguments(0))}}
+                                        Return {New InCode With {.Operator = InOperator.Return, .Left = to_value(func.Arguments(0))}}
                                     Else
-                                        Return {New RkCode0 With {.Operator = RkOperator.Return}}
+                                        Return {New InCode0 With {.Operator = InOperator.Return}}
                                     End If
                                 Else
 
-                                    If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then
+                                    If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then
 
                                         Throw New NotSupportedException
                                     Else
@@ -120,7 +122,7 @@ Namespace Compiler
                     Dim make_stmt_let =
                         Function(let_ As LetNode, stmt As IEvaluableNode)
 
-                            Dim ret As RkValue
+                            Dim ret As OpValue
                             If let_.Var.ClosureEnvironment Then
 
                                 ret = New RkProperty With {.Receiver = closure, .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
@@ -136,12 +138,12 @@ Namespace Compiler
                                 Coverage.Case()
                             End If
 
-                            If TypeOf ret.Type Is RkNativeFunction AndAlso CType(ret.Type, RkNativeFunction).Operator = RkOperator.Nop Then Return New RkCode0() {}
+                            If TypeOf ret.Type Is RkNativeFunction AndAlso CType(ret.Type, RkNativeFunction).Operator = InOperator.Nop Then Return New InCode0() {}
 
                             If stmt Is Nothing Then
 
                                 Coverage.Case()
-                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret}}
+                                Return {New InCode With {.Operator = InOperator.Bind, .Return = ret}}
 
                             ElseIf TypeOf stmt Is ExpressionNode Then
 
@@ -153,14 +155,14 @@ Namespace Compiler
 
                                 Coverage.Case()
                                 Dim prop = CType(stmt, PropertyNode)
-                                Return {New RkCode With {.Operator = RkOperator.Dot, .Return = ret, .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
+                                Return {New InCode With {.Operator = InOperator.Dot, .Return = ret, .Left = to_value(prop.Left), .Right = to_value(prop.Right)}}
 
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
                                 Coverage.Case()
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = RkOperator.Alloc Then args.Insert(0, New RkValue With {.Type = func.Type, .Scope = rk_func})
+                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
                                 Return func.Function.CreateCallReturn(to_value(func.Expression), ret, args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
@@ -170,11 +172,11 @@ Namespace Compiler
                                     TypeOf stmt Is NullNode Then
 
                                 Coverage.Case()
-                                Return {New RkCode With {.Operator = RkOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
+                                Return {New InCode With {.Operator = InOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
                             ElseIf stmt.GetType.Name.Equals("ListNode`1") Then
 
-                                Dim xs As New RkArray With {.Type = stmt.Type}
+                                Dim xs As New OpArray With {.Type = stmt.Type}
                                 Dim list = stmt.GetType.GetProperty("List").GetValue(stmt)
                                 Dim count = list.GetType.GetProperty("Count")
                                 Dim item = list.GetType.GetProperty("Item")
@@ -185,18 +187,18 @@ Namespace Compiler
                                     xs.List.Add(to_value(CType(item.GetValue(list, index), IEvaluableNode)))
                                 Next
                                 Coverage.Case()
-                                Return {New RkCode With {.Operator = RkOperator.Array, .Return = ret, .Left = xs}}
+                                Return {New InCode With {.Operator = InOperator.Array, .Return = ret, .Left = xs}}
 
                             Else
 
                                 Throw New Exception("unknown stmt")
                             End If
                         End Function
-                    Dim make_if As Func(Of IfNode, List(Of RkCode0)) = Nothing
-                    Dim make_stmts As Func(Of List(Of IEvaluableNode), List(Of RkCode0)) =
+                    Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
+                    Dim make_stmts As Func(Of List(Of IEvaluableNode), List(Of InCode0)) =
                         Function(stmts)
 
-                            Dim body As New List(Of RkCode0)
+                            Dim body As New List(Of InCode0)
                             For Each stmt In stmts
 
                                 If TypeOf stmt Is LetNode Then
@@ -220,12 +222,12 @@ Namespace Compiler
                     make_if =
                         Function(if_)
 
-                            Dim rk_if = New RkIf With {.Condition = to_value(if_.Condition)}
+                            Dim rk_if = New InIf With {.Condition = to_value(if_.Condition)}
                             Dim then_ = make_stmts(if_.Then.Statements)
-                            Dim endif_ = New RkLabel
+                            Dim endif_ = New InLabel
                             If then_.Count > 0 Then
 
-                                rk_if.Then = New RkLabel
+                                rk_if.Then = New InLabel
                                 then_.Insert(0, rk_if.Then)
                                 Coverage.Case()
                             Else
@@ -233,14 +235,14 @@ Namespace Compiler
                                 Debug.Fail("not test")
                             End If
 
-                            Dim body As New List(Of RkCode0)
+                            Dim body As New List(Of InCode0)
                             body.Add(rk_if)
                             body.AddRange(then_)
                             If if_.Else IsNot Nothing Then
 
-                                body.Add(New RkGoto With {.Label = endif_})
+                                body.Add(New InGoto With {.Label = endif_})
                                 Dim else_ = make_stmts(if_.Else.Statements)
-                                rk_if.Else = New RkLabel
+                                rk_if.Else = New InLabel
                                 else_.Insert(0, rk_if.Else)
                                 body.AddRange(else_)
                                 Coverage.Case()
@@ -255,16 +257,16 @@ Namespace Compiler
 
                     If rk_func.Closure IsNot Nothing Then
 
-                        closure = New RkValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}
-                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, closure, New RkValue With {.Type = rk_func.Closure, .Scope = rk_func}))
+                        closure = New OpValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}
+                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, closure, New OpValue With {.Type = rk_func.Closure, .Scope = rk_func}))
                         rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Do(
                             Sub(x)
 
                                 rk_func.Body.Add(
-                                    New RkCode With {
-                                        .Operator = RkOperator.Bind,
+                                    New InCode With {
+                                        .Operator = InOperator.Bind,
                                         .Return = New RkProperty With {.Name = x.Name, .Receiver = closure, .Type = x.Value, .Scope = rk_func},
-                                        .Left = New RkValue With {.Name = x.Name, .Type = x.Value, .Scope = rk_func}})
+                                        .Left = New OpValue With {.Name = x.Name, .Type = x.Value, .Scope = rk_func}})
                                 Coverage.Case()
                             End Sub)
                         Coverage.Case()

@@ -1,10 +1,9 @@
-Imports Roku.Node
 Imports Roku.Manager
 
 
-Namespace Manager
+Namespace [Operator]
 
-    Public Class RkValue
+    Public Class OpValue
 
         Public Overridable Property Scope As IType
         Public Overridable Property Name As String

@@ -72,7 +72,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Manager\RkSomeType.vb" />
-    <Compile Include="Manager\RkNull.vb" />
+    <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\IBlock.vb" />
     <Compile Include="Node\NullNode.vb" />
     <Compile Include="Util\TypeHelper.vb" />
@@ -81,8 +81,8 @@
     </None>
     <Compile Include="Architecture\TypeData.vb" />
     <Compile Include="Manager\IAddNamespace.vb" />
-    <Compile Include="Manager\IReturnBind.vb" />
-    <Compile Include="Manager\RkArray.vb" />
+    <Compile Include="IntermediateCode\IReturnBind.vb" />
+    <Compile Include="Operator\OpArray.vb" />
     <Compile Include="Manager\RkByNameWithReceiver.vb" />
     <Compile Include="Manager\RkCILConstructor.vb" />
     <Compile Include="Manager\RkCILNamespace.vb" />
@@ -107,9 +107,9 @@
     <Compile Include="Manager\IAddLet.vb" />
     <Compile Include="Manager\NamedValue.vb" />
     <Compile Include="Manager\RkByName.vb" />
-    <Compile Include="Manager\RkLambdaCall.vb" />
-    <Compile Include="Manager\RkLabel.vb" />
-    <Compile Include="Manager\RkGoto.vb" />
+    <Compile Include="IntermediateCode\InLambdaCall.vb" />
+    <Compile Include="IntermediateCode\InLabel.vb" />
+    <Compile Include="IntermediateCode\InGoto.vb" />
     <Compile Include="Manager\RkNativeFunction.vb" />
     <Compile Include="Manager\SystemLibrary.vb" />
     <Compile Include="Manager\IEntry.vb" />
@@ -152,14 +152,14 @@
     <Compile Include="Node\StringNode.vb" />
     <Compile Include="Node\TypeNode.vb" />
     <Compile Include="Node\VariableNode.vb" />
-    <Compile Include="Manager\RkCode.vb" />
-    <Compile Include="Manager\RkCall.vb" />
-    <Compile Include="Manager\RkCode0.vb" />
-    <Compile Include="Manager\RkIf.vb" />
-    <Compile Include="Manager\RkOperator.vb" />
-    <Compile Include="Manager\RkNumeric32.vb" />
-    <Compile Include="Manager\RkString.vb" />
-    <Compile Include="Manager\RkValue.vb" />
+    <Compile Include="IntermediateCode\InCode.vb" />
+    <Compile Include="IntermediateCode\InCall.vb" />
+    <Compile Include="IntermediateCode\InCode0.vb" />
+    <Compile Include="IntermediateCode\InIf.vb" />
+    <Compile Include="IntermediateCode\InOperator.vb" />
+    <Compile Include="Operator\OpNumeric32.vb" />
+    <Compile Include="Operator\OpString.vb" />
+    <Compile Include="Operator\OpValue.vb" />
     <Compile Include="Util\ArrayExtension.vb" />
     <Compile Include="Util\Coverage.vb" />
     <Compile Include="Util\Errors.vb" />

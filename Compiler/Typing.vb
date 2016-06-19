@@ -4,9 +4,11 @@ Imports System.Diagnostics
 Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.IntermediateCode
 Imports Roku.Util
 Imports Roku.Util.ArrayExtension
 Imports Roku.Util.TypeHelper
+
 
 Namespace Compiler
 
@@ -61,7 +63,7 @@ Namespace Compiler
 
                         If rk_struct.HasGeneric Then
 
-                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = RkOperator.Alloc, .Namespace = rk_struct.Namespace}
+                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Namespace = rk_struct.Namespace}
                             Dim gens = node_struct.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
                             Dim self = rk_struct.FixedGeneric(gens)
                             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
