@@ -6,6 +6,7 @@ Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util
 Imports Roku.Util.ArrayExtension
+Imports Roku.Util.TypeHelper
 Imports System.Diagnostics
 
 
@@ -174,7 +175,7 @@ Namespace Compiler
                                 Coverage.Case()
                                 Return {New InCode With {.Operator = InOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
-                            ElseIf stmt.GetType.Name.Equals("ListNode`1") Then
+                            ElseIf IsGeneric(stmt.GetType, GetType(ListNode(Of ))) Then
 
                                 Dim xs As New OpArray With {.Type = stmt.Type}
                                 Dim list = stmt.GetType.GetProperty("List").GetValue(stmt)

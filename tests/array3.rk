@@ -1,0 +1,8 @@
+
+var xs = []
+
+#=>0
+show(xs)
+
+sub show(xs: [Int])
+	print(xs.Count())

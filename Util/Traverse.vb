@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Node
+Imports Roku.Util.TypeHelper
 Imports System.Diagnostics
 
 
@@ -215,7 +216,7 @@ Namespace Util
                                 f($"`{key}", x.Namespaces(key))
                             Next
 
-                        Case node_.GetType.Name.Equals("ListNode`1")
+                        Case IsGeneric(node_.GetType, GetType(ListNode(Of )))
 
                             Dim list = node_.GetType.GetProperty("List").GetValue(node_)
                             Dim count = list.GetType.GetProperty("Count")
@@ -359,7 +360,7 @@ Namespace Util
                                 x.Namespaces(key) = CType(f($"`{key}", x.Namespaces(key)), ProgramNode)
                             Next
 
-                        Case node_.GetType.Name.Equals("ListNode`1")
+                        Case IsGeneric(node_.GetType, GetType(ListNode(Of )))
 
                             Dim list = node_.GetType.GetProperty("List").GetValue(node_)
                             Dim count = list.GetType.GetProperty("Count")

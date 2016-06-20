@@ -640,7 +640,7 @@ CIL_OF_FIX_:
                             Next
                             Coverage.Case()
 
-                        ElseIf child.GetType.Name.Equals("ListNode`1") Then
+                        ElseIf IsGeneric(child.GetType, GetType(ListNode(Of ))) Then
 
                             set_type(CType(child, IEvaluableNode),
                                 Function()
