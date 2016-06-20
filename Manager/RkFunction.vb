@@ -9,7 +9,7 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkFunction
-        Implements IType
+        Implements IType, IApply
 
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IEntry.Name
@@ -18,7 +18,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Body As New List(Of InCode0)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable Property GenericBase As RkFunction = Nothing
-        Public Overridable ReadOnly Property Apply As New List(Of IType)
+        Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property FunctionNode As FunctionNode = Nothing
         Public Overridable Property Closure As RkStruct = Nothing
 
@@ -70,10 +70,25 @@ Namespace Manager
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
 
+            Dim apply_fix =
+                Function(c As IType)
+
+                    If Not c.HasGeneric Then
+
+                        Return c
+
+                    ElseIf TypeOf c Is IApply Then
+
+                        Return c.FixedGeneric(CType(c, IApply).Apply.Map(Function(x) values.FindFirst(Function(v) v.Name.Equals(x.Name)).Value).ToArray)
+                    Else
+                        Return c.FixedGeneric(values)
+                    End If
+                End Function
+
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
-            If Me.Return IsNot Nothing Then clone.Return = Me.Return.FixedGeneric(values)
-            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = v.Value.FixedGeneric(values)}))
+            If Me.Return IsNot Nothing Then clone.Return = apply_fix(Me.Return)
+            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
             clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)

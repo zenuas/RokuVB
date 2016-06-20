@@ -1,0 +1,17 @@
+
+
+var xs = [0, 1, 2, 3, 4]
+
+#=>0
+#=>1
+#=>2
+#=>3
+#=>4
+f(xs)
+
+sub show(xs: [Int])
+	switch xs
+		[] :
+		a, as :
+			print(a)
+			show(as)

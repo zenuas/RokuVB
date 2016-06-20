@@ -71,6 +71,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Manager\IApply.vb" />
     <Compile Include="Manager\RkSomeType.vb" />
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\IBlock.vb" />

@@ -39,7 +39,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Throw New NotImplementedException()
+            Return True
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric

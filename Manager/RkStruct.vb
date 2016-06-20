@@ -7,7 +7,7 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkStruct
-        Implements IType, IAddLet
+        Implements IType, IApply, IAddLet
 
         Public Overridable Property Super As IType
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
@@ -15,7 +15,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable Property GenericBase As RkStruct = Nothing
-        Public Overridable ReadOnly Property Apply As New List(Of IType)
+        Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property StructNode As StructNode = Nothing
         Public Overridable Property Initializer As RkNativeFunction = Nothing
         Public Overridable Property ClosureEnvironment As Boolean = False

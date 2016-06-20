@@ -1,0 +1,22 @@
+
+
+var xs = [0, 1, 2]
+var ys = [3, 4]
+
+#=>0
+#=>1
+#=>2
+#=>3
+#=>4
+show(plus(xs, ys), 0)
+
+sub show(xs: [Int], index: Int)
+	if xs.Count() > index
+		print(xs[index])
+		show(xs, index + 1)
+
+sub plus(xs: [Int], ys: [Int]) [Int]
+	var zs = [Int]()
+	zs.AddRange(xs)
+	zs.AddRange(ys)
+	return(zs)
