@@ -151,7 +151,11 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeNode Then
 
                         Dim node_type = CType(child, TypeNode)
-                        If Not node_type.IsGeneric Then node_type.Type = CType(current.Namespace.LoadStruct(node_type.Name), IType)
+                        If Not node_type.IsGeneric Then
+
+                            node_type.Type = CType(current.Namespace.LoadStruct(node_type.Name), IType)
+                            If node_type.IsArray Then node_type.Type = root.LoadStruct("Array", node_type.Type)
+                        End If
                         Coverage.Case()
 
                     ElseIf TypeOf child Is DeclareNode Then
@@ -337,8 +341,9 @@ Namespace Compiler
                                             Coverage.Case()
                                             Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
                                             If v IsNot Nothing Then Return v.Type.Type
+                                        End If
 
-                                        ElseIf Not (TypeOf parent Is PropertyNode AndAlso ref.Equals("Right")) Then
+                                        If Not (TypeOf parent Is PropertyNode AndAlso ref.Equals("Right")) Then
 
                                             Coverage.Case()
                                             Dim t = current.Namespace.TryLoadStruct(node_var.Name)
