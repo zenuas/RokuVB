@@ -58,7 +58,15 @@ Namespace Manager
                     End If
 
                     Dim f As New RkCILFunction With {.Namespace = Me, .Name = method.Name, .MethodInfo = method}
-                    If Not method.IsStatic Then f.Arguments.Add(New NamedValue With {.Name = "self", .Value = Me.BaseType})
+                    If Not method.IsStatic Then
+
+                        If Me.BaseType.HasGeneric Then
+
+                            f.Arguments.Add(New NamedValue With {.Name = "self", .Value = Me.BaseType.FixedGeneric(Me.BaseType.Generics.Map(Function(x) f.DefineGeneric(x.Name)).ToArray)})
+                        Else
+                            f.Arguments.Add(New NamedValue With {.Name = "self", .Value = Me.BaseType})
+                        End If
+                    End If
 
                     Dim get_type =
                         Function(t As Type) As IType
