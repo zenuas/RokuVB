@@ -30,6 +30,20 @@ Namespace Manager
             Return x
         End Function
 
+        Public Overrides Function [Is](t As IType) As Boolean
+
+            If MyBase.Is(t) Then Return True
+
+            If TypeOf t Is RkCILStruct Then
+
+                Dim cil_t = CType(t, RkCILStruct)
+                If Me.TypeInfo.IsInterface AndAlso Util.TypeHelper.IsInterface(cil_t.TypeInfo, Me.TypeInfo) Then Return True
+                If cil_t.TypeInfo.IsInterface AndAlso Util.TypeHelper.IsInterface(Me.TypeInfo, cil_t.TypeInfo) Then Return True
+            End If
+
+            Return False
+        End Function
+
     End Class
 
 End Namespace
