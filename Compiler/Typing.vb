@@ -647,11 +647,17 @@ CIL_OF_FIX_:
 
                                     Dim list = child.GetType.GetProperty("List").GetValue(child)
                                     Dim count = list.GetType.GetProperty("Count")
-                                    If CInt(count.GetValue(list)) = 0 Then Debug.Fail("not yet")
+                                    If CInt(count.GetValue(list)) = 0 Then
 
-                                    Coverage.Case()
-                                    Dim item = list.GetType.GetProperty("Item")
-                                    Return root.LoadStruct("Array", CType(item.GetValue(list, New Object() {0}), IEvaluableNode).Type)
+                                        Coverage.Case()
+                                        Return New RkLateBind With {.Value = New RkSomeType With {.Name = "[]"}}
+                                    Else
+
+                                        Coverage.Case()
+                                        Dim item = list.GetType.GetProperty("Item")
+                                        Return root.LoadStruct("Array", CType(item.GetValue(list, New Object() {0}), IEvaluableNode).Type)
+                                    End If
+
                                 End Function)
                         End If
                     End Sub)

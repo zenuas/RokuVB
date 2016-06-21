@@ -64,7 +64,7 @@ stmt  : void        {$$ = Me.CurrentScope}
 
 line  : expr EOL
       | let  EOL
-      | sub         {Me.CurrentScope.AddFunction($1)}
+      | sub         {CType(Me.CurrentScope, IAddFunction).AddFunction($1)}
       | if
       | block
       | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}

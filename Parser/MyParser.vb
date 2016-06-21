@@ -283,7 +283,7 @@ Namespace Parser
 
                 Case -15
                     Debug.WriteLine("line : sub")
-                    Me.CurrentScope.AddFunction(CType(Me.GetValue(-1), FunctionNode))
+                    CType(Me.CurrentScope, IAddFunction).AddFunction(CType(Me.GetValue(-1), FunctionNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -16

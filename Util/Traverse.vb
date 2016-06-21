@@ -129,6 +129,11 @@ Namespace Util
                                 f($"`{key}", x.Scope(key))
                             Next
 
+                            For i = 0 To x.Functions.Count - 1
+
+                                f($"`{x.Functions(i).Name}", x.Functions(i))
+                            Next
+
                         Case TypeOf node_ Is StructNode
 
                             Dim x = CType(node_, StructNode)
@@ -271,6 +276,11 @@ Namespace Util
                             For Each key In New List(Of String)(x.Scope.Keys)
 
                                 x.Scope(key) = f($"`{key}", x.Scope(key))
+                            Next
+
+                            For i = 0 To x.Functions.Count - 1
+
+                                x.Functions(i) = CType(f($"`{x.Functions(i).Name}", x.Functions(i)), FunctionNode)
                             Next
 
                         Case TypeOf node_ Is StructNode

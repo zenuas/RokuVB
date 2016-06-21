@@ -16,11 +16,6 @@ Namespace Node
             Me.LineColumn = 0
         End Sub
 
-        Public Overridable Sub AddFunction(func As FunctionNode) Implements IScopeNode.AddFunction
-
-            Me.Scope.Add(func.Name, func)
-        End Sub
-
         Public Overridable Sub AddLet(let_ As LetNode) Implements IScopeNode.AddLet
 
             Me.Scope.Add(let_.Var.Name, let_)

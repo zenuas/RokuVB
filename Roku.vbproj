@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="Manager\IApply.vb" />
     <Compile Include="Manager\RkSomeType.vb" />
+    <Compile Include="Node\IAddFunction.vb" />
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\IBlock.vb" />
     <Compile Include="Node\NullNode.vb" />

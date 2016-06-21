@@ -9,7 +9,6 @@ Namespace Manager
 
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
-        Public Overridable Property Value As IType
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -18,7 +17,7 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Return Me.Value.Is(t)
+            Throw New NotImplementedException()
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
@@ -38,7 +37,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.Value.HasGeneric
+            Throw New NotImplementedException()
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric

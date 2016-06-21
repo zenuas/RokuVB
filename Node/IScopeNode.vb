@@ -1,5 +1,4 @@
 Imports System.Collections.Generic
-Imports Roku.Manager
 
 
 Namespace Node
@@ -8,9 +7,6 @@ Namespace Node
         Inherits INode
 
         ReadOnly Property Scope As Dictionary(Of String, INode)
-        'ReadOnly Property [Imports] As List(Of ImportEntry)
-
-        Sub AddFunction(func As FunctionNode)
         Sub AddLet(let_ As LetNode)
 
         Property Owner As IBlock

@@ -4,5 +4,11 @@ var xs = []
 #=>0
 show(xs)
 
+#=>100
+show(100)
+
 sub show(xs: [Int])
 	print(xs.Count())
+
+sub show(x: Int)
+	print(x)
