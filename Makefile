@@ -44,8 +44,7 @@ tests: $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	@echo $<
-	-@$< < $<.testin > $<.stdout
-	@fc $<.testout $<.stdout >$<.diff || type $<.diff
+	-@$< < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff)
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
