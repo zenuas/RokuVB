@@ -62,6 +62,107 @@ Namespace Manager
             Return Nothing
         End Function
 
+        Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+
+            For Each f In Me.FindCurrentFunction(name, args)
+
+                Yield f
+            Next
+
+            For Each path In Me.LoadPaths
+
+                If TypeOf path Is RkFunction Then
+
+                    Dim func = CType(path, RkFunction)
+                    If func.Name.Equals(name) Then Yield func
+
+                ElseIf TypeOf path Is RkNamespace Then
+
+                    For Each f In CType(path, RkNamespace).FindLoadFunction(name, args)
+
+                        Yield f
+                    Next
+                End If
+            Next
+
+        End Function
+
+        Public Overridable Iterator Function FindCurrentFunction(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+
+            If Me.Functions.ContainsKey(name) Then
+
+                For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
+
+                    Yield f
+                Next
+
+                For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
+
+                    Yield f
+                Next
+            End If
+
+        End Function
+
+        Public Overridable Function ApplyFunction(f As RkFunction, ParamArray args() As IType) As RkFunction
+
+            If Not f.HasGeneric Then Return f
+
+            Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
+                Sub(arg, p, gen_to_type)
+
+                    If TypeOf arg Is RkGenericEntry Then
+
+                        gen_to_type(CType(arg, RkGenericEntry), p)
+
+                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
+
+                        Dim struct = CType(arg, RkStruct)
+                        struct.Generics.Do(
+                            Sub(x, i)
+
+                                Dim apply = CType(p, RkStruct).Apply(i)
+                                Dim v As RkStruct
+                                If apply Is Nothing Then
+
+                                    v = Nothing
+
+                                ElseIf TypeOf apply Is RkStruct Then
+
+                                    v = CType(apply, RkStruct)
+
+                                ElseIf TypeOf apply Is RkLateBind Then
+
+                                    v = CType(CType(apply, RkLateBind).Value, RkStruct)
+                                Else
+
+                                    Throw New Exception("unknown apply")
+                                End If
+                                generic_match(x, v, gen_to_type)
+                            End Sub)
+                    End If
+                End Sub
+
+            Dim xs(f.Generics.Count - 1) As IType
+            For i = 0 To f.Arguments.Count - 1
+
+                generic_match(f.Arguments(i).Value, args(i),
+                    Sub(atname, p)
+
+                        If xs(atname.ApplyIndex) Is Nothing Then
+
+                            xs(atname.ApplyIndex) = p
+                        Else
+
+                            Debug.Assert(xs(atname.ApplyIndex) Is p)
+                        End If
+                    End Sub)
+            Next
+
+            Return CType(f.FixedGeneric(xs), RkFunction)
+
+        End Function
+
         Public Overridable Function LoadFunction(name As String, ParamArray args() As IType) As RkFunction
 
             Dim x = Me.TryLoadFunction(name, args)
@@ -72,27 +173,9 @@ Namespace Manager
 
         Public Overridable Function TryLoadFunction(name As String, ParamArray args() As IType) As RkFunction
 
-            If Me.Functions.ContainsKey(name) Then
-
-                Dim x = Me.TryGetFunction(name, args)
-                If x IsNot Nothing Then Return x
-            End If
-
-            For Each path In Me.LoadPaths
-
-                If TypeOf path Is RkFunction Then
-
-                    Dim func = CType(path, RkFunction)
-                    If func.Name.Equals(name) Then Return func
-
-                ElseIf TypeOf path Is RkNamespace Then
-
-                    Dim x = CType(path, RkNamespace).TryLoadFunction(name, args)
-                    If x IsNot Nothing Then Return x
-                End If
-            Next
-
-            Return Nothing
+            Dim f = Me.FindLoadFunction(name, args).Car
+            If f Is Nothing Then Return Nothing
+            Return Me.ApplyFunction(f, args)
         End Function
 
         Public Overridable Function LoadNamespace(name As String) As RkNamespace
@@ -147,14 +230,6 @@ Namespace Manager
             Me.Functions(name).Add(x)
         End Sub
 
-        'Public Overridable Function GetStruct(name As String, ParamArray args() As IType) As RkStruct Implements IAddStruct.GetStruct
-
-        '    Dim x = Me.TryGetStruct(name, args)
-        '    If x IsNot Nothing Then Return x
-
-        '    Throw New ArgumentException($"``{name}'' was not found")
-        'End Function
-
         Public Overridable Function TryGetStruct(name As String, ParamArray args() As IType) As RkStruct
 
             If Not Me.Structs.ContainsKey(name) Then Return Nothing
@@ -172,80 +247,11 @@ Namespace Manager
             Return Nothing
         End Function
 
-        'Public Overridable Function GetFunction(name As String, ParamArray args() As IType) As RkFunction Implements IAddFunction.GetFunction
-
-        '    Dim x = Me.TryGetFunction(name, args)
-        '    If x IsNot Nothing Then Return x
-
-        '    Throw New ArgumentException($"``{name}'' was not found")
-        'End Function
-
         Public Overridable Function TryGetFunction(name As String, ParamArray args() As IType) As RkFunction
 
-            If Not Me.Functions.ContainsKey(name) Then Return Nothing
-
-            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric)
-
-                If f.Arguments.And(Function(x, i) x.Value.Is(args(i))) Then Return f
-            Next
-
-            Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
-                Sub(arg, p, f)
-
-                    If TypeOf arg Is RkGenericEntry Then
-
-                        f(CType(arg, RkGenericEntry), p)
-
-                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
-
-                        Dim struct = CType(arg, RkStruct)
-                        struct.Generics.Do(
-                            Sub(x, i)
-
-                                Dim apply = CType(p, RkStruct).Apply(i)
-                                Dim v As RkStruct
-                                If apply Is Nothing Then
-
-                                    v = Nothing
-
-                                ElseIf TypeOf apply Is RkStruct Then
-
-                                    v = CType(apply, RkStruct)
-
-                                ElseIf TypeOf apply Is RkLateBind Then
-
-                                    v = CType(CType(apply, RkLateBind).Value, RkStruct)
-                                Else
-
-                                    Throw New Exception("unknown apply")
-                                End If
-                                generic_match(x, v, f)
-                            End Sub)
-                    End If
-                End Sub
-
-            For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
-
-                Dim xs(f.Generics.Count - 1) As IType
-                For i = 0 To f.Arguments.Count - 1
-
-                    generic_match(f.Arguments(i).Value, args(i),
-                        Sub(atname, p)
-
-                            If xs(atname.ApplyIndex) Is Nothing Then
-
-                                xs(atname.ApplyIndex) = p
-                            Else
-
-                                Debug.Assert(xs(atname.ApplyIndex) Is p)
-                            End If
-                        End Sub)
-                Next
-
-                Return CType(f.FixedGeneric(xs), RkFunction)
-            Next
-
-            Return Nothing
+            Dim f = Me.FindCurrentFunction(name, args).Car
+            If f Is Nothing Then Return Nothing
+            Return Me.ApplyFunction(f, args)
         End Function
 
         Public Overridable Sub AddNamespace(x As RkNamespace) Implements IAddNamespace.AddNamespace
