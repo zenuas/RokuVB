@@ -26,7 +26,7 @@ Namespace Manager
                 Tuple.Create("op_GreaterThanOrEqual", ">=")
             }
 
-        Public Overrides Function LoadFunction(name As String, ParamArray args() As IType) As RkFunction
+        Public Overrides Function TryLoadFunction(name As String, ParamArray args() As IType) As RkFunction
 
             If Not Me.FunctionCached Then
 
@@ -92,7 +92,7 @@ Namespace Manager
                 Me.FunctionCached = True
             End If
 
-            Return MyBase.LoadFunction(name, args)
+            Return MyBase.TryLoadFunction(name, args)
         End Function
 
     End Class
