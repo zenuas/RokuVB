@@ -347,7 +347,7 @@ Namespace Compiler
 
                                             Coverage.Case()
                                             Dim t = current.Namespace.TryLoadStruct(node_var.Name)
-                                            If t IsNot Nothing Then Return New RkLateBind With {.Value = t}
+                                            If t IsNot Nothing Then Return t
 
                                             Coverage.Case()
                                             Dim f = current.Namespace.TryLoadFunction(node_var.Name)
@@ -415,31 +415,6 @@ Namespace Compiler
                                     node_prop.Right.Type = node_prop.Type
                                 End If
 
-                            ElseIf TypeOf node_prop.Left.Type Is RkLateBind AndAlso TypeOf CType(node_prop.Left.Type, RkLateBind).Value Is RkStruct Then
-
-                                If set_type(node_prop,
-                                    Function()
-
-                                        Coverage.Case()
-                                        Dim struct = CType(CType(node_prop.Left.Type, RkLateBind).Value, RkStruct)
-                                        Dim v = struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
-                                        If v IsNot Nothing Then
-
-                                            Coverage.Case()
-                                            node_prop.Left.Type = struct
-                                            Return v
-                                        End If
-
-                                        ' DotNET static-function support
-                                        Coverage.Case()
-                                        Dim n = struct.Namespace?.TryGetNamespace(struct.Name)
-                                        node_prop.Left.Type = n
-                                        Return New RkByNameWithReceiver With {.Namespace = n, .Name = node_prop.Right.Name}
-                                    End Function) Then
-
-                                    node_prop.Right.Type = node_prop.Type
-                                End If
-
                             ElseIf TypeOf node_prop.Left.Type Is RkNamespace Then
 
                                 If set_type(node_prop,
@@ -450,7 +425,7 @@ Namespace Compiler
 
                                         Coverage.Case()
                                         Dim t = left.TryGetStruct(right)
-                                        If t IsNot Nothing Then Return New RkLateBind With {.Value = t}
+                                        If t IsNot Nothing Then Return t
 
                                         Coverage.Case()
                                         Dim f = left.TryGetFunction(right)
@@ -505,14 +480,6 @@ Namespace Compiler
                                     Dim struct = CType(node_call.Expression.Type, RkCILStruct)
                                     Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
                                     rk_function = struct.LoadConstructor(root, args)
-                                    Coverage.Case()
-
-                                ElseIf TypeOf node_call.Expression.Type Is RkLateBind AndAlso TypeOf CType(node_call.Expression.Type, RkLateBind).Value Is RkCILStruct Then
-
-                                    Dim struct = CType(CType(node_call.Expression.Type, RkLateBind).Value, RkCILStruct)
-                                    Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
-                                    rk_function = struct.LoadConstructor(root, args)
-                                    node_call.Expression.Type = struct
                                     Coverage.Case()
 
                                 ElseIf TypeOf node_call.Expression Is VariableNode Then
@@ -583,17 +550,6 @@ CIL_OF_FIX_:
                                     If node_struct.Struct.HasGeneric Then args.AddRange(node_call.Arguments.Map(Function(x) get_struct(current.Namespace, x)).ToArray)
                                     rk_function = node_struct.Struct.Namespace.LoadFunction("#Alloc", args.ToArray)
                                     Coverage.Case()
-
-                                ElseIf TypeOf node_call.Expression Is PropertyNode Then
-
-                                    Coverage.Case()
-                                    Dim prop = CType(node_call.Expression, PropertyNode)
-                                    Dim args = {prop.Left.Type}.Join(node_call.Arguments.Map(Function(x) x.Type)).ToArray
-                                    rk_function = prop.Left.Type.Namespace.TryGetFunction(prop.Right.Name, args)
-
-                                    ' DotNET method-function support
-                                    Coverage.Case()
-                                    If rk_function Is Nothing Then rk_function = prop.Left.Type.Namespace.TryGetNamespace(prop.Left.Type.Name)?.TryGetFunction(prop.Right.Name, args)
                                 End If
 
                                 Debug.Assert(rk_function IsNot Nothing, "function is not found")
