@@ -62,11 +62,11 @@ Namespace Manager
             Return Nothing
         End Function
 
-        Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+        Public Overridable Iterator Function FindLoadFunction(name As String, match As Func(Of RkFunction, Boolean)) As IEnumerable(Of RkFunction)
 
-            For Each f In Me.FindCurrentFunction(name, args)
+            For Each f In Me.FindCurrentFunction(name)
 
-                Yield f
+                If match(f) Then Yield f
             Next
 
             For Each path In Me.LoadPaths
@@ -74,11 +74,11 @@ Namespace Manager
                 If TypeOf path Is RkFunction Then
 
                     Dim func = CType(path, RkFunction)
-                    If func.Name.Equals(name) Then Yield func
+                    If func.Name.Equals(name) AndAlso match(func) Then Yield func
 
                 ElseIf TypeOf path Is RkNamespace Then
 
-                    For Each f In CType(path, RkNamespace).FindLoadFunction(name, args)
+                    For Each f In CType(path, RkNamespace).FindLoadFunction(name, match)
 
                         Yield f
                     Next
@@ -87,16 +87,40 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Iterator Function FindCurrentFunction(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+        Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+
+            For Each f In Me.FindLoadFunction(name, Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
+
+                Yield f
+            Next
+
+        End Function
+
+        Public Overridable Iterator Function FindLoadFunction_SkipClosureArgument(name As String, ParamArray args() As IType) As IEnumerable(Of RkFunction)
+
+            For Each f In Me.FindLoadFunction(name,
+                    Function(x)
+
+                        If x.Arguments.Count = args.Length Then
+
+                            Return x.Arguments.And(Function(arg, i) arg.Value.Is(args(i)))
+                        Else
+
+                            Dim args_without_closure = x.Arguments.Where(Function(arg) TypeOf arg.Value IsNot RkStruct OrElse Not CType(arg.Value, RkStruct).ClosureEnvironment).ToList
+                            Return args_without_closure.Count = args.Length AndAlso args_without_closure.And(Function(arg, i) arg.Value.Is(args(i)))
+                        End If
+                    End Function)
+
+                Yield f
+            Next
+
+        End Function
+
+        Public Overridable Iterator Function FindCurrentFunction(name As String) As IEnumerable(Of RkFunction)
 
             If Me.Functions.ContainsKey(name) Then
 
-                For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso Not x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
-
-                    Yield f
-                Next
-
-                For Each f In Me.Functions(name).Where(Function(x) x.Arguments.Count = args.Length AndAlso x.HasGeneric AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
+                For Each f In Me.Functions(name)
 
                     Yield f
                 Next
@@ -178,6 +202,13 @@ Namespace Manager
             Return Me.ApplyFunction(f, args)
         End Function
 
+        Public Overridable Function TryLoadFunction_SkipClosureArgument(name As String, ParamArray args() As IType) As RkFunction
+
+            Dim f = Me.FindLoadFunction_SkipClosureArgument(name, args).Car
+            If f Is Nothing Then Return Nothing
+            Return Me.ApplyFunction(f, args)
+        End Function
+
         Public Overridable Function LoadNamespace(name As String) As RkNamespace
 
             Dim x = Me.TryLoadNamespace(name)
@@ -247,13 +278,6 @@ Namespace Manager
             Return Nothing
         End Function
 
-        Public Overridable Function TryGetFunction(name As String, ParamArray args() As IType) As RkFunction
-
-            Dim f = Me.FindCurrentFunction(name, args).Car
-            If f Is Nothing Then Return Nothing
-            Return Me.ApplyFunction(f, args)
-        End Function
-
         Public Overridable Sub AddNamespace(x As RkNamespace) Implements IAddNamespace.AddNamespace
 
             Me.Namespaces.Add(x.Name, x)
@@ -270,35 +294,6 @@ Namespace Manager
             Dim first = names.First
             Return Me.TryGetNamespace(first)?.TryGetNamespace(names.Cdr)
         End Function
-
-        'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Action) As T
-
-        '    Return Me.GetValueOf(Of T)(name,
-        '        Function()
-
-        '            default_()
-        '        End Function)
-        'End Function
-
-        'Public Overridable Function GetValueOf(Of T)(name As String, default_ As Func(Of T)) As T
-
-        '    Dim x As IEntry = Nothing
-        '    If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then Return default_()
-        '    'If Not Me.Local.TryGetValue(name, x) OrElse TypeOf x IsNot T Then
-
-        '    '    ' demangling
-        '    '    For Each v In Me.Local.Values
-
-        '    '        If v IsNot Nothing AndAlso v.Name.Equals(name) Then
-
-        '    '            x = v
-        '    '            Exit For
-        '    '        End If
-        '    '    Next
-        '    '    If x Is Nothing OrElse TypeOf x IsNot T Then Return default_()
-        '    'End If
-        '    Return CType(x, T)
-        'End Function
 
         Public Overridable Function FullName() As String
 

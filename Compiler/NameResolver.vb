@@ -13,11 +13,6 @@ Namespace Compiler
                 Function(current As IScopeNode, name As String)
 
                     If current.Scope.ContainsKey(name) Then Return current.Scope(name)
-                    If TypeOf current Is IAddFunction Then
-
-                        Dim fs = CType(current, IAddFunction).Functions.Where(Function(x) x.Name.Equals(name)).ToArray
-                        If fs.Length = 1 Then Return fs(0)
-                    End If
                     If current.Parent Is Nothing Then Return Nothing
                     Return resolve_name(current.Parent, name)
                 End Function

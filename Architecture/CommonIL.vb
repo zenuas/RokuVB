@@ -459,6 +459,10 @@ Namespace Architecture
 
                             ' nothing
 
+                        ElseIf TypeOf dot.Return.Type Is RkByName Then
+
+                            ' nothing
+
                         ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkByName Then
 
                             ' nothing
@@ -586,6 +590,7 @@ Namespace Architecture
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            If TypeOf r Is RkByName Then Return Me.RkToCILType(CType(r, RkByName).Type, structs)
             If TypeOf r Is RkLateBind Then Return Me.RkToCILType(CType(r, RkLateBind).Value, structs)
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then

@@ -1,6 +1,5 @@
 Imports System
-Imports System.Collections.Generic
-Imports Roku.Manager
+Imports Roku.Node
 
 
 Namespace Manager
@@ -10,6 +9,8 @@ Namespace Manager
 
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IEntry.Name
+        Public Overridable Property Type As IType
+        Public Overridable Property Scope As INode
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 

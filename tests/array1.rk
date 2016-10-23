@@ -1,0 +1,3 @@
+
+var xs = [Int]()
+xs.Add(10)

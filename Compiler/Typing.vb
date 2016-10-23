@@ -293,6 +293,91 @@ Namespace Compiler
                     Return clone
                 End Function
 
+            Dim fixed_var As Func(Of IEvaluableNode, Boolean, IType) =
+                Function(e As IEvaluableNode, fix_byname As Boolean) As IType
+
+                    If TypeOf e.Type Is RkByNameWithReceiver Then
+
+                        Dim receiver = CType(e.Type, RkByNameWithReceiver).Receiver
+                        fixed_var(receiver, True)
+                        Coverage.Case()
+                    End If
+
+                    If TypeOf e.Type Is RkByName AndAlso (fix_byname OrElse TypeOf e.Type IsNot RkByNameWithReceiver) Then
+
+                        Dim byname = CType(e.Type, RkByName)
+
+                        Coverage.Case()
+                        Dim t = byname.Namespace.TryLoadStruct(byname.Name)
+                        If t IsNot Nothing Then
+
+                            If TypeOf t Is RkCILStruct Then byname.Namespace = CType(t, RkCILStruct).FunctionNamespace
+                            byname.Type = t
+                            Return t
+                        End If
+
+                        Coverage.Case()
+                        Dim n = byname.Namespace.TryLoadNamespace(byname.Name)
+                        If n IsNot Nothing Then
+
+                            byname.Namespace = n
+                            byname.Type = n
+                            Return n
+                        End If
+                    End If
+
+                    Coverage.Case()
+                    Return e.Type
+                End Function
+
+            Dim fixed_function =
+                Function(f As FunctionCallNode) As RkFunction
+
+                    Dim expr = fixed_var(f.Expression, False)
+                    Dim args = f.Arguments.Map(Function(x) fixed_var(x, True)).ToList
+
+                    If TypeOf expr Is RkByName Then
+
+                        Coverage.Case()
+                        Dim byname = CType(expr, RkByName)
+                        Dim r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+                        If r IsNot Nothing Then Return r
+
+                        If TypeOf expr Is RkByNameWithReceiver Then
+
+                            args.Insert(0, CType(expr, RkByNameWithReceiver).Receiver.Type)
+                            Return byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+                        End If
+
+                    ElseIf TypeOf expr Is RkCILStruct Then
+
+                        Coverage.Case()
+                        Dim struct = CType(expr, RkCILStruct)
+                        Return struct.LoadConstructor(root, args.ToArray)
+
+                    ElseIf TypeOf expr Is RkStruct Then
+
+                        Coverage.Case()
+                        Dim struct = CType(expr, RkStruct)
+                        args.Insert(0, expr)
+                        Return struct.Namespace.LoadFunction("#Alloc", args.ToArray)
+
+                    ElseIf TypeOf expr Is RkNamespace Then
+
+                        Coverage.Case()
+                        Dim nsname = CType(expr, RkNamespace)
+                        Return nsname.TryLoadFunction_SkipClosureArgument(nsname.Name, args.ToArray)
+
+                    ElseIf TypeOf expr Is RkFunction Then
+
+                        Coverage.Case()
+                        Return CType(expr, RkFunction)
+                    End If
+
+                    Debug.Fail("not yet")
+                    Return Nothing
+                End Function
+
             Do While True
 
                 Dim type_fix = False
@@ -330,38 +415,8 @@ Namespace Compiler
 
                         If TypeOf child Is VariableNode Then
 
-                            If Not (TypeOf parent Is LetNode AndAlso ref.Equals("Var")) Then
-
-                                Dim node_var = CType(child, VariableNode)
-                                set_type(node_var,
-                                    Function()
-
-                                        If current.Function IsNot Nothing Then
-
-                                            Coverage.Case()
-                                            Dim v = current.Function.Arguments.FindFirstOrNull(Function(x) x.Name.Name.Equals(node_var.Name))
-                                            If v IsNot Nothing Then Return v.Type.Type
-                                        End If
-
-                                        If Not (TypeOf parent Is PropertyNode AndAlso ref.Equals("Right")) Then
-
-                                            Coverage.Case()
-                                            Dim t = current.Namespace.TryLoadStruct(node_var.Name)
-                                            If t IsNot Nothing Then Return t
-
-                                            Coverage.Case()
-                                            Dim f = current.Namespace.TryLoadFunction(node_var.Name)
-                                            If f IsNot Nothing Then Return f
-
-                                            Coverage.Case()
-                                            Dim n = current.Namespace.TryLoadNamespace(node_var.Name)
-                                            If n IsNot Nothing Then Return n
-                                        End If
-
-                                        Coverage.Case()
-                                        Return New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name}
-                                    End Function)
-                            End If
+                            Dim node_var = CType(child, VariableNode)
+                            set_type(node_var, Function() New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name, .Scope = current.Scope})
 
                         ElseIf TypeOf child Is TypeNode Then
 
@@ -397,13 +452,14 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
-                            If TypeOf node_prop.Left.Type Is RkStruct Then
+                            Dim r = fixed_var(node_prop.Left, True)
+                            If TypeOf r Is RkStruct Then
 
                                 If set_type(node_prop,
                                     Function()
 
                                         Coverage.Case()
-                                        Dim struct = CType(node_prop.Left.Type, RkStruct)
+                                        Dim struct = CType(r, RkStruct)
                                         Dim v = struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
                                         If v IsNot Nothing Then Return v
 
@@ -414,48 +470,17 @@ Namespace Compiler
 
                                     node_prop.Right.Type = node_prop.Type
                                 End If
-
-                            ElseIf TypeOf node_prop.Left.Type Is RkNamespace Then
-
-                                If set_type(node_prop,
-                                    Function()
-
-                                        Dim left = CType(node_prop.Left.Type, RkNamespace)
-                                        Dim right = node_prop.Right.Name
-
-                                        Coverage.Case()
-                                        Dim t = left.TryGetStruct(right)
-                                        If t IsNot Nothing Then Return t
-
-                                        Coverage.Case()
-                                        Dim f = left.TryGetFunction(right)
-                                        If f IsNot Nothing Then Return f
-
-                                        Coverage.Case()
-                                        Dim n = left.TryGetNamespace(right)
-                                        If n IsNot Nothing Then Return n
-
-                                        Return Nothing
-                                    End Function) Then
-
-                                    node_prop.Right.Type = node_prop.Type
-                                End If
-
-                            ElseIf TypeOf node_prop.Left.Type Is RkByName OrElse
-                                node_prop.Left.Type Is Nothing Then
-
-                                ' nothing
-                                set_type(node_prop, Function() New RkByNameWithReceiver With {.Namespace = Nothing, .Name = node_prop.Right.Name, .Receiver = node_prop.Left})
-                                Coverage.Case()
                             Else
 
-                                Debug.Fail("not yet")
+                                set_type(node_prop, Function() New RkByNameWithReceiver With {.Namespace = node_prop.Left.Type.Namespace, .Name = node_prop.Right.Name, .Receiver = node_prop.Left})
+                                Coverage.Case()
                             End If
 
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
                             If node_declare.Name.ClosureEnvironment Then get_closure(node_declare.Name.Scope).Local(node_declare.Name.Name) = node_declare.Type.Type
+                            node_declare.Name.Type = node_declare.Type.Type
                             Coverage.Case()
 
                         ElseIf TypeOf child Is FunctionNode Then
@@ -468,100 +493,16 @@ Namespace Compiler
                             Dim node_call = CType(child, FunctionCallNode)
                             If node_call.Function Is Nothing Then
 
-                                Dim rk_function As RkFunction = Nothing
+                                node_call.Function = fixed_function(node_call)
+                                Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
+                                If node_call.Function IsNot Nothing Then
 
-                                If TypeOf node_call.Expression Is FunctionNode Then
+                                    If node_call.Function.HasGeneric Then
 
-                                    rk_function = set_func(CType(node_call.Expression, FunctionNode))
-                                    Coverage.Case()
-
-                                ElseIf TypeOf node_call.Expression.Type Is RkCILStruct Then
-
-                                    Dim struct = CType(node_call.Expression.Type, RkCILStruct)
-                                    Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
-                                    rk_function = struct.LoadConstructor(root, args)
-                                    Coverage.Case()
-
-                                ElseIf TypeOf node_call.Expression Is VariableNode Then
-
-                                    If TypeOf node_call.Expression.Type Is RkFunction Then
-
-                                        rk_function = CType(node_call.Expression.Type, RkFunction)
-                                        Coverage.Case()
-
-                                    ElseIf TypeOf node_call.Expression.Type Is RkByName Then
-
-                                        Dim args = node_call.Arguments.Map(Function(x) x.Type).ToArray
-                                        Dim receiver As IEvaluableNode = Nothing
-                                        Dim name = CType(node_call.Expression.Type, RkByName).Name
-                                        If TypeOf node_call.Expression.Type Is RkByNameWithReceiver Then
-
-                                            Dim v = CType(node_call.Expression.Type, RkByNameWithReceiver)
-                                            If TypeOf v.Receiver?.Type Is RkStruct Then
-
-                                                receiver = v.Receiver
-                                                'args.Insert(0, v.Receiver.Type)
-                                                'node_call.Arguments = {v.Receiver}.Join(node_call.Arguments).ToArray
-                                                Coverage.Case()
-
-                                            ElseIf v.Name.Equals("of") Then
-
-                                                node_call.Expression.Type = current.Namespace.TryLoadStruct(CType(v.Receiver, VariableNode).Name, args)
-                                                node_call.Arguments = New IEvaluableNode() {}
-                                                rk_function = CType(root.Functions("#Type")(0).FixedGeneric(node_call.Expression.Type), RkFunction)
-                                                Coverage.Case()
-                                                GoTo CIL_OF_FIX_
-                                            End If
-                                        End If
-
-                                        Dim args_with_receiver = If(receiver Is Nothing, args, {receiver.Type}.Join(args).ToArray)
-                                        Dim struct = node_call.Expression.Type.Namespace.TryLoadStruct(name, args_with_receiver)
-                                        If TypeOf struct Is RkCILStruct Then
-
-                                            rk_function = CType(struct, RkCILStruct).LoadConstructor(root)
-                                            node_call.Arguments = New IEvaluableNode() {}
-                                            Coverage.Case()
-                                        Else
-
-                                            rk_function = node_call.Expression.Type.Namespace.TryLoadFunction(name, args)
-
-                                            If rk_function Is Nothing AndAlso receiver IsNot Nothing Then
-
-                                                rk_function = node_call.Expression.Type.Namespace.LoadFunction(name, args_with_receiver)
-                                                node_call.Arguments = {receiver}.Join(node_call.Arguments).ToArray
-                                                Coverage.Case()
-                                            End If
-                                            Coverage.Case()
-                                        End If
-CIL_OF_FIX_:
-                                        If rk_function IsNot Nothing Then node_call.Expression.Type = rk_function
-
-                                    ElseIf TypeOf node_call.Expression.Type Is RkLateBind Then
-
-                                        rk_function = node_call.Expression.Type.Namespace.LoadFunction(CType(node_call.Expression.Type, RkLateBind).Name, node_call.Arguments.Map(Function(x) x.Type).ToArray)
-                                        node_call.Expression.Type = rk_function
-                                        Debug.Fail("??")
-                                    End If
-
-                                ElseIf TypeOf node_call.Expression Is StructNode Then
-
-                                    Dim node_struct = CType(node_call.Expression, StructNode)
-                                    Dim args = {node_call.Expression.Type}.ToList
-                                    If node_struct.Struct.HasGeneric Then args.AddRange(node_call.Arguments.Map(Function(x) get_struct(current.Namespace, x)).ToArray)
-                                    rk_function = node_struct.Struct.Namespace.LoadFunction("#Alloc", args.ToArray)
-                                    Coverage.Case()
-                                End If
-
-                                Debug.Assert(rk_function IsNot Nothing, "function is not found")
-                                If rk_function IsNot Nothing Then
-
-                                    If rk_function.HasGeneric Then
-
-                                        rk_function = CType(rk_function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
-                                        node_call.FixedGenericFunction = function_generic_fixed_to_node(rk_function)
+                                        node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
+                                        node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
                                         Coverage.Case()
                                     End If
-                                    node_call.Function = rk_function
                                     type_fix = True
                                     Coverage.Case()
                                 End If
