@@ -345,8 +345,15 @@ Namespace Compiler
 
                         If TypeOf expr Is RkByNameWithReceiver Then
 
-                            args.Insert(0, CType(expr, RkByNameWithReceiver).Receiver.Type)
-                            Return byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+                            Dim receiver = CType(expr, RkByNameWithReceiver).Receiver
+                            args.Insert(0, receiver.Type)
+                            r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+
+                            If r IsNot Nothing Then
+
+                                f.Arguments = {receiver}.Join(f.Arguments).ToArray
+                                Return r
+                            End If
                         End If
 
                     ElseIf TypeOf expr Is RkCILStruct Then
@@ -552,7 +559,7 @@ Namespace Compiler
 
                                         Coverage.Case()
                                         Dim item = list.GetType.GetProperty("Item")
-                                        Return root.LoadStruct("Array", CType(item.GetValue(list, New Object() {0}), IEvaluableNode).Type)
+                                        Return root.LoadStruct("Array", fixed_var(CType(item.GetValue(list, New Object() {0}), IEvaluableNode), True))
                                     End If
 
                                 End Function)
