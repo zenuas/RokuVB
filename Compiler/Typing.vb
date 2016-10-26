@@ -526,6 +526,11 @@ Namespace Compiler
                                         node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
                                         node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
                                         Coverage.Case()
+
+                                    ElseIf node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
+
+                                        node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
+                                        Coverage.Case()
                                     End If
                                     type_fix = True
                                     Coverage.Case()
