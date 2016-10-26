@@ -2,7 +2,7 @@
 ##? copy tests\lib\TestGen.dll tests\obj\
 use System
 
-var x = TestGen(DateTime, Int)
+var x = TestGen.of(DateTime, Int)()
 
 #=>2000/05/06 0:00:00
 #=>1

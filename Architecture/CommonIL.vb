@@ -463,6 +463,10 @@ Namespace Architecture
 
                             ' nothing
 
+                        ElseIf TypeOf dot.Left.Type Is RkByName Then
+
+                            ' nothing
+
                         ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkByName Then
 
                             ' nothing

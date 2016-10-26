@@ -340,12 +340,29 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim byname = CType(expr, RkByName)
+                        Dim t = byname.Namespace.TryLoadStruct(byname.Name, args.ToArray)
+                        If t IsNot Nothing Then expr = t
+                    End If
+
+                    If TypeOf expr Is RkByName Then
+
+                        Coverage.Case()
+                        Dim byname = CType(expr, RkByName)
                         Dim r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
                         If r IsNot Nothing Then Return r
 
                         If TypeOf expr Is RkByNameWithReceiver Then
 
                             Dim receiver = CType(expr, RkByNameWithReceiver).Receiver
+
+                            If byname.Name.Equals("of") Then
+
+                                Coverage.Case()
+                                f.Expression.Type = byname.Namespace.TryLoadStruct(CType(receiver, VariableNode).Name, args.ToArray)
+                                f.Arguments = New IEvaluableNode() {}
+                                Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
+                            End If
+
                             args.Insert(0, receiver.Type)
                             r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
 
