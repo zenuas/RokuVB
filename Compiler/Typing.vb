@@ -317,6 +317,18 @@ Namespace Compiler
                         End If
 
                         Coverage.Case()
+                        If TypeOf byname.Scope Is Node.IAddFunction Then
+
+                            Dim fs = CType(byname.Scope, Node.IAddFunction).Functions.Where(Function(x) x.Name.Equals(byname.Name)).ToArray
+                            If fs.Length >= 1 Then
+
+                                Dim f = fs(0).Function ' type hint can not be used
+                                byname.Type = f
+                                Return f
+                            End If
+                        End If
+
+                        Coverage.Case()
                         Dim n = byname.Namespace.TryLoadNamespace(byname.Name)
                         If n IsNot Nothing Then
 
@@ -440,7 +452,7 @@ Namespace Compiler
                         If TypeOf child Is VariableNode Then
 
                             Dim node_var = CType(child, VariableNode)
-                            set_type(node_var, Function() New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name, .Scope = current.Scope})
+                            set_type(node_var, Function() New RkByName With {.Namespace = current.Namespace, .Name = node_var.Name, .Scope = current.Function?.Body})
 
                         ElseIf TypeOf child Is TypeNode Then
 
