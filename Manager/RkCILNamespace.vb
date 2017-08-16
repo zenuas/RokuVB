@@ -26,7 +26,7 @@ Namespace Manager
                 Tuple.Create("op_GreaterThanOrEqual", ">=")
             }
 
-        Public Overrides Iterator Function FindCurrentFunction(name As String) As IEnumerable(Of RkFunction)
+        Public Overrides Iterator Function FindCurrentFunction(name As String) As IEnumerable(Of IFunction)
 
             If Not Me.FunctionCached Then
 

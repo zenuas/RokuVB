@@ -234,6 +234,17 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T)) As IEnumerable(Of T)
+
+            Dim hash = self.ToHash_ValueDerivation(Function(x) True)
+            For Each x In xs
+
+                If hash.ContainsKey(x) Then Yield x
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Iterator Function Apply(Of T)(self As IList(Of T), f As Func(Of T, T)) As IEnumerable(Of T)
 
             For i = 0 To self.Count - 1
@@ -262,6 +273,16 @@ Namespace Util
             For Each x In self
 
                 If f(x) Then Yield x
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Iterator Function Where(Of R As Class, T)(self As IEnumerable(Of T)) As IEnumerable(Of R)
+
+            For Each x In self
+
+                If TypeOf x Is R Then Yield TryCast(x, R)
             Next
         End Function
 

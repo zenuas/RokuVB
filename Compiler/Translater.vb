@@ -16,7 +16,7 @@ Namespace Compiler
 
         Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
-            Dim compleat As New Dictionary(Of RkFunction, Boolean)
+            Dim compleat As New Dictionary(Of IFunction, Boolean)
             Dim returns = root.Functions("return")
 
             Dim real_type As Func(Of IType, IType) =
@@ -27,7 +27,7 @@ Namespace Compiler
                 End Function
 
             Dim make_func =
-                Sub(rk_func As RkFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
+                Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 

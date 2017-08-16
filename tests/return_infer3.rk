@@ -1,0 +1,13 @@
+#=>100a
+print(to_string_or_int("100") + "a")
+
+#=>101
+print(to_string_or_int("100") + 1)
+
+
+sub to_string_or_int(dummy: String) String
+	return("100")
+
+sub to_string_or_int(dummy: String) Int
+	return(100)
+

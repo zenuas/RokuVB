@@ -63,6 +63,11 @@ Namespace Manager
             Return Me.Value.Is(t)
         End Function
 
+        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+
+            Return False
+        End Function
+
         Public Overrides Function ToString() As String
 
             Return Me.Name
