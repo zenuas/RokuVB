@@ -54,7 +54,7 @@ Namespace Manager
                 If Me.Types Is Nothing OrElse Me.Types.Count = 0 Then Return Nothing
                 If Me.Types.Count = 1 Then Return Me.Types(0)
 
-                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkSomeType(Me.Types.Where(Of RkFunction).Map(Function(x) x.Return))
+                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkSomeType(Me.Types.Where(Of RkFunction)(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
                 Return Me.ReturnCache
             End Get
             Set(value As IType)

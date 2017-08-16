@@ -207,20 +207,22 @@ Namespace Manager
 
         Public Overridable Function TryLoadFunction(name As String, ParamArray args() As IType) As IFunction
 
-            Dim fs = Me.FindLoadFunction(name, args).ToList
-
-            If fs.Count = 0 Then Return Nothing
-            If fs.Count = 1 Then Return Me.ApplyFunction(fs(0), args)
-
-            Return New RkSomeType(fs)
+            Return Me.MergeLoadFunctions(Me.FindLoadFunction(name, args).ToList, args)
         End Function
 
         Public Overridable Function TryLoadFunction_SkipClosureArgument(name As String, ParamArray args() As IType) As IFunction
 
-            Dim fs = Me.FindLoadFunction_SkipClosureArgument(name, args).ToList
+            Return Me.MergeLoadFunctions(Me.FindLoadFunction_SkipClosureArgument(name, args).ToList, args)
+        End Function
+
+        Public Overridable Function MergeLoadFunctions(fs As IList(Of IFunction), ParamArray args() As IType) As IFunction
 
             If fs.Count = 0 Then Return Nothing
-            If fs.Count = 1 Then Return Me.ApplyFunction(fs(0), args)
+            fs.Do(Function(x) Me.ApplyFunction(x, args))
+            If fs.Count = 1 Then Return fs(0)
+
+            fs = fs.Unique.ToList
+            If fs.Count = 1 Then Return fs(0)
 
             Return New RkSomeType(fs)
         End Function

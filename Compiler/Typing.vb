@@ -571,7 +571,7 @@ Namespace Compiler
                                 Dim before = some.Types.Count
                                 If before > 1 Then
 
-                                    some.Types = some.Types.Where(Function(x) CType(x, RkFunction).Return.Is(some.Return)).ToList
+                                    some.Types = some.Types.Where(Function(x) some.Return.Is(CType(x, RkFunction).Return)).ToList
                                     If before <> some.Types.Count Then type_fix = True
                                     Coverage.Case()
                                 End If
