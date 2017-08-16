@@ -20,10 +20,14 @@ Namespace Manager
 
         Public Overridable Sub Initialize()
 
+            ' struct Bool : Boolean
+            Dim bool = Me.LoadType(GetType(Boolean).GetTypeInfo)
+            Me.AddStruct(bool, "Bool")
+
             ' struct Numeric
             ' sub +(@T: Numeric)(@T, @T) @T
             Dim num As New RkStruct With {.Name = "Numeric", .Namespace = Me}
-            Dim add_native_function =
+            Dim add_native_operator_function =
                 Function(name As String, op As InOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
@@ -34,15 +38,26 @@ Namespace Manager
                     Me.AddFunction(f)
                     Return f
                 End Function
-            Dim num_plus = add_native_function("+", InOperator.Plus)
-            Dim num_minus = add_native_function("-", InOperator.Minus)
-            Dim num_mul = add_native_function("*", InOperator.Mul)
-            Dim num_div = add_native_function("/", InOperator.Div)
-            Dim num_eq = add_native_function("==", InOperator.Equal)
-            Dim num_gt = add_native_function(">", InOperator.Gt)
-            Dim num_gte = add_native_function(">=", InOperator.Gte)
-            Dim num_lt = add_native_function("<", InOperator.Lt)
-            Dim num_lte = add_native_function("<=", InOperator.Lte)
+            Dim add_native_comparison_function =
+                Function(name As String, op As InOperator) As RkNativeFunction
+
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
+                    Dim f_t = f.DefineGeneric("@T")
+                    f.Return = bool
+                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
+                    f.Arguments.Add(New NamedValue With {.Name = "right", .Value = f_t})
+                    Me.AddFunction(f)
+                    Return f
+                End Function
+            Dim num_plus = add_native_operator_function("+", InOperator.Plus)
+            Dim num_minus = add_native_operator_function("-", InOperator.Minus)
+            Dim num_mul = add_native_operator_function("*", InOperator.Mul)
+            Dim num_div = add_native_operator_function("/", InOperator.Div)
+            Dim num_eq = add_native_comparison_function("==", InOperator.Equal)
+            Dim num_gt = add_native_comparison_function(">", InOperator.Gt)
+            Dim num_gte = add_native_comparison_function(">=", InOperator.Gte)
+            Dim num_lt = add_native_comparison_function("<", InOperator.Lt)
+            Dim num_lte = add_native_comparison_function("<=", InOperator.Lte)
             Me.AddStruct(num)
 
             ' struct Int32 : Numeric

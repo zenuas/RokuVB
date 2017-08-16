@@ -9,21 +9,21 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkFunction
-        Implements IType, IApply
+        Implements IFunction
 
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IEntry.Name
-        Public Overridable ReadOnly Property Arguments As New List(Of NamedValue)
-        Public Overridable Property [Return] As IType
-        Public Overridable ReadOnly Property Body As New List(Of InCode0)
-        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
-        Public Overridable Property GenericBase As RkFunction = Nothing
+        Public Overridable ReadOnly Property Arguments As New List(Of NamedValue) Implements IFunction.Arguments
+        Public Overridable Property [Return] As IType Implements IFunction.Return
+        Public Overridable ReadOnly Property Body As New List(Of InCode0) Implements IFunction.Body
+        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry) Implements IFunction.Generics
+        Public Overridable Property GenericBase As RkFunction = Nothing Implements IFunction.GenericBase
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
-        Public Overridable Property FunctionNode As FunctionNode = Nothing
-        Public Overridable Property Closure As RkStruct = Nothing
+        Public Overridable Property FunctionNode As FunctionNode = Nothing Implements IFunction.FunctionNode
+        Public Overridable Property Closure As RkStruct = Nothing Implements IFunction.Closure
 
 
-        Public Overridable ReadOnly Property IsAnonymous As Boolean
+        Public Overridable ReadOnly Property IsAnonymous As Boolean Implements IFunction.IsAnonymous
             Get
                 Return String.IsNullOrEmpty(Me.Name)
             End Get
@@ -108,13 +108,13 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Function GetBaseFunctions() As List(Of RkFunction)
+        Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions
 
             If Me.Namespace.Functions.ContainsKey(Me.Name) AndAlso Me.Namespace.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Namespace.Functions(Me.Name)
             Return Me.Namespace.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
-        Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0()
+        Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
             Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
@@ -123,7 +123,7 @@ Namespace Manager
             Return New InCode0() {x}
         End Function
 
-        Public Overridable Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0()
+        Public Overridable Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCallReturn
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
             Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
@@ -133,9 +133,14 @@ Namespace Manager
             Return New InCode0() {x}
         End Function
 
-        Public Overridable Function CreateManglingName() As String
+        Public Overridable Function CreateManglingName() As String Implements IFunction.CreateManglingName
 
             Return Me.ToString
+        End Function
+
+        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+
+            Return False
         End Function
 
         Public Overrides Function ToString() As String

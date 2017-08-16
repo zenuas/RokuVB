@@ -29,6 +29,8 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
+            If TypeOf t Is RkSomeType Then Return t.Is(Me)
+
             If Me Is t Then Return True
             If Me.Namespace Is t.Namespace AndAlso Me.Name.Equals(t.Name) Then Return True
 
@@ -111,6 +113,11 @@ Namespace Manager
         Public Overridable Function CreateManglingName() As String
 
             Return Me.ToString
+        End Function
+
+        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+
+            Return False
         End Function
 
         Public Overrides Function ToString() As String

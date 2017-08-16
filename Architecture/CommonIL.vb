@@ -78,9 +78,9 @@ Namespace Architecture
             Return map
         End Function
 
-        Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of RkFunction, MethodInfo)
+        Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
-            Dim map As New Dictionary(Of RkFunction, MethodInfo)
+            Dim map As New Dictionary(Of IFunction, MethodInfo)
             For Each fs In root.AllNamespace.Map(Function(x) x.Functions.Values.Flatten)
 
                 Dim fxs = fs.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
@@ -144,7 +144,7 @@ Namespace Architecture
             Return Me.Binders(f)
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
+        Public Overridable Sub DeclareStatements(functions As Dictionary(Of IFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
 
             Dim gen_il_loadc =
                 Sub(il As ILGenerator, v As OpValue)
@@ -373,7 +373,7 @@ Namespace Architecture
                 gen_il_load As Action(Of ILGenerator, OpValue, Boolean),
                 gen_il_store As Action(Of ILGenerator, OpValue),
                 stmts As List(Of InCode0),
-                functions As Dictionary(Of RkFunction, MethodInfo),
+                functions As Dictionary(Of IFunction, MethodInfo),
                 structs As Dictionary(Of RkStruct, TypeData)
             )
 
@@ -456,6 +456,14 @@ Namespace Architecture
                     Case InOperator.Dot
                         Dim dot = CType(stmt, InCode)
                         If TypeOf dot.Return.Type Is RkNamespace Then
+
+                            ' nothing
+
+                        ElseIf TypeOf dot.Return.Type Is RkByName Then
+
+                            ' nothing
+
+                        ElseIf TypeOf dot.Left.Type Is RkByName Then
 
                             ' nothing
 
@@ -586,7 +594,9 @@ Namespace Architecture
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            If TypeOf r Is RkByName Then Return Me.RkToCILType(CType(r, RkByName).Type, structs)
             If TypeOf r Is RkLateBind Then Return Me.RkToCILType(CType(r, RkLateBind).Value, structs)
+            If TypeOf r Is RkSomeType Then Return Me.RkToCILType(CType(r, RkSomeType).GetDecideType, structs)
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then
 
@@ -631,7 +641,7 @@ Namespace Architecture
             Return r.Map(Function(x) Me.RkToCILType(x.Type, structs).Type).ToArray
         End Function
 
-        Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of RkFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
+        Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of IFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
 
             If TypeOf f Is RkCILFunction Then
 

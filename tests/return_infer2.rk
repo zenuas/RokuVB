@@ -1,0 +1,11 @@
+sub f1() {String}
+	return(f2) #f1の戻り値が {String} のため f2:String が選択される
+	
+	sub f2(x: Int)
+		print("dumn")
+	
+	sub f2(x: String)
+		print(x)
+
+#=>a
+f1()("a")

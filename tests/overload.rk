@@ -1,0 +1,17 @@
+var a = 10
+
+#=>1
+show(1)
+
+#=>10
+show(a)
+
+#=>hello
+show("hello")
+
+
+sub show(n: Int)
+	System.Console.WriteLine(n)
+
+sub show(s: String)
+	System.Console.WriteLine(s)

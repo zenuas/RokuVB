@@ -13,6 +13,7 @@
         Function FixedGeneric(ParamArray values() As NamedValue) As IType
         Function HasGeneric() As Boolean
         Function CloneGeneric() As IType
+        Function Indefinite() As Boolean
 
     End Interface
 

@@ -16,11 +16,18 @@ Namespace Compiler
 
         Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
-            Dim compleat As New Dictionary(Of RkFunction, Boolean)
+            Dim compleat As New Dictionary(Of IFunction, Boolean)
             Dim returns = root.Functions("return")
 
+            Dim real_type As Func(Of IType, IType) =
+                Function(x)
+
+                    If TypeOf x Is RkByName AndAlso CType(x, RkByName).Type IsNot Nothing Then Return real_type(CType(x, RkByName).Type)
+                    Return x
+                End Function
+
             Dim make_func =
-                Sub(rk_func As RkFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
+                Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
@@ -39,32 +46,32 @@ Namespace Compiler
                                         CType(arg.Value, RkStruct).ClosureEnvironment AndAlso
                                         CType(arg.Value, RkStruct).Local.Or(Function(x) x.Key.Equals(var.Name))
                                     ).Value
-                            Return New OpValue With {.Name = v.Name, .Type = v, .Scope = rk_func}
+                            Return New OpValue With {.Name = v.Name, .Type = real_type(v), .Scope = rk_func}
                         End Function
 
                     Dim to_value =
                         Function(x As IEvaluableNode)
 
                             Dim t = x.Type
-                            If TypeOf t Is RkGenericEntry Then Return New OpValue With {.Name = t.Name, .Type = rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex), .Scope = rk_func}
+                            If TypeOf t Is RkGenericEntry Then Return New OpValue With {.Name = t.Name, .Type = real_type(rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex)), .Scope = rk_func}
 
                             If TypeOf x Is VariableNode Then
 
                                 Dim var = CType(x, VariableNode)
                                 If var.ClosureEnvironment Then
 
-                                    Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = t, .Scope = rk_func}
+                                    Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = real_type(t), .Scope = rk_func}
                                 Else
 
-                                    Return New OpValue With {.Name = var.Name, .Type = t, .Scope = rk_func}
+                                    Return New OpValue With {.Name = var.Name, .Type = real_type(t), .Scope = rk_func}
                                 End If
                             End If
 
-                            If TypeOf x Is StringNode Then Return New OpString With {.String = CType(x, StringNode).String.ToString, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is NumericNode Then Return New OpNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is StructNode Then Return New OpValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = rk_func}
-                            If TypeOf x Is NullNode Then Return New OpNull With {.Type = t, .Scope = rk_func}
-                            Return New OpValue With {.Type = t, .Scope = rk_func}
+                            If TypeOf x Is StringNode Then Return New OpString With {.String = CType(x, StringNode).String.ToString, .Type = real_type(t), .Scope = rk_func}
+                            If TypeOf x Is NumericNode Then Return New OpNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = real_type(t), .Scope = rk_func}
+                            If TypeOf x Is StructNode Then Return New OpValue With {.Name = CType(x, StructNode).Name, .Type = real_type(t), .Scope = rk_func}
+                            If TypeOf x Is NullNode Then Return New OpNull With {.Type = real_type(t), .Scope = rk_func}
+                            Return New OpValue With {.Type = real_type(t), .Scope = rk_func}
                         End Function
 
                     Dim get_receiver As Func(Of IEvaluableNode, IEnumerable(Of OpValue)) =
@@ -163,7 +170,7 @@ Namespace Compiler
                                 Coverage.Case()
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
+                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then args.Insert(0, New OpValue With {.Type = real_type(func.Type), .Scope = rk_func})
                                 Return func.Function.CreateCallReturn(to_value(func.Expression), ret, args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
@@ -177,7 +184,7 @@ Namespace Compiler
 
                             ElseIf IsGeneric(stmt.GetType, GetType(ListNode(Of ))) Then
 
-                                Dim xs As New OpArray With {.Type = stmt.Type}
+                                Dim xs As New OpArray With {.Type = real_type(stmt.Type)}
                                 Dim list = stmt.GetType.GetProperty("List").GetValue(stmt)
                                 Dim count = list.GetType.GetProperty("Count")
                                 Dim item = list.GetType.GetProperty("Item")
@@ -258,8 +265,8 @@ Namespace Compiler
 
                     If rk_func.Closure IsNot Nothing Then
 
-                        closure = New OpValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}
-                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, closure, New OpValue With {.Type = rk_func.Closure, .Scope = rk_func}))
+                        closure = New OpValue With {.Name = rk_func.Closure.Name, .Type = real_type(rk_func.Closure), .Scope = rk_func}
+                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, closure, New OpValue With {.Type = real_type(rk_func.Closure), .Scope = rk_func}))
                         rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Do(
                             Sub(x)
 
@@ -267,7 +274,7 @@ Namespace Compiler
                                     New InCode With {
                                         .Operator = InOperator.Bind,
                                         .Return = New RkProperty With {.Name = x.Name, .Receiver = closure, .Type = x.Value, .Scope = rk_func},
-                                        .Left = New OpValue With {.Name = x.Name, .Type = x.Value, .Scope = rk_func}})
+                                        .Left = New OpValue With {.Name = x.Name, .Type = real_type(x.Value), .Scope = rk_func}})
                                 Coverage.Case()
                             End Sub)
                         Coverage.Case()

@@ -36,12 +36,12 @@ release:
 	git archive HEAD --output=Roku_$(subst /,.,$(shell cmd /c date /T)).zip
 	zip Roku_$(subst /,.,$(shell cmd /c date /T)).zip bin\Release\roku.exe
 
-test: clean
+test: clean $(OUT)
 	del /F bin\$(RELEASE)\coverage.txt 2>NUL
 	$(MAKE) tests
 	@xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | xargs.bat grep.bat -n -e "^ *Coverage.Case" | coverage.bat bin\$(RELEASE)\coverage.txt Coverage.Case
 
-tests: $(RKTEST)
+tests: $(OUT) $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
 	-@if exist $<. $< < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff)
