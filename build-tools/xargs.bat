@@ -49,7 +49,7 @@ function main(args)
 
 function exec(args)
 {
-	WScript.StdOut.Write(sh.Exec(args.map(function(x) {return(escape(x));}).join(" ")).StdOut.ReadAll());
+	WScript.StdOut.Write(sh.Exec("cmd /d /c " + args.map(function(x) {return(escape(x));}).join(" ")).StdOut.ReadAll());
 }
 
 function escape(s)

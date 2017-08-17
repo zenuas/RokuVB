@@ -172,7 +172,7 @@ function parse(makefile, env)
 
 function remove_comment(line)
 {
-	return(line.replace(/^((\\#|[^#])*)(#.*)?$/, function (match, s1) {return(s1.replace("\\#", "#"));}));
+	return(line.replace(/^((\\#|[^#])*)(#.*)?$/, function (match, s1) {return(s1.replace(/\\#/g, "#"));}));
 }
 
 function run(env, target)
