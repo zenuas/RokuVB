@@ -54,6 +54,7 @@ function exec(args)
 
 function escape(s)
 {
+	/*
 	if(s.indexOf(" ") >= 0 || opt.quot)
 	{
 		return("\"" + s + "\"");
@@ -62,4 +63,6 @@ function escape(s)
 	{
 		return(s);
 	}
+	*/
+	return(s);
 }
