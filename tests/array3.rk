@@ -4,8 +4,25 @@ var xs = []
 #=>0
 show(xs)
 
-#=>100
-show(100)
+var ys = []
+ys.Add(1)
+ys.Add(2)
+ys.Add(3)
+ys.Add(4)
+ys.Add(5)
+
+#=>4
+show(ys[3])
+
+var zs = []
+zs.Add("a")
+zs.Add("b")
+zs.Add("c")
+zs.Add("d")
+zs.Add("e")
+
+#=>d
+print(zs[3])
 
 sub show(xs: [Int])
 	print(xs.Count())

@@ -595,7 +595,6 @@ Namespace Architecture
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
             If TypeOf r Is RkByName Then Return Me.RkToCILType(CType(r, RkByName).Type, structs)
-            If TypeOf r Is RkLateBind Then Return Me.RkToCILType(CType(r, RkLateBind).Value, structs)
             If TypeOf r Is RkSomeType Then Return Me.RkToCILType(CType(r, RkSomeType).GetDecideType, structs)
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then

@@ -147,7 +147,7 @@ Namespace Manager
 
                                 Dim apply = CType(p, RkStruct).Apply(i)
                                 Dim v As RkStruct
-                                If apply Is Nothing Then
+                                If apply Is Nothing OrElse TypeOf apply Is RkSomeType Then
 
                                     v = Nothing
 
@@ -155,9 +155,6 @@ Namespace Manager
 
                                     v = CType(apply, RkStruct)
 
-                                ElseIf TypeOf apply Is RkLateBind Then
-
-                                    v = CType(CType(apply, RkLateBind).Value, RkStruct)
                                 Else
 
                                     Throw New Exception("unknown apply")

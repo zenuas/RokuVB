@@ -425,6 +425,19 @@ Namespace Compiler
                     Return Nothing
                 End Function
 
+            Dim some_merge =
+                Sub(base As IType, arg As IType)
+
+                    If TypeOf base IsNot IApply OrElse TypeOf arg IsNot IApply Then Return
+                    Dim base_a = CType(base, IApply)
+                    Dim arg_a = CType(arg, IApply)
+
+                    For i = 0 To arg_a.Apply.Count - 1
+
+                        base_a.Apply(i) = arg_a.Apply(i)
+                    Next
+                End Sub
+
             Do While True
 
                 Dim type_fix = False
@@ -549,6 +562,7 @@ Namespace Compiler
                                         Coverage.Case()
                                     Else
 
+                                        node_call.Arguments.Do(Sub(x, i) some_merge(x.Type, node_call.Function.Arguments(i).Value))
                                         If node_call.Function.HasGeneric Then
 
                                             node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
@@ -616,7 +630,7 @@ Namespace Compiler
                                     If CInt(count.GetValue(list)) = 0 Then
 
                                         Coverage.Case()
-                                        Return New RkLateBind With {.Value = New RkSomeType With {.Name = "[]"}}
+                                        Return root.LoadStruct("Array", New RkSomeType)
                                     Else
 
                                         Coverage.Case()
@@ -630,36 +644,6 @@ Namespace Compiler
 
                 If Not type_fix Then Exit Do
             Loop
-
-            'Util.Traverse.NodesOnce(
-            '    node,
-            '    0,
-            '    Sub(parent, ref, child, current, isfirst, next_)
-
-            '        next_(child, current + 1)
-
-            '        If TypeOf child Is IEvaluableNode Then
-
-            '            Dim e = CType(child, IEvaluableNode)
-            '            Dim t = If(TypeOf child Is FunctionCallNode, CType(child, FunctionCallNode).Function, e.Type)
-
-            '            If TypeOf t Is RkSomeType Then
-
-            '                Dim some = CType(t, RkSomeType)
-            '                Debug.Assert(Not some.Indefinite)
-            '                Debug.Assert(Not some.Types(0).Indefinite)
-
-            '                If TypeOf child Is FunctionCallNode Then
-
-            '                    CType(child, FunctionCallNode).Function = CType(some.Types(0), IFunction)
-            '                Else
-            '                    e.Type = some.Types(0)
-            '                End If
-            '            End If
-
-            '        End If
-
-            '    End Sub)
 
         End Sub
 

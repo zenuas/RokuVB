@@ -91,7 +91,6 @@
     <Compile Include="Manager\RkCILNamespace.vb" />
     <Compile Include="Manager\RkCILStruct.vb" />
     <Compile Include="Manager\RkCILFunction.vb" />
-    <Compile Include="Manager\RkLateBind.vb" />
     <Compile Include="Manager\RkProperty.vb" />
     <None Include="roku.y" />
   </ItemGroup>
