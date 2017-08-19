@@ -70,6 +70,26 @@ Namespace Parser
             Return let_
         End Function
 
+        Protected Overridable Function CreateFunctionCallNode(
+                expr As IEvaluableNode,
+                ParamArray args() As IEvaluableNode
+            ) As FunctionCallNode
+
+            Dim fcall As New FunctionCallNode With {.Expression = expr, .Arguments = args}
+            fcall.AppendLineNumber(expr)
+            Return fcall
+        End Function
+
+        Protected Overridable Function CreateFunctionCallNode(
+                ope As Token,
+                ParamArray args() As IEvaluableNode
+            ) As FunctionCallNode
+
+            Dim expr = Me.CreateVariableNode(ope)
+            expr.AppendLineNumber(args(0))
+            Return Me.CreateFunctionCallNode(expr, args)
+        End Function
+
         Protected Overridable Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String,
@@ -110,15 +130,15 @@ Namespace Parser
             Return list
         End Function
 
-        Protected Overridable Function CreateVariableNode(s As String) As VariableNode
-
-            Return New VariableNode(s)
-        End Function
-
         Protected Overridable Function CreateVariableNode(s As Token) As VariableNode
 
-            Dim var_ = Me.CreateVariableNode(s.Name)
-            var_.AppendLineNumber(s)
+            Return Me.CreateVariableNode(s.Name, s)
+        End Function
+
+        Protected Overridable Function CreateVariableNode(s As String, pos As Token) As VariableNode
+
+            Dim var_ = New VariableNode(s)
+            var_.AppendLineNumber(pos)
 
             Return var_
         End Function

@@ -30,7 +30,7 @@ Namespace Architecture
             If subsystem <> PEFileKinds.Dll Then
 
                 ' global sub main() {entrypoint.###.ctor();}
-                Dim ctor = entrypoint.LoadFunction(".ctor")
+                Dim ctor = entrypoint.LoadStaticFunction(".ctor")
                 If ctor IsNot Nothing Then asm.SetEntryPoint(functions(ctor), subsystem)
             End If
             Me.Module.CreateGlobalFunctions()

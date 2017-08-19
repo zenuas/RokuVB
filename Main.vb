@@ -92,6 +92,7 @@ Public Class Main
 
             Compiler.Typing.TypeInference(ns.Value, root, root.GetNamespace(ns.Key))
         Next
+        If opt.TypeResult IsNot Nothing Then TypeResult(opt.TypeResult, loader.Root)
 
         For Each ns In loader.Root.Namespaces
 
@@ -101,6 +102,34 @@ Public Class Main
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
         Dim arch As New Architecture.CommonIL
         arch.Assemble(root, root.Namespaces(loader.GetNamespace(opt.EntryPoiny)), opt.Output, Emit.PEFileKinds.ConsoleApplication)
+    End Sub
+
+    Public Shared Sub TypeResult(out As IO.TextWriter, node As INode)
+
+        Util.Traverse.NodesOnce(
+            node,
+            0,
+            Sub(parent, ref, child, user, isfirst, next_)
+
+                Dim name = child.GetType.Name
+                If child.LineNumber.HasValue Then name += $"( {child.LineNumber}, {child.LineColumn} )"
+                Select Case True
+                    Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $" {v.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $" {v.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $" {v.Numeric} : {v.Type?.ToString}"
+                    Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $" {v.String} : {v.Type?.ToString}"
+                    Case TypeOf child Is FunctionNode : Dim v = CType(child, FunctionNode) : name += $" {v.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is ExpressionNode : Dim v = CType(child, ExpressionNode) : name += $" {v.Operator} : {v.Type?.ToString}"
+                    Case TypeOf child Is DeclareNode : Dim v = CType(child, DeclareNode) : name += $" {v.Name.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is LetNode : Dim v = CType(child, LetNode) : name += $" {v.Var.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is StructNode : Dim v = CType(child, StructNode) : name += $" {v.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is FunctionCallNode : Dim v = CType(child, FunctionCallNode) : name += $" {v.Function?.ToString} : {v.Type?.ToString}"
+                End Select
+
+                out.WriteLine($"{String.Join("", "  ".Pattern(user))}{name}")
+
+                next_(child, user + 1)
+            End Sub)
     End Sub
 
     Public Shared Sub NodeDumpGraph(out As IO.TextWriter, node As INode)

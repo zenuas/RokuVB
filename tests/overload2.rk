@@ -1,1 +1,43 @@
-print(1)
+var i32 = 32
+var i64 = 64
+var i16 = 16
+var i8  = 8
+
+#=>Int32
+#=>Int64
+#=>Int16
+#=>Byte
+show(i32)
+show(i64)
+show(i16)
+show(i8)
+
+plus_32(i32)
+plus_64(i64)
+plus_16(i16)
+plus_8(i8)
+
+sub show(n: Int32)
+	print("Int32")
+
+sub show(n: Int64)
+	print("Int64")
+
+sub show(n: Int16)
+	print("Int16")
+
+sub show(n: Byte)
+	print("Byte")
+
+
+sub plus_32(n: Int32)
+	var a = n
+
+sub plus_64(n: Int64)
+	var a = n
+
+sub plus_16(n: Int16)
+	var a = n
+
+sub plus_8(n: Byte)
+	var a = n

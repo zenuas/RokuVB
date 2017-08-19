@@ -16,6 +16,9 @@ Namespace Command
         <CommandLine("N", "node-dump")>
         Public Overridable Property NodeDump As IO.TextWriter = Nothing
 
+        <CommandLine("T", "type-result")>
+        Public Overridable Property TypeResult As IO.TextWriter = Nothing
+
         Public Overridable ReadOnly Property Libraries As New List(Of String)
 
         <CommandLine("l", "lib")>

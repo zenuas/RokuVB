@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
+Imports System.Diagnostics
 Imports Roku.Node
 Imports Roku.Operator
 Imports Roku.IntermediateCode
@@ -96,6 +97,74 @@ Namespace Manager
             Return clone
         End Function
 
+        Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
+
+            Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
+                Sub(arg, p, gen_to_type)
+
+                    If TypeOf arg Is RkGenericEntry Then
+
+                        gen_to_type(CType(arg, RkGenericEntry), p)
+
+                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
+
+                        Dim struct = CType(arg, RkStruct)
+                        struct.Generics.Do(
+                            Sub(x, i)
+
+                                Dim apply = CType(p, RkStruct).Apply(i)
+                                Dim v As RkStruct
+                                If apply Is Nothing OrElse TypeOf apply Is RkSomeType OrElse TypeOf apply Is RkGenericEntry Then
+
+                                    v = Nothing
+
+                                ElseIf TypeOf apply Is RkStruct Then
+
+                                    v = CType(apply, RkStruct)
+                                Else
+
+                                    Throw New Exception("unknown apply")
+                                End If
+                                generic_match(x, v, gen_to_type)
+                            End Sub)
+                    End If
+                End Sub
+
+            Dim xs(Me.Generics.Count - 1) As IType
+            For i = 0 To Me.Arguments.Count - 1
+
+                generic_match(Me.Arguments(i).Value, args(i),
+                    Sub(atname, p)
+
+                        Dim x = xs(atname.ApplyIndex)
+                        If x Is Nothing Then
+
+                            xs(atname.ApplyIndex) = p
+
+                        ElseIf x.HasIndefinite Then
+
+                            CType(x, RkSomeType).Merge(p)
+
+                        ElseIf p.HasIndefinite Then
+
+                            CType(p, RkSomeType).Merge(x)
+                            xs(atname.ApplyIndex) = p
+                        Else
+
+                            Debug.Assert(x.Is(p))
+                        End If
+                    End Sub)
+            Next
+
+            Return xs
+        End Function
+
+        Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
+
+            If Not Me.HasGeneric Then Return Me
+            Return CType(Me.FixedGeneric(Me.ArgumentsToApply(args)), RkFunction)
+        End Function
+
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
             Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
@@ -138,9 +207,9 @@ Namespace Manager
             Return Me.ToString
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
-            Return False
+            Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
         End Function
 
         Public Overrides Function ToString() As String

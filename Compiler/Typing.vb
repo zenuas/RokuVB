@@ -28,7 +28,7 @@ Namespace Compiler
 
                         env.AddLet(var.Key, Nothing)
                     Next
-                    env.Initializer = CType(root.LoadFunction("#Alloc", env), RkNativeFunction)
+                    env.Initializer = CType(root.LoadStaticFunction("#Alloc", env), RkNativeFunction)
                     closures.Add(scope, env)
                     root.AddStruct(env)
                     scope.Owner.Function.Closure = env
@@ -124,7 +124,12 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node_num = CType(child, NumericNode)
-                        node_num.Type = root.LoadStruct("Int32")
+                        'node_num.Type = root.LoadStruct("Int32")
+                        node_num.Type = New RkSomeType({
+                            root.LoadStruct("Int32"), root.LoadStruct("Int64"), root.LoadStruct("Int16"), root.LoadStruct("Byte")})
+                        'node_num.Type = New RkSomeType({
+                        '    root.LoadStruct("Int32"), root.LoadStruct("Int64"), root.LoadStruct("Int16"), root.LoadStruct("Byte"),
+                        '    root.LoadStruct("UInt32"), root.LoadStruct("UInt64"), root.LoadStruct("UInt16"), root.LoadStruct("SByte")})
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
@@ -370,7 +375,7 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim byname = CType(expr, RkByName)
-                        Dim r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+                        Dim r = byname.Namespace.TryLoadFunction(byname.Name, args.ToArray)
                         If r IsNot Nothing Then Return r
 
                         If TypeOf expr Is RkByNameWithReceiver Then
@@ -386,7 +391,7 @@ Namespace Compiler
                             End If
 
                             args.Insert(0, receiver.Type)
-                            r = byname.Namespace.TryLoadFunction_SkipClosureArgument(byname.Name, args.ToArray)
+                            r = byname.Namespace.TryLoadFunction(byname.Name, args.ToArray)
 
                             If r IsNot Nothing Then
 
@@ -407,13 +412,13 @@ Namespace Compiler
                         Coverage.Case()
                         Dim struct = CType(expr, RkStruct)
                         args.Insert(0, expr)
-                        Return struct.Namespace.LoadFunction("#Alloc", args.ToArray)
+                        Return struct.Namespace.LoadStaticFunction("#Alloc", args.ToArray)
 
                     ElseIf TypeOf expr Is RkNamespace Then
 
                         Coverage.Case()
                         Dim nsname = CType(expr, RkNamespace)
-                        Return nsname.TryLoadFunction_SkipClosureArgument(nsname.Name, args.ToArray)
+                        Return nsname.TryLoadFunction(nsname.Name, args.ToArray)
 
                     ElseIf TypeOf expr Is RkFunction Then
 
@@ -425,17 +430,18 @@ Namespace Compiler
                     Return Nothing
                 End Function
 
-            Dim some_merge =
-                Sub(base As IType, arg As IType)
+            Dim apply_feedback =
+                Sub(f As IFunction, node_call As FunctionCallNode)
 
-                    If TypeOf base IsNot IApply OrElse TypeOf arg IsNot IApply Then Return
-                    Dim base_a = CType(base, IApply)
-                    Dim arg_a = CType(arg, IApply)
+                    If f.HasGeneric Then
 
-                    For i = 0 To arg_a.Apply.Count - 1
+                        Dim apply = f.ArgumentsToApply(node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                        Dim a = 1
+                    Else
 
-                        base_a.Apply(i) = arg_a.Apply(i)
-                    Next
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = x.Value)
+                        Dim a = 1
+                    End If
                 End Sub
 
             Do While True
@@ -496,6 +502,27 @@ Namespace Compiler
                                     Coverage.Case()
                                 End If
                                 Coverage.Case()
+
+                            ElseIf node_let.Type IsNot Nothing Then
+
+                                If node_let.Type.HasIndefinite Then
+
+                                    If CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
+
+                                        node_let.Type = node_let.Expression.Type
+                                        type_fix = True
+                                    End If
+
+                                ElseIf node_let.Type.HasGeneric AndAlso TypeOf node_let.Expression Is IFeedback Then
+
+                                    If CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
+
+                                        node_let.Type = node_let.Expression.Type
+                                        type_fix = True
+                                    End If
+
+                                End If
+
                             End If
 
                         ElseIf TypeOf child Is ExpressionNode Then
@@ -504,7 +531,7 @@ Namespace Compiler
                             set_type(node_expr,
                                 Function()
 
-                                    If node_expr.Function Is Nothing Then node_expr.Function = current.Namespace.LoadFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
+                                    If node_expr.Function Is Nothing Then node_expr.Function = current.Namespace.LoadStaticFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
                                     Coverage.Case()
                                     Return node_expr.Function.Return
                                 End Function)
@@ -557,16 +584,17 @@ Namespace Compiler
                                 Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
                                 If node_call.Function IsNot Nothing Then
 
-                                    If node_call.Function.Indefinite Then
+                                    If node_call.Function.HasIndefinite Then
 
                                         Coverage.Case()
                                     Else
 
-                                        node_call.Arguments.Do(Sub(x, i) some_merge(x.Type, node_call.Function.Arguments(i).Value))
+                                        apply_feedback(node_call.Function, node_call)
+                                        'node_call.Arguments.Do(Sub(x, i) some_merge(x, node_call.Function.Arguments(i).Value))
                                         If node_call.Function.HasGeneric Then
 
-                                            node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
-                                            node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
+                                            'node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
+                                            'node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
                                             Coverage.Case()
 
                                         ElseIf node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
@@ -583,11 +611,23 @@ Namespace Compiler
 
                                 Dim some = CType(node_call.Function, RkSomeType)
                                 Dim before = some.Types.Count
-                                If before > 1 Then
+                                If some.Return Is Nothing OrElse (TypeOf some.Return Is RkSomeType AndAlso CType(some.Return, RkSomeType).Types.Count = 0) Then
 
-                                    some.Types = some.Types.Where(Function(x) some.Return.Is(CType(x, RkFunction).Return)).ToList
-                                    If before <> some.Types.Count Then type_fix = True
+                                    Dim x = fixed_function(node_call)
+                                    If x IsNot node_call.Function Then
+
+                                        node_call.Function = x
+                                        type_fix = True
+                                    End If
                                     Coverage.Case()
+                                Else
+
+                                    If before > 1 Then
+
+                                        some.Types = some.Types.Where(Function(x) some.Return.Is(CType(x, RkFunction).Return)).ToList
+                                        If before <> some.Types.Count Then type_fix = True
+                                        Coverage.Case()
+                                    End If
                                 End If
                             End If
 

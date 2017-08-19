@@ -111,6 +111,19 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Iterator Function Pattern(Of T)(self As IEnumerable(Of T), n As Integer) As IEnumerable(Of T)
+
+            For i = 1 To n
+
+                For Each x In self
+
+                    Yield x
+                Next
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Function ToList(Of T)(self As IEnumerable(Of T)) As List(Of T)
 
             Return New List(Of T)(self)
@@ -279,6 +292,23 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T), match As Func(Of T, T, Boolean)) As IEnumerable(Of T)
+
+            For Each x In xs
+
+                For Each v In self
+
+                    If match(v, x) Then
+
+                        Yield x
+                        Exit For
+                    End If
+                Next
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Iterator Function Where(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As IEnumerable(Of T)
 
             Dim i = 0
@@ -300,31 +330,11 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Iterator Function Where(Of R As Class, T)(self As IEnumerable(Of T)) As IEnumerable(Of R)
+        Public Iterator Function By(Of R As Class, T)(self As IEnumerable(Of T)) As IEnumerable(Of R)
 
             For Each x In self
 
                 If TypeOf x Is R Then Yield TryCast(x, R)
-            Next
-        End Function
-
-        <Extension>
-        <DebuggerHidden>
-        Public Iterator Function Where(Of R As Class, T)(self As IEnumerable(Of T), f As Func(Of R, Integer, Boolean)) As IEnumerable(Of R)
-
-            For Each x In self.Where(Of R).Where(f)
-
-                Yield x
-            Next
-        End Function
-
-        <Extension>
-        <DebuggerHidden>
-        Public Iterator Function Where(Of R As Class, T)(self As IEnumerable(Of T), f As Func(Of R, Boolean)) As IEnumerable(Of R)
-
-            For Each x In self.Where(Of R).Where(f)
-
-                Yield x
             Next
         End Function
 

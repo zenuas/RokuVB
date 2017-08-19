@@ -47,7 +47,7 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
             Return False
         End Function

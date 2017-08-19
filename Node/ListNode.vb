@@ -1,4 +1,3 @@
-Imports System.Text
 Imports System.Collections.Generic
 Imports Roku.Manager
 
@@ -7,11 +6,23 @@ Namespace Node
 
     Public Class ListNode(Of T As INode)
         Inherits BaseNode
-        Implements IEvaluableNode
+        Implements IEvaluableNode, IFeedback
 
 
         Public Overridable ReadOnly Property List As New List(Of T)
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+
+        Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
+
+            Dim apply = CType(t, IApply).Apply(0)
+            Dim fix = False
+            For Each x In Me.List
+
+                If TypeOf x Is IFeedback Then fix = CType(x, IFeedback).Feedback(apply) OrElse fix
+            Next
+            Return fix
+        End Function
+
     End Class
 
 End Namespace

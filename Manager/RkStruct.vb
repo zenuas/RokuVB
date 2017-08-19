@@ -115,9 +115,9 @@ Namespace Manager
             Return Me.ToString
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
-            Return False
+            Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
         End Function
 
         Public Overrides Function ToString() As String

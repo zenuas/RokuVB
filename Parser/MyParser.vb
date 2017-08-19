@@ -353,12 +353,12 @@ Namespace Parser
 
                 Case -29
                     Debug.WriteLine("expr : expr OPE expr")
-                    yy_value = Me.CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetToken(-2), Token).Name, CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.CreateFunctionCallNode(CType(Me.GetToken(-2), Token), CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -30
                     Debug.WriteLine("expr : expr '[' expr ']'")
-                    yy_value = Me.CreateExpressionNode(CType(Me.GetValue(-4), IEvaluableNode), "[]", CType(Me.GetValue(-2), IEvaluableNode))
+                    yy_value = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 4, yy_value)
 
                 Case -31
@@ -373,7 +373,7 @@ Namespace Parser
 
                 Case -33
                     Debug.WriteLine("call : expr '(' list ')'")
-                    yy_value = New FunctionCallNode(CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableListNode).List.ToArray)
+                    yy_value = Me.CreateFunctionCallNode(CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableListNode).List.ToArray)
                     yy_token = Me.DoAction(SymbolTypes.[call], 4, yy_value)
 
                 Case -34

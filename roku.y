@@ -81,14 +81,14 @@ expr : var
      | lambda
      | '[' list ']'      {$$ = $2}
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
-#     | OPE expr          {$$ = Me.CreateExpressionNode($2, $1.Name)}
+#     | OPE expr          {$$ = Me.CreateFunctionCallNode($1, $2)}
      | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}
-     | expr OPE expr     {$$ = Me.CreateExpressionNode($1, $2.Name, $3)}
-     | expr '[' expr ']' {$$ = Me.CreateExpressionNode($1, "[]", $3)}
+     | expr OPE expr     {$$ = Me.CreateFunctionCallNode($2, $1, $3)}
+     | expr '[' expr ']' {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
      | null
 
-call : expr '(' list ')' {$$ = New FunctionCallNode($1, $3.List.ToArray)}
+call : expr '(' list ')' {$$ = Me.CreateFunctionCallNode($1, $3.List.ToArray)}
 
 list  : void             {$$ = Me.CreateListNode(Of IEvaluableNode)}
       | listn extra

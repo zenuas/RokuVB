@@ -54,7 +54,7 @@ Namespace Manager
                 If Me.Types Is Nothing OrElse Me.Types.Count = 0 Then Return Nothing
                 If Me.Types.Count = 1 Then Return Me.Types(0)
 
-                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkSomeType(Me.Types.Where(Of RkFunction)(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
+                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkSomeType(Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
                 Return Me.ReturnCache
             End Get
             Set(value As IType)
@@ -117,27 +117,38 @@ Namespace Manager
             End Get
         End Property
 
-        Public Overridable Sub Merge(type As IType)
+        Public Overridable Function Merge(type As IType) As Boolean
 
-            Me.Merge({type})
-        End Sub
+            If TypeOf type Is RkSomeType Then
 
-        Public Overridable Sub Merge(types As IEnumerable(Of IType))
+                Return Me.Merge(CType(type, RkSomeType).Types)
+            Else
+
+                Return Me.Merge({type})
+            End If
+        End Function
+
+        Public Overridable Function Merge(types As IEnumerable(Of IType)) As Boolean
 
             Me.ReturnCache = Nothing
             If Me.Types Is Nothing Then
 
                 Me.Types = types.ToList
+                Return True
 
             ElseIf Me.Types.Count > 0 Then
 
-                Me.Types = Me.Types.Merge(types).ToList
+                Dim before = Me.Types.Count
+                Me.Types = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList
+                Return before <> Me.Types.Count
             End If
-        End Sub
+
+            Return False
+        End Function
 
         Public Overridable Function GetDecideType() As IType
 
-            If Me.Indefinite Then Throw New Exception("operation is failed")
+            If Me.HasIndefinite Then Throw New Exception("operation is failed")
             Return Me.Types(0)
         End Function
 
@@ -174,6 +185,16 @@ Namespace Manager
             Return Me.GetDecideType.FixedGeneric(values)
         End Function
 
+        Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
+
+            Return CType(Me.GetDecideType, IFunction).ArgumentsToApply(args)
+        End Function
+
+        Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
+
+            Return CType(Me.GetDecideType, IFunction).ApplyFunction(args)
+        End Function
+
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
             Return Me.GetDecideType.HasGeneric
@@ -204,14 +225,14 @@ Namespace Manager
             Return CType(Me.GetDecideType, IFunction).CreateManglingName
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
             Return Me.Types Is Nothing OrElse Me.Types.Count <> 1
         End Function
 
         Public Overrides Function ToString() As String
 
-            If Me.Indefinite Then Return "_"
+            If Me.HasIndefinite Then Return String.Join("|", Me.Types)
             Return Me.GetDecideType.Name
         End Function
     End Class

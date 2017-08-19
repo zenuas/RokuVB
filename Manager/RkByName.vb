@@ -44,10 +44,10 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Throw New NotImplementedException()
+            Return False
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
             Return False
         End Function

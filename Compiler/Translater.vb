@@ -297,7 +297,7 @@ Namespace Compiler
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
                         For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
-                            struct.Initializer = CType(struct.Namespace.LoadFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
+                            struct.Initializer = CType(struct.Namespace.LoadStaticFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
                         Coverage.Case()

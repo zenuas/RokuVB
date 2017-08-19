@@ -87,7 +87,7 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
+        Public Overridable Iterator Function FindLoadStaticFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
             For Each f In Me.FindLoadFunction(name, Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
 
@@ -96,18 +96,18 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Iterator Function FindLoadFunction_SkipClosureArgument(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
+        Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
             For Each f In Me.FindLoadFunction(name,
                     Function(x)
 
                         If x.Arguments.Count = args.Length Then
 
-                            Return x.Arguments.And(Function(arg, i) arg.Value.Is(args(i)))
+                            Return x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i)))
                         Else
 
                             Dim args_without_closure = x.Arguments.Where(Function(arg) TypeOf arg.Value IsNot RkStruct OrElse Not CType(arg.Value, RkStruct).ClosureEnvironment).ToList
-                            Return args_without_closure.Count = args.Length AndAlso args_without_closure.And(Function(arg, i) arg.Value.Is(args(i)))
+                            Return args_without_closure.Count = args.Length AndAlso args_without_closure.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i)))
                         End If
                     End Function)
 
@@ -128,78 +128,17 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Function ApplyFunction(f As IFunction, ParamArray args() As IType) As IFunction
+        Public Overridable Function LoadStaticFunction(name As String, ParamArray args() As IType) As IFunction
 
-            If Not f.HasGeneric Then Return f
-
-            Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
-                Sub(arg, p, gen_to_type)
-
-                    If TypeOf arg Is RkGenericEntry Then
-
-                        gen_to_type(CType(arg, RkGenericEntry), p)
-
-                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
-
-                        Dim struct = CType(arg, RkStruct)
-                        struct.Generics.Do(
-                            Sub(x, i)
-
-                                Dim apply = CType(p, RkStruct).Apply(i)
-                                Dim v As RkStruct
-                                If apply Is Nothing OrElse TypeOf apply Is RkSomeType Then
-
-                                    v = Nothing
-
-                                ElseIf TypeOf apply Is RkStruct Then
-
-                                    v = CType(apply, RkStruct)
-
-                                Else
-
-                                    Throw New Exception("unknown apply")
-                                End If
-                                generic_match(x, v, gen_to_type)
-                            End Sub)
-                    End If
-                End Sub
-
-            Dim xs(f.Generics.Count - 1) As IType
-            For i = 0 To f.Arguments.Count - 1
-
-                generic_match(f.Arguments(i).Value, args(i),
-                    Sub(atname, p)
-
-                        Dim x = xs(atname.ApplyIndex)
-                        If x Is Nothing Then
-
-                            xs(atname.ApplyIndex) = p
-
-                        ElseIf x.Indefinite Then
-
-                            CType(x, RkSomeType).Merge(p)
-
-                        ElseIf p.Indefinite Then
-
-                            CType(p, RkSomeType).Merge(x)
-                            xs(atname.ApplyIndex) = p
-                        Else
-
-                            Debug.Assert(x.Is(p))
-                        End If
-                    End Sub)
-            Next
-
-            Return CType(f.FixedGeneric(xs), RkFunction)
-
-        End Function
-
-        Public Overridable Function LoadFunction(name As String, ParamArray args() As IType) As IFunction
-
-            Dim x = Me.TryLoadFunction(name, args)
+            Dim x = Me.TryLoadStaticFunction(name, args)
             If x IsNot Nothing Then Return x
 
             Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Overridable Function TryLoadStaticFunction(name As String, ParamArray args() As IType) As IFunction
+
+            Return Me.MergeLoadFunctions(Me.FindLoadStaticFunction(name, args).ToList, args)
         End Function
 
         Public Overridable Function TryLoadFunction(name As String, ParamArray args() As IType) As IFunction
@@ -207,21 +146,23 @@ Namespace Manager
             Return Me.MergeLoadFunctions(Me.FindLoadFunction(name, args).ToList, args)
         End Function
 
-        Public Overridable Function TryLoadFunction_SkipClosureArgument(name As String, ParamArray args() As IType) As IFunction
-
-            Return Me.MergeLoadFunctions(Me.FindLoadFunction_SkipClosureArgument(name, args).ToList, args)
-        End Function
-
         Public Overridable Function MergeLoadFunctions(fs As IList(Of IFunction), ParamArray args() As IType) As IFunction
 
-            If fs.Count = 0 Then Return Nothing
-            fs.Do(Function(x) Me.ApplyFunction(x, args))
-            If fs.Count = 1 Then Return fs(0)
+            If fs.Count = 0 Then
 
-            fs = fs.Unique.ToList
-            If fs.Count = 1 Then Return fs(0)
+                Return Nothing
 
-            Return New RkSomeType(fs)
+            ElseIf fs.Count = 1 Then
+
+                Return fs(0).ApplyFunction(args)
+            Else
+
+                Dim f = fs.FindFirstOrNull(Function(x) Not x.HasGeneric)
+                If f IsNot Nothing Then Return f
+
+                fs.Do(Function(x) x.ApplyFunction(args))
+                Return New RkSomeType(fs)
+            End If
         End Function
 
         Public Overridable Function LoadNamespace(name As String) As RkNamespace
@@ -366,7 +307,7 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
-        Public Overridable Function Indefinite() As Boolean Implements IType.Indefinite
+        Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
             Return False
         End Function
