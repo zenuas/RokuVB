@@ -91,7 +91,16 @@ Namespace Compiler
                         Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Namespace = current}
                         node_func.Type = rk_func
                         rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
-                        If node_func.Return?.IsGeneric Then rk_func.Return = rk_func.DefineGeneric(node_func.Return.Name)
+
+                        If node_func.Return?.IsGeneric Then
+
+                            Dim r = rk_func.DefineGeneric(node_func.Return.Name)
+                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Namespace = current, .Name = "return"}
+                            ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = r})
+                            rk_func.Return = r
+                            current.AddFunction(ret)
+                            Coverage.Case()
+                        End If
                         node_func.Bind.Do(
                             Sub(x)
 
@@ -179,7 +188,14 @@ Namespace Compiler
 
                                 rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
                             Next
-                            rk_function.Return = node_func.Return?.Type
+                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Namespace = current.Namespace, .Name = "return"}
+                            If node_func.Return IsNot Nothing Then
+
+                                ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = node_func.Return.Type})
+                                rk_function.Return = node_func.Return.Type
+                            End If
+                            current.Namespace.AddFunction(ret)
+                            Coverage.Case()
                         End If
                         Coverage.Case()
 

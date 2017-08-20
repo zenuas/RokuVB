@@ -17,7 +17,6 @@ Namespace Compiler
         Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
             Dim compleat As New Dictionary(Of IFunction, Boolean)
-            Dim returns = root.Functions("return")
 
             Dim real_type As Func(Of IType, IType) =
                 Function(x)
@@ -101,7 +100,7 @@ Namespace Compiler
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
                                 Dim func = CType(stmt, FunctionCallNode)
-                                If returns.Or(Function(ret) func.Function Is ret) Then
+                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Return Then
 
                                     Coverage.Case()
                                     If func.Arguments.Length > 0 Then

@@ -97,11 +97,11 @@ Namespace Manager
             Me.AddFunction(print_int64, "print")
             Me.AddFunction(print_int32, "print")
 
-            ' sub return(x: @T)
-            Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
-            Dim return_t = return_.DefineGeneric("@T")
-            return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
-            Me.AddFunction(return_)
+            '' sub return(x: @T)
+            'Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
+            'Dim return_t = return_.DefineGeneric("@T")
+            'return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
+            'Me.AddFunction(return_)
 
             ' sub #Alloc(x: @T) @T
             Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Namespace = Me}
