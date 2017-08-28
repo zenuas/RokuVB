@@ -37,7 +37,15 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Return Me Is t
+            If Me Is t Then Return True
+            If TypeOf t IsNot RkFunction Then Return False
+
+            Dim f = CType(t, RkFunction)
+            If Me.Namespace Is f.Namespace AndAlso
+                ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse (Me.Return IsNot Nothing AndAlso Me.Return.Is(f.Return))) AndAlso
+                (Me.Arguments.Count = f.Arguments.Count AndAlso Me.Arguments.And(Function(x, i) x.Value.Is(f.Arguments(i).Value))) Then Return True
+
+            Return False
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric

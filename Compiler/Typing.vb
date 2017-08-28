@@ -16,26 +16,6 @@ Namespace Compiler
 
         Public Shared Sub Prototype(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
-            Dim closures As New Dictionary(Of IScopeNode, RkStruct)
-            Dim make_closure =
-                Function(scope As IScopeNode)
-
-                    If closures.ContainsKey(scope) Then Return closures(scope)
-
-                    Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
-                    env.Name = $"##{scope.Owner.Name}"
-                    For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
-
-                        env.AddLet(var.Key, Nothing)
-                    Next
-                    env.Initializer = CType(root.LoadStaticFunction("#Alloc", env), RkNativeFunction)
-                    closures.Add(scope, env)
-                    root.AddStruct(env)
-                    scope.Owner.Function.Closure = env
-                    Coverage.Case()
-                    Return env
-                End Function
-
             Util.Traverse.NodesOnce(
                 node,
                 ns,
@@ -101,13 +81,6 @@ Namespace Compiler
                             current.AddFunction(ret)
                             Coverage.Case()
                         End If
-                        node_func.Bind.Do(
-                            Sub(x)
-
-                                Dim env = make_closure(x.Key)
-                                rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
-                                Coverage.Case()
-                            End Sub)
                         current.AddFunction(rk_func)
                         Coverage.Case()
                     End If
@@ -242,12 +215,6 @@ Namespace Compiler
 
                     If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
                     Throw New Exception("struct not found")
-                End Function
-
-            Dim get_closure =
-                Function(current As IScopeNode) As RkStruct
-
-                    Return current.Owner.Function.Closure
                 End Function
 
             Dim node_deep_copy =
@@ -428,7 +395,7 @@ Namespace Compiler
                         Coverage.Case()
                         Dim struct = CType(expr, RkStruct)
                         args.Insert(0, expr)
-                        Return struct.Namespace.LoadStaticFunction("#Alloc", args.ToArray)
+                        Return struct.Namespace.LoadFunction("#Alloc", args.ToArray)
 
                     ElseIf TypeOf expr Is RkNamespace Then
 
@@ -512,11 +479,6 @@ Namespace Compiler
                             If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
 
                                 node_let.Var.Type = node_let.Type
-                                If node_let.Var.ClosureEnvironment Then
-
-                                    get_closure(node_let.Var.Scope).Local(node_let.Var.Name) = node_let.Type
-                                    Coverage.Case()
-                                End If
                                 Coverage.Case()
 
                             ElseIf node_let.Type IsNot Nothing Then
@@ -547,7 +509,7 @@ Namespace Compiler
                             set_type(node_expr,
                                 Function()
 
-                                    If node_expr.Function Is Nothing Then node_expr.Function = current.Namespace.LoadStaticFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
+                                    If node_expr.Function Is Nothing Then node_expr.Function = current.Namespace.LoadFunction(node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
                                     Coverage.Case()
                                     Return node_expr.Function.Return
                                 End Function)
@@ -582,7 +544,6 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            If node_declare.Name.ClosureEnvironment Then get_closure(node_declare.Name.Scope).Local(node_declare.Name.Name) = node_declare.Type.Type
                             node_declare.Name.Type = node_declare.Type.Type
                             Coverage.Case()
 

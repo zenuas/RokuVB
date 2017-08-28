@@ -96,6 +96,7 @@ Public Class Main
 
         For Each ns In loader.Root.Namespaces
 
+            Compiler.Translater.ClosureTranslate(ns.Value, root, root.GetNamespace(ns.Key))
             Compiler.Translater.Translate(ns.Value, root, root.GetNamespace(ns.Key))
         Next
 

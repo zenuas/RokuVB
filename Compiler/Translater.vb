@@ -14,6 +14,53 @@ Namespace Compiler
 
     Public Class Translater
 
+        Public Shared Sub ClosureTranslate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+
+            Dim closures As New Dictionary(Of IScopeNode, RkStruct)
+            Dim make_closure =
+                Function(scope As IScopeNode)
+
+                    If closures.ContainsKey(scope) Then Return closures(scope)
+
+                    Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
+                    env.Name = $"##{scope.Owner.Name}"
+                    For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
+
+                        env.AddLet(var.Key, CType(var.Value, VariableNode).Type)
+                    Next
+                    env.Initializer = CType(root.LoadFunction("#Alloc", env), RkNativeFunction)
+                    closures.Add(scope, env)
+                    root.AddStruct(env)
+                    scope.Owner.Function.Closure = env
+                    Coverage.Case()
+                    Return env
+                End Function
+
+            Util.Traverse.NodesOnce(
+                node,
+                ns,
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim node_func = CType(child, FunctionNode)
+                        Dim rk_func = CType(node_func.Type, RkFunction)
+                        node_func.Bind.Do(
+                            Sub(x)
+
+                                Dim env = make_closure(x.Key)
+                                rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
+                                Coverage.Case()
+                            End Sub)
+                        Coverage.Case()
+                    End If
+
+                    next_(child, current)
+                End Sub)
+        End Sub
+
         Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
 
             Dim compleat As New Dictionary(Of IFunction, Boolean)
@@ -296,7 +343,7 @@ Namespace Compiler
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
                         For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
-                            struct.Initializer = CType(struct.Namespace.LoadStaticFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
+                            struct.Initializer = CType(struct.Namespace.LoadFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
                         Coverage.Case()

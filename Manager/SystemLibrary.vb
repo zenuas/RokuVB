@@ -86,13 +86,13 @@ Namespace Manager
             Me.AddStruct(str)
 
             ' sub [](self: Array(@T), index: Int32) @T
-            Dim array_index = arr.FunctionNamespace.LoadStaticFunction("Item", arr, int32)
+            Dim array_index = arr.FunctionNamespace.LoadFunction("Item", arr, int32)
             Me.AddFunction(array_index, "[]")
 
             ' sub print(s: @T)
-            Dim print_str = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadStaticFunction("WriteLine", str)
-            Dim print_int64 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadStaticFunction("WriteLine", int64)
-            Dim print_int32 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadStaticFunction("WriteLine", int32)
+            Dim print_str = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", str)
+            Dim print_int64 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", int64)
+            Dim print_int32 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", int32)
             Me.AddFunction(print_str, "print")
             Me.AddFunction(print_int64, "print")
             Me.AddFunction(print_int32, "print")

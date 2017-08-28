@@ -87,29 +87,9 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Iterator Function FindLoadStaticFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
-
-            For Each f In Me.FindLoadFunction(name, Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) arg.Value.Is(args(i))))
-
-                Yield f
-            Next
-
-        End Function
-
         Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
-            For Each f In Me.FindLoadFunction(name,
-                    Function(x)
-
-                        If x.Arguments.Count = args.Length Then
-
-                            Return x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i)))
-                        Else
-
-                            Dim args_without_closure = x.Arguments.Where(Function(arg) TypeOf arg.Value IsNot RkStruct OrElse Not CType(arg.Value, RkStruct).ClosureEnvironment).ToList
-                            Return args_without_closure.Count = args.Length AndAlso args_without_closure.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i)))
-                        End If
-                    End Function)
+            For Each f In Me.FindLoadFunction(name, Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
 
                 Yield f
             Next
@@ -128,17 +108,12 @@ Namespace Manager
 
         End Function
 
-        Public Overridable Function LoadStaticFunction(name As String, ParamArray args() As IType) As IFunction
+        Public Overridable Function LoadFunction(name As String, ParamArray args() As IType) As IFunction
 
-            Dim x = Me.TryLoadStaticFunction(name, args)
+            Dim x = Me.TryLoadFunction(name, args)
             If x IsNot Nothing Then Return x
 
             Throw New ArgumentException($"``{name}'' was not found")
-        End Function
-
-        Public Overridable Function TryLoadStaticFunction(name As String, ParamArray args() As IType) As IFunction
-
-            Return Me.MergeLoadFunctions(Me.FindLoadStaticFunction(name, args).ToList, args)
         End Function
 
         Public Overridable Function TryLoadFunction(name As String, ParamArray args() As IType) As IFunction
