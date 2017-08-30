@@ -20,6 +20,12 @@ Namespace Node
 
                 If TypeOf x Is IFeedback Then fix = CType(x, IFeedback).Feedback(apply) OrElse fix
             Next
+
+            If CType(Me.Type, RkStruct).Apply(0) IsNot apply Then
+
+                CType(Me.Type, RkStruct).Apply(0) = apply
+                fix = True
+            End If
             Return fix
         End Function
 

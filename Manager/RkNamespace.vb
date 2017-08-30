@@ -89,7 +89,7 @@ Namespace Manager
 
         Public Overridable Iterator Function FindLoadFunction(name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
-            For Each f In Me.FindLoadFunction(name, Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+            For Each f In Me.FindLoadFunction(name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
 
                 Yield f
             Next

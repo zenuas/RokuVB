@@ -22,12 +22,12 @@ Namespace Node
             If TypeOf Me.Type Is RkSomeType Then
 
                 Dim some = CType(Me.Type, RkSomeType)
-                some.Merge(t)
+                Return some.Merge(t)
             Else
 
                 Me.Type = t
+                Return True
             End If
-            Return True
         End Function
 
         Public Overrides Function ToString() As String

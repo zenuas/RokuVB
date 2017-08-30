@@ -210,13 +210,6 @@ Namespace Compiler
                     Throw New Exception("generic not found")
                 End Function
 
-            Dim get_struct =
-                Function(current As RkNamespace, n As IEvaluableNode)
-
-                    If TypeOf n Is VariableNode Then Return current.LoadStruct(CType(n, VariableNode).Name)
-                    Throw New Exception("struct not found")
-                End Function
-
             Dim node_deep_copy =
                 Function(n As INode)
 
@@ -276,7 +269,6 @@ Namespace Compiler
                     Next
                     If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
                     clone.Type = f
-                    f.FunctionNode = clone
 
                     Return clone
                 End Function
@@ -406,26 +398,16 @@ Namespace Compiler
                     ElseIf TypeOf expr Is RkFunction Then
 
                         Coverage.Case()
-                        Return CType(expr, RkFunction)
+                        Dim r = CType(expr, RkFunction)
+                        If Not r.HasGeneric Then Return r
+
+                        Coverage.Case()
+                        Return CType(r.FixedGeneric(r.ArgumentsToApply(f.Arguments.Map(Function(x) x.Type).ToArray)), IFunction)
                     End If
 
                     Debug.Fail("not yet")
                     Return Nothing
                 End Function
-
-            Dim apply_feedback =
-                Sub(f As IFunction, node_call As FunctionCallNode)
-
-                    If f.HasGeneric Then
-
-                        Dim apply = f.ArgumentsToApply(node_call.Arguments.Map(Function(x) x.Type).ToArray)
-                        Dim a = 1
-                    Else
-
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = x.Value)
-                        Dim a = 1
-                    End If
-                End Sub
 
             Do While True
 
@@ -489,6 +471,7 @@ Namespace Compiler
 
                                         node_let.Type = node_let.Expression.Type
                                         type_fix = True
+                                        Coverage.Case()
                                     End If
 
                                 ElseIf node_let.Type.HasGeneric AndAlso TypeOf node_let.Expression Is IFeedback Then
@@ -497,6 +480,7 @@ Namespace Compiler
 
                                         node_let.Type = node_let.Expression.Type
                                         type_fix = True
+                                        Coverage.Case()
                                     End If
 
                                 End If
@@ -559,30 +543,14 @@ Namespace Compiler
 
                                 node_call.Function = fixed_function(node_call)
                                 Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
-                                If node_call.Function IsNot Nothing Then
 
-                                    If node_call.Function.HasIndefinite Then
+                                If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
-                                        Coverage.Case()
-                                    Else
-
-                                        apply_feedback(node_call.Function, node_call)
-                                        'node_call.Arguments.Do(Sub(x, i) some_merge(x, node_call.Function.Arguments(i).Value))
-                                        If node_call.Function.HasGeneric Then
-
-                                            'node_call.Function = CType(node_call.Function.FixedGeneric(node_call.Arguments.Map(Function(x) x.Type).ToArray), RkFunction)
-                                            'node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
-                                            Coverage.Case()
-
-                                        ElseIf node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
-
-                                            node_call.FixedGenericFunction = function_generic_fixed_to_node(node_call.Function)
-                                            Coverage.Case()
-                                        End If
-                                        type_fix = True
-                                    End If
+                                    node_call.Function.FunctionNode = function_generic_fixed_to_node(node_call.Function)
+                                    node_call.FixedGenericFunction = node_call.Function.FunctionNode
                                     Coverage.Case()
                                 End If
+                                Coverage.Case()
 
                             ElseIf TypeOf node_call.Function Is RkSomeType Then
 
@@ -595,8 +563,8 @@ Namespace Compiler
 
                                         node_call.Function = x
                                         type_fix = True
+                                        Coverage.Case()
                                     End If
-                                    Coverage.Case()
                                 Else
 
                                     If before > 1 Then
@@ -661,6 +629,34 @@ Namespace Compiler
 
                 If Not type_fix Then Exit Do
             Loop
+
+            Util.Traverse.NodesOnce(
+                node,
+                0,
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    next_(child, current + 1)
+
+                    If TypeOf child Is IEvaluableNode Then
+
+                        Dim t = CType(child, IEvaluableNode).Type
+                        If t Is Nothing Then Return
+
+                        If TypeOf t Is RkSomeType Then
+
+                            'ToDo: priority check
+                            Dim some = CType(t, RkSomeType)
+                            If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
+                        End If
+
+                        'Debug.Assert(Not t.HasIndefinite)
+                        'Debug.Assert(Not t.HasGeneric)
+                    End If
+
+
+                End Sub)
 
         End Sub
 

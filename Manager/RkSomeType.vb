@@ -197,7 +197,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.GetDecideType.HasGeneric
+            Return Me.Types IsNot Nothing AndAlso Me.Types.Or(Function(x) x.HasGeneric)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
@@ -232,6 +232,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
+            If Me.Types Is Nothing Then Return "_"
             If Me.HasIndefinite Then Return String.Join("|", Me.Types)
             Return Me.GetDecideType.Name
         End Function

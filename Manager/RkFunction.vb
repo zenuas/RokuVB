@@ -121,14 +121,15 @@ Namespace Manager
                             Sub(x, i)
 
                                 Dim apply = CType(p, RkStruct).Apply(i)
-                                Dim v As RkStruct
-                                If apply Is Nothing OrElse TypeOf apply Is RkSomeType OrElse TypeOf apply Is RkGenericEntry Then
+                                Dim v As IType
+                                If apply Is Nothing OrElse TypeOf apply Is RkGenericEntry Then
 
                                     v = Nothing
 
-                                ElseIf TypeOf apply Is RkStruct Then
+                                ElseIf TypeOf apply Is RkStruct OrElse
+                                    TypeOf apply Is RkSomeType Then
 
-                                    v = CType(apply, RkStruct)
+                                    v = apply
                                 Else
 
                                     Throw New Exception("unknown apply")
