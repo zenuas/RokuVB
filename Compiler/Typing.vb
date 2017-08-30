@@ -265,7 +265,7 @@ Namespace Compiler
 
                     For i = 0 To clone.Arguments.Length - 1
 
-                        clone.Arguments(i).Type.Type = f.Arguments(base.Bind.Count + i).Value
+                        clone.Arguments(i).Type.Type = f.Arguments(i).Value
                     Next
                     If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
                     clone.Type = f
