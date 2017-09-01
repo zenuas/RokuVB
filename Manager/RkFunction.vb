@@ -184,7 +184,7 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkFunction With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me}
+            Dim x = New RkFunction With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me, .Parent = Me.Parent}
             x.Scope.AddFunction(x)
             Return x
         End Function
