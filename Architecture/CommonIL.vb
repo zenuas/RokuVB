@@ -79,18 +79,45 @@ Namespace Architecture
             Return map
         End Function
 
+        Public Overridable Iterator Function FindAllMethods(root As SystemLirary) As IEnumerable(Of IFunction)
+
+            For Each f In root.AllNamespace.Map(Function(x) x.Functions.Values.Flatten).Flatten
+
+                Yield f
+
+                If TypeOf f Is IScope Then
+
+                    For Each f2 In Me.FindInnerMethods(CType(f, IScope))
+
+                        Yield f2
+                    Next
+                End If
+            Next
+        End Function
+
+        Public Overridable Iterator Function FindInnerMethods(scope As IScope) As IEnumerable(Of IFunction)
+
+            For Each f In scope.Functions.Values.Flatten
+
+                Yield f
+
+                If TypeOf f Is IScope Then
+
+                    For Each f2 In Me.FindInnerMethods(CType(f, IScope))
+
+                        Yield f2
+                    Next
+                End If
+            Next
+        End Function
+
         Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
             Dim map As New Dictionary(Of IFunction, MethodInfo)
-            For Each fs In root.AllNamespace.Map(Function(x) x.Functions.Values.Flatten)
+            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing)
 
-                Dim fxs = fs.Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing).ToArray
-                For Each f In fxs
-
-                    Dim args = Me.RkToCILType(f.Arguments, structs)
-                    'Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                    map(f) = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
-                Next
+                Dim args = Me.RkToCILType(f.Arguments, structs)
+                map(f) = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
             Next
 
             Return map

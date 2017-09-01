@@ -444,7 +444,7 @@ Namespace Compiler
                         Coverage.Case()
                     Else
 
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = x.Value)
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) If node_call.Arguments(i).Type.HasIndefinite Then node_call.Arguments(i).Type = x.Value)
                         Coverage.Case()
                     End If
                 End Sub
