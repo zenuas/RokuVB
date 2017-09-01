@@ -86,13 +86,13 @@ Namespace Manager
             Me.AddStruct(str)
 
             ' sub [](self: Array(@T), index: Int32) @T
-            Dim array_index = arr.FunctionNamespace.LoadFunction("Item", arr, int32)
+            Dim array_index = LoadFunction(arr.FunctionNamespace, "Item", arr, int32)
             Me.AddFunction(array_index, "[]")
 
             ' sub print(s: @T)
-            Dim print_str = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", str)
-            Dim print_int64 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", int64)
-            Dim print_int32 = Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace.LoadFunction("WriteLine", int32)
+            Dim print_str = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", str)
+            Dim print_int64 = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", int64)
+            Dim print_int32 = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", int32)
             Me.AddFunction(print_str, "print")
             Me.AddFunction(print_int64, "print")
             Me.AddFunction(print_int32, "print")
@@ -212,6 +212,124 @@ Namespace Manager
             End If
 
             Return s
+        End Function
+
+        Public Shared Function LoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+
+            Dim x = TryLoadStruct(scope, name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Shared Function TryCurrentLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+
+            For Each f In scope.FindCurrentStruct(name).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
+
+                If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
+            Next
+
+            For Each f In scope.FindCurrentStruct(name).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
+
+                Return CType(f.FixedGeneric(args), RkStruct)
+            Next
+
+            Return Nothing
+        End Function
+
+        Public Shared Function TryLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+
+            Dim x = TryCurrentLoadStruct(scope, name, args)
+            If x IsNot Nothing Then Return x
+
+            If TypeOf scope Is RkNamespace Then
+
+                Dim ns = CType(scope, RkNamespace)
+                For Each path In ns.LoadPaths
+
+                    If TypeOf path Is RkStruct Then
+
+                        Dim struct = CType(path, RkStruct)
+                        If struct.Name.Equals(name) Then Return struct
+                    End If
+
+                    If TypeOf path Is IScope Then
+
+                        x = TryLoadStruct(CType(path, IScope), name, args)
+                        If x IsNot Nothing Then Return x
+                    End If
+                Next
+            End If
+            Return Nothing
+
+        End Function
+
+        Public Shared Function LoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IFunction
+
+            Dim x = TryLoadFunction(scope, name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Shared Function TryLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IFunction
+
+            Dim fs = FindLoadFunction(scope, name, args).ToList
+
+            If fs.Count = 0 Then
+
+                Return Nothing
+
+            ElseIf fs.Count = 1 Then
+
+                Return fs(0).ApplyFunction(args)
+            Else
+
+                fs.Do(Function(x) x.ApplyFunction(args))
+                fs = fs.ToHash_ValueDerivation(Function(x) True).Keys.ToList
+                If fs.Count <= 1 Then Return fs(0)
+
+                Return New RkSomeType(fs)
+            End If
+        End Function
+
+        Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
+
+            For Each f In FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+
+                Yield f
+            Next
+
+        End Function
+
+        Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)
+
+            For Each f In scope.FindCurrentFunction(name)
+
+                If match(f) Then Yield f
+            Next
+
+            If TypeOf scope Is RkNamespace Then
+
+                Dim ns = CType(scope, RkNamespace)
+                For Each path In ns.LoadPaths
+
+                    If TypeOf path Is RkFunction Then
+
+                        Dim func = CType(path, RkFunction)
+                        If func.Name.Equals(name) AndAlso match(func) Then Yield func
+                    End If
+
+                    If TypeOf path Is IScope Then
+
+                        For Each f In FindLoadFunction(CType(path, IScope), name, match)
+
+                            Yield f
+                        Next
+                    End If
+                Next
+            End If
+
         End Function
 
     End Class

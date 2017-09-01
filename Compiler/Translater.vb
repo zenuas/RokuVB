@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Manager.SystemLirary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util
@@ -28,7 +29,7 @@ Namespace Compiler
 
                         env.AddLet(var.Key, CType(var.Value, VariableNode).Type)
                     Next
-                    env.Initializer = CType(root.LoadFunction("#Alloc", env), RkNativeFunction)
+                    env.Initializer = CType(LoadFunction(root, "#Alloc", env), RkNativeFunction)
                     closures.Add(scope, env)
                     root.AddStruct(env)
                     scope.Owner.Function.Closure = env
@@ -324,7 +325,7 @@ Namespace Compiler
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
                         For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
-                            struct.Initializer = CType(struct.Namespace.LoadFunction("#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
+                            struct.Initializer = CType(LoadFunction(struct.Namespace, "#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
                         Coverage.Case()

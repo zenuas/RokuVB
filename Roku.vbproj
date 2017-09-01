@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="Manager\IApply.vb" />
     <Compile Include="Manager\IFunction.vb" />
+    <Compile Include="Manager\IScope.vb" />
     <Compile Include="Manager\RkSomeType.vb" />
     <Compile Include="Node\IAddFunction.vb" />
     <Compile Include="Node\IFeedback.vb" />
@@ -105,8 +106,6 @@
     <Compile Include="Compiler\Normalize.vb" />
     <Compile Include="Compiler\Typing.vb" />
     <Compile Include="Compiler\Translater.vb" />
-    <Compile Include="Manager\IAddFunction.vb" />
-    <Compile Include="Manager\IAddStruct.vb" />
     <Compile Include="Manager\IAddLet.vb" />
     <Compile Include="Manager\NamedValue.vb" />
     <Compile Include="Manager\RkByName.vb" />

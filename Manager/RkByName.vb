@@ -10,7 +10,7 @@ Namespace Manager
         Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable Property Type As IType
-        Public Overridable Property Scope As IScopeNode
+        Public Overridable Property ScopeNode As IScopeNode
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
