@@ -93,15 +93,11 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 node,
-                New With {.Namespace = ns, .Scope = CType(Nothing, INode), .Function = CType(Nothing, FunctionNode)},
+                0,
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If Not isfirst Then Return
-                    next_(child,
-                        If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
-                            New With {.Namespace = current.Namespace, .Scope = child, .Function = If(TypeOf child Is FunctionNode, CType(child, FunctionNode), current.Function)},
-                            current)
-                        )
+                    next_(child, current + 1)
 
                     If TypeOf child Is NumericNode Then
 
@@ -129,7 +125,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeFunctionNode Then
 
                         Dim node_typef = CType(child, TypeFunctionNode)
-                        Dim rk_func As New RkFunction With {.Namespace = current.Namespace}
+                        Dim rk_func As New RkFunction With {.Namespace = ns}
                         node_typef.Arguments.Do(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
                         rk_func.Return = node_typef.Return?.Type
                         node_typef.Type = rk_func
@@ -140,7 +136,7 @@ Namespace Compiler
                         Dim node_type = CType(child, TypeNode)
                         If Not node_type.IsGeneric Then
 
-                            node_type.Type = CType(current.Namespace.LoadStruct(node_type.Name), IType)
+                            node_type.Type = CType(ns.LoadStruct(node_type.Name), IType)
                             If node_type.IsArray Then node_type.Type = root.LoadStruct("Array", node_type.Type)
                         End If
                         Coverage.Case()
@@ -161,13 +157,13 @@ Namespace Compiler
 
                                 rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
                             Next
-                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Namespace = current.Namespace, .Name = "return"}
+                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Namespace = ns, .Name = "return"}
                             If node_func.Return IsNot Nothing Then
 
                                 ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = node_func.Return.Type})
                                 rk_function.Return = node_func.Return.Type
                             End If
-                            current.Namespace.AddFunction(ret)
+                            ns.AddFunction(ret)
                             Coverage.Case()
                         End If
                         Coverage.Case()
