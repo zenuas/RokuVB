@@ -7,7 +7,7 @@ var sh = WScript.CreateObject("WScript.Shell");
 
 Array.prototype.map = function (f) {var xs = []; for(var i = 0; i < this.length; i++) {xs.push(f(this[i]));} return(xs);};
 
-var opt  = {num : -1, quot : false};
+var opt  = {num : -1, quot : false, noquot : false};
 var args = [];
 for(var i = 0; i < WScript.Arguments.Length; i++)
 {
@@ -16,7 +16,8 @@ for(var i = 0; i < WScript.Arguments.Length; i++)
 while(args.length > 0)
 {
 	if(args.length >= 2 && args[0] == "-n") {opt.num = args[1] - 0; args.shift(); args.shift();}
-	else if(args[0] == "-q") {opt.quot = true; args.shift();}
+	else if(args[0] == "-q") {opt.quot   = true; args.shift();}
+	else if(args[0] == "-Q") {opt.noquot = true; args.shift();}
 	{
 		break;
 	}
@@ -54,8 +55,7 @@ function exec(args)
 
 function escape(s)
 {
-	/*
-	if(s.indexOf(" ") >= 0 || opt.quot)
+	if(!opt.noquot && (s.indexOf(" ") >= 0 || opt.quot))
 	{
 		return("\"" + s + "\"");
 	}
@@ -63,6 +63,4 @@ function escape(s)
 	{
 		return(s);
 	}
-	*/
-	return(s);
 }
