@@ -75,6 +75,7 @@ Namespace Compiler
             Dim make_func =
                 Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
 
+                    If TypeOf rk_func Is RkSomeType Then rk_func = CType(CType(rk_func, RkSomeType).Types(0), IFunction)
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
 
                     'Dim fix_map As New Dictionary(Of String, IType)
@@ -146,28 +147,10 @@ Namespace Compiler
 
                             ElseIf TypeOf stmt Is FunctionCallNode Then
 
+                                Coverage.Case()
                                 Dim func = CType(stmt, FunctionCallNode)
-                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Return Then
-
-                                    Coverage.Case()
-                                    If func.Arguments.Length > 0 Then
-
-                                        Return {New InCode With {.Operator = InOperator.Return, .Left = to_value(func.Arguments(0))}}
-                                    Else
-                                        Return {New InCode0 With {.Operator = InOperator.Return}}
-                                    End If
-                                Else
-
-                                    If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then
-
-                                        Throw New NotSupportedException
-                                    Else
-
-                                        Coverage.Case()
-                                        Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                        Return func.Function.CreateCall(to_value(func.Expression), args.ToArray)
-                                    End If
-                                End If
+                                Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
+                                Return func.Function.CreateCall(to_value(func.Expression), args.ToArray)
                             Else
 
                                 Throw New Exception("unknown stmt")
@@ -191,8 +174,6 @@ Namespace Compiler
                                 ret = New RkProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
                                 Coverage.Case()
                             End If
-
-                            If TypeOf ret.Type Is RkNativeFunction AndAlso CType(ret.Type, RkNativeFunction).Operator = InOperator.Nop Then Return New InCode0() {}
 
                             If stmt Is Nothing Then
 

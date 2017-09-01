@@ -132,10 +132,13 @@ Namespace Manager
                 Return fs(0).ApplyFunction(args)
             Else
 
-                Dim f = fs.FindFirstOrNull(Function(x) Not x.HasGeneric)
-                If f IsNot Nothing Then Return f
+                'Dim f = fs.FindFirstOrNull(Function(x) Not x.HasGeneric)
+                'If f IsNot Nothing Then Return f
 
                 fs.Do(Function(x) x.ApplyFunction(args))
+                fs = fs.ToHash_ValueDerivation(Function(x) True).Keys.ToList
+                If fs.Count <= 1 Then Return Me.MergeLoadFunctions(fs, args)
+
                 Return New RkSomeType(fs)
             End If
         End Function

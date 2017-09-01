@@ -12,7 +12,24 @@ Namespace Manager
 
         Public Overrides Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0()
 
-            Throw New NotSupportedException
+            Select Case Me.Operator
+                Case InOperator.Return
+
+                    If args.Length > 0 Then
+
+                        Return {New InCode With {.Operator = InOperator.Return, .Left = args(0)}}
+                    Else
+                        Return {New InCode0 With {.Operator = InOperator.Return}}
+                    End If
+
+                Case InOperator.Nop
+
+                    Return New InCode0() {}
+
+                Case Else
+                    Throw New NotSupportedException
+
+            End Select
         End Function
 
         Public Overrides Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0()

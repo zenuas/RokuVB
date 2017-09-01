@@ -409,6 +409,24 @@ Namespace Compiler
                     Return Nothing
                 End Function
 
+            Dim apply_feedback =
+                Sub(f As IFunction, node_call As FunctionCallNode)
+
+                    If TypeOf f Is RkNativeFunction AndAlso CType(f, RkNativeFunction).Operator = InOperator.Alloc Then
+
+                        Coverage.Case()
+
+                    ElseIf f.HasGeneric Then
+
+                        Dim apply = f.ArgumentsToApply(node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                        Coverage.Case()
+                    Else
+
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = x.Value)
+                        Coverage.Case()
+                    End If
+                End Sub
+
             Do While True
 
                 Dim type_fix = False
@@ -544,11 +562,18 @@ Namespace Compiler
                                 node_call.Function = fixed_function(node_call)
                                 Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
 
-                                If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
+                                If TypeOf node_call.Function Is RkSomeType AndAlso CType(node_call.Function, RkSomeType).Types.Count > 1 Then
 
-                                    node_call.Function.FunctionNode = function_generic_fixed_to_node(node_call.Function)
-                                    node_call.FixedGenericFunction = node_call.Function.FunctionNode
                                     Coverage.Case()
+                                Else
+
+                                    apply_feedback(node_call.Function, node_call)
+                                    If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
+
+                                        node_call.Function.FunctionNode = function_generic_fixed_to_node(node_call.Function)
+                                        node_call.FixedGenericFunction = node_call.Function.FunctionNode
+                                        Coverage.Case()
+                                    End If
                                 End If
                                 Coverage.Case()
 
@@ -558,13 +583,9 @@ Namespace Compiler
                                 Dim before = some.Types.Count
                                 If some.Return Is Nothing OrElse (TypeOf some.Return Is RkSomeType AndAlso CType(some.Return, RkSomeType).Types.Count = 0) Then
 
-                                    Dim x = fixed_function(node_call)
-                                    If x IsNot node_call.Function Then
-
-                                        node_call.Function = x
-                                        type_fix = True
-                                        Coverage.Case()
-                                    End If
+                                    some.Types = some.Types.Where(Function(x) CType(x, RkFunction).Arguments.And(Function(arg, i) arg.Value.Is(node_call.Arguments(i).Type))).ToList
+                                    If before <> some.Types.Count Then type_fix = True
+                                    Coverage.Case()
                                 Else
 
                                     If before > 1 Then
@@ -639,7 +660,18 @@ Namespace Compiler
 
                     next_(child, current + 1)
 
-                    If TypeOf child Is IEvaluableNode Then
+                    If TypeOf child Is FunctionCallNode Then
+
+                        Dim node_call = CType(child, FunctionCallNode)
+
+                        If TypeOf node_call.Function Is RkSomeType Then
+
+                            'ToDo: priority check
+                            Dim some = CType(node_call.Function, RkSomeType)
+                            If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
+                        End If
+
+                    ElseIf TypeOf child Is IEvaluableNode Then
 
                         Dim t = CType(child, IEvaluableNode).Type
                         If t Is Nothing Then Return
