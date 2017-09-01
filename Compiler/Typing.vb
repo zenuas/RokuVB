@@ -420,6 +420,11 @@ Namespace Compiler
 
                         Coverage.Case()
                         Return CType(r.FixedGeneric(r.ArgumentsToApply(f.Arguments.Map(Function(x) x.Type).ToArray)), IFunction)
+
+                    ElseIf TypeOf expr Is RkSomeType Then
+
+                        Coverage.Case()
+                        Return CType(expr, RkSomeType)
                     End If
 
                     Debug.Fail("not yet")
