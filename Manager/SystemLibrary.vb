@@ -305,9 +305,13 @@ Namespace Manager
                         If x IsNot Nothing Then Return x
                     End If
                 Next
+
+                Return Nothing
+            Else
+
+                Return TryLoadStruct(scope.Parent, name, args)
             End If
 
-            Return TryLoadStruct(scope.Parent, name, args)
         End Function
 
         Public Shared Function LoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IFunction
@@ -376,12 +380,14 @@ Namespace Manager
                         Next
                     End If
                 Next
+            Else
+
+                For Each f In FindLoadFunction(scope.Parent, name, match)
+
+                    Yield f
+                Next
             End If
 
-            For Each f In FindLoadFunction(scope.Parent, name, match)
-
-                Yield f
-            Next
         End Function
 
     End Class

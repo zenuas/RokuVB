@@ -431,6 +431,32 @@ Namespace Compiler
                     Return Nothing
                 End Function
 
+            Dim var_feedback As Func(Of IType, IType, IType) =
+                Function(from, to_)
+
+                    If from.HasIndefinite Then
+
+                        If TypeOf from Is RkSomeType Then
+
+                            Coverage.Case()
+                            Dim some = CType(from, RkSomeType)
+                            some.Types = some.Types.Where(Function(x) x.Is(to_)).ToList
+                        Else
+
+                            Coverage.Case()
+                            Return to_
+                        End If
+
+                    ElseIf TypeOf from Is RkByName Then
+
+                        Coverage.Case()
+                        Dim byname = CType(from, RkByName)
+                        byname.Type = var_feedback(byname.Type, to_)
+                    End If
+
+                    Return from
+                End Function
+
             Dim apply_feedback =
                 Sub(f As IFunction, node_call As FunctionCallNode)
 
@@ -444,7 +470,7 @@ Namespace Compiler
                         Coverage.Case()
                     Else
 
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) If node_call.Arguments(i).Type.HasIndefinite Then node_call.Arguments(i).Type = x.Value)
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = var_feedback(node_call.Arguments(i).Type, x.Value))
                         Coverage.Case()
                     End If
                 End Sub
