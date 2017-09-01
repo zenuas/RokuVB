@@ -57,7 +57,7 @@ Namespace Manager
                         End If
                     End If
 
-                    Dim f As New RkCILFunction With {.Namespace = Me, .Name = method.Name, .MethodInfo = method}
+                    Dim f As New RkCILFunction With {.Scope = Me, .Name = method.Name, .MethodInfo = method}
                     If Not method.IsStatic Then
 
                         If Me.BaseType.HasGeneric Then

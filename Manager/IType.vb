@@ -3,7 +3,7 @@
     Public Interface IType
         Inherits IEntry
 
-        Property [Namespace] As RkNamespace
+        Property Scope As IScope
 
         Function GetValue(name As String) As IType
         Function [Is](t As IType) As Boolean

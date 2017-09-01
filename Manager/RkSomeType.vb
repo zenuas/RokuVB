@@ -33,13 +33,13 @@ Namespace Manager
             End Set
         End Property
 
-        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+        Public Overridable Property Scope As IScope Implements IType.Scope
             Get
-                Return Me.GetDecideType.Namespace
+                Return Me.GetDecideType.Scope
             End Get
-            Set(value As RkNamespace)
+            Set(value As IScope)
 
-                Me.GetDecideType.Namespace = value
+                Me.GetDecideType.Scope = value
             End Set
         End Property
 

@@ -4,6 +4,7 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports System.Reflection.Emit
 Imports Roku.Manager
+Imports Roku.Manager.SystemLirary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util.ArrayExtension
@@ -62,7 +63,7 @@ Namespace Architecture
                     Flatten.
                     Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
-                map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{struct.Namespace.Name}.{struct.CreateManglingName}")}
+                map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}")}
             Next
 
             For Each v In map
@@ -88,7 +89,7 @@ Namespace Architecture
 
                     Dim args = Me.RkToCILType(f.Arguments, structs)
                     'Debug.Assert(f.Body.Count > 0, $"{f} statement is nothing")
-                    map(f) = Me.Module.DefineGlobalMethod($"{f.Namespace.Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
+                    map(f) = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{If(fxs.Length = 1, Me.ConvertValidName(f.Name), f.CreateManglingName)}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
                 Next
             Next
 

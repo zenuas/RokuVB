@@ -12,7 +12,7 @@ Namespace Manager
     Public Class RkFunction
         Implements IFunction, IScope
 
-        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+        Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable ReadOnly Property Arguments As New List(Of NamedValue) Implements IFunction.Arguments
         Public Overridable Property [Return] As IType Implements IFunction.Return
@@ -22,9 +22,9 @@ Namespace Manager
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property FunctionNode As FunctionNode = Nothing Implements IFunction.FunctionNode
         Public Overridable Property Closure As RkStruct = Nothing Implements IFunction.Closure
-        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct))
-        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction))
         Public Overridable Property Parent As IScope Implements IScope.Parent
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
+        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
 
 
         Public Overridable ReadOnly Property IsAnonymous As Boolean Implements IFunction.IsAnonymous
@@ -44,7 +44,7 @@ Namespace Manager
             If TypeOf t IsNot RkFunction Then Return False
 
             Dim f = CType(t, RkFunction)
-            If Me.Namespace Is f.Namespace AndAlso
+            If Me.Scope Is f.Scope AndAlso
                 ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse (Me.Return IsNot Nothing AndAlso Me.Return.Is(f.Return))) AndAlso
                 (Me.Arguments.Count = f.Arguments.Count AndAlso Me.Arguments.And(Function(x, i) x.Value.Is(f.Arguments(i).Value))) Then Return True
 
@@ -56,7 +56,7 @@ Namespace Manager
             Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name, .Namespace = Me.Namespace, .ApplyIndex = Me.Generics.Count}
+            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
             Me.Generics.Add(x)
             Me.Apply.Add(Nothing)
             Return x
@@ -117,7 +117,7 @@ Namespace Manager
 
                         gen_to_type(CType(arg, RkGenericEntry), p)
 
-                    ElseIf arg.HasGeneric AndAlso arg.Namespace Is p.Namespace AndAlso arg.Name.Equals(p.Name) Then
+                    ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
                         Dim struct = CType(arg, RkStruct)
                         struct.Generics.Do(
@@ -184,15 +184,15 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkFunction With {.Name = Me.Name, .Namespace = Me.Namespace, .GenericBase = Me}
-            x.Namespace.AddFunction(x)
+            Dim x = New RkFunction With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me}
+            x.Scope.AddFunction(x)
             Return x
         End Function
 
         Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions
 
-            If Me.Namespace.Functions.ContainsKey(Me.Name) AndAlso Me.Namespace.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Namespace.Functions(Me.Name)
-            Return Me.Namespace.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
+            If Me.Scope.Functions.ContainsKey(Me.Name) AndAlso Me.Scope.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Functions(Me.Name)
+            Return Me.Scope.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
         Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall

@@ -10,7 +10,7 @@ Namespace Manager
         Implements IType, IApply, IAddLet
 
         Public Overridable Property Super As IType
-        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+        Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overridable Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
@@ -32,7 +32,7 @@ Namespace Manager
             If TypeOf t Is RkSomeType Then Return t.Is(Me)
 
             If Me Is t Then Return True
-            If Me.Namespace Is t.Namespace AndAlso Me.Name.Equals(t.Name) Then Return True
+            If Me.Scope Is t.Scope AndAlso Me.Name.Equals(t.Name) Then Return True
 
             Return False
         End Function
@@ -42,7 +42,7 @@ Namespace Manager
             Dim x = Me.Generics.FindFirstOrNull(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name, .Namespace = Me.Namespace, .ApplyIndex = Me.Generics.Count}
+            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
             Me.Generics.Add(x)
             Me.Apply.Add(Nothing)
             Return x
@@ -94,15 +94,15 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkStruct With {.Name = Me.Name, .Namespace = Me.Namespace, .GenericBase = Me}
-            x.Namespace.AddStruct(x)
+            Dim x = New RkStruct With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me}
+            x.Scope.AddStruct(x)
             Return x
         End Function
 
         Public Overridable Function GetBaseTypes() As List(Of RkStruct)
 
-            If Me.Namespace.Structs.ContainsKey(Me.Name) AndAlso Me.Namespace.Structs(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Namespace.Structs(Me.Name)
-            Return Me.Namespace.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
+            If Me.Scope.Structs.ContainsKey(Me.Name) AndAlso Me.Scope.Structs(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Structs(Me.Name)
+            Return Me.Scope.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
         Public Overridable Sub AddLet(name As String, t As IType) Implements IAddLet.AddLet

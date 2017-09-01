@@ -12,8 +12,8 @@ Namespace Manager
 
         Public Overridable Property Name As String Implements IEntry.Name
         Public Overridable Property Parent As IScope Implements IScope.Parent
-        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct))
-        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction))
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
+        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
         Public Overridable ReadOnly Property Namespaces As New Dictionary(Of String, RkNamespace)
         Public Overridable ReadOnly Property LoadPaths As New List(Of IEntry)
 
@@ -28,36 +28,6 @@ Namespace Manager
             Debug.Assert(path IsNot Nothing, "loadpath is null")
             If Not Me.LoadPaths.Contains(path) Then Me.LoadPaths.Add(path)
         End Sub
-
-        Public Overridable Function LoadNamespace(name As String) As RkNamespace
-
-            Dim x = Me.TryLoadNamespace(name)
-            If x IsNot Nothing Then Return x
-
-            Throw New ArgumentException($"``{name}'' was not found")
-        End Function
-
-        Public Overridable Function TryLoadNamespace(name As String) As RkNamespace
-
-            If Me.Namespaces.ContainsKey(name) Then
-
-                Dim x = Me.TryGetNamespace(name)
-                If x IsNot Nothing Then Return x
-            End If
-
-            For Each path In Me.LoadPaths
-
-                If TypeOf path Is RkNamespace Then
-
-                    Dim ns = CType(path, RkNamespace)
-                    If ns.Name.Equals(name) Then Return ns
-                    Dim x = ns.TryLoadNamespace(name)
-                    If x IsNot Nothing Then Return x
-                End If
-            Next
-
-            Return Nothing
-        End Function
 
         Public Overridable Sub AddStruct(x As RkStruct) Implements IScope.AddStruct
 
@@ -131,11 +101,11 @@ Namespace Manager
             Return $"{Me.FullName}"
         End Function
 
-        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+        Public Overridable Property Scope As IScope Implements IType.Scope
             Get
                 Return Me
             End Get
-            Set(value As RkNamespace)
+            Set(value As IScope)
 
                 Throw New NotSupportedException()
             End Set

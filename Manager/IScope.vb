@@ -6,6 +6,8 @@ Namespace Manager
     Public Interface IScope
 
         Property Parent As IScope
+        ReadOnly Property Structs As Dictionary(Of String, List(Of RkStruct))
+        ReadOnly Property Functions As Dictionary(Of String, List(Of IFunction))
 
         Sub AddStruct(x As RkStruct)
         Sub AddStruct(x As RkStruct, name As String)

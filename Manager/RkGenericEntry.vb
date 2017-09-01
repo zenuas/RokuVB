@@ -7,7 +7,7 @@ Namespace Manager
     Public Class RkGenericEntry
         Implements IType
 
-        Public Overridable Property [Namespace] As RkNamespace Implements IType.Namespace
+        Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overridable Property Name As String Implements IType.Name
         Public Overridable Property ApplyIndex As Integer
         'Public Overridable Property Reference As IType = Nothing

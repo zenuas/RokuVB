@@ -26,11 +26,11 @@ Namespace Manager
 
             ' struct Numeric
             ' sub +(@T: Numeric)(@T, @T) @T
-            Dim num As New RkStruct With {.Name = "Numeric", .Namespace = Me}
+            Dim num As New RkStruct With {.Name = "Numeric", .Scope = Me}
             Dim add_native_operator_function =
                 Function(name As String, op As InOperator) As RkNativeFunction
 
-                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me}
                     Dim f_t = f.DefineGeneric("@T")
                     f.Return = f_t
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
@@ -41,7 +41,7 @@ Namespace Manager
             Dim add_native_comparison_function =
                 Function(name As String, op As InOperator) As RkNativeFunction
 
-                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Namespace = Me}
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me}
                     Dim f_t = f.DefineGeneric("@T")
                     f.Return = bool
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
@@ -104,14 +104,14 @@ Namespace Manager
             'Me.AddFunction(return_)
 
             ' sub #Alloc(x: @T) @T
-            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Namespace = Me}
+            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = Me}
             Dim alloc_t = alloc.DefineGeneric("@T")
             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
             alloc.Return = alloc_t
             Me.AddFunction(alloc)
 
             ' sub #Type() @T
-            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Namespace = Me}
+            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Scope = Me}
             Dim type_t = type.DefineGeneric("@T")
             type.Return = type_t
             Me.AddFunction(type)
@@ -186,7 +186,7 @@ Namespace Manager
             If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
 
             Dim ns = Me.CreateNamespace(ti.Namespace)
-            Dim s = New RkCILStruct With {.Namespace = ns, .Name = ti.Name, .TypeInfo = ti}
+            Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.TypeCache(ti) = s
 
             If ti.IsGenericType Then
@@ -214,6 +214,50 @@ Namespace Manager
             Return s
         End Function
 
+        Public Shared Function CurrentNamespace(scope As IScope) As RkNamespace
+
+            If TypeOf scope Is RkNamespace Then Return CType(scope, RkNamespace)
+            Return CurrentNamespace(scope.Parent)
+        End Function
+
+        Public Shared Function LoadNamespace(scope As IScope, name As String) As RkNamespace
+
+            Dim x = TryLoadNamespace(scope, name)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Shared Function TryLoadNamespace(scope As IScope, name As String) As RkNamespace
+
+            If scope Is Nothing Then Return Nothing
+
+            If TypeOf scope Is RkNamespace Then Return TryLoadNamespace(CType(scope, RkNamespace), name)
+            Return TryLoadNamespace(scope.Parent, name)
+        End Function
+
+        Public Shared Function TryLoadNamespace(ns As RkNamespace, name As String) As RkNamespace
+
+            If ns.Namespaces.ContainsKey(name) Then
+
+                Dim x = ns.TryGetNamespace(name)
+                If x IsNot Nothing Then Return x
+            End If
+
+            For Each path In ns.LoadPaths
+
+                If TypeOf path Is RkNamespace Then
+
+                    Dim ns2 = CType(path, RkNamespace)
+                    If ns2.Name.Equals(name) Then Return ns2
+                    Dim ns3 = TryLoadNamespace(ns2, name)
+                    If ns3 IsNot Nothing Then Return ns3
+                End If
+            Next
+
+            Return Nothing
+        End Function
+
         Public Shared Function LoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
 
             Dim x = TryLoadStruct(scope, name, args)
@@ -239,6 +283,8 @@ Namespace Manager
 
         Public Shared Function TryLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
 
+            If scope Is Nothing Then Return Nothing
+
             Dim x = TryCurrentLoadStruct(scope, name, args)
             If x IsNot Nothing Then Return x
 
@@ -260,8 +306,8 @@ Namespace Manager
                     End If
                 Next
             End If
-            Return Nothing
 
+            Return TryLoadStruct(scope.Parent, name, args)
         End Function
 
         Public Shared Function LoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IFunction
@@ -304,6 +350,8 @@ Namespace Manager
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)
 
+            If scope Is Nothing Then Return
+
             For Each f In scope.FindCurrentFunction(name)
 
                 If match(f) Then Yield f
@@ -330,6 +378,10 @@ Namespace Manager
                 Next
             End If
 
+            For Each f In FindLoadFunction(scope.Parent, name, match)
+
+                Yield f
+            Next
         End Function
 
     End Class

@@ -23,7 +23,7 @@ Namespace Compiler
 
                     If closures.ContainsKey(scope) Then Return closures(scope)
 
-                    Dim env As New RkStruct With {.Namespace = root, .ClosureEnvironment = True}
+                    Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True}
                     env.Name = $"##{scope.Owner.Name}"
                     For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
 
@@ -323,9 +323,9 @@ Namespace Compiler
 
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = CType(node_struct.Type, RkStruct)
-                        For Each struct In rk_struct.Namespace.Structs(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
+                        For Each struct In rk_struct.Scope.FindCurrentStruct(rk_struct.Name).Where(Function(x) Not x.HasGeneric)
 
-                            struct.Initializer = CType(LoadFunction(struct.Namespace, "#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
+                            struct.Initializer = CType(LoadFunction(struct.Scope, "#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
                             make_func(struct.Initializer, node_struct, node_struct.Statements)
                         Next
                         Coverage.Case()
