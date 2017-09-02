@@ -27,10 +27,10 @@ Namespace Compiler
                     If TypeOf child Is StructNode Then
 
                         Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct, .Scope = ns}
+                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct, .Scope = current, .Parent = current}
                         node_struct.Type = rk_struct
                         node_struct.Generics.Do(Sub(x) rk_struct.DefineGeneric(x.Name))
-                        ns.AddStruct(rk_struct)
+                        current.AddStruct(rk_struct)
 
                         For Each x In node_struct.Scope.Values
 
@@ -44,7 +44,7 @@ Namespace Compiler
 
                         If rk_struct.HasGeneric Then
 
-                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = rk_struct.Scope}
+                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = rk_struct.Scope, .Parent = current}
                             Dim gens = node_struct.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
                             Dim self = rk_struct.FixedGeneric(gens)
                             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
@@ -57,6 +57,9 @@ Namespace Compiler
                             'rk_struct.Initializer = CType(root.LoadFunction("#Alloc", rk_struct), RkNativeFunction)
                             Coverage.Case()
                         End If
+
+                        next_(child, rk_struct)
+                        Return
 
                     ElseIf TypeOf child Is ProgramNode Then
 
@@ -716,6 +719,12 @@ Namespace Compiler
                         Dim f = CType(t, RkFunction)
                         f.Arguments.Do(Sub(x) x.Value = var_normalize(x.Value))
                         f.Return = var_normalize(f.Return)
+
+                    ElseIf TypeOf t Is RkStruct Then
+
+                        Coverage.Case()
+                        Dim s = CType(t, RkStruct)
+                        s.Local.Keys.ToList.Do(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
                     End If
 
                     If TypeOf t Is IApply Then

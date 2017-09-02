@@ -7,7 +7,7 @@ Imports Roku.Util.ArrayExtension
 Namespace Manager
 
     Public Class RkStruct
-        Implements IType, IApply, IAddLet
+        Implements IType, IApply, IAddLet, IScope
 
         Public Overridable Property Super As IType
         Public Overridable Property Scope As IScope Implements IType.Scope
@@ -19,6 +19,10 @@ Namespace Manager
         Public Overridable Property StructNode As StructNode = Nothing
         Public Overridable Property Initializer As RkNativeFunction = Nothing
         Public Overridable Property ClosureEnvironment As Boolean = False
+        Public Overridable Property Parent As IScope Implements IScope.Parent
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
+        Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
+
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -118,6 +122,50 @@ Namespace Manager
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
             Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
+        End Function
+
+        Public Overridable Sub AddStruct(x As RkStruct) Implements IScope.AddStruct
+
+            Me.AddStruct(x, x.Name)
+        End Sub
+
+        Public Overridable Sub AddStruct(x As RkStruct, name As String) Implements IScope.AddStruct
+
+            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of RkStruct))
+            Me.Structs(name).Add(x)
+        End Sub
+
+        Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of RkStruct) Implements IScope.FindCurrentStruct
+
+            If Me.Structs.ContainsKey(name) Then
+
+                For Each s In Me.Structs(name)
+
+                    Yield s
+                Next
+            End If
+        End Function
+
+        Public Overridable Sub AddFunction(x As IFunction) Implements IScope.AddFunction
+
+            Me.AddFunction(x, x.Name)
+        End Sub
+
+        Public Overridable Sub AddFunction(x As IFunction, name As String) Implements IScope.AddFunction
+
+            If Not Me.Functions.ContainsKey(name) Then Me.Functions.Add(name, New List(Of IFunction))
+            Me.Functions(name).Add(x)
+        End Sub
+
+        Public Overridable Iterator Function FindCurrentFunction(name As String) As IEnumerable(Of IFunction) Implements IScope.FindCurrentFunction
+
+            If Me.Functions.ContainsKey(name) Then
+
+                For Each f In Me.Functions(name)
+
+                    Yield f
+                Next
+            End If
         End Function
 
         Public Overrides Function ToString() As String
