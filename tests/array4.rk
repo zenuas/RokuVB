@@ -1,0 +1,9 @@
+
+var xs = []
+var ys = [1, 2, 3]
+var zs = xs + ys
+
+show(zs[2])
+
+sub show(x: Int)
+	print(x)

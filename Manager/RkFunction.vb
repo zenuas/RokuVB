@@ -153,11 +153,11 @@ Namespace Manager
 
                             xs(atname.ApplyIndex) = p
 
-                        ElseIf x.HasIndefinite Then
+                        ElseIf TypeOf x Is RkSomeType Then
 
                             CType(x, RkSomeType).Merge(p)
 
-                        ElseIf p.HasIndefinite Then
+                        ElseIf TypeOf p Is RkSomeType Then
 
                             CType(p, RkSomeType).Merge(x)
                             xs(atname.ApplyIndex) = p
