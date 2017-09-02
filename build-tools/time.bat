@@ -9,24 +9,32 @@ function main(args)
 {
 	var sh    = WScript.CreateObject("WScript.Shell");
 	var start = new Date();
-	if(args.Length == 1)
+	
+	var arg   = "";
+	for(var i = 0; i < WScript.Arguments.Length; i++)
 	{
-		sh.Exec("cmd /d /c " + args(0)).StdOut.ReadAll();
-		var end = new Date();
-		WScript.Echo("real " + ((end - start) / 1000));
+		if(i > 0) {arg += " ";}
+		arg += escape(WScript.Arguments(i));
+	}
+	
+	var exec = sh.Exec("cmd /d /c " + arg)
+	while(!exec.StdOut.AtEndOfStream)
+	{
+		WScript.Echo(exec.StdOut.ReadLine());
+	}
+	
+	var end = new Date();
+	WScript.Echo("real " + ((end - start) / 1000));
+}
+
+function escape(s)
+{
+	if(s.indexOf(" ") >= 0)
+	{
+		return("\"" + s + "\"");
 	}
 	else
 	{
-		for(var i = 0; i < args.length; i++)
-		{
-			var pstart = new Date();
-			sh.Exec("cmd /d /c " + args(i)).StdOut.ReadAll();
-			var pend = new Date();
-			WScript.Echo(args(i));
-			WScript.Echo("real " + ((pend - pstart) / 1000));
-		}
-		var end = new Date();
-		WScript.Echo("total");
-		WScript.Echo("real " + ((end - start) / 1000));
+		return(s);
 	}
 }

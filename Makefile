@@ -38,7 +38,7 @@ release:
 
 test: clean $(OUT)
 	del /F bin\$(RELEASE)\coverage.txt 2>NUL
-	$(MAKE) tests
+	build-tools\time $(MAKE) tests
 	@xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | xargs.bat grep.bat -n -e "^ *Coverage.Case" | coverage.bat bin\$(RELEASE)\coverage.txt Coverage.Case
 
 tests: $(OUT) $(RKTEST)
