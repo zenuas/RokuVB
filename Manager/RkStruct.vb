@@ -11,7 +11,7 @@ Namespace Manager
 
         Public Overridable Property Super As IType
         Public Overridable Property Scope As IScope Implements IType.Scope
-        Public Overridable Property Name As String Implements IType.Name
+        Public Overridable Property Name As String Implements IType.Name, IScope.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
         Public Overridable Property GenericBase As RkStruct = Nothing
@@ -98,7 +98,7 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkStruct With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me}
+            Dim x = New RkStruct With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me, .Parent = Me.Parent}
             x.Scope.AddStruct(x)
             Return x
         End Function
@@ -116,7 +116,14 @@ Namespace Manager
 
         Public Overridable Function CreateManglingName() As String
 
-            Return Me.ToString
+            Dim s = Me.Name
+            Dim p = Me.Parent
+            Do While TypeOf p IsNot RkNamespace
+
+                s = $"{p.Name}#{s}"
+                p = p.Parent
+            Loop
+            Return s
         End Function
 
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite

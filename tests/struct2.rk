@@ -1,0 +1,23 @@
+sub show(a: Int)
+	print(a)
+
+sub f1()
+	struct Hoge
+		var i = 0
+	
+	var a = Hoge()
+	show(a.i)
+
+sub f2()
+	struct Hoge
+		var i = "hello"
+	
+	var a = Hoge()
+	print(a.i)
+
+
+#=>0
+f1()
+
+#=>hello
+f2()

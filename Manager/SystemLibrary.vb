@@ -30,7 +30,7 @@ Namespace Manager
             Dim add_native_operator_function =
                 Function(name As String, op As InOperator) As RkNativeFunction
 
-                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me}
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
                     Dim f_t = f.DefineGeneric("@T")
                     f.Return = f_t
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
@@ -41,7 +41,7 @@ Namespace Manager
             Dim add_native_comparison_function =
                 Function(name As String, op As InOperator) As RkNativeFunction
 
-                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me}
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
                     Dim f_t = f.DefineGeneric("@T")
                     f.Return = bool
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
@@ -104,14 +104,14 @@ Namespace Manager
             'Me.AddFunction(return_)
 
             ' sub #Alloc(x: @T) @T
-            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = Me}
+            Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = Me, .Parent = Me}
             Dim alloc_t = alloc.DefineGeneric("@T")
             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = alloc_t})
             alloc.Return = alloc_t
             Me.AddFunction(alloc)
 
             ' sub #Type() @T
-            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Scope = Me}
+            Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Scope = Me, .Parent = Me}
             Dim type_t = type.DefineGeneric("@T")
             type.Return = type_t
             Me.AddFunction(type)

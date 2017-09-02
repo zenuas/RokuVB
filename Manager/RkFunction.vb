@@ -13,7 +13,7 @@ Namespace Manager
         Implements IFunction, IScope
 
         Public Overridable Property Scope As IScope Implements IType.Scope
-        Public Overridable Property Name As String Implements IEntry.Name
+        Public Overridable Property Name As String Implements IEntry.Name, IScope.Name
         Public Overridable ReadOnly Property Arguments As New List(Of NamedValue) Implements IFunction.Arguments
         Public Overridable Property [Return] As IType Implements IFunction.Return
         Public Overridable ReadOnly Property Body As New List(Of InCode0) Implements IFunction.Body
@@ -216,7 +216,14 @@ Namespace Manager
 
         Public Overridable Function CreateManglingName() As String Implements IFunction.CreateManglingName
 
-            Return Me.ToString
+            Dim s = Me.Name
+            Dim p = Me.Parent
+            Do While TypeOf p IsNot RkNamespace
+
+                s = $"{p.Name}#{s}"
+                p = p.Parent
+            Loop
+            Return s
         End Function
 
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite

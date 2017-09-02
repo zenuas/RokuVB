@@ -55,13 +55,53 @@ Namespace Architecture
             Return If(System.Text.RegularExpressions.Regex.IsMatch(s, "^_*[a-zA-Z]+[_0-9a-zA-Z]*$"), s, $"###{s}")
         End Function
 
+        Public Overridable Iterator Function FindAllStructs(root As SystemLirary) As IEnumerable(Of RkStruct)
+
+            For Each s In root.AllNamespace.Map(Function(x) x.Structs.Values.Flatten).Flatten
+
+                Yield s
+
+                If TypeOf s Is IScope Then
+
+                    For Each s2 In Me.FindInnerStructs(CType(s, IScope))
+
+                        Yield s2
+                    Next
+                End If
+            Next
+
+            For Each f In Me.FindAllMethods(root)
+
+                If TypeOf f Is IScope Then
+
+                    For Each s2 In Me.FindInnerStructs(CType(f, IScope))
+
+                        Yield s2
+                    Next
+                End If
+            Next
+        End Function
+
+        Public Overridable Iterator Function FindInnerStructs(scope As IScope) As IEnumerable(Of RkStruct)
+
+            For Each s In scope.Structs.Values.Flatten
+
+                Yield s
+
+                If TypeOf s Is IScope Then
+
+                    For Each s2 In Me.FindInnerStructs(CType(s, IScope))
+
+                        Yield s2
+                    Next
+                End If
+            Next
+        End Function
+
         Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            For Each struct In root.AllNamespace.
-                    Map(Function(x) x.Structs.Values.Flatten).
-                    Flatten.
-                    Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
+            For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
                 map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}")}
             Next

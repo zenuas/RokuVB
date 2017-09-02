@@ -10,7 +10,7 @@ Namespace Manager
         Implements IType, IAddNamespace, IScope
 
 
-        Public Overridable Property Name As String Implements IEntry.Name
+        Public Overridable Property Name As String Implements IEntry.Name, IScope.Name
         Public Overridable Property Parent As IScope Implements IScope.Parent
         Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions

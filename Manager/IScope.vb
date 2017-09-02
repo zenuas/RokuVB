@@ -5,6 +5,7 @@ Namespace Manager
 
     Public Interface IScope
 
+        ReadOnly Property Name As String
         Property Parent As IScope
         ReadOnly Property Structs As Dictionary(Of String, List(Of RkStruct))
         ReadOnly Property Functions As Dictionary(Of String, List(Of IFunction))
