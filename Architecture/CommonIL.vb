@@ -483,27 +483,19 @@ Namespace Architecture
 
                     Case InOperator.Dot
                         Dim dot = CType(stmt, InCode)
-                        If TypeOf dot.Return.Type Is RkNamespace Then
+                        If dot.Return?.Type Is Nothing Then
 
                             ' nothing
 
-                        ElseIf TypeOf dot.Return.Type Is RkByName Then
+                        ElseIf dot.Left?.Type Is Nothing Then
 
                             ' nothing
 
-                        ElseIf TypeOf dot.Left.Type Is RkByName Then
-
-                            ' nothing
-
-                        ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkByName Then
+                        ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso dot.Right.Type Is Nothing Then
 
                             ' nothing
 
                         ElseIf TypeOf dot.Left.Type Is RkNamespace AndAlso TypeOf dot.Right.Type Is RkStruct Then
-
-                            ' nothing
-
-                        ElseIf TypeOf dot.Left.Type Is RkStruct AndAlso TypeOf dot.Right.Type Is RkByName Then
 
                             ' nothing
                         Else
@@ -622,8 +614,6 @@ Namespace Architecture
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
 
             If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
-            If TypeOf r Is RkByName Then Return Me.RkToCILType(CType(r, RkByName).Type, structs)
-            If TypeOf r Is RkSomeType Then Return Me.RkToCILType(CType(r, RkSomeType).GetDecideType, structs)
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then
 

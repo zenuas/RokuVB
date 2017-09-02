@@ -213,7 +213,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Sub [Do](Of T)(self As IList(Of T), f As Func(Of T, Integer, T))
+        Public Sub Done(Of T)(self As IList(Of T), f As Func(Of T, Integer, T))
 
             For i = 0 To self.Count - 1
 
@@ -224,7 +224,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Sub [Do](Of T)(self As IList(Of T), f As Func(Of T, T))
+        Public Sub Done(Of T)(self As IList(Of T), f As Func(Of T, T))
 
             For i = 0 To self.Count - 1
 

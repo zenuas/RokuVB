@@ -335,7 +335,7 @@ Namespace Manager
                 Return fs(0).ApplyFunction(args)
             Else
 
-                fs.Do(Function(x) x.ApplyFunction(args))
+                fs.Done(Function(x) x.ApplyFunction(args))
                 fs = fs.ToHash_ValueDerivation(Function(x) True).Keys.ToList
                 If fs.Count <= 1 Then Return fs(0)
 

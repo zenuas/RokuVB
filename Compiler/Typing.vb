@@ -694,6 +694,40 @@ Namespace Compiler
                 If Not type_fix Then Exit Do
             Loop
 
+            Dim var_normalize As Func(Of IType, IType) =
+                Function(t)
+
+                    If TypeOf t Is RkByName Then
+
+                        Coverage.Case()
+                        t = var_normalize(CType(t, RkByName).Type)
+
+                    ElseIf TypeOf t Is RkSomeType Then
+
+                        'ToDo: priority check
+                        Coverage.Case()
+                        Dim some = CType(t, RkSomeType)
+                        If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
+                        t = var_normalize(some.Types(0))
+
+                    ElseIf TypeOf t Is RkFunction Then
+
+                        Coverage.Case()
+                        Dim f = CType(t, RkFunction)
+                        f.Arguments.Do(Sub(x) x.Value = var_normalize(x.Value))
+                        f.Return = var_normalize(f.Return)
+                    End If
+
+                    If TypeOf t Is IApply Then
+
+                        Coverage.Case()
+                        Dim apply = CType(t, IApply)
+                        apply.Apply.Done(Function(x) var_normalize(x))
+                    End If
+
+                    Return t
+                End Function
+
             Util.Traverse.NodesOnce(
                 node,
                 0,
@@ -706,30 +740,16 @@ Namespace Compiler
                     If TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-
-                        If TypeOf node_call.Function Is RkSomeType Then
-
-                            'ToDo: priority check
-                            Dim some = CType(node_call.Function, RkSomeType)
-                            If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
-                        End If
+                        node_call.Function = CType(var_normalize(node_call.Function), IFunction)
 
                     ElseIf TypeOf child Is IEvaluableNode Then
 
-                        Dim t = CType(child, IEvaluableNode).Type
-                        If t Is Nothing Then Return
-
-                        If TypeOf t Is RkSomeType Then
-
-                            'ToDo: priority check
-                            Dim some = CType(t, RkSomeType)
-                            If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
-                        End If
+                        Dim e = CType(child, IEvaluableNode)
+                        e.Type = var_normalize(e.Type)
 
                         'Debug.Assert(Not t.HasIndefinite)
                         'Debug.Assert(Not t.HasGeneric)
                     End If
-
 
                 End Sub)
 
