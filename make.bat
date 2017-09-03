@@ -49,6 +49,7 @@ function parse(makefile, env)
 		env.$ENV     = {MAKE : WScript.ScriptFullName};
 		env.$START   = "";
 		env.$TARGET  = {};
+		env.$CACHE   = {};
 		env.$PHONY   = [];
 		env.set_val = function (key, s)
 			{
@@ -207,8 +208,10 @@ function run(env, target)
 	var t = fs.FileExists(target) ? fs.GetFile(target).DateLastModified : 0;
 	if(p)
 	{
-		var xs   = command_expand(env, p.depends, function (x) {return(x.replace(/\$@/g, target));});
 		var need = opt.always_make || env.$PHONY.indexOf(target) >= 0;
+		if(!need && target in env.$CACHE) {return(env.$CACHE[target]);}
+		
+		var xs = command_expand(env, p.depends, function (x) {return(x.replace(/\$@/g, target));});
 		if(xs.length == 0 || t == 0) {need = true;}
 		for(var i = 0; i < xs.length; i++)
 		{
@@ -239,6 +242,7 @@ function run(env, target)
 			t = fs.FileExists(target) ? fs.GetFile(target).DateLastModified : 0;
 		}
 	}
+	env.$CACHE[target] = t;
 	return(t);
 }
 
