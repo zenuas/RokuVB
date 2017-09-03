@@ -24,49 +24,43 @@ Namespace Manager
             Dim bool = Me.LoadType(GetType(Boolean).GetTypeInfo)
             Me.AddStruct(bool, "Bool")
 
-            ' struct Numeric
-            ' sub +(@T: Numeric)(@T, @T) @T
-            Dim num As New RkStruct With {.Name = "Numeric", .Scope = Me}
             Dim add_native_operator_function =
-                Function(name As String, op As InOperator) As RkNativeFunction
+                Function(t As IType, name As String, op As InOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
-                    Dim f_t = f.DefineGeneric("@T")
-                    f.Return = f_t
-                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
-                    f.Arguments.Add(New NamedValue With {.Name = "right", .Value = f_t})
+                    f.Return = t
+                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = t})
+                    f.Arguments.Add(New NamedValue With {.Name = "right", .Value = t})
                     Me.AddFunction(f)
                     Return f
                 End Function
             Dim add_native_comparison_function =
-                Function(name As String, op As InOperator) As RkNativeFunction
+                Function(t As IType, name As String, op As InOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
-                    Dim f_t = f.DefineGeneric("@T")
                     f.Return = bool
-                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = f_t})
-                    f.Arguments.Add(New NamedValue With {.Name = "right", .Value = f_t})
+                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = t})
+                    f.Arguments.Add(New NamedValue With {.Name = "right", .Value = t})
                     Me.AddFunction(f)
                     Return f
                 End Function
-            Dim num_plus = add_native_operator_function("+", InOperator.Plus)
-            Dim num_minus = add_native_operator_function("-", InOperator.Minus)
-            Dim num_mul = add_native_operator_function("*", InOperator.Mul)
-            Dim num_div = add_native_operator_function("/", InOperator.Div)
-            Dim num_eq = add_native_comparison_function("==", InOperator.Equal)
-            Dim num_gt = add_native_comparison_function(">", InOperator.Gt)
-            Dim num_gte = add_native_comparison_function(">=", InOperator.Gte)
-            Dim num_lt = add_native_comparison_function("<", InOperator.Lt)
-            Dim num_lte = add_native_comparison_function("<=", InOperator.Lte)
-            Me.AddStruct(num)
 
             ' struct Int32 : Numeric
             Dim define_num =
                 Function(t As Type)
 
                     Dim x = Me.LoadType(t.GetTypeInfo)
-                    x.Super = num
                     Me.AddStruct(x)
+
+                    Dim num_plus = add_native_operator_function(x, "+", InOperator.Plus)
+                    Dim num_minus = add_native_operator_function(x, "-", InOperator.Minus)
+                    Dim num_mul = add_native_operator_function(x, "*", InOperator.Mul)
+                    Dim num_div = add_native_operator_function(x, "/", InOperator.Div)
+                    Dim num_eq = add_native_comparison_function(x, "==", InOperator.Equal)
+                    Dim num_gt = add_native_comparison_function(x, ">", InOperator.Gt)
+                    Dim num_gte = add_native_comparison_function(x, ">=", InOperator.Gte)
+                    Dim num_lt = add_native_comparison_function(x, "<", InOperator.Lt)
+                    Dim num_lte = add_native_comparison_function(x, "<=", InOperator.Lte)
                     Return x
                 End Function
             Dim int64 = define_num(GetType(Int64))
@@ -77,13 +71,15 @@ Namespace Manager
 
             ' struct Array(@T) : List(@T)
             ' struct Char : Char
-            ' struct String : String
             Dim arr = Me.LoadType(GetType(List(Of )).GetTypeInfo)
             Me.AddStruct(arr, "Array")
             Dim chr = Me.LoadType(GetType(Char).GetTypeInfo)
             Me.AddStruct(chr)
+
+            ' struct String : String
             Dim str = Me.LoadType(GetType(String).GetTypeInfo)
             Me.AddStruct(str)
+            Dim str_plus = add_native_operator_function(str, "+", InOperator.Plus)
 
             ' sub [](self: Array(@T), index: Int32) @T
             Dim array_index = LoadFunction(arr.FunctionNamespace, "Item", arr, int32)
