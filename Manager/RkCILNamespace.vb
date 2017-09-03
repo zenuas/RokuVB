@@ -10,7 +10,7 @@ Namespace Manager
     Public Class RkCILNamespace
         Inherits RkNamespace
 
-        Public Overridable Property Root As SystemLirary
+        Public Overridable Property Root As SystemLibrary
         Public Overridable Property BaseType As RkCILStruct
         Public Overridable Property FunctionCached As Boolean = False
 

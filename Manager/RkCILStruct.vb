@@ -12,7 +12,7 @@ Namespace Manager
         Public Overridable Property FunctionNamespace As RkCILNamespace
         Public Overridable ReadOnly Property ConstructorCache As New Dictionary(Of ConstructorInfo, RkCILConstructor)
 
-        Public Overridable Function LoadConstructor(root As SystemLirary, ParamArray args() As IType) As RkCILConstructor
+        Public Overridable Function LoadConstructor(root As SystemLibrary, ParamArray args() As IType) As RkCILConstructor
 
             Dim ci = Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.Length = args.Length AndAlso ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
             If Me.ConstructorCache.ContainsKey(ci) Then Return Me.ConstructorCache(ci)

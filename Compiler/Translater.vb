@@ -2,7 +2,7 @@
 Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
-Imports Roku.Manager.SystemLirary
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util
@@ -15,7 +15,7 @@ Namespace Compiler
 
     Public Class Translater
 
-        Public Shared Sub ClosureTranslate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+        Public Shared Sub ClosureTranslate(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim closures As New Dictionary(Of IScopeNode, RkStruct)
             Dim make_closure =
@@ -62,7 +62,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub Translate(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+        Public Shared Sub Translate(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim compleat As New Dictionary(Of IFunction, Boolean)
 

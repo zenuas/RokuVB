@@ -7,7 +7,7 @@ Imports Roku.Util.ArrayExtension
 
 Namespace Manager
 
-    Public Class SystemLirary
+    Public Class SystemLibrary
         Inherits RkNamespace
 
 

@@ -4,7 +4,7 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports System.Reflection.Emit
 Imports Roku.Manager
-Imports Roku.Manager.SystemLirary
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util.ArrayExtension
@@ -16,7 +16,7 @@ Namespace Architecture
 
         Public Overridable Property [Module] As ModuleBuilder
 
-        Public Overridable Sub Assemble(ns As SystemLirary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
+        Public Overridable Sub Assemble(ns As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
 
             Dim name As New AssemblyName(entrypoint.Name)
             Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
@@ -55,7 +55,7 @@ Namespace Architecture
             Return If(System.Text.RegularExpressions.Regex.IsMatch(s, "^_*[a-zA-Z]+[_0-9a-zA-Z]*$"), s, $"###{s}")
         End Function
 
-        Public Overridable Iterator Function FindAllStructs(root As SystemLirary) As IEnumerable(Of RkStruct)
+        Public Overridable Iterator Function FindAllStructs(root As SystemLibrary) As IEnumerable(Of RkStruct)
 
             For Each s In root.AllNamespace.Map(Function(x) x.Structs.Values.Flatten).Flatten
 
@@ -98,7 +98,7 @@ Namespace Architecture
             Next
         End Function
 
-        Public Overridable Function DeclareStructs(root As SystemLirary) As Dictionary(Of RkStruct, TypeData)
+        Public Overridable Function DeclareStructs(root As SystemLibrary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
             For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
@@ -119,7 +119,7 @@ Namespace Architecture
             Return map
         End Function
 
-        Public Overridable Iterator Function FindAllMethods(root As SystemLirary) As IEnumerable(Of IFunction)
+        Public Overridable Iterator Function FindAllMethods(root As SystemLibrary) As IEnumerable(Of IFunction)
 
             For Each f In root.AllNamespace.Map(Function(x) x.Functions.Values.Flatten).Flatten
 
@@ -151,7 +151,7 @@ Namespace Architecture
             Next
         End Function
 
-        Public Overridable Function DeclareMethods(root As SystemLirary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
+        Public Overridable Function DeclareMethods(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
             Dim map As New Dictionary(Of IFunction, MethodInfo)
             For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing)

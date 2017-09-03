@@ -58,7 +58,7 @@ Public Class Main
 
     Public Shared Sub Compile(loader As Loader, opt As Command.Option)
 
-        Dim root As New Manager.SystemLirary With {.Name = "Global"}
+        Dim root As New Manager.SystemLibrary With {.Name = "Global"}
 
         For Each ns In loader.Root.Namespaces
 

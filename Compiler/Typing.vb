@@ -4,7 +4,7 @@ Imports System.Diagnostics
 Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Manager
-Imports Roku.Manager.SystemLirary
+Imports Roku.Manager.SystemLibrary
 Imports Roku.IntermediateCode
 Imports Roku.Util
 Imports Roku.Util.ArrayExtension
@@ -15,7 +15,7 @@ Namespace Compiler
 
     Public Class Typing
 
-        Public Shared Sub Prototype(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+        Public Shared Sub Prototype(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
                 node,
@@ -96,7 +96,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+        Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
                 node,
@@ -178,7 +178,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub TypeInference(node As ProgramNode, root As SystemLirary, ns As RkNamespace)
+        Public Shared Sub TypeInference(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim set_func =
                 Function(node_func As FunctionNode) As RkFunction
@@ -441,9 +441,8 @@ Namespace Compiler
 
                         If TypeOf from Is RkSomeType Then
 
+                            CType(from, RkSomeType).Merge(to_)
                             Coverage.Case()
-                            Dim some = CType(from, RkSomeType)
-                            some.Types = some.Types.Where(Function(x) x.Is(to_)).ToList
                         Else
 
                             Coverage.Case()
