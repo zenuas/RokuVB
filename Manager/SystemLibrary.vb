@@ -334,6 +334,16 @@ Namespace Manager
 
             If fs.Count = 0 Then
 
+                If args.Length > 0 AndAlso TypeOf args(0) Is RkCILStruct Then
+
+                    Dim ci = CType(args(0), RkCILStruct)
+                    If ci.TypeInfo.IsArray Then
+
+                        Select Case name
+                            Case "[]" : Return TryLoadFunction(ci.FunctionNamespace, "GetValue", args)
+                        End Select
+                    End If
+                End If
                 Return Nothing
 
             ElseIf fs.Count = 1 Then
