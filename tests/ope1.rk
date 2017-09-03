@@ -1,0 +1,5 @@
+sub +++(a: Int, b: Int) Int
+	return(a + b + 1)
+
+#=>4
+print(1 +++ 2)

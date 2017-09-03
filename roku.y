@@ -25,7 +25,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list listn
-%type<VariableNode>   var varx atvar
+%type<VariableNode>   var varx atvar fn
 %type<VariableListNode> atvarn
 %type<NumericNode>    num
 %type<StringNode>     str
@@ -119,7 +119,9 @@ atvarn : atvar                         {$$ = Me.CreateListNode($1)}
 
 
 ########## sub ##########
-sub   : SUB var '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
+sub   : SUB fn '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
+fn    : var
+      | OPE            {$$ = Me.CreateVariableNode($1)}
 args  : void           {$$ = Me.CreateListNode(Of DeclareNode)}
       | argn extra
 argn  : decla          {$$ = Me.CreateListNode($1)}
