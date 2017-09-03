@@ -643,6 +643,20 @@ Namespace Architecture
                     Case InOperator.Label
                         il.MarkLabel(labels(stmt))
 
+                    Case InOperator.Cast
+                        Dim cast = CType(stmt, InCode)
+                        gen_il_load(il, cast.Left, False)
+                        If TypeOf cast.Right.Type Is RkCILStruct Then
+
+                            Dim ct = CType(cast.Right.Type, RkCILStruct)
+                            Select Case True
+                                Case ct.TypeInfo Is GetType(Int32) : il.Emit(OpCodes.Conv_I4)
+                                Case ct.TypeInfo Is GetType(Int64) : il.Emit(OpCodes.Conv_I8)
+                                Case ct.TypeInfo Is GetType(Int16) : il.Emit(OpCodes.Conv_I2)
+                                Case ct.TypeInfo Is GetType(Byte) : il.Emit(OpCodes.Conv_U1)
+                            End Select
+                        End If
+                        gen_il_store(il, cast.Return)
 
                     Case Else
                         Debug.Fail("not yet")

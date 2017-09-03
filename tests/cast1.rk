@@ -1,0 +1,32 @@
+
+#=>Int
+#=>1
+show(cast(1, Int))
+
+#=>Int64
+#=>2
+show(cast(2, Int64))
+
+#=>Int16
+#=>3
+show(cast(3, Int16))
+
+#=>Byte
+#=>4
+show(cast(4, Byte))
+
+sub show(a: Int)
+	print("Int")
+	print(a)
+
+sub show(a: Int64)
+	print("Int64")
+	print(a)
+
+sub show(a: Int16)
+	print("Int16")
+	print(cast(a, Int))
+
+sub show(a: Byte)
+	print("Byte")
+	print(cast(a, Int))

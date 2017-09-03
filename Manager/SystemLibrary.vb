@@ -90,18 +90,16 @@ Namespace Manager
             Me.AddFunction(array_index, "[]")
 
             ' sub print(s: @T)
-            Dim print_str = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", str)
-            Dim print_int64 = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", int64)
-            Dim print_int32 = LoadFunction(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", int32)
-            Me.AddFunction(print_str, "print")
-            Me.AddFunction(print_int64, "print")
-            Me.AddFunction(print_int32, "print")
+            Me.CreateFunctionAlias(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", "print")
 
-            '' sub return(x: @T)
-            'Dim return_ As New RkFunction With {.Name = "return", .Namespace = Me}
-            'Dim return_t = return_.DefineGeneric("@T")
-            'return_.Arguments.Add(New NamedValue With {.Name = "x", .Value = return_t})
-            'Me.AddFunction(return_)
+            ' sub cast(x: @T, t: @R) @R
+            Dim cast As New RkNativeFunction With {.Name = "cast", .Operator = InOperator.Cast, .Scope = Me, .Parent = Me}
+            Dim cast_t = cast.DefineGeneric("@T")
+            Dim cast_r = cast.DefineGeneric("@R")
+            cast.Return = cast_r
+            cast.Arguments.Add(New NamedValue With {.Name = "x", .Value = cast_t})
+            cast.Arguments.Add(New NamedValue With {.Name = "t", .Value = cast_r})
+            Me.AddFunction(cast)
 
             ' sub #Alloc(x: @T) @T
             Dim alloc As New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = Me, .Parent = Me}
@@ -116,6 +114,14 @@ Namespace Manager
             type.Return = type_t
             Me.AddFunction(type)
 
+        End Sub
+
+        Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)
+
+            For Each f In FindLoadFunction(scope, name, Function(x) True)
+
+                Me.AddFunction(f, [alias])
+            Next
         End Sub
 
         Public Overridable Function CreateNamespace(name As String) As RkNamespace
