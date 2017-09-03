@@ -1,0 +1,9 @@
+##* args1 args2
+
+var args = System.Environment.GetCommandLineArgs()
+
+#=>args1
+print(args[1])
+
+#=>args2
+print(args[2])

@@ -45,7 +45,7 @@ test: clean $(OUT)
 tests: $(OUT) $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
-	-@if exist $<. $< < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff)
+	-@if exist $<. $< $(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#\*(.*)$/$1/" $@.rk | build-tools\xargs -Q echo.) < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff)
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
