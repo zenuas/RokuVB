@@ -283,10 +283,10 @@ Namespace Util
         <DebuggerHidden>
         Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T)) As IEnumerable(Of T)
 
-            Dim hash = self.ToHash_ValueDerivation(Function(x) True)
-            For Each x In xs
+            Dim hash = xs.ToHash_ValueDerivation(Function(x) True)
+            For Each v In self
 
-                If hash.ContainsKey(x) Then Yield x
+                If hash.ContainsKey(v) Then Yield v
             Next
         End Function
 
@@ -294,13 +294,13 @@ Namespace Util
         <DebuggerHidden>
         Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T), match As Func(Of T, T, Boolean)) As IEnumerable(Of T)
 
-            For Each x In xs
+            For Each v In self
 
-                For Each v In self
+                For Each x In xs
 
                     If match(v, x) Then
 
-                        Yield x
+                        Yield v
                         Exit For
                     End If
                 Next
