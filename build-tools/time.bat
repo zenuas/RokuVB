@@ -17,7 +17,7 @@ function main(args)
 		arg += escape(WScript.Arguments(i));
 	}
 	
-	var exec = sh.Exec("cmd /d /c " + arg)
+	var exec = sh.Exec("cmd /d /c " + arg + " 2>&1")
 	while(!exec.StdOut.AtEndOfStream)
 	{
 		WScript.Echo(exec.StdOut.ReadLine());

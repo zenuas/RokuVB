@@ -50,7 +50,11 @@ function main(args)
 
 function exec(args)
 {
-	WScript.StdOut.Write(sh.Exec("cmd /d /c " + args.map(function(x) {return(escape(x));}).join(" ")).StdOut.ReadAll());
+	var exec = sh.Exec("cmd /d /c " + args.map(function(x) {return(escape(x));}).join(" ") + " 2>&1")
+	while(!exec.StdOut.AtEndOfStream)
+	{
+		WScript.Echo(exec.StdOut.ReadLine());
+	}
 }
 
 function escape(s)
