@@ -21,7 +21,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
+    <DefineTrace>false</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>roku.xml</DocumentationFile>
     <NoWarn>
