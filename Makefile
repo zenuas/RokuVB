@@ -28,8 +28,9 @@ clean:
 	rmdir /S /Q tests\parser 2>NUL || exit /B 0
 
 distclean: clean
-	del /F $(YANP_OUT) 2>NUL
-	rmdir /S /Q tests\\parser || exit /B 0
+	#del /F $(YANP_OUT) 2>NUL
+	rmdir /S /Q bin 2>NUL || exit /B 0
+	rmdir /S /Q obj 2>NUL || exit /B 0
 
 release:
 	$(MAKE) RELEASE=Release all
@@ -39,7 +40,7 @@ release:
 test: clean $(OUT)
 	del /F bin\$(RELEASE)\coverage.txt 2>NUL
 	build-tools\time $(MAKE) tests
-	@xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | xargs.bat grep.bat -n -e "^ *Coverage.Case" | coverage.bat bin\$(RELEASE)\coverage.txt Coverage.Case
+	@build-tools\xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | build-tools\xargs grep.bat -n -e "^ *Coverage.Case" | build-tools\coverage bin\$(RELEASE)\coverage.txt Coverage.Case
 
 tests: $(OUT) $(RKTEST)
 
