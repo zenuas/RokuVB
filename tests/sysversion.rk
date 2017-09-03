@@ -1,0 +1,4 @@
+use Sys
+
+#=>0.0.0
+print(version())

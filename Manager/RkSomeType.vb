@@ -130,6 +130,8 @@ Namespace Manager
 
         Public Overridable Function Merge(types As IEnumerable(Of IType)) As Boolean
 
+            If types Is Nothing Then Return False
+
             Me.ReturnCache = Nothing
             If Me.Types Is Nothing Then
 

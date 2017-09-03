@@ -32,7 +32,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
 
-%left  VAR STR NULL
+%left  VAR ATVAR STR NULL
 %left  USE
 %left  ELSE
 %token<NumericNode> NUM
@@ -79,6 +79,7 @@ expr : var
      | num
      | call
      | lambda
+     | atvar
      | '[' list ']'      {$$ = $2}
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | OPE expr          {$$ = Me.CreateFunctionCallNode($1, $2)}

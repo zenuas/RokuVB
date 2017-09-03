@@ -1,0 +1,10 @@
+
+sub version() String
+	return("0.0.0")
+
+sub +(xs: [@T], ys: [@T]) [@T]
+	var zs = [@T]()
+	zs.AddRange(xs)
+	zs.AddRange(ys)
+	return(zs)
+

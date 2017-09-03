@@ -38,7 +38,7 @@ Namespace Parser
             Throw New FileNotFoundException
         End Function
 
-        Public Overridable Function GetNamespace(name As String) As String
+        Public Overridable Function FileNameToNamespace(name As String) As String
 
             Dim fn = Me.GetRelativePath(Me.GetFileName(name), Me.CurrentDirectory)
             If fn.Length = 0 Then Return fn
@@ -50,7 +50,7 @@ Namespace Parser
             Return Util.Errors.These(
                     Function()
                         Me.LoadModule(name)
-                        Return Me.GetNamespace(name)
+                        Return Me.FileNameToNamespace(name)
                     End Function,
                     Function() name
                 )
@@ -59,7 +59,7 @@ Namespace Parser
 
         Public Overridable Sub LoadModule(name As String)
 
-            Me.AddNode(name,
+            Me.AddNode(Me.FileNameToNamespace(name),
                 Function()
 
                     Using reader As New StreamReader(Me.GetFileName(name))
@@ -69,9 +69,9 @@ Namespace Parser
                 End Function)
         End Sub
 
-        Public Overridable Sub LoadModule(name As String, reader As TextReader)
+        Public Overridable Sub LoadModule(ns As String, reader As TextReader)
 
-            Me.AddNode(name, Function() Me.Parse(reader))
+            Me.AddNode(ns, Function() Me.Parse(reader))
         End Sub
 
         Public Overridable Function Parse(reader As TextReader) As ProgramNode
@@ -93,9 +93,8 @@ Namespace Parser
                 End Sub)
         End Function
 
-        Public Overridable Function AddNode(name As String, node As Func(Of ProgramNode)) As ProgramNode
+        Public Overridable Function AddNode(ns As String, node As Func(Of ProgramNode)) As ProgramNode
 
-            Dim ns = Me.GetNamespace(name)
             If Not Me.Root.Namespaces.ContainsKey(ns) Then
 
                 Me.Root.Namespaces(ns) = Nothing

@@ -70,6 +70,7 @@ Namespace Compiler
                 Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
+                    If rk_func.Body.Count > 0 Then Return
 
                     'Dim fix_map As New Dictionary(Of String, IType)
                     'If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)

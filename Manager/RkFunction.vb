@@ -133,6 +133,10 @@ Namespace Manager
                                     TypeOf apply Is RkSomeType Then
 
                                     v = apply
+
+                                ElseIf TypeOf apply Is RkByName Then
+
+                                    v = CType(apply, RkByName).Type
                                 Else
 
                                     Throw New Exception("unknown apply")

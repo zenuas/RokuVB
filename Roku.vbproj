@@ -95,6 +95,7 @@
     <Compile Include="Manager\RkCILFunction.vb" />
     <Compile Include="Manager\RkProperty.vb" />
     <None Include="roku.y" />
+    <EmbeddedResource Include="sys.rk" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Architecture\CommonIL.vb" />

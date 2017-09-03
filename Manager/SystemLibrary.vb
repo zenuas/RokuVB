@@ -70,9 +70,10 @@ Namespace Manager
             Me.AddStruct(int32, "Int")
 
             ' struct Array(@T) : List(@T)
-            ' struct Char : Char
             Dim arr = Me.LoadType(GetType(List(Of )).GetTypeInfo)
             Me.AddStruct(arr, "Array")
+
+            ' struct Char : Char
             Dim chr = Me.LoadType(GetType(Char).GetTypeInfo)
             Me.AddStruct(chr)
 
@@ -151,6 +152,7 @@ Namespace Manager
 
         Public Overridable Function GetNamespace(name As String) As RkNamespace
 
+            If String.IsNullOrEmpty(name) Then Return Me
             Return Me.Namespaces(name)
         End Function
 

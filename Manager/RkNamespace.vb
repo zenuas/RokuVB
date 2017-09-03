@@ -26,7 +26,7 @@ Namespace Manager
             ' -- "use System.Math.max"
 
             Debug.Assert(path IsNot Nothing, "loadpath is null")
-            If Not Me.LoadPaths.Contains(path) Then Me.LoadPaths.Add(path)
+            If Not Me.LoadPaths.Contains(path) AndAlso Me IsNot path Then Me.LoadPaths.Add(path)
         End Sub
 
         Public Overridable Sub AddStruct(x As RkStruct) Implements IScope.AddStruct

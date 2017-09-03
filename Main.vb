@@ -59,6 +59,10 @@ Public Class Main
     Public Shared Sub Compile(loader As Loader, opt As Command.Option)
 
         Dim root As New Manager.SystemLibrary With {.Name = "Global"}
+        Using x As New IO.StreamReader(Assembly.GetExecutingAssembly.GetManifestResourceStream("Roku.sys.rk"))
+
+            loader.LoadModule("Sys", x)
+        End Using
 
         For Each ns In loader.Root.Namespaces
 
@@ -102,7 +106,7 @@ Public Class Main
 
         If opt.NodeDump IsNot Nothing Then NodeDumpGraph(opt.NodeDump, loader.Root)
         Dim arch As New Architecture.CommonIL
-        arch.Assemble(root, root.Namespaces(loader.GetNamespace(opt.EntryPoiny)), opt.Output, Emit.PEFileKinds.ConsoleApplication)
+        arch.Assemble(root, root.Namespaces(loader.FileNameToNamespace(opt.EntryPoiny)), opt.Output, Emit.PEFileKinds.ConsoleApplication)
     End Sub
 
     Public Shared Sub TypeResult(out As IO.TextWriter, node As INode)

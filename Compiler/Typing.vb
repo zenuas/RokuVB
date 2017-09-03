@@ -430,12 +430,13 @@ Namespace Compiler
                         Return CType(expr, RkSomeType)
                     End If
 
-                    Debug.Fail("not yet")
                     Return Nothing
                 End Function
 
             Dim var_feedback As Func(Of IType, IType, IType) =
                 Function(from, to_)
+
+                    If to_ Is Nothing Then Return from
 
                     If from.HasIndefinite Then
 
@@ -443,10 +444,15 @@ Namespace Compiler
 
                             CType(from, RkSomeType).Merge(to_)
                             Coverage.Case()
-                        Else
+
+                        ElseIf TypeOf from Is IApply Then
 
                             Coverage.Case()
-                            Return to_
+                            Dim to_apply = CType(to_, IApply)
+                            CType(from, IApply).Apply.Done(Function(x, i) var_feedback(x, to_apply.Apply(i)))
+                        Else
+
+                            Debug.Fail("feedback error")
                         End If
 
                     ElseIf TypeOf from Is RkByName Then
