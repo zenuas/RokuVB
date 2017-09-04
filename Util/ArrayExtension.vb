@@ -496,6 +496,19 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Function StableSortToList(Of T)(self As IEnumerable(Of T), f As Func(Of T, T, Integer)) As List(Of T)
+
+            Return self.Map(Function(x, i) New KeyValuePair(Of Integer, T)(i, x)).SortToList(
+                Function(a, b)
+
+                    Dim compare = f(a.Value, b.Value)
+                    Return If(compare = 0, a.Key - b.Key, compare)
+
+                End Function).Map(Function(x) x.Value).ToList
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Iterator Function Unique(Of T)(self As IEnumerable(Of T)) As IEnumerable(Of T)
 
             Dim first = True
