@@ -521,7 +521,7 @@ Namespace Parser
 
                 Case -62
                     Debug.WriteLine("type : '[' type ']'")
-                    CType(Me.GetValue(-2), TypeNode).IsArray = True : yy_value = CType(Me.GetValue(-2), TypeNode)
+                    yy_value = New TypeArrayNode(CType(Me.GetValue(-2), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case -63

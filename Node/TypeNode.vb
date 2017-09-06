@@ -1,6 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports Roku.Manager
+﻿Imports Roku.Manager
 
 
 Namespace Node
@@ -21,18 +19,15 @@ Namespace Node
             Me.AppendLineNumber(name)
         End Sub
 
-        Public Sub New(parent_ As TypeNode, name As VariableNode)
-            Me.New(name)
-
-            Me.Namespace = parent_
-        End Sub
-
         Public Overridable Property Name As String
-        Public Overridable Property [Namespace] As TypeNode
-        Public Overridable Property IsArray As Boolean = False
         Public Overridable Property IsGeneric As Boolean = False
         Public Overridable Property Nullable As Boolean = False
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+
+        Public Overridable Function HasGeneric() As Boolean
+
+            Return Me.IsGeneric
+        End Function
 
     End Class
 

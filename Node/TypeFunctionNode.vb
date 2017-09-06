@@ -1,6 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports Roku.Manager
+﻿Imports Roku.Util.ArrayExtension
 
 
 Namespace Node
@@ -9,14 +7,14 @@ Namespace Node
         Inherits TypeNode
 
 
-        Public Sub New()
-
-            Me.Name = ""
-        End Sub
-
         Public Overridable Property Arguments As TypeNode()
         Public Overridable Property [Return] As TypeNode
 
+        Public Overrides Function HasGeneric() As Boolean
+
+            If Me.Return IsNot Nothing AndAlso Me.Return.HasGeneric Then Return True
+            Return Me.IsGeneric OrElse Me.Arguments.Or(Function(x) x.HasGeneric)
+        End Function
     End Class
 
 End Namespace

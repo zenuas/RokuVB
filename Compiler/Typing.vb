@@ -137,14 +137,16 @@ Namespace Compiler
                         node_typef.Type = rk_func
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is TypeArrayNode Then
+
+                        Dim node_typearr = CType(child, TypeArrayNode)
+                        node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is TypeNode Then
 
                         Dim node_type = CType(child, TypeNode)
-                        If Not node_type.IsGeneric Then
-
-                            node_type.Type = CType(LoadStruct(ns, node_type.Name), IType)
-                            If node_type.IsArray Then node_type.Type = LoadStruct(root, "Array", node_type.Type)
-                        End If
+                        If Not node_type.IsGeneric Then node_type.Type = CType(LoadStruct(ns, node_type.Name), IType)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is DeclareNode Then

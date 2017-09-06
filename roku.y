@@ -130,7 +130,7 @@ argn  : decla          {$$ = Me.CreateListNode($1)}
 decla : var ':' type   {$$ = New DeclareNode($1, $3)}
 type  : var            {$$ = New TypeNode($1)}
       | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
-      | '[' type ']'   {$2.IsArray = True : $$ = $2}
+      | '[' type ']'   {$$ = New TypeArrayNode($2)}
       | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
       | atvar '?'      {$$ = New TypeNode($1) With {.IsGeneric = True, .Nullable = True}}
       | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}

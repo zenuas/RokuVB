@@ -4,6 +4,7 @@ var xs = []
 var ys = [1, 2, 3]
 var zs = xs + ys
 
+#=>3
 show(zs[2])
 
 sub show(x: Int)

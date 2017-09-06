@@ -205,6 +205,11 @@ Namespace Util
                             Next
                             f("Return", x.Return)
 
+                        Case TypeOf node_ Is TypeArrayNode
+
+                            Dim x = CType(node_, TypeArrayNode)
+                            f("Item", x.Item)
+
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
@@ -353,6 +358,11 @@ Namespace Util
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeNode)
                             Next
                             x.Return = CType(f("Return", x.Return), TypeNode)
+
+                        Case TypeOf node_ Is TypeArrayNode
+
+                            Dim x = CType(node_, TypeArrayNode)
+                            x.Item = CType(f("Item", x.Item), TypeNode)
 
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
