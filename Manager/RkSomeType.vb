@@ -141,7 +141,9 @@ Namespace Manager
             ElseIf Me.Types.Count > 0 Then
 
                 Dim before = Me.Types.Count
-                Me.Types = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList
+                Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList
+                Diagnostics.Debug.Assert(after.Count > 0, "types is empty")
+                Me.Types = after
                 Return before <> Me.Types.Count
             End If
 
