@@ -471,7 +471,7 @@ Namespace Compiler
 
                             Coverage.Case()
                             Dim to_apply = CType(to_, IApply)
-                            CType(from, IApply).Apply.Done(Function(x, i) var_feedback(x, to_apply.Apply(i)))
+                            CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, var_feedback(x, to_apply.Apply(i))))
                         Else
 
                             Debug.Fail("feedback error")
