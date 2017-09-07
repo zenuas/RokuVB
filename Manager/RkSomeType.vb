@@ -3,7 +3,7 @@ Imports System.Collections.Generic
 Imports Roku.IntermediateCode
 Imports Roku.Node
 Imports Roku.Operator
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Manager

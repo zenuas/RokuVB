@@ -164,7 +164,7 @@
     <Compile Include="Operator\OpNumeric32.vb" />
     <Compile Include="Operator\OpString.vb" />
     <Compile Include="Operator\OpValue.vb" />
-    <Compile Include="Util\ArrayExtension.vb" />
+    <Compile Include="Util\Extensions.vb" />
     <Compile Include="Util\Coverage.vb" />
     <Compile Include="Util\Errors.vb" />
     <Compile Include="Util\Traverse.vb" />

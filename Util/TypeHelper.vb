@@ -1,6 +1,6 @@
 ﻿Imports System
 Imports System.Reflection
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Util

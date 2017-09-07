@@ -6,7 +6,39 @@ Imports System.Runtime.CompilerServices
 
 Namespace Util
 
-    Public Module ArrayExtension
+    Public Module Extensions
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function Fmap(Of T As New, R)(self As T, f As Func(Of T, R)) As R
+
+            If self Is Nothing Then Return Nothing
+            Return f(self)
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function Fmap(Of T As Structure, R)(self As T?, f As Func(Of T, R)) As R
+
+            If Not self.HasValue Then Return Nothing
+            Return f(self.Value)
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [If](Of T)(self As Boolean, f As Func(Of T)) As T
+
+            If Not self Then Return Nothing
+            Return f()
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [If](Of T)(self As Boolean?, f As Func(Of T)) As T
+
+            If Not self.HasValue OrElse Not self.Value Then Return Nothing
+            Return f()
+        End Function
 
         <Extension>
         <DebuggerHidden>

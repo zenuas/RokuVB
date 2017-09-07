@@ -1,6 +1,6 @@
 ﻿Imports System
 Imports Roku.Manager
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Node

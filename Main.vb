@@ -3,7 +3,7 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Parser
 Imports Roku.Node
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 <Assembly: AssemblyVersion("0.0.*")>

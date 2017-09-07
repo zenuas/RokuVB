@@ -1,6 +1,6 @@
 ﻿Imports System.Collections.Generic
 Imports System.Reflection
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Manager

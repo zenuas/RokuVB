@@ -7,7 +7,7 @@ Imports Roku.Manager
 Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Architecture

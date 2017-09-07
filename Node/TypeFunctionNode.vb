@@ -1,4 +1,4 @@
-﻿Imports Roku.Util.ArrayExtension
+﻿Imports Roku.Util.Extensions
 
 
 Namespace Node

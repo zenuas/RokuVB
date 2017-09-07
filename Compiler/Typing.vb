@@ -7,7 +7,7 @@ Imports Roku.Manager
 Imports Roku.Manager.SystemLibrary
 Imports Roku.IntermediateCode
 Imports Roku.Util
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 Imports Roku.Util.TypeHelper
 
 

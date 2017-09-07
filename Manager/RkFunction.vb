@@ -4,7 +4,7 @@ Imports System.Diagnostics
 Imports Roku.Node
 Imports Roku.Operator
 Imports Roku.IntermediateCode
-Imports Roku.Util.ArrayExtension
+Imports Roku.Util.Extensions
 
 
 Namespace Manager
