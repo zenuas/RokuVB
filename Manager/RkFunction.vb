@@ -105,6 +105,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
+            Me.Functions.Do(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
             Return clone
         End Function
 

@@ -74,17 +74,23 @@ Namespace Compiler
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Scope = ns, .Parent = current}
                         node_func.Type = rk_func
-                        rk_func.Arguments.AddRange(node_func.Arguments.Map(Function(x) New NamedValue With {.Name = x.Name.Name, .Value = If(x.Type.IsGeneric, rk_func.DefineGeneric(x.Type.Name), Nothing)}))
 
-                        If node_func.Return?.IsGeneric Then
+                        Dim create_generic As Action(Of TypeNode) =
+                            Sub(x)
 
-                            Dim r = rk_func.DefineGeneric(node_func.Return.Name)
-                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = ns, .Name = "return", .Parent = rk_func}
-                            ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = r})
-                            rk_func.Return = r
-                            current.AddFunction(ret)
-                            Coverage.Case()
-                        End If
+                                If x.IsGeneric Then
+
+                                    x.Type = rk_func.DefineGeneric(x.Name)
+
+                                ElseIf TypeOf x Is TypeArrayNode Then
+
+                                    create_generic(CType(x, TypeArrayNode).Item)
+                                End If
+                            End Sub
+
+                        node_func.Arguments.Do(Sub(x) create_generic(x.Type))
+                        If node_func.Return IsNot Nothing Then create_generic(node_func.Return)
+
                         current.AddFunction(rk_func)
                         Coverage.Case()
 
@@ -140,7 +146,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeArrayNode Then
 
                         Dim node_typearr = CType(child, TypeArrayNode)
-                        node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
+                        If Not node_typearr.HasGeneric Then node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeNode Then
@@ -159,21 +165,35 @@ Namespace Compiler
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_function = node_func.Function
-                        If Not rk_function.HasGeneric Then
 
-                            For Each arg In node_func.Arguments
+                        Dim define_type As Func(Of RkFunction, TypeNode, IType) =
+                            Function(f, x)
 
-                                rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
-                            Next
-                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = ns, .Name = "return", .Parent = rk_function}
-                            If node_func.Return IsNot Nothing Then
+                                If x.Type Is Nothing Then
 
-                                ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = node_func.Return.Type})
-                                rk_function.Return = node_func.Return.Type
-                            End If
-                            rk_function.AddFunction(ret)
-                            Coverage.Case()
+                                    If x.IsGeneric Then
+
+                                        x.Type = f.DefineGeneric(x.Name)
+
+                                    ElseIf TypeOf x Is TypeArrayNode Then
+
+                                        x.Type = LoadStruct(root, "Array", define_type(f, CType(x, TypeArrayNode).Item))
+                                    End If
+                                End If
+
+                                Return x.Type
+                            End Function
+
+                        node_func.Arguments.Do(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
+
+                        Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = ns, .Name = "return", .Parent = rk_function}
+                        If node_func.Return IsNot Nothing Then
+
+                            Dim t = define_type(ret, node_func.Return)
+                            ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
+                            rk_function.Return = t
                         End If
+                        rk_function.AddFunction(ret)
                         Coverage.Case()
 
                     End If
@@ -629,6 +649,8 @@ Namespace Compiler
                                         Coverage.Case()
                                     End If
                                 End If
+
+                                type_fix = True
                                 Coverage.Case()
 
                             ElseIf TypeOf node_call.Function Is RkSomeType Then
