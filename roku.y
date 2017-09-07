@@ -1,7 +1,6 @@
 
 %{
 Imports Roku.Node
-Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
@@ -18,15 +17,14 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<FunctionNode>   sub
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       type typex
-%type<TypeListNode>   types typen
+%type<TypeNode>       type typex atvar
+%type<TypeListNode>   types typen atvarn
 %type<IfNode>         if ifthen elseif
 %type<StructNode>     struct struct_block
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list listn
-%type<VariableNode>   var varx atvar fn
-%type<VariableListNode> atvarn
+%type<VariableNode>   var varx fn
 %type<NumericNode>    num
 %type<StringNode>     str
 %type<UseNode>        use
@@ -131,8 +129,8 @@ decla : var ':' type   {$$ = New DeclareNode($1, $3)}
 type  : var            {$$ = New TypeNode($1)}
       | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
       | '[' type ']'   {$$ = New TypeArrayNode($2)}
-      | atvar          {$$ = New TypeNode($1) With {.IsGeneric = True}}
-      | atvar '?'      {$$ = New TypeNode($1) With {.IsGeneric = True, .Nullable = True}}
+      | atvar
+      | atvar '?'      {$$ = $1 : $1.Nullable = True}
       | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
       | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
 typex : void
@@ -173,7 +171,7 @@ varx  : var
       | ELSE    {$$ = Me.CreateVariableNode($1)}
       | LET     {$$ = Me.CreateVariableNode($1)}
       | USE     {$$ = Me.CreateVariableNode($1)}
-atvar : ATVAR   {$$ = Me.CreateVariableNode($1)}
+atvar : ATVAR   {$$ = New TypeNode(Me.CreateVariableNode($1)) With {.IsGeneric = True}}
 num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.String.Append($2.Name) : $$ = $1}

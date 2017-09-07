@@ -223,8 +223,16 @@ Namespace Compiler
 
                     If TypeOf scope Is IFunction Then
 
-                        Coverage.Case()
-                        Return CType(scope, IFunction).Generics.FindFirst(Function(x) name.Equals(x.Name))
+                        Dim f = CType(scope, IFunction)
+                        If f.HasGeneric Then
+
+                            Coverage.Case()
+                            Return f.Generics.FindFirst(Function(x) name.Equals(x.Name))
+                        Else
+
+                            Coverage.Case()
+                            Return f.Apply(f.GenericBase.Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
+                        End If
 
                     ElseIf TypeOf scope Is RkStruct Then
 

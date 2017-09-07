@@ -1,7 +1,6 @@
 
 
 Imports Roku.Node
-Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
@@ -426,7 +425,7 @@ Namespace Parser
 
                 Case -43
                     Debug.WriteLine("struct : STRUCT var '(' atvarn ')' EOL struct_block")
-                    CType(Me.GetValue(-1), StructNode).Name = CType(Me.GetValue(-6), VariableNode).Name : CType(Me.GetValue(-1), StructNode).Generics.AddRange(CType(Me.GetValue(-4), VariableListNode).List) : yy_value = CType(Me.GetValue(-1), StructNode)
+                    CType(Me.GetValue(-1), StructNode).Name = CType(Me.GetValue(-6), VariableNode).Name : CType(Me.GetValue(-1), StructNode).Generics.AddRange(CType(Me.GetValue(-4), TypeListNode).List) : yy_value = CType(Me.GetValue(-1), StructNode)
                     yy_token = Me.DoAction(SymbolTypes.struct_1, 7, yy_value)
 
                 Case -44
@@ -461,12 +460,12 @@ Namespace Parser
 
                 Case -50
                     Debug.WriteLine("atvarn : atvar")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), VariableNode))
+                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.atvarn, 1, yy_value)
 
                 Case -51
                     Debug.WriteLine("atvarn : atvarn ',' atvar")
-                    CType(Me.GetValue(-3), VariableListNode).List.Add(CType(Me.GetValue(-1), VariableNode)) : yy_value = CType(Me.GetValue(-3), VariableListNode)
+                    CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.atvarn, 3, yy_value)
 
                 Case -52
@@ -526,12 +525,12 @@ Namespace Parser
 
                 Case -63
                     Debug.WriteLine("type : atvar")
-                    yy_value = New TypeNode(CType(Me.GetValue(-1), VariableNode)) With {.IsGeneric = True}
+                    yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.type, 1, yy_value)
 
                 Case -64
                     Debug.WriteLine("type : atvar '?'")
-                    yy_value = New TypeNode(CType(Me.GetValue(-2), VariableNode)) With {.IsGeneric = True, .Nullable = True}
+                    yy_value = CType(Me.GetValue(-2), TypeNode) : CType(Me.GetValue(-2), TypeNode).Nullable = True
                     yy_token = Me.DoAction(SymbolTypes.type, 2, yy_value)
 
                 Case -65
@@ -691,7 +690,7 @@ Namespace Parser
 
                 Case -96
                     Debug.WriteLine("atvar : ATVAR")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = New TypeNode(Me.CreateVariableNode(CType(Me.GetToken(-1), Token))) With {.IsGeneric = True}
                     yy_token = Me.DoAction(SymbolTypes.atvar_1, 1, yy_value)
 
                 Case -97
