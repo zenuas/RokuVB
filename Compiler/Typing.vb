@@ -534,7 +534,11 @@ Namespace Compiler
                         If Not isfirst Then Return
                         If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
 
-                        next_(child, If(TypeOf child Is IEvaluableNode AndAlso TypeOf CType(child, IEvaluableNode).Type Is IScope, CType(CType(child, IEvaluableNode).Type, IScope), current))
+                        next_(child,
+                            If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
+                                CType(CType(child, IEvaluableNode).Type, IScope),
+                                current)
+                            )
 
                         If TypeOf child Is VariableNode Then
 
