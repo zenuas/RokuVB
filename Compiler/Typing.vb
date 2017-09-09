@@ -72,7 +72,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Scope = ns, .Parent = current}
+                        Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Scope = current, .Parent = current}
                         node_func.Type = rk_func
 
                         Dim create_generic As Action(Of TypeNode) =
@@ -80,7 +80,7 @@ Namespace Compiler
 
                                 If x.IsGeneric Then
 
-                                    x.Type = rk_func.DefineGeneric(x.Name)
+                                    rk_func.DefineGeneric(x.Name)
 
                                 ElseIf TypeOf x Is TypeArrayNode Then
 
@@ -186,7 +186,7 @@ Namespace Compiler
 
                         node_func.Arguments.Do(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
 
-                        Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = ns, .Name = "return", .Parent = rk_function}
+                        Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
                         If node_func.Return IsNot Nothing Then
 
                             Dim t = define_type(ret, node_func.Return)

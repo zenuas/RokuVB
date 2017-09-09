@@ -44,8 +44,7 @@ Namespace Manager
             If TypeOf t IsNot RkFunction Then Return False
 
             Dim f = CType(t, RkFunction)
-            If Me.Scope Is f.Scope AndAlso
-                ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse (Me.Return IsNot Nothing AndAlso Me.Return.Is(f.Return))) AndAlso
+            If ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse (Me.Return IsNot Nothing AndAlso Me.Return.Is(f.Return))) AndAlso
                 (Me.Arguments.Count = f.Arguments.Count AndAlso Me.Arguments.And(Function(x, i) x.Value.Is(f.Arguments(i).Value))) Then Return True
 
             Return False
@@ -89,7 +88,7 @@ Namespace Manager
 
                         Return c
 
-                    ElseIf TypeOf c Is IApply Then
+                    ElseIf TypeOf c Is IApply AndAlso CType(c, IApply).Apply.And(Function(x) x IsNot Nothing) Then
 
                         Return c.FixedGeneric(CType(c, IApply).Apply.Map(Function(x) values.FindFirst(Function(v) v.Name.Equals(x.Name)).Value).ToArray)
                     Else
@@ -105,7 +104,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
-            Me.Functions.Do(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
+            Me.Functions.Do(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList.Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
             Return clone
         End Function
 
