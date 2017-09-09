@@ -14,13 +14,17 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            Dim apply = CType(t, IApply).Apply(0)
-            If CType(Me.Type, IApply).Apply(0) IsNot apply Then
+            If TypeOf Me.Type Is RkSomeType Then
 
-                CType(Me.Type, IApply).Apply(0) = apply
+                Dim some = CType(Me.Type, RkSomeType)
+                Return some.Merge(t)
+            Else
+
+                If t Is Me.Type Then Return False
+
+                Me.Type = t
                 Return True
             End If
-            Return False
         End Function
     End Class
 
