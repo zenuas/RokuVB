@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports Roku.Node
 Imports Roku.Util
+Imports Roku.Util.TypeHelper
 
 
 Namespace Compiler
@@ -67,6 +68,11 @@ Namespace Compiler
                                     Next
                                     Coverage.Case()
                                     Return to_let(call_)
+
+                                ElseIf IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
+
+                                    Coverage.Case()
+                                    Return to_let(e)
 
                                 ElseIf TypeOf e Is VariableNode Then
 

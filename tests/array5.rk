@@ -1,0 +1,5 @@
+sub f() [Int]
+	return([])
+
+#=>0
+print(f().Count())
