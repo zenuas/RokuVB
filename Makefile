@@ -13,7 +13,7 @@ YANP_OUT=Parser\MyParser.vb
 RK=tests\test.rk
 RKOBJ=tests\obj\test.exe
 
-SRCS:=$(shell cmd /d /c build-tools\xpath Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include) sys.rk
+SRCS:=$(shell cmd /d /c build-tools\xpath Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | build-tools\xargs echo.) sys.rk
 RKSRCS:=$(wildcard tests\*.rk)
 RKTEST:=$(subst .rk,,$(RKSRCS))
 RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(RKSRCS)))
