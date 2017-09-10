@@ -1,12 +1,11 @@
 ﻿Imports System.Collections.Generic
-Imports Roku.Manager
 
 
 Namespace Node
 
     Public Class BlockNode
         Inherits BaseNode
-        Implements IScopeNode, IAddFunction, IEvaluableNode
+        Implements IScopeNode, IAddFunction
 
 
         Public Sub New(linenum As Integer)
@@ -35,7 +34,6 @@ Namespace Node
         Public Overridable Property InnerScope As Boolean = True Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable ReadOnly Property Functions As New List(Of FunctionNode) Implements IAddFunction.Functions
-        Public Overridable Property Type As IType Implements IEvaluableNode.Type
 
     End Class
 
