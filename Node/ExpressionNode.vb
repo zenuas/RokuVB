@@ -12,6 +12,7 @@ Namespace Node
         Public Overridable Property Left As IEvaluableNode = Nothing
         Public Overridable Property Right As IEvaluableNode = Nothing
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
         Public Overridable Property [Function] As IFunction
 
         Public Overrides Function ToString() As String

@@ -153,6 +153,8 @@ Namespace Compiler
                     Dim make_stmt_let =
                         Function(let_ As LetNode, stmt As IEvaluableNode)
 
+                            If Not let_.IsInstance Then Return {}
+
                             Dim ret As OpValue
                             If let_.Var.ClosureEnvironment Then
 

@@ -1,5 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
+﻿Imports System.Collections.Generic
 Imports Roku.Manager
 
 
@@ -28,6 +27,7 @@ Namespace Node
         Public Overridable Property InnerScope As Boolean = False Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = False Implements IEvaluableNode.IsInstance
         Public Overridable ReadOnly Property Generics As New List(Of TypeNode)
 
         Public Overridable ReadOnly Property Struct As RkStruct

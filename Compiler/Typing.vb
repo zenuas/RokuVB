@@ -565,6 +565,7 @@ Namespace Compiler
                             If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
 
                                 node_let.Var.Type = node_let.Type
+                                If node_let.Expression IsNot Nothing Then node_let.IsInstance = node_let.Expression.IsInstance
                                 Coverage.Case()
 
                             ElseIf node_let.Type IsNot Nothing Then
@@ -728,7 +729,9 @@ Namespace Compiler
 
                                         Coverage.Case()
                                         Dim item = list.GetType.GetProperty("Item")
-                                        Return LoadStruct(root, "Array", fixed_var(CType(item.GetValue(list, New Object() {0}), IEvaluableNode), True))
+                                        Dim item0 = CType(item.GetValue(list, New Object() {0}), IEvaluableNode)
+                                        CType(child, IEvaluableNode).IsInstance = item0.IsInstance
+                                        Return LoadStruct(root, "Array", fixed_var(item0, True))
                                     End If
 
                                 End Function)

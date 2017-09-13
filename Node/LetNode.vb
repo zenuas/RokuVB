@@ -1,5 +1,3 @@
-Imports System
-Imports System.Collections.Generic
 Imports Roku.Manager
 
 
@@ -15,6 +13,7 @@ Namespace Node
         Public Overridable Property [Declare] As TypeNode
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
         Public Overridable Property NameBinding As Boolean = False
     End Class
 

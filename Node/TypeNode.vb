@@ -23,6 +23,7 @@ Namespace Node
         Public Overridable Property IsGeneric As Boolean = False
         Public Overridable Property Nullable As Boolean = False
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = False Implements IEvaluableNode.IsInstance
 
         Public Overridable Function HasGeneric() As Boolean
 

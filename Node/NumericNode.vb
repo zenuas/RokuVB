@@ -16,6 +16,7 @@ Namespace Node
 
         Public Overridable Property Numeric As UInt32
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 

@@ -16,6 +16,7 @@ Namespace Node
         Public Overridable Property Name As String
         Public Overridable Property Scope As IScopeNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
         Public Overridable Property ClosureEnvironment As Boolean = False
 
         Public Overrides Function ToString() As String

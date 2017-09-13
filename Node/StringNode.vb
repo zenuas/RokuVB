@@ -18,6 +18,7 @@ Namespace Node
 
         Public Overridable ReadOnly Property [String] As New StringBuilder
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
+        Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
 
     End Class
 

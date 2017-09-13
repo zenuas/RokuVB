@@ -8,6 +8,7 @@ Namespace Node
 
 
         Property Type As IType
+        Property IsInstance As Boolean
 
     End Interface
 
