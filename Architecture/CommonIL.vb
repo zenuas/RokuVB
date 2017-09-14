@@ -622,14 +622,36 @@ Namespace Architecture
                         Dim alloc = CType(stmt, InCode)
                         Dim array = CType(alloc.Left, OpArray)
                         Dim array_type = Me.RkToCILType(array.Type, structs)
-                        il.Emit(OpCodes.Newobj, get_ctor(CType(array.Type, RkStruct)))
-                        For Each x In array.List
+                        If array.List.Count >= 3 Then
 
+                            Dim t = Me.RkToCILType(array.List(0).Type, structs)
+                            If t.Type IsNot GetType(Integer) Then GoTo ARRAY_CREATE_
+
+                            ' $0 = newarr[size]
+                            il.Emit(OpCodes.Ldc_I4, array.List.Count)
+                            il.Emit(OpCodes.Newarr, t.Type)
+
+                            ' $1 = ldtoken bytearray(...)
+                            ' $2 = InitializeArray($0, $1)
                             il.Emit(OpCodes.Dup)
-                            gen_il_load(il, x, False)
-                            il.Emit(OpCodes.Call, array_type.GetMethod("Add"))
-                        Next
-                        gen_il_store(il, alloc.Return)
+                            il.Emit(OpCodes.Ldtoken, Me.Module.DefineInitializedData("Array", array.List.Map(Function(x) BitConverter.GetBytes(CType(x, OpNumeric32).Numeric)).Flatten.ToArray, FieldAttributes.InitOnly))
+                            il.EmitCall(OpCodes.Call, GetType(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray"), Nothing)
+
+                            ' ret = List.of(Int)($2)
+                            il.Emit(OpCodes.Newobj, array_type.Type.GetConstructor({GetType(IEnumerable(Of Integer))}))
+                            gen_il_store(il, alloc.Return)
+                        Else
+
+ARRAY_CREATE_:
+                            il.Emit(OpCodes.Newobj, get_ctor(CType(array.Type, RkStruct)))
+                            For Each x In array.List
+
+                                il.Emit(OpCodes.Dup)
+                                gen_il_load(il, x, False)
+                                il.Emit(OpCodes.Call, array_type.GetMethod("Add"))
+                            Next
+                            gen_il_store(il, alloc.Return)
+                        End If
 
                     Case InOperator.If
                         Dim if_ = CType(stmt, InIf)
