@@ -59,7 +59,7 @@ Namespace Parser
                 (Me.next_.InputToken = SymbolTypes._END OrElse
                  Me.next_.Indent < Me.indent_stack_(Me.indent_stack_.Count - 1)) Then
 
-                Dim block_end = Me.CreateBlockEnd(Me.indent_stack_(Me.indent_stack_.Count - 1))
+                Dim block_end = Me.CreateBlockEnd(Me.indent_stack_(Me.indent_stack_.Count - 1), Me.LineNumber)
                 Me.indent_stack_.RemoveAt(Me.indent_stack_.Count - 1)
                 Me.prev_ = block_end
                 Return block_end
@@ -98,7 +98,7 @@ Namespace Parser
                     Me.prev_ = Me.CreateBlockBegin(next_indent, Me.LineNumber)
                 Else
                     Me.indent_stack_.RemoveAt(Me.indent_stack_.Count - 1)
-                    Me.prev_ = Me.CreateBlockEnd(prev_indent)
+                    Me.prev_ = Me.CreateBlockEnd(prev_indent, Me.LineNumber)
                 End If
 
             Else
@@ -343,9 +343,9 @@ RESTART_:
             Return New Token(SymbolTypes.BEGIN) With {.Indent = indent, .LineNumber = linenum, .LineColumn = 0}
         End Function
 
-        Protected Overridable Function CreateBlockEnd(indent As Integer) As IToken(Of INode)
+        Protected Overridable Function CreateBlockEnd(indent As Integer, linenum As Integer) As IToken(Of INode)
 
-            Return New Token(SymbolTypes.END) With {.indent = indent}
+            Return New Token(SymbolTypes.END) With {.Indent = indent, .LineNumber = linenum, .LineColumn = 0}
         End Function
 
         Protected Overridable Function ReadVariableFirst(buf As System.Text.StringBuilder) As Token

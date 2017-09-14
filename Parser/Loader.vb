@@ -87,7 +87,7 @@ Namespace Parser
                     If lex.StoreToken IsNot Nothing Then
 
                         Dim store = CType(lex.StoreToken, Token)
-                        Console.Write("".PadLeft(store.LineColumn.Value - 1))
+                        Console.Write("".PadLeft(Math.Max(store.LineColumn.Value - 1, 0)))
                         Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
                     End If
                 End Sub)

@@ -1,7 +1,6 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Diagnostics
-Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Manager.SystemLibrary
@@ -131,7 +130,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is NullNode Then
 
                         Dim node_null = CType(child, NullNode)
-                        node_null.Type = root.LoadType(GetType(Object).GetTypeInfo)
+                        node_null.Type = New RkSomeType
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeFunctionNode Then
@@ -467,6 +466,7 @@ Namespace Compiler
                 Function(from, to_)
 
                     If to_ Is Nothing Then Return from
+                    If from Is Nothing Then Return to_
 
                     If from.HasIndefinite Then
 
@@ -619,7 +619,7 @@ Namespace Compiler
 
                                         ' method call syntax sugar
                                         Coverage.Case()
-                                        Return New RkByNameWithReceiver With {.Scope = CurrentNamespace(struct.Scope)?.TryGetNamespace(struct.Name), .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                        Return New RkByNameWithReceiver With {.Scope = struct, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
                                     End Function) Then
 
                                     node_prop.Right.Type = node_prop.Type
