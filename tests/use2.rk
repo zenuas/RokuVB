@@ -1,0 +1,17 @@
+use sub_mod2
+
+
+struct A
+	var a = 10
+	var b = "Hello"
+
+sub f(a: A) Int
+	return(a.a * 3)
+
+#=>30
+var a1 = A()
+print(a1.f())
+
+#=>40
+var a2 = sub_mod2.A()
+print(a2.f())

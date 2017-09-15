@@ -1,0 +1,7 @@
+
+struct A
+	var a = 20
+	var b = "Hello"
+
+sub f(a: A) Int
+	return(a.a * 2)
