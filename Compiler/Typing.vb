@@ -618,8 +618,17 @@ Namespace Compiler
                                         If v IsNot Nothing Then Return v
 
                                         ' method call syntax sugar
-                                        Coverage.Case()
-                                        Return New RkByNameWithReceiver With {.Scope = struct, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                        If struct.GenericBase IsNot Nothing Then struct = struct.GenericBase
+                                        If TypeOf struct Is RkCILStruct Then
+
+                                            Coverage.Case()
+                                            Dim cstruct = CType(struct, RkCILStruct)
+                                            Return New RkByNameWithReceiver With {.Scope = cstruct.FunctionNamespace, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                        Else
+
+                                            Coverage.Case()
+                                            Return New RkByNameWithReceiver With {.Scope = struct, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                        End If
                                     End Function) Then
 
                                     node_prop.Right.Type = node_prop.Type
