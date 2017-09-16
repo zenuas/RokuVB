@@ -64,6 +64,7 @@ line  : expr EOL
       | let  EOL
       | sub         {CType(Me.CurrentScope, IAddFunction).AddFunction($1)}
       | if
+      | switch
       | block
       | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}
 
@@ -162,6 +163,28 @@ ifthen : IF expr EOL block     {$$ = Me.CreateIfNode($2, $4)}
 elseif : ifthen ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
        | elseif ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
 
+
+########## switch ##########
+switch     : SWITCH expr EOL case_block
+case_block : BEGIN casen END
+casen      : case
+           | casen case
+case       : case_expr ':' EOL
+           | case_expr ':' EOL block
+           | case_expr ':' expr EOL
+case_expr  : var
+           | num
+           | str
+           | '[' array_pattern ']'
+           | '(' tupple_pattern ')'
+
+array_pattern  : patterns
+tupple_pattern : patterns
+patterns       : void
+               | patternn extra
+patternn       : pattern
+               | patternn ',' pattern
+pattern        : var
 
 ########## other ##########
 var   : VAR     {$$ = Me.CreateVariableNode($1)}

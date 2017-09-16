@@ -7,11 +7,11 @@ var xs = [0, 1, 2, 3, 4]
 #=>2
 #=>3
 #=>4
-f(xs)
+show(xs)
 
 sub show(xs: [Int])
 	switch xs
 		[] :
-		a, as :
+		[a, as] :
 			print(a)
 			show(as)

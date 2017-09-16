@@ -78,6 +78,9 @@ Namespace Parser
         ''' <summary>SUB</summary>
         [SUB]
 
+        ''' <summary>SWITCH</summary>
+        SWITCH
+
         ''' <summary>USE</summary>
         USE
 
@@ -93,6 +96,9 @@ Namespace Parser
         ''' <summary>args</summary>
         args
 
+        ''' <summary>array_pattern</summary>
+        array_pattern
+
         ''' <summary>atvar</summary>
         atvar_1
 
@@ -107,6 +113,18 @@ Namespace Parser
 
         ''' <summary>call</summary>
         [call]
+
+        ''' <summary>case</summary>
+        [case]
+
+        ''' <summary>case_block</summary>
+        case_block
+
+        ''' <summary>case_expr</summary>
+        case_expr
+
+        ''' <summary>casen</summary>
+        casen
 
         ''' <summary>decla</summary>
         decla
@@ -168,6 +186,15 @@ Namespace Parser
         ''' <summary>num</summary>
         num_1
 
+        ''' <summary>pattern</summary>
+        pattern
+
+        ''' <summary>patternn</summary>
+        patternn
+
+        ''' <summary>patterns</summary>
+        patterns
+
         ''' <summary>program_begin</summary>
         program_begin
 
@@ -191,6 +218,12 @@ Namespace Parser
 
         ''' <summary>sub</summary>
         sub_1
+
+        ''' <summary>switch</summary>
+        switch_1
+
+        ''' <summary>tupple_pattern</summary>
+        tupple_pattern
 
         ''' <summary>type</summary>
         type

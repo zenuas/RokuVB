@@ -39,6 +39,7 @@ Namespace Parser
             Me.ReservedWord("STR") = SymbolTypes.STR
             Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
+            Me.ReservedWord("SWITCH") = SymbolTypes.SWITCH
             Me.ReservedWord("USE") = SymbolTypes.USE
             Me.ReservedWord("VAR") = SymbolTypes.VAR
         End Sub

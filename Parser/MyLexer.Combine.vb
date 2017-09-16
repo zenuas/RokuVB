@@ -16,6 +16,7 @@ Namespace Parser
             Me.ReservedWord("struct") = SymbolTypes.STRUCT
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
+            Me.ReservedWord("switch") = SymbolTypes.SWITCH
             Me.ReservedWord("use") = SymbolTypes.USE
             Me.ReservedWord("null") = SymbolTypes.NULL
         End Sub
