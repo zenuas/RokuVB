@@ -42,6 +42,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %left  '?'
 %right '(' '[' '{'
+%left  EOL
 
 %%
 
@@ -62,7 +63,7 @@ namespace : varx               {$$ = $1}
 stmt  : void        {$$ = Me.CurrentScope}
       | stmt line   {$1.AddStatement($2) : $$ = $1}
 
-line  : expr EOL
+line  : call EOL
       | let  EOL
       | sub         {CType(Me.CurrentScope, IAddFunction).AddFunction($1)}
       | if
