@@ -89,7 +89,7 @@ Namespace Parser
                     If lex.StoreToken IsNot Nothing Then
 
                         Dim store = CType(lex.StoreToken, Token)
-                        Dim indent = src.Substring(0, Math.Max(store.LineColumn.Value - 1, 0)).FoldLeft(Function(acc, c) If(c = Convert.ToChar(9), ((acc + 1) \ 8 + If((acc + 1) Mod 8 > 0, 1, 0)) * 8, acc + 1), 0)
+                        Dim indent = src.Substring(0, Math.Max(store.LineColumn - 1, 0)).FoldLeft(Function(acc, c) If(c = Convert.ToChar(9), ((acc + 1) \ 8 + If((acc + 1) Mod 8 > 0, 1, 0)) * 8, acc + 1), 0)
                         Console.Write("".PadLeft(indent))
                         Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
                     End If

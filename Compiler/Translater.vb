@@ -226,6 +226,7 @@ Namespace Compiler
                             End If
                         End Function
                     Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
+                    Dim make_switch As Func(Of SwitchNode, List(Of InCode0)) = Nothing
                     Dim make_stmts As Func(Of List(Of IEvaluableNode), List(Of InCode0)) =
                         Function(stmts)
 
@@ -241,6 +242,11 @@ Namespace Compiler
                                 ElseIf TypeOf stmt Is IfNode Then
 
                                     body.AddRange(make_if(CType(stmt, IfNode)))
+                                    Coverage.Case()
+
+                                ElseIf TypeOf stmt Is SwitchNode Then
+
+                                    body.AddRange(make_switch(CType(stmt, SwitchNode)))
                                     Coverage.Case()
 
                                 Else
@@ -283,6 +289,12 @@ Namespace Compiler
                                 Coverage.Case()
                             End If
                             body.Add(endif_)
+                            Return body
+                        End Function
+                    make_switch =
+                        Function(switch)
+
+                            Dim body As New List(Of InCode0)
                             Return body
                         End Function
 

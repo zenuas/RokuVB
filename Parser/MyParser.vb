@@ -349,7 +349,7 @@ Namespace Parser
 
                 Case -21
                     Debug.WriteLine("begin : BEGIN")
-                    Me.PushScope(New BlockNode(CType(Me.GetToken(-1), Token).LineNumber.Value))
+                    Me.PushScope(New BlockNode(CType(Me.GetToken(-1), Token).LineNumber))
                     yy_token = Me.DoAction(SymbolTypes.begin_1, 1, yy_value)
 
                 Case -22
@@ -474,7 +474,7 @@ Namespace Parser
 
                 Case -46
                     Debug.WriteLine("struct_begin : BEGIN")
-                    Me.PushScope(New StructNode(CType(Me.GetToken(-1), Token).LineNumber.Value))
+                    Me.PushScope(New StructNode(CType(Me.GetToken(-1), Token).LineNumber))
                     yy_token = Me.DoAction(SymbolTypes.struct_begin, 1, yy_value)
 
                 Case -47
@@ -579,7 +579,7 @@ Namespace Parser
 
                 Case -67
                     Debug.WriteLine("type : '{' types '}' ALLOW type")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode).List.ToArray, CType(Me.GetValue(-1), TypeNode), CType(Me.GetToken(-5), Token))
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode).List.ToArray, CType(Me.GetValue(-1), TypeNode),      CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -68
@@ -694,37 +694,37 @@ Namespace Parser
 
                 Case -90
                     Debug.WriteLine("switch : SWITCH expr EOL case_block")
-                    yy_value = Me.DefaultAction(4)
+                    yy_value = CType(Me.GetValue(-1), SwitchNode) : CType(Me.GetValue(-1), SwitchNode).Expression = CType(Me.GetValue(-3), IEvaluableNode) : CType(Me.GetValue(-1), SwitchNode).AppendLineNumber(CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.switch_1, 4, yy_value)
 
                 Case -91
                     Debug.WriteLine("case_block : BEGIN casen END")
-                    yy_value = Me.DefaultAction(3)
+                    yy_value = CType(Me.GetValue(-2), SwitchNode)
                     yy_token = Me.DoAction(SymbolTypes.case_block, 3, yy_value)
 
                 Case -92
                     Debug.WriteLine("casen : case")
-                    yy_value = Me.DefaultAction(1)
+                    yy_value = Me.CreateSwitchNode(CType(Me.GetValue(-1), CaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 1, yy_value)
 
                 Case -93
                     Debug.WriteLine("casen : casen case")
-                    yy_value = Me.DefaultAction(2)
+                    yy_value = CType(Me.GetValue(-2), SwitchNode) : CType(Me.GetValue(-2), SwitchNode).Case.Add(CType(Me.GetValue(-1), CaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 2, yy_value)
 
                 Case -94
                     Debug.WriteLine("case : case_expr ':' EOL")
-                    yy_value = Me.DefaultAction(3)
+                    yy_value = CType(Me.GetValue(-3), CaseNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 3, yy_value)
 
                 Case -95
                     Debug.WriteLine("case : case_expr ':' EOL block")
-                    yy_value = Me.DefaultAction(4)
+                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = CType(Me.GetValue(-1), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -96
                     Debug.WriteLine("case : case_expr ':' expr EOL")
-                    yy_value = Me.DefaultAction(4)
+                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = Me.ToBlock(CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -97
@@ -744,12 +744,12 @@ Namespace Parser
 
                 Case -100
                     Debug.WriteLine("case_expr : '[' array_pattern ']'")
-                    yy_value = Me.DefaultAction(3)
+                    yy_value = Me.CreateCaseArrayNode(CType(Me.GetValue(-2), IEvaluableListNode), CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -101
                     Debug.WriteLine("case_expr : '(' tupple_pattern ')'")
-                    yy_value = Me.DefaultAction(3)
+                    
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -102
@@ -764,7 +764,7 @@ Namespace Parser
 
                 Case -104
                     Debug.WriteLine("patterns : void")
-                    yy_value = Me.DefaultAction(1)
+                    yy_value = Me.CreateListNode(Of IEvaluableNode)
                     yy_token = Me.DoAction(SymbolTypes.patterns, 1, yy_value)
 
                 Case -105
@@ -774,12 +774,12 @@ Namespace Parser
 
                 Case -106
                     Debug.WriteLine("patternn : pattern")
-                    yy_value = Me.DefaultAction(1)
+                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.patternn, 1, yy_value)
 
                 Case -107
                     Debug.WriteLine("patternn : patternn ',' pattern")
-                    yy_value = Me.DefaultAction(3)
+                    CType(Me.GetValue(-3), IEvaluableListNode).List.Add(CType(Me.GetValue(-1), IEvaluableNode)) : yy_value = CType(Me.GetValue(-3), IEvaluableListNode)
                     yy_token = Me.DoAction(SymbolTypes.patternn, 3, yy_value)
 
                 Case -108

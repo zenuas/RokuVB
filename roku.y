@@ -20,10 +20,12 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<TypeNode>       type typex atvar
 %type<TypeListNode>   types typen atvarn
 %type<IfNode>         if ifthen elseif
+%type<SwitchNode>     switch casen case_block
+%type<CaseNode>       case case_expr
 %type<StructNode>     struct struct_block
-%type<IEvaluableNode> expr
+%type<IEvaluableNode> expr pattern
 %type<IEvaluableNode> call
-%type<IEvaluableListNode> list listn
+%type<IEvaluableListNode> list listn patternn array_pattern
 %type<VariableNode>   var varx fn
 %type<NumericNode>    num
 %type<StringNode>     str
@@ -69,7 +71,7 @@ line  : expr EOL
       | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}
 
 block : begin stmt END {$$ = Me.PopScope}
-begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber.Value))}
+begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber))}
 
 
 ########## expr ##########
@@ -107,7 +109,7 @@ struct : STRUCT var EOL struct_block                {$4.Name = $2.Name : $$ = $4
        | STRUCT var '(' atvarn ')' EOL struct_block {$7.Name = $2.Name : $7.Generics.AddRange($4.List) : $$ = $7}
 
 struct_block : struct_begin define END {$$ = Me.PopScope}
-struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber.Value))}
+struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber))}
 
 define : void
        | define LET var ':' type EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
@@ -165,25 +167,25 @@ elseif : ifthen ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
 
 
 ########## switch ##########
-switch     : SWITCH expr EOL case_block
-case_block : BEGIN casen END
-casen      : case
-           | casen case
-case       : case_expr ':' EOL
-           | case_expr ':' EOL block
-           | case_expr ':' expr EOL
+switch     : SWITCH expr EOL case_block {$$ = $4 : $4.Expression = $2 : $4.AppendLineNumber($1)}
+case_block : BEGIN casen END         {$$ = $2}
+casen      : case                    {$$ = Me.CreateSwitchNode($1)}
+           | casen case              {$$ = $1 : $1.Case.Add($2)}
+case       : case_expr ':' EOL       {$$ = $1}
+           | case_expr ':' EOL block {$$ = $1 : $1.Then = $4}
+           | case_expr ':' expr EOL  {$$ = $1 : $1.Then = Me.ToBlock($3)}
 case_expr  : var
            | num
            | str
-           | '[' array_pattern ']'
-           | '(' tupple_pattern ')'
+           | '[' array_pattern ']'  {$$ = Me.CreateCaseArrayNode($2, $1)}
+           | '(' tupple_pattern ')' {}
 
 array_pattern  : patterns
 tupple_pattern : patterns
-patterns       : void
+patterns       : void                 {$$ = Me.CreateListNode(Of IEvaluableNode)}
                | patternn extra
-patternn       : pattern
-               | patternn ',' pattern
+patternn       : pattern              {$$ = Me.CreateListNode($1)}
+               | patternn ',' pattern {$1.List.Add($3) : $$ = $1}
 pattern        : var
 
 ########## other ##########

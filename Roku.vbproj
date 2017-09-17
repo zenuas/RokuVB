@@ -75,6 +75,8 @@
     <Compile Include="Manager\IFunction.vb" />
     <Compile Include="Manager\IScope.vb" />
     <Compile Include="Manager\RkSomeType.vb" />
+    <Compile Include="Node\CaseArrayNode.vb" />
+    <Compile Include="Node\IStatement.vb" />
     <Compile Include="Node\IAddFunction.vb" />
     <Compile Include="Node\IFeedback.vb" />
     <Compile Include="Node\CaseNode.vb" />

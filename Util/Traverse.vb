@@ -196,6 +196,23 @@ Namespace Util
                             f("Then", x.Then)
                             f("Else", x.Else)
 
+                        Case TypeOf node_ Is SwitchNode
+
+                            Dim x = CType(node_, SwitchNode)
+                            f("Expression", x.Expression)
+                            For i = 0 To x.Case.Count - 1
+
+                                f($"[{i}]", x.Case(i))
+                            Next
+
+                        Case TypeOf node_ Is CaseArrayNode
+
+                            Dim x = CType(node_, CaseArrayNode)
+                            For i = 0 To x.Pattern.Count - 1
+
+                                f($"[{i}]", x.Pattern(i))
+                            Next
+
                         Case TypeOf node_ Is TypeFunctionNode
 
                             Dim x = CType(node_, TypeFunctionNode)
@@ -349,6 +366,23 @@ Namespace Util
                             x.Condition = CType(f("Condition", x.Condition), IEvaluableNode)
                             x.Then = CType(f("Then", x.Then), BlockNode)
                             x.Else = CType(f("Else", x.Else), BlockNode)
+
+                        Case TypeOf node_ Is SwitchNode
+
+                            Dim x = CType(node_, SwitchNode)
+                            x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
+                            For i = 0 To x.Case.Count - 1
+
+                                x.Case(i) = CType(f($"[{i}]", x.Case(i)), CaseNode)
+                            Next
+
+                        Case TypeOf node_ Is CaseArrayNode
+
+                            Dim x = CType(node_, CaseArrayNode)
+                            For i = 0 To x.Pattern.Count - 1
+
+                                x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), IEvaluableNode)
+                            Next
 
                         Case TypeOf node_ Is TypeFunctionNode
 

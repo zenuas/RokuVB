@@ -164,6 +164,24 @@ Namespace Parser
             Return [if]
         End Function
 
+        Protected Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
+
+            Dim switch As New SwitchNode
+            switch.Case.Add([case])
+            switch.AppendLineNumber([case])
+            Return switch
+        End Function
+
+        Protected Overridable Function CreateCaseArrayNode(
+                pattern As ListNode(Of IEvaluableNode),
+                token As Token
+            ) As CaseArrayNode
+
+            Dim [case] As New CaseArrayNode With {.Pattern = pattern.List}
+            [case].AppendLineNumber(token)
+            Return [case]
+        End Function
+
         Protected Overridable Function CreateFunctionNode(
                 name As VariableNode,
                 args() As DeclareNode,

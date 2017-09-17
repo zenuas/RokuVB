@@ -34,8 +34,8 @@ Namespace Parser
         Public Overridable Property Type As SymbolTypes
         Protected Overridable Property TableIndex As Integer Implements IToken(Of INode).TableIndex
         Public Overridable Property Value As INode Implements IToken(Of INode).Value
-        Public Overridable Property LineNumber As Integer?
-        Public Overridable Property LineColumn As Integer?
+        Public Overridable Property LineNumber As Integer
+        Public Overridable Property LineColumn As Integer
         Public Overridable Property Indent As Integer Implements IToken(Of INode).Indent
 
         Public Overridable ReadOnly Property EndOfToken() As Boolean Implements IToken(Of INode).EndOfToken
