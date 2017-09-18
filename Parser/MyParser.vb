@@ -3,6 +3,7 @@
 Imports Roku.Node
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
+Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 
@@ -745,7 +746,7 @@ Namespace Parser
 
                 Case -100
                     Debug.WriteLine("case_expr : '[' array_pattern ']'")
-                    yy_value = Me.CreateCaseArrayNode(CType(Me.GetValue(-2), IEvaluableListNode), CType(Me.GetToken(-3), Token))
+                    yy_value = Me.CreateCaseArrayNode(CType(Me.GetValue(-2), VariableListNode), CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -101
@@ -765,7 +766,7 @@ Namespace Parser
 
                 Case -104
                     Debug.WriteLine("patterns : void")
-                    yy_value = Me.CreateListNode(Of IEvaluableNode)
+                    yy_value = Me.CreateListNode(Of VariableNode)
                     yy_token = Me.DoAction(SymbolTypes.patterns, 1, yy_value)
 
                 Case -105
@@ -775,12 +776,12 @@ Namespace Parser
 
                 Case -106
                     Debug.WriteLine("patternn : pattern")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.patternn, 1, yy_value)
 
                 Case -107
                     Debug.WriteLine("patternn : patternn ',' pattern")
-                    CType(Me.GetValue(-3), IEvaluableListNode).List.Add(CType(Me.GetValue(-1), IEvaluableNode)) : yy_value = CType(Me.GetValue(-3), IEvaluableListNode)
+                    CType(Me.GetValue(-3), VariableListNode).List.Add(CType(Me.GetValue(-1), VariableNode)) : yy_value = CType(Me.GetValue(-3), VariableListNode)
                     yy_token = Me.DoAction(SymbolTypes.patternn, 3, yy_value)
 
                 Case -108

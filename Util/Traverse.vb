@@ -386,7 +386,7 @@ Namespace Util
                             Dim x = CType(node_, CaseArrayNode)
                             For i = 0 To x.Pattern.Count - 1
 
-                                x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), IEvaluableNode)
+                                x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), VariableNode)
                             Next
 
                         Case TypeOf node_ Is LambdaExpressionNode

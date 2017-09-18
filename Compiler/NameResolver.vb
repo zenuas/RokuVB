@@ -50,6 +50,13 @@ Namespace Compiler
                         struct.Parent = current
                         next_(child, struct)
                         Coverage.Case()
+
+                    ElseIf TypeOf child Is CaseArrayNode Then
+
+                        Dim node_case = CType(child, CaseArrayNode)
+                        If node_case.Then IsNot Nothing Then node_case.Pattern.Do(Sub(x) node_case.Then.Scope.Add(x.Name, x))
+                        Coverage.Case()
+
                     Else
 
                         next_(child, current)

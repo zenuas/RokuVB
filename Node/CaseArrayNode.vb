@@ -6,7 +6,7 @@ Namespace Node
     Public Class CaseArrayNode
         Inherits CaseNode
 
-        Public Overridable Property Pattern As New List(Of IEvaluableNode)
+        Public Overridable Property Pattern As New List(Of VariableNode)
     End Class
 
 End Namespace

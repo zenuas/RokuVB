@@ -173,7 +173,7 @@ Namespace Parser
         End Function
 
         Protected Overridable Function CreateCaseArrayNode(
-                pattern As ListNode(Of IEvaluableNode),
+                pattern As ListNode(Of VariableNode),
                 token As Token
             ) As CaseArrayNode
 

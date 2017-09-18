@@ -3,6 +3,7 @@
 Imports Roku.Node
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
+Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %}
 
@@ -23,10 +24,11 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<SwitchNode>     switch casen case_block
 %type<CaseNode>       case case_expr
 %type<StructNode>     struct struct_block
-%type<IEvaluableNode> expr pattern
+%type<IEvaluableNode> expr
 %type<IEvaluableNode> call
-%type<IEvaluableListNode> list listn patternn array_pattern
-%type<VariableNode>   var varx fn
+%type<IEvaluableListNode> list listn
+%type<VariableListNode>   patternn array_pattern
+%type<VariableNode>   var varx fn pattern
 %type<NumericNode>    num
 %type<StringNode>     str
 %type<UseNode>        use
@@ -183,7 +185,7 @@ case_expr  : var
 
 array_pattern  : patterns
 tupple_pattern : patterns
-patterns       : void                 {$$ = Me.CreateListNode(Of IEvaluableNode)}
+patterns       : void                 {$$ = Me.CreateListNode(Of VariableNode)}
                | patternn extra
 patternn       : pattern              {$$ = Me.CreateListNode($1)}
                | patternn ',' pattern {$1.List.Add($3) : $$ = $1}
