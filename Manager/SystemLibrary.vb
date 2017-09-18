@@ -404,6 +404,18 @@ Namespace Manager
 
         End Function
 
+        Public Overridable Function IsArray(t As IType) As Boolean
+
+            If TypeOf t IsNot RkCILStruct Then Return False
+            Return Me.Structs("Array")(0) Is CType(t, RkCILStruct).GenericBase
+        End Function
+
+        Public Overridable Function GetArrayType(t As IType) As IType
+
+            If Not IsArray(t) Then Throw New Exception("not array")
+            Return CType(t, RkCILStruct).Apply(0)
+        End Function
+
     End Class
 
 End Namespace

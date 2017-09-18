@@ -132,20 +132,6 @@ Namespace Compiler
                             Return Nothing
                         End Function
 
-                    Dim make_stmt =
-                        Function(stmt As IStatementNode)
-
-                            If TypeOf stmt Is FunctionCallNode Then
-
-                                Coverage.Case()
-                                Dim func = CType(stmt, FunctionCallNode)
-                                Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                Return func.Function.CreateCall(to_value(func.Expression), args.ToArray)
-                            Else
-
-                                Throw New Exception("unknown stmt")
-                            End If
-                        End Function
                     Dim make_stmt_let =
                         Function(let_ As LetNode, stmt As IEvaluableNode)
 
@@ -245,8 +231,11 @@ Namespace Compiler
                                     body.AddRange(make_switch(CType(stmt, SwitchNode)))
                                     Coverage.Case()
 
-                                Else
-                                    body.AddRange(make_stmt(stmt))
+                                ElseIf TypeOf stmt Is FunctionCallNode Then
+
+                                    Dim func = CType(stmt, FunctionCallNode)
+                                    Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
+                                    body.AddRange(func.Function.CreateCall(to_value(func.Expression), args.ToArray))
                                     Coverage.Case()
                                 End If
                             Next
