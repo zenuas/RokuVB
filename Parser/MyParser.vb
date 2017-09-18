@@ -305,7 +305,7 @@ Namespace Parser
 
                 Case -12
                     Debug.WriteLine("stmt : stmt line")
-                    CType(Me.GetValue(-2), BlockNode).AddStatement(CType(Me.GetValue(-1), IEvaluableNode)) : yy_value = CType(Me.GetValue(-2), BlockNode)
+                    CType(Me.GetValue(-2), BlockNode).AddStatement(CType(Me.GetValue(-1), IStatementNode)) : yy_value = CType(Me.GetValue(-2), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.stmt, 2, yy_value)
 
                 Case -13
@@ -620,7 +620,7 @@ Namespace Parser
 
                 Case -75
                     Debug.WriteLine("lambda_func : expr")
-                    yy_value = Me.ToBlock(CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.ToLambdaExpression(CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda_func, 1, yy_value)
 
                 Case -76
@@ -725,7 +725,7 @@ Namespace Parser
 
                 Case -96
                     Debug.WriteLine("case : case_expr ':' expr EOL")
-                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = Me.ToBlock(CType(Me.GetValue(-2), IEvaluableNode))
+                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = Me.ToLambdaExpression(CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -97

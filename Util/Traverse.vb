@@ -213,6 +213,11 @@ Namespace Util
                                 f($"[{i}]", x.Pattern(i))
                             Next
 
+                        Case TypeOf node_ Is LambdaExpressionNode
+
+                            Dim x = CType(node_, LambdaExpressionNode)
+                            f("Expression", x.Expression)
+
                         Case TypeOf node_ Is TypeFunctionNode
 
                             Dim x = CType(node_, TypeFunctionNode)
@@ -292,7 +297,7 @@ Namespace Util
                             x.Owner = CType(f("Owner", x.Owner), IBlock)
                             For i = 0 To x.Statements.Count - 1
 
-                                x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IEvaluableNode)
+                                x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IStatementNode)
                             Next
 
                             For Each key In New List(Of String)(x.Scope.Keys)
@@ -383,6 +388,11 @@ Namespace Util
 
                                 x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), IEvaluableNode)
                             Next
+
+                        Case TypeOf node_ Is LambdaExpressionNode
+
+                            Dim x = CType(node_, LambdaExpressionNode)
+                            x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
 
                         Case TypeOf node_ Is TypeFunctionNode
 

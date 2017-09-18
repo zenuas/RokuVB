@@ -7,7 +7,7 @@ Namespace Node
 
     Public Class FunctionCallNode
         Inherits BaseNode
-        Implements IEvaluableNode, IFeedback
+        Implements IEvaluableNode, IStatementNode, IFeedback
 
 
         Public Overridable Property Expression As IEvaluableNode

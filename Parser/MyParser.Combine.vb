@@ -223,10 +223,12 @@ Namespace Parser
             Return t
         End Function
 
-        Protected Overridable Function ToBlock(expr As IEvaluableNode) As BlockNode
+        Protected Overridable Function ToLambdaExpression(expr As IEvaluableNode) As BlockNode
 
             Dim block = New BlockNode(expr.LineNumber.Value)
-            block.Statements.Add(expr)
+            Dim lambda = New LambdaExpressionNode With {.Expression = expr}
+            lambda.AppendLineNumber(expr)
+            block.Statements.Add(lambda)
             block.Parent = Me.CurrentScope
             Return block
         End Function

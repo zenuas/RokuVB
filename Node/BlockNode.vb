@@ -14,7 +14,7 @@ Namespace Node
             Me.LineColumn = 0
         End Sub
 
-        Public Overridable Sub AddStatement(stmt As IEvaluableNode)
+        Public Overridable Sub AddStatement(stmt As IStatementNode)
 
             If stmt IsNot Nothing Then Me.Statements.Add(stmt)
         End Sub
@@ -29,7 +29,7 @@ Namespace Node
             Me.Scope.Add(let_.Var.Name, let_)
         End Sub
 
-        Public Overridable ReadOnly Property Statements As New List(Of IEvaluableNode)
+        Public Overridable ReadOnly Property Statements As New List(Of IStatementNode)
         Public Overridable Property Owner As IBlock Implements IScopeNode.Owner
         Public Overridable Property InnerScope As Boolean = True Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope

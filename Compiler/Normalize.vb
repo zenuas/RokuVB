@@ -83,7 +83,7 @@ Namespace Compiler
                             End Function
 
                         Dim to_flat As Func(Of IEvaluableNode, IEvaluableNode) =
-                            Function(e As IEvaluableNode) As IEvaluableNode
+                            Function(e)
 
                                 If TypeOf e Is ExpressionNode Then
 
@@ -119,22 +119,15 @@ Namespace Compiler
                         Do While program_pointer < block.Statements.Count
 
                             Dim v = block.Statements(program_pointer)
-                            If TypeOf v Is ExpressionNode Then
+                            If TypeOf v Is FunctionCallNode Then
 
-                                'Dim expr = CType(v, ExpressionNode)
-                                'expr.Left = to_flat(expr.Left)
-                                'expr.Right = to_flat(expr.Right)
-                                to_flat(v)
-                                'Coverage.Case()
+                                to_flat(CType(v, FunctionCallNode))
+                                Coverage.Case()
 
-                            ElseIf TypeOf v Is PropertyNode Then
+                            ElseIf TypeOf v Is LambdaExpressionNode Then
 
-                                to_flat(v)
-                                'Coverage.Case()
-
-                            ElseIf TypeOf v Is FunctionCallNode Then
-
-                                to_flat(v)
+                                Dim lambda = CType(v, LambdaExpressionNode)
+                                lambda.Expression = to_flat(lambda.Expression)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is LetNode Then
@@ -149,6 +142,13 @@ Namespace Compiler
                                 Dim if_ = CType(v, IfNode)
                                 if_.Condition = insert_let(if_.Condition)
                                 Coverage.Case()
+
+                            ElseIf TypeOf v Is SwitchNode Then
+
+                                Dim switch = CType(v, SwitchNode)
+                                switch.Expression = insert_let(switch.Expression)
+                                Coverage.Case()
+
                             End If
                             program_pointer += 1
                         Loop

@@ -12,7 +12,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %define YYMYNAMESPACE   Parser
 
 %type<BlockNode>      block stmt lambda_func
-%type<IEvaluableNode> line
+%type<IStatementNode> line
 %type<LetNode>        let
 %type<FunctionNode>   sub
 %type<DeclareNode>    decla lambda_arg
@@ -147,7 +147,7 @@ typen : type           {$$ = Me.CreateListNode($1)}
 
 ########## lambda ##########
 lambda      : '{' lambda_args '}' typex ALLOW lambda_func {$$ = Me.CreateFunctionNode($2.List.ToArray, $4, $6)}
-lambda_func : expr                       {$$ = Me.ToBlock($1)}
+lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
             | block
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
             | decla
@@ -174,7 +174,7 @@ casen      : case                    {$$ = Me.CreateSwitchNode($1)}
            | casen case              {$$ = $1 : $1.Case.Add($2)}
 case       : case_expr ':' EOL       {$$ = $1}
            | case_expr ':' EOL block {$$ = $1 : $1.Then = $4}
-           | case_expr ':' expr EOL  {$$ = $1 : $1.Then = Me.ToBlock($3)}
+           | case_expr ':' expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
 case_expr  : var
            | num
            | str

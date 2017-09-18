@@ -67,7 +67,7 @@ Namespace Compiler
             Dim compleat As New Dictionary(Of IFunction, Boolean)
 
             Dim make_func =
-                Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IEvaluableNode))
+                Sub(rk_func As IFunction, scope As INode, func_stmts As List(Of IStatementNode))
 
                     If compleat.ContainsKey(rk_func) AndAlso compleat(rk_func) Then Return
                     If rk_func.Body.Count > 0 Then Return
@@ -133,13 +133,9 @@ Namespace Compiler
                         End Function
 
                     Dim make_stmt =
-                        Function(stmt As IEvaluableNode)
+                        Function(stmt As IStatementNode)
 
-                            If TypeOf stmt Is ExpressionNode Then
-
-                                Throw New NotSupportedException
-
-                            ElseIf TypeOf stmt Is FunctionCallNode Then
+                            If TypeOf stmt Is FunctionCallNode Then
 
                                 Coverage.Case()
                                 Dim func = CType(stmt, FunctionCallNode)
@@ -227,7 +223,7 @@ Namespace Compiler
                         End Function
                     Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
                     Dim make_switch As Func(Of SwitchNode, List(Of InCode0)) = Nothing
-                    Dim make_stmts As Func(Of List(Of IEvaluableNode), List(Of InCode0)) =
+                    Dim make_stmts As Func(Of List(Of IStatementNode), List(Of InCode0)) =
                         Function(stmts)
 
                             Dim body As New List(Of InCode0)

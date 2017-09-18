@@ -5,7 +5,7 @@ Namespace Node
 
     Public Class LetNode
         Inherits BaseNode
-        Implements IEvaluableNode
+        Implements IEvaluableNode, IStatementNode
 
 
         Public Overridable Property Receiver As IEvaluableNode

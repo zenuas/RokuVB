@@ -797,17 +797,38 @@ Namespace Compiler
 
                     If Not isfirst Then Return
 
+                    If TypeOf child Is BlockNode Then
+
+                        Dim block = CType(child, BlockNode)
+                        If block.Statements.Count > 0 AndAlso TypeOf block.Statements(block.Statements.Count - 1) Is LambdaExpressionNode Then
+
+                            Dim func = CType(block.Owner, FunctionNode)
+                            Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
+                            If CType(func.Type, RkFunction).Return Is Nothing Then
+
+                                If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
+                                block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
+                            Else
+
+                                Throw New Exception("lambda expression not yet support")
+                            End If
+                            Coverage.Case()
+                        End If
+                    End If
+
                     next_(child, current + 1)
 
                     If TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
                         node_call.Function = CType(var_normalize(node_call.Function), IFunction)
+                        Coverage.Case()
 
                     ElseIf TypeOf child Is IEvaluableNode Then
 
                         Dim e = CType(child, IEvaluableNode)
                         e.Type = var_normalize(e.Type)
+                        Coverage.Case()
 
                         'Debug.Assert(Not t.HasIndefinite)
                         'Debug.Assert(Not t.HasGeneric)
