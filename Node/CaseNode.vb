@@ -1,7 +1,4 @@
-﻿Imports Roku.Manager
-
-
-Namespace Node
+﻿Namespace Node
 
     Public MustInherit Class CaseNode
         Inherits BaseNode
