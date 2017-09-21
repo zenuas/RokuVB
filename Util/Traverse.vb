@@ -212,6 +212,7 @@ Namespace Util
 
                                 f($"[{i}]", x.Pattern(i))
                             Next
+                            f("Then", x.Then)
 
                         Case TypeOf node_ Is LambdaExpressionNode
 
@@ -388,6 +389,7 @@ Namespace Util
 
                                 x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), VariableNode)
                             Next
+                            x.Then = CType(f("Then", x.Then), BlockNode)
 
                         Case TypeOf node_ Is LambdaExpressionNode
 
