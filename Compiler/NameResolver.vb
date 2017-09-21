@@ -55,6 +55,7 @@ Namespace Compiler
 
                         Dim node_case = CType(child, CaseArrayNode)
                         If node_case.Then IsNot Nothing Then node_case.Pattern.Do(Sub(x) node_case.Then.Scope.Add(x.Name, x))
+                        next_(child, node_case.Then)
                         Coverage.Case()
 
                     Else
