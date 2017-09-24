@@ -214,14 +214,14 @@ Namespace Manager
             Return CType(Me.GetDecideType, IFunction).GetBaseFunctions
         End Function
 
-        Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
+        Public Overridable Function CreateCall(ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
 
-            Return CType(Me.GetDecideType, IFunction).CreateCall(self, args)
+            Return CType(Me.GetDecideType, IFunction).CreateCall(args)
         End Function
 
-        Public Overridable Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCallReturn
+        Public Overridable Function CreateCallReturn(return_ As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCallReturn
 
-            Return CType(Me.GetDecideType, IFunction).CreateCallReturn(self, return_, args)
+            Return CType(Me.GetDecideType, IFunction).CreateCallReturn(return_, args)
         End Function
 
         Public Overridable Function CreateManglingName() As String Implements IFunction.CreateManglingName

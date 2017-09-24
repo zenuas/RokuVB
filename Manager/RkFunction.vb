@@ -199,22 +199,22 @@ Namespace Manager
             Return Me.Scope.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
-        Public Overridable Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
+        Public Overridable Function CreateCall(ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
-            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
+            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = args(0)}, New InCall)
             x.Function = Me
-            x.Arguments.AddRange(args)
+            x.Arguments.AddRange(If(Me.IsAnonymous, args.Range(1).ToArray, args))
             Return New InCode0() {x}
         End Function
 
-        Public Overridable Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCallReturn
+        Public Overridable Function CreateCallReturn(return_ As OpValue, ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCallReturn
 
             'Debug.Assert(Me.Closure IsNot Nothing OrElse Me.Arguments.Count = args.Length, "unmatch arguments count")
-            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = self}, New InCall)
+            Dim x As InCall = If(Me.IsAnonymous, New InLambdaCall With {.Value = args(0)}, New InCall)
             x.Function = Me
             x.Return = return_
-            x.Arguments.AddRange(args)
+            x.Arguments.AddRange(If(Me.IsAnonymous, args.Range(1).ToArray, args))
             Return New InCode0() {x}
         End Function
 

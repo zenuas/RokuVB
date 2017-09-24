@@ -144,7 +144,7 @@ Namespace Compiler
 
                                 Coverage.Case()
                                 Dim expr = CType(stmt, ExpressionNode)
-                                Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left)), expr.Function.CreateCallReturn(to_value(expr), ret, to_value(expr.Left), to_value(expr.Right)))
+                                Return If(expr.Right Is Nothing, expr.Function.CreateCallReturn(ret, to_value(expr.Left)), expr.Function.CreateCallReturn(ret, to_value(expr.Left), to_value(expr.Right)))
 
                             ElseIf TypeOf stmt Is PropertyNode Then
 
@@ -158,7 +158,7 @@ Namespace Compiler
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
                                 If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
-                                Return func.Function.CreateCallReturn(to_value(func.Expression), ret, args.ToArray)
+                                Return func.Function.CreateCallReturn(ret, args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse
                                     TypeOf stmt Is NumericNode OrElse
@@ -241,7 +241,8 @@ Namespace Compiler
 
                                     Dim func = CType(stmt, FunctionCallNode)
                                     Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                    body.AddRange(func.Function.CreateCall(to_value(func.Expression), args.ToArray))
+                                    If func.Function.IsAnonymous Then args.Insert(0, to_value(func.Expression))
+                                    body.AddRange(func.Function.CreateCall(args.ToArray))
                                     Coverage.Case()
                                 End If
                             Next
@@ -300,7 +301,7 @@ Namespace Compiler
                             Dim eq = TryLoadFunction(root, "==", int_, int_)
                             Dim gte = TryLoadFunction(root, ">=", int_, int_)
 
-                            body.AddRange(count.CreateCallReturn(to_value(switch.Expression), count_r, to_value(switch.Expression)))
+                            body.AddRange(count.CreateCallReturn(count_r, to_value(switch.Expression)))
                             For i = 0 To switch.Case.Count - 1
 
                                 Dim case_ = switch.Case(i)
@@ -315,7 +316,7 @@ Namespace Compiler
                                             '     case_.Then.Statements
                                             '     goto last_label
                                             ' else ...
-                                            body.AddRange(eq.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func}))
+                                            body.AddRange(eq.CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func}))
                                             Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
                                             body.Add(if_)
                                             body.Add(if_.Then)
@@ -329,11 +330,11 @@ Namespace Compiler
                                             '     case_.Then.Statements
                                             '     goto last_label
                                             ' else ...
-                                            body.AddRange(eq.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = 1, .Type = int_, .Scope = rk_func}))
+                                            body.AddRange(eq.CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 1, .Type = int_, .Scope = rk_func}))
                                             Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
                                             body.Add(if_)
                                             body.Add(if_.Then)
-                                            index.CreateCallReturn(to_value(switch.Expression), to_value(case_array.Pattern(0)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func})
+                                            index.CreateCallReturn(to_value(case_array.Pattern(0)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func})
                                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                             body.Add(New InGoto With {.Label = last_label})
 
@@ -345,13 +346,13 @@ Namespace Compiler
                                             '     case_.Then.Statements
                                             '     goto last_label
                                             ' else ...
-                                            body.AddRange(gte.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func}))
+                                            body.AddRange(gte.CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func}))
                                             Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
                                             body.Add(if_)
                                             body.Add(if_.Then)
                                             For j = 0 To case_array.Pattern.Count - 2
 
-                                                body.AddRange(index.CreateCallReturn(to_value(switch.Expression), to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = rk_func}))
+                                                body.AddRange(index.CreateCallReturn(to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = rk_func}))
                                             Next
                                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                             body.Add(New InGoto With {.Label = last_label})
@@ -367,7 +368,7 @@ Namespace Compiler
                     If rk_func.Closure IsNot Nothing Then
 
                         closure = New OpValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}
-                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(Nothing, closure, New OpValue With {.Type = rk_func.Closure, .Scope = rk_func}))
+                        rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(closure, New OpValue With {.Type = rk_func.Closure, .Scope = rk_func}))
                         rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Do(
                             Sub(x)
 

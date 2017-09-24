@@ -20,8 +20,8 @@ Namespace Manager
         Function ArgumentsToApply(ParamArray args() As IType) As IType()
         Function ApplyFunction(ParamArray args() As IType) As IFunction
         Function GetBaseFunctions() As List(Of IFunction)
-        Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0()
-        Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0()
+        Function CreateCall(ParamArray args() As OpValue) As InCode0()
+        Function CreateCallReturn(return_ As OpValue, ParamArray args() As OpValue) As InCode0()
         Function CreateManglingName() As String
 
     End Interface

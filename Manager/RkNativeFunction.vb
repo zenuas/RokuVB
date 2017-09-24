@@ -10,7 +10,7 @@ Namespace Manager
 
         Public Overridable Property [Operator] As InOperator = InOperator.Nop
 
-        Public Overrides Function CreateCall(self As OpValue, ParamArray args() As OpValue) As InCode0()
+        Public Overrides Function CreateCall(ParamArray args() As OpValue) As InCode0()
 
             Select Case Me.Operator
                 Case InOperator.Return
@@ -32,7 +32,7 @@ Namespace Manager
             End Select
         End Function
 
-        Public Overrides Function CreateCallReturn(self As OpValue, return_ As OpValue, ParamArray args() As OpValue) As InCode0()
+        Public Overrides Function CreateCallReturn(return_ As OpValue, ParamArray args() As OpValue) As InCode0()
 
             If args.Length <> Me.Arguments.Count Then Throw New ArgumentException("argument count")
             If Me.Operator = InOperator.Nop Then Return New InCode0() {}
