@@ -132,26 +132,8 @@ Namespace Compiler
                             Return Nothing
                         End Function
 
-                    Dim make_stmt_let =
-                        Function(let_ As LetNode, stmt As IEvaluableNode)
-
-                            If Not let_.IsInstance Then Return {}
-
-                            Dim ret As OpValue
-                            If let_.Var.ClosureEnvironment Then
-
-                                ret = New RkProperty With {.Receiver = closure, .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
-                                Coverage.Case()
-
-                            ElseIf let_.Receiver Is Nothing Then
-
-                                ret = to_value(let_.Var)
-                                Coverage.Case()
-                            Else
-
-                                ret = New RkProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
-                                Coverage.Case()
-                            End If
+                    Dim make_stmt_ret =
+                        Function(ret As OpValue, stmt As IEvaluableNode)
 
                             If stmt Is Nothing Then
 
@@ -206,6 +188,30 @@ Namespace Compiler
 
                                 Throw New Exception("unknown stmt")
                             End If
+                        End Function
+
+                    Dim make_stmt_let =
+                        Function(let_ As LetNode, stmt As IEvaluableNode)
+
+                            If Not let_.IsInstance Then Return {}
+
+                            Dim ret As OpValue
+                            If let_.Var.ClosureEnvironment Then
+
+                                ret = New RkProperty With {.Receiver = closure, .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
+                                Coverage.Case()
+
+                            ElseIf let_.Receiver Is Nothing Then
+
+                                ret = to_value(let_.Var)
+                                Coverage.Case()
+                            Else
+
+                                ret = New RkProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
+                                Coverage.Case()
+                            End If
+
+                            Return make_stmt_ret(ret, stmt)
                         End Function
                     Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
                     Dim make_switch As Func(Of SwitchNode, List(Of InCode0)) = Nothing
@@ -280,6 +286,81 @@ Namespace Compiler
                         Function(switch)
 
                             Dim body As New List(Of InCode0)
+                            Dim last_label As New InLabel
+                            Dim case_labels = switch.Case.Cdr.Map(Function(x) New InLabel).ToList
+                            case_labels.Add(last_label)
+
+                            Dim int_ = LoadStruct(root, "Int")
+                            Dim bool = LoadStruct(root, "Bool")
+                            Dim count_r As New OpValue With {.Name = "xxxxx1", .Type = int_, .Scope = rk_func}
+                            Dim eq_r As New OpValue With {.Name = "xxxxx2", .Type = bool, .Scope = rk_func}
+
+                            Dim count = TryLoadFunction(CType(CType(switch.Expression.Type, RkCILStruct).GenericBase, RkCILStruct).FunctionNamespace, "Count", switch.Expression.Type)
+                            Dim index = TryLoadFunction(CType(CType(switch.Expression.Type, RkCILStruct).GenericBase, RkCILStruct).FunctionNamespace, "Item", switch.Expression.Type, int_)
+                            Dim eq = TryLoadFunction(root, "==", int_, int_)
+                            Dim gte = TryLoadFunction(root, ">=", int_, int_)
+
+                            body.AddRange(count.CreateCallReturn(to_value(switch.Expression), count_r, to_value(switch.Expression)))
+                            For i = 0 To switch.Case.Count - 1
+
+                                Dim case_ = switch.Case(i)
+                                Dim next_ = case_labels(i)
+                                If TypeOf case_ Is CaseArrayNode Then
+
+                                    Dim case_array = CType(case_, CaseArrayNode)
+                                    Select Case case_array.Pattern.Count
+                                        Case 0
+                                            ' $$ = switch.Expression.Count == 0
+                                            ' if $$
+                                            '     case_.Then.Statements
+                                            '     goto last_label
+                                            ' else ...
+                                            body.AddRange(eq.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func}))
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            body.Add(if_)
+                                            body.Add(if_.Then)
+                                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                                            body.Add(New InGoto With {.Label = last_label})
+
+                                        Case 1
+                                            ' $$ = switch.Expression.Count == 1
+                                            ' if $$
+                                            '     x = switch.Expression[0]
+                                            '     case_.Then.Statements
+                                            '     goto last_label
+                                            ' else ...
+                                            body.AddRange(eq.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = 1, .Type = int_, .Scope = rk_func}))
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            body.Add(if_)
+                                            body.Add(if_.Then)
+                                            index.CreateCallReturn(to_value(switch.Expression), to_value(case_array.Pattern(0)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func})
+                                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                                            body.Add(New InGoto With {.Label = last_label})
+
+                                        Case Else
+                                            ' $$ = switch.Expression.Count >= n
+                                            ' if $$
+                                            '     x  = switch.Expression[0]
+                                            '     xs = switch.Expression[n...]
+                                            '     case_.Then.Statements
+                                            '     goto last_label
+                                            ' else ...
+                                            body.AddRange(gte.CreateCallReturn(count_r, eq_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func}))
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            body.Add(if_)
+                                            body.Add(if_.Then)
+                                            For j = 0 To case_array.Pattern.Count - 2
+
+                                                body.AddRange(index.CreateCallReturn(to_value(switch.Expression), to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = rk_func}))
+                                            Next
+                                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                                            body.Add(New InGoto With {.Label = last_label})
+
+                                    End Select
+                                End If
+                                body.Add(next_)
+                            Next
+
                             Return body
                         End Function
 

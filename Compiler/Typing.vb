@@ -542,6 +542,31 @@ Namespace Compiler
                         If Not isfirst Then Return
                         If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
 
+                        If TypeOf child Is CaseArrayNode Then
+
+                            Dim node_switch = CType(parent, SwitchNode)
+                            Dim node_case = CType(child, CaseArrayNode)
+
+                            Dim xs = node_switch.Expression.Type
+                            If root.IsArray(xs) Then
+
+                                Dim x = root.GetArrayType(xs)
+                                If x IsNot Nothing Then
+
+                                    If node_case.Pattern.Count = 1 Then
+
+                                        node_case.Pattern(0).Type = x
+                                        Coverage.Case()
+
+                                    ElseIf node_case.Pattern.Count > 1 Then
+
+                                        node_case.Pattern.Do(Sub(p, i) p.Type = If(i < node_case.Pattern.Count - 1, x, xs))
+                                        Coverage.Case()
+                                    End If
+                                End If
+                            End If
+                        End If
+
                         next_(child,
                             If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
                                 CType(CType(child, IEvaluableNode).Type, IScope),
@@ -722,27 +747,6 @@ Namespace Compiler
                                 End If
                             Next
                             Coverage.Case()
-
-                        ElseIf TypeOf child Is CaseArrayNode Then
-
-                            Dim node_switch = CType(parent, SwitchNode)
-                            Dim node_case = CType(child, CaseArrayNode)
-
-                            Dim xs = node_switch.Expression.Type
-                            If Not root.IsArray(xs) Then Return
-                            Dim x = root.GetArrayType(xs)
-                            If x Is Nothing Then Return
-
-                            If node_case.Pattern.Count = 1 Then
-
-                                node_case.Pattern(0).Type = x
-                                Coverage.Case()
-
-                            ElseIf node_case.Pattern.Count > 1 Then
-
-                                node_case.Pattern.Do(Sub(p, i) p.Type = If(i < node_case.Pattern.Count - 1, x, xs))
-                                Coverage.Case()
-                            End If
 
                         ElseIf IsGeneric(child.GetType, GetType(ListNode(Of ))) Then
 
