@@ -295,9 +295,12 @@ Namespace Compiler
                             Dim bool = LoadStruct(root, "Bool")
                             Dim count_r As New OpValue With {.Name = "xxxxx1", .Type = int_, .Scope = rk_func}
                             Dim eq_r As New OpValue With {.Name = "xxxxx2", .Type = bool, .Scope = rk_func}
+                            Dim minus_r As New OpValue With {.Name = "xxxxx3", .Type = int_, .Scope = rk_func}
 
                             Dim count = TryLoadFunction(CType(CType(switch.Expression.Type, RkCILStruct).GenericBase, RkCILStruct).FunctionNamespace, "Count", switch.Expression.Type)
                             Dim index = TryLoadFunction(CType(CType(switch.Expression.Type, RkCILStruct).GenericBase, RkCILStruct).FunctionNamespace, "Item", switch.Expression.Type, int_)
+                            Dim get_range = TryLoadFunction(CType(CType(switch.Expression.Type, RkCILStruct).GenericBase, RkCILStruct).FunctionNamespace, "GetRange", switch.Expression.Type, int_, int_)
+                            Dim minus = TryLoadFunction(root, "-", int_, int_)
                             Dim eq = TryLoadFunction(root, "==", int_, int_)
                             Dim gte = TryLoadFunction(root, ">=", int_, int_)
 
@@ -354,6 +357,13 @@ Namespace Compiler
 
                                                 body.AddRange(index.CreateCallReturn(to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = rk_func}))
                                             Next
+                                            body.AddRange(minus.CreateCallReturn(minus_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func}))
+                                            body.AddRange(
+                                                get_range.CreateCallReturn(
+                                                    to_value(case_array.Pattern(case_array.Pattern.Count - 1)),
+                                                    to_value(switch.Expression),
+                                                    New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func},
+                                                    minus_r))
                                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                             body.Add(New InGoto With {.Label = last_label})
 
