@@ -12,7 +12,12 @@ Namespace Compiler
             Dim resolve_name As Func(Of IScopeNode, String, INode) =
                 Function(current As IScopeNode, name As String)
 
-                    If current.Scope.ContainsKey(name) Then Return current.Scope(name)
+                    If current.Scope.ContainsKey(name) Then
+
+                        Dim x = current.Scope(name)
+                        If TypeOf x IsNot IEvaluableNode Then Return Nothing
+                        Return x
+                    End If
                     If current.Parent Is Nothing Then Return Nothing
                     Return resolve_name(current.Parent, name)
                 End Function
