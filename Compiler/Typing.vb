@@ -317,14 +317,36 @@ Namespace Compiler
 
                             Coverage.Case()
                             Dim struct = CType(r, RkStruct)
-                            If struct.Local.ContainsKey(byname.Name) Then Return struct.Local(byname.Name)
+                            If struct.Local.ContainsKey(byname.Name) Then
+
+                                Dim t = struct.Local(byname.Name)
+                                If t IsNot Nothing Then
+
+                                    Coverage.Case()
+                                    byname.Type = t
+                                    Return t
+                                End If
+
+                                t = struct.GenericBase?.Local(byname.Name)
+                                If t IsNot Nothing Then
+
+                                    Coverage.Case()
+                                    byname.Type = t
+                                    Return t
+                                End If
+                            End If
 
                         ElseIf TypeOf r Is RkNamespace Then
 
                             Coverage.Case()
                             Dim ns2 = CType(r, RkNamespace)
                             Dim n = TryLoadNamespace(ns2, byname.Name)
-                            If n IsNot Nothing Then Return n
+                            If n IsNot Nothing Then
+
+                                Coverage.Case()
+                                byname.Type = n
+                                Return n
+                            End If
 
                             Coverage.Case()
                             byname.Scope = ns2
@@ -378,6 +400,25 @@ Namespace Compiler
                     Return e.Type
                 End Function
 
+            Dim fixed_byname As Func(Of IType, IType) =
+                Function(t)
+
+                    If TypeOf t Is RkByNameWithReceiver Then
+
+                        Coverage.Case()
+                        Return fixed_byname(CType(t, RkByNameWithReceiver).Type)
+
+                    ElseIf TypeOf t Is RkByName Then
+
+                        Coverage.Case()
+                        Return fixed_byname(CType(t, RkByName).Type)
+                    Else
+
+                        Coverage.Case()
+                        Return t
+                    End If
+                End Function
+
             Dim apply_function =
                 Function(some As RkSomeType, f As FunctionCallNode)
 
@@ -396,7 +437,7 @@ Namespace Compiler
                 Function(f As FunctionCallNode) As IFunction
 
                     Dim expr = fixed_var(f.Expression)
-                    Dim args = f.Arguments.Map(Function(x) fixed_var(x)).ToList
+                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x))).ToList
 
                     If TypeOf expr Is RkSomeType Then
 
