@@ -304,17 +304,33 @@ Namespace Compiler
                     Return clone
                 End Function
 
-            Dim fixed_var As Func(Of IEvaluableNode, Boolean, IType) =
-                Function(e As IEvaluableNode, fix_byname As Boolean) As IType
+            Dim fixed_var As Func(Of IEvaluableNode, IType) =
+                Function(e As IEvaluableNode) As IType
 
                     If TypeOf e.Type Is RkByNameWithReceiver Then
 
-                        Dim receiver = CType(e.Type, RkByNameWithReceiver).Receiver
-                        fixed_var(receiver, True)
-                        Coverage.Case()
-                    End If
+                        Dim byname = CType(e.Type, RkByNameWithReceiver)
+                        Dim receiver = byname.Receiver
+                        Dim r = fixed_var(receiver)
 
-                    If TypeOf e.Type Is RkByName AndAlso (fix_byname OrElse TypeOf e.Type IsNot RkByNameWithReceiver) Then
+                        If TypeOf r Is RkStruct Then
+
+                            Coverage.Case()
+                            Dim struct = CType(r, RkStruct)
+                            If struct.Local.ContainsKey(byname.Name) Then Return struct.Local(byname.Name)
+
+                        ElseIf TypeOf r Is RkNamespace Then
+
+                            Coverage.Case()
+                            Dim ns2 = CType(r, RkNamespace)
+                            Dim n = TryLoadNamespace(ns2, byname.Name)
+                            If n IsNot Nothing Then Return n
+
+                            Coverage.Case()
+                            byname.Scope = ns2
+                        End If
+
+                    ElseIf TypeOf e.Type Is RkByName Then
 
                         Dim byname = CType(e.Type, RkByName)
 
@@ -353,6 +369,9 @@ Namespace Compiler
                             byname.Type = n
                             Return n
                         End If
+
+                        Coverage.Case()
+                        If byname.Type IsNot Nothing Then Return byname.Type
                     End If
 
                     Coverage.Case()
@@ -363,12 +382,12 @@ Namespace Compiler
                 Function(some As RkSomeType, f As FunctionCallNode)
 
                     Dim before = some.Types.Count
-                    Dim args = f.Arguments.ToList
+                    Dim args = f.Arguments.Map(Function(x) fixed_var(x)).ToList
                     some.Types = some.Types.Where(
                         Function(x)
 
                             Dim r = CType(x, IFunction)
-                            Return r.Arguments.Count = args.Count AndAlso r.Arguments.And(Function(arg, i) arg.Value.Is(args(i).Type))
+                            Return r.Arguments.Count = args.Count AndAlso r.Arguments.And(Function(arg, i) arg.Value.Is(args(i)))
                         End Function).ToList
                     Return before <> some.Types.Count
                 End Function
@@ -376,8 +395,8 @@ Namespace Compiler
             Dim fixed_function =
                 Function(f As FunctionCallNode) As IFunction
 
-                    Dim expr = fixed_var(f.Expression, False)
-                    Dim args = f.Arguments.Map(Function(x) fixed_var(x, True)).ToList
+                    Dim expr = fixed_var(f.Expression)
+                    Dim args = f.Arguments.Map(Function(x) fixed_var(x)).ToList
 
                     If TypeOf expr Is RkSomeType Then
 
@@ -414,7 +433,7 @@ Namespace Compiler
                                 Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
                             End If
 
-                            args.Insert(0, receiver.Type)
+                            args.Insert(0, fixed_var(receiver))
                             r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
 
                             If r IsNot Nothing Then
@@ -567,11 +586,7 @@ Namespace Compiler
                             End If
                         End If
 
-                        next_(child,
-                            If(TypeOf child Is FunctionNode OrElse TypeOf child Is StructNode,
-                                CType(CType(child, IEvaluableNode).Type, IScope),
-                                current)
-                            )
+                        next_(child, If(TypeOf child Is IHaveScopeType, CType(CType(child, IHaveScopeType).Type, IScope), current))
 
                         If TypeOf child Is VariableNode Then
 
@@ -631,7 +646,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
-                            Dim r = fixed_var(node_prop.Left, True)
+                            Dim r = fixed_var(node_prop.Left)
                             If TypeOf r Is RkStruct Then
 
                                 If set_type(node_prop,
@@ -717,6 +732,8 @@ Namespace Compiler
                                         Coverage.Case()
                                     End If
                                 End If
+
+                                Debug.Assert(some.Types.Count > 0)
                             End If
 
                         ElseIf TypeOf child Is StructNode Then
@@ -765,7 +782,7 @@ Namespace Compiler
                                         Dim item = list.GetType.GetProperty("Item")
                                         Dim item0 = CType(item.GetValue(list, New Object() {0}), IEvaluableNode)
                                         CType(child, IEvaluableNode).IsInstance = item0.IsInstance
-                                        Return LoadStruct(root, "Array", fixed_var(item0, True))
+                                        Return LoadStruct(root, "Array", fixed_var(item0))
                                     End If
 
                                 End Function)
@@ -857,6 +874,12 @@ Namespace Compiler
 
                         'Debug.Assert(Not t.HasIndefinite)
                         'Debug.Assert(Not t.HasGeneric)
+
+                    ElseIf TypeOf child Is IHaveScopeType Then
+
+                        Dim e = CType(child, IHaveScopeType)
+                        var_normalize(e.Type)
+                        Coverage.Case()
                     End If
 
                 End Sub)

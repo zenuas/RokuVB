@@ -359,7 +359,7 @@ Namespace Manager
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
-            For Each f In FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+            For Each f In FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
 
                 Yield f
             Next

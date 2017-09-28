@@ -6,7 +6,7 @@ Namespace Node
 
     Public Class StructNode
         Inherits BaseNode
-        Implements IScopeNode, IStatementNode
+        Implements IScopeNode, IStatementNode, IHaveScopeType
 
 
         Public Sub New(linenum As Integer)
@@ -26,7 +26,7 @@ Namespace Node
         Public Overridable Property Owner As IBlock Implements IScopeNode.Owner
         Public Overridable Property InnerScope As Boolean = False Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
-        Public Overridable Property Type As IType
+        Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable ReadOnly Property Generics As New List(Of TypeNode)
 
         Public Overridable ReadOnly Property Struct As RkStruct

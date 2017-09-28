@@ -6,7 +6,7 @@ Namespace Node
 
     Public Class FunctionNode
         Inherits BaseNode
-        Implements IEvaluableNode, IBlock
+        Implements IBlock, IHaveScopeType
 
 
         Public Sub New(name As String)
@@ -18,8 +18,7 @@ Namespace Node
         Public Overridable Property Arguments As DeclareNode()
         Public Overridable Property [Return] As TypeNode
         Public Overridable Property Body As BlockNode
-        Public Overridable Property Type As IType Implements IEvaluableNode.Type
-        Public Overridable Property IsInstance As Boolean = False Implements IEvaluableNode.IsInstance
+        Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable ReadOnly Property Bind As New Dictionary(Of IScopeNode, Boolean)
 
         Public Overridable Property [Function] As RkFunction Implements IBlock.Function
