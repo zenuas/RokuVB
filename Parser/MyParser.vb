@@ -616,7 +616,7 @@ Namespace Parser
 
                 Case -74
                     Debug.WriteLine("lambda : '{' lambda_args '}' typex ALLOW lambda_func")
-                    yy_value = Me.CreateFunctionNode(CType(Me.GetValue(-5), DeclareListNode).List.ToArray, CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), BlockNode))
+                    yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-5), DeclareListNode).List.ToArray, CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda, 6, yy_value)
 
                 Case -75

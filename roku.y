@@ -148,7 +148,7 @@ typen : type           {$$ = Me.CreateListNode($1)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args '}' typex ALLOW lambda_func {$$ = Me.CreateFunctionNode($2.List.ToArray, $4, $6)}
+lambda      : '{' lambda_args '}' typex ALLOW lambda_func {$$ = Me.CreateLambdaFunction($2.List.ToArray, $4, $6)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
             | block
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}

@@ -223,6 +223,19 @@ Namespace Parser
             Return t
         End Function
 
+        Protected Overridable Function CreateLambdaFunction(
+                args() As DeclareNode,
+                ret As TypeNode,
+                block As BlockNode
+            ) As VariableNode
+
+            Dim f = Me.CreateFunctionNode(args, ret, block)
+            Dim v = New VariableNode(f.Name)
+            v.AppendLineNumber(block)
+            Me.CurrentScope.Scope.Add(f.Name, f)
+            Return v
+        End Function
+
         Protected Overridable Function ToLambdaExpression(expr As IEvaluableNode) As BlockNode
 
             Dim block = New BlockNode(expr.LineNumber.Value)
