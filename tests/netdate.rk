@@ -17,11 +17,11 @@ System.Console.WriteLine(d.ToString("yyyy/MM/dd"))
 var s = d.ToString
 System.Console.WriteLine(s("yyyy/MM"))
 
-##=>2000
-#System.Console.WriteLine(d.Year)
-#
-##=>5
-#System.Console.WriteLine(d.Month)
-#
-##=>9
-#System.Console.WriteLine(d.Day)
+#=>2016
+System.Console.WriteLine(d.Year())
+
+#=>5
+System.Console.WriteLine(d.Month())
+
+#=>10
+System.Console.WriteLine(d.Day())
