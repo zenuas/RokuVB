@@ -491,6 +491,12 @@ Namespace Compiler
                         Dim struct = CType(expr, RkCILStruct)
                         Return struct.LoadConstructor(root, args.ToArray)
 
+                    ElseIf TypeOf expr Is RkCILNamespace Then
+
+                        Coverage.Case()
+                        Dim struct = CType(expr, RkCILNamespace).BaseType
+                        Return struct.LoadConstructor(root, args.ToArray)
+
                     ElseIf TypeOf expr Is RkStruct Then
 
                         Coverage.Case()

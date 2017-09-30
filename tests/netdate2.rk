@@ -1,0 +1,14 @@
+#use System
+
+var d = System.DateTime(2016, 5, 10)
+
+#=>05/10
+var x = d.ToString("MM/dd")
+System.Console.WriteLine(x)
+
+#=>2016/05/10
+System.Console.WriteLine(d.ToString("yyyy/MM/dd"))
+
+#=>2016/05
+var s = d.ToString
+System.Console.WriteLine(s("yyyy/MM"))
