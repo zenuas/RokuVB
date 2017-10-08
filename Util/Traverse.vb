@@ -25,10 +25,25 @@ Namespace Util
                     Yield New Tuple(Of Object, FieldInfo)(xs.GetValue(i), Nothing)
                 Next
             Else
-                For Each m In x.GetType.GetFields(flag)
+                Dim t = x.GetType
+                For Each m In t.GetFields(flag)
 
                     Yield Tuple.Create(m.GetValue(x), m)
                 Next
+
+                If (flag And BindingFlags.NonPublic) = BindingFlags.NonPublic Then
+
+                    flag = flag And Not BindingFlags.Public
+                    Do While t.BaseType IsNot Nothing
+
+                        t = t.BaseType
+
+                        For Each m In t.GetFields(flag)
+
+                            Yield Tuple.Create(m.GetValue(x), m)
+                        Next
+                    Loop
+                End If
             End If
 
         End Function
@@ -204,6 +219,13 @@ Namespace Util
 
                                 f($"[{i}]", x.Case(i))
                             Next
+
+                        Case TypeOf node_ Is CaseCastNode
+
+                            Dim x = CType(node_, CaseCastNode)
+                            f("Declare", x.Declare)
+                            f("Var", x.Var)
+                            f("Then", x.Then)
 
                         Case TypeOf node_ Is CaseArrayNode
 
@@ -381,6 +403,13 @@ Namespace Util
 
                                 x.Case(i) = CType(f($"[{i}]", x.Case(i)), CaseNode)
                             Next
+
+                        Case TypeOf node_ Is CaseCastNode
+
+                            Dim x = CType(node_, CaseCastNode)
+                            x.Declare = CType(f("Declare", x.Declare), TypeNode)
+                            x.Var = CType(f("Var", x.Var), VariableNode)
+                            x.Then = CType(f("Then", x.Then), BlockNode)
 
                         Case TypeOf node_ Is CaseArrayNode
 
