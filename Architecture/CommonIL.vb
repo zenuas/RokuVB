@@ -680,6 +680,13 @@ ARRAY_CREATE_:
                         End If
                         gen_il_store(il, cast.Return)
 
+                    Case InOperator.NotNull
+                        Dim isnull = CType(stmt, InCode)
+                        gen_il_load(il, isnull.Left, False)
+                        il.Emit(OpCodes.Ldnull)
+                        il.Emit(OpCodes.Cgt_Un)
+                        gen_il_store(il, isnull.Return)
+
                     Case Else
                         Debug.Fail("not yet")
                 End Select

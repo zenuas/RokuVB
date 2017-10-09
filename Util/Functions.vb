@@ -33,6 +33,19 @@ Namespace Util
             Return a
         End Function
 
+        Public Shared Function Memoization(f As Action) As Action
+
+            Dim isfirst = True
+            Return Sub()
+
+                       If isfirst Then
+
+                           f()
+                           isfirst = False
+                       End If
+                   End Sub
+        End Function
+
         Public Shared Function Memoization(Of T)(f As Func(Of T)) As Func(Of T)
 
             Dim var As T

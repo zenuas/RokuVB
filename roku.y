@@ -180,6 +180,7 @@ case       : case_expr ':' EOL       {$$ = $1}
 case_expr  : var
            | num
            | str
+           | type var               {$$ = Me.CreateCaseCastNode($1, $2)}
            | '[' array_pattern ']'  {$$ = Me.CreateCaseArrayNode($2, $1)}
            | '(' tupple_pattern ')' {}
 

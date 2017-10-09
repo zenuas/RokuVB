@@ -56,6 +56,13 @@ Namespace Compiler
                         next_(child, struct)
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is CaseCastNode Then
+
+                        Dim node_case = CType(child, CaseCastNode)
+                        node_case.Then.Scope.Add(node_case.Var.Name, node_case.Var)
+                        next_(child, node_case.Then)
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is CaseArrayNode Then
 
                         Dim node_case = CType(child, CaseArrayNode)

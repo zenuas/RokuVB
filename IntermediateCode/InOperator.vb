@@ -120,6 +120,7 @@ Namespace IntermediateCode
         [Goto]
         Label
         Array
+        NotNull
 
         [Try]
         [Catch]

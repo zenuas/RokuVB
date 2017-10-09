@@ -1,0 +1,12 @@
+
+sub show(x: @T)
+	switch x
+		Int n    : print("Int")
+		String s : print("String")
+
+
+#=>Int
+show(0)
+
+#=>String
+show("hello")

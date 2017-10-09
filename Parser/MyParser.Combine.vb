@@ -172,6 +172,16 @@ Namespace Parser
             Return switch
         End Function
 
+        Protected Overridable Function CreateCaseCastNode(
+                decla As TypeNode,
+                var As VariableNode
+            ) As CaseCastNode
+
+            Dim [case] As New CaseCastNode With {.Declare = decla, .Var = var}
+            [case].AppendLineNumber(decla)
+            Return [case]
+        End Function
+
         Protected Overridable Function CreateCaseArrayNode(
                 pattern As ListNode(Of VariableNode),
                 token As Token

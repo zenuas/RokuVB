@@ -608,7 +608,12 @@ Namespace Compiler
                         If Not isfirst Then Return
                         If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
 
-                        If TypeOf child Is CaseArrayNode Then
+                        If TypeOf child Is CaseCastNode Then
+
+                            Dim node_case = CType(child, CaseCastNode)
+                            node_case.Var.Type = node_case.Declare.Type
+
+                        ElseIf TypeOf child Is CaseArrayNode Then
 
                             Dim node_switch = CType(parent, SwitchNode)
                             Dim node_case = CType(child, CaseArrayNode)
@@ -893,7 +898,7 @@ Namespace Compiler
 
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
-                            If CType(func.Type, RkFunction).Return Is Nothing Then
+                            If CType(func?.Type, RkFunction)?.Return Is Nothing Then
 
                                 If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
                                 block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
