@@ -321,19 +321,19 @@ Namespace Compiler
                                 If TypeOf case_ Is CaseCastNode Then
 
                                     Dim case_cast = CType(case_, CaseCastNode)
-                                    Dim trycast_r As New OpValue With {.Name = create_anonymus(), .Type = case_cast.Declare.Type, .Scope = rk_func}
                                     body.Add(New InCode With {
-                                            .Operator = InOperator.Cast,
-                                            .Return = trycast_r,
+                                            .Operator = InOperator.CanCast,
+                                            .Return = eq_r,
                                             .Left = to_value(switch.Expression),
                                             .Right = to_value(case_cast.Declare)
                                         })
-                                    body.Add(New InCode With {
-                                            .Operator = InOperator.NotNull,
-                                            .Return = eq_r,
-                                            .Left = trycast_r
-                                        })
                                     Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                    body.Add(New InCode With {
+                                            .Operator = InOperator.Cast,
+                                            .Return = New OpValue With {.Name = case_cast.Var.Name, .Type = case_cast.Declare.Type, .Scope = rk_func},
+                                            .Left = to_value(switch.Expression),
+                                            .Right = to_value(case_cast.Declare)
+                                        })
                                     body.Add(if_)
                                     body.Add(if_.Then)
                                     If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))

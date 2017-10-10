@@ -1,12 +1,19 @@
 
+struct Hoge
+	var i = 100
+		
 sub show(x: @T)
 	switch x
 		Int n    : print("Int")
-		String s : print("String")
+		String s : print("String " + s)
+		Hoge h   : print(h.i)
 
 
 #=>Int
 show(0)
 
-#=>String
+#=>String hello
 show("hello")
+
+#=>100
+show(Hoge())

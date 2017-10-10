@@ -676,16 +676,28 @@ ARRAY_CREATE_:
                                 Case ct.TypeInfo Is GetType(Int64) : il.Emit(OpCodes.Conv_I8)
                                 Case ct.TypeInfo Is GetType(Int16) : il.Emit(OpCodes.Conv_I2)
                                 Case ct.TypeInfo Is GetType(Byte) : il.Emit(OpCodes.Conv_U1)
+
+                                Case Else
+                                    GoTo CLASS_CAST_
                             End Select
+                        Else
+CLASS_CAST_:
+                            il.Emit(OpCodes.Isinst, Me.RkToCILType(cast.Right.Type, structs).Type)
                         End If
                         gen_il_store(il, cast.Return)
 
-                    Case InOperator.NotNull
-                        Dim isnull = CType(stmt, InCode)
-                        gen_il_load(il, isnull.Left, False)
+                    Case InOperator.CanCast
+                        Dim cancast = CType(stmt, InCode)
+                        Dim t = Me.RkToCILType(cancast.Right.Type, structs).Type
+                        gen_il_load(il, cancast.Left, False)
+                        If TypeOf cancast.Left.Type Is RkCILStruct AndAlso CType(cancast.Left.Type, RkCILStruct).TypeInfo.IsValueType Then
+
+                            il.Emit(OpCodes.Box, t)
+                        End If
+                        il.Emit(OpCodes.Isinst, t)
                         il.Emit(OpCodes.Ldnull)
                         il.Emit(OpCodes.Cgt_Un)
-                        gen_il_store(il, isnull.Return)
+                        gen_il_store(il, cancast.Return)
 
                     Case Else
                         Debug.Fail("not yet")

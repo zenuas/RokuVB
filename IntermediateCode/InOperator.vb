@@ -120,7 +120,7 @@ Namespace IntermediateCode
         [Goto]
         Label
         Array
-        NotNull
+        CanCast
 
         [Try]
         [Catch]
