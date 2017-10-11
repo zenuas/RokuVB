@@ -1,0 +1,13 @@
+#=>1
+show(1)
+
+#=>2
+show(2)
+
+#=>hello
+show("hello")
+
+
+sub show(n: @T)
+	System.Console.WriteLine(n)
+

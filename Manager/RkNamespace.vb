@@ -66,7 +66,7 @@ Namespace Manager
 
             If Me.Functions.ContainsKey(name) Then
 
-                For Each f In Me.Functions(name)
+                For Each f In Me.Functions(name).Where(Function(x) Not x.HasIndefinite)
 
                     Yield f
                 Next
