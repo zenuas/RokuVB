@@ -36,9 +36,9 @@ Namespace Node
                 Me.Function.Arguments.Do(Sub(x, i) Me.Arguments(i).Type = x.Value)
                 Return True
 
-            ElseIf TypeOf Me.Function.Return Is RkSomeType AndAlso CType(Me.Function.Return, RkSomeType).HasIndefinite Then
+            ElseIf TypeOf Me.Function.Return Is RkUnionType AndAlso CType(Me.Function.Return, RkUnionType).HasIndefinite Then
 
-                Return CType(Me.Function.Return, RkSomeType).Merge(t)
+                Return CType(Me.Function.Return, RkUnionType).Merge(t)
             Else
 
                 Return False

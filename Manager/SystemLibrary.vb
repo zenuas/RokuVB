@@ -353,7 +353,7 @@ Namespace Manager
                 fs = fs.ToHash_ValueDerivation(Function(x) True).Keys.ToList
                 If fs.Count <= 1 Then Return fs(0)
 
-                Return New RkSomeType(fs)
+                Return New RkUnionType(fs)
             End If
         End Function
 

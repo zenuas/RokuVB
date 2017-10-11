@@ -15,10 +15,10 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            If TypeOf Me.Type Is RkSomeType Then
+            If TypeOf Me.Type Is RkUnionType Then
 
-                Dim some = CType(Me.Type, RkSomeType)
-                Return some.Merge(t)
+                Dim union = CType(Me.Type, RkUnionType)
+                Return union.Merge(t)
             Else
 
                 If t Is Me.Type Then Return False

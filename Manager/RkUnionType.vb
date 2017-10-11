@@ -8,11 +8,11 @@ Imports Roku.Util.Extensions
 
 Namespace Manager
 
-    Public Class RkSomeType
+    Public Class RkUnionType
         Implements IFunction
 
         Public Overridable Property Types As List(Of IType)
-        Public Overridable Property ReturnCache As RkSomeType
+        Public Overridable Property ReturnCache As RkUnionType
 
         Public Sub New()
 
@@ -54,7 +54,7 @@ Namespace Manager
                 If Me.Types Is Nothing OrElse Me.Types.Count = 0 Then Return Nothing
                 If Me.Types.Count = 1 Then Return Me.Types(0)
 
-                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkSomeType(Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
+                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkUnionType(Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
                 Return Me.ReturnCache
             End Get
             Set(value As IType)
@@ -119,9 +119,9 @@ Namespace Manager
 
         Public Overridable Function Merge(type As IType) As Boolean
 
-            If TypeOf type Is RkSomeType Then
+            If TypeOf type Is RkUnionType Then
 
-                Return Me.Merge(CType(type, RkSomeType).Types)
+                Return Me.Merge(CType(type, RkUnionType).Types)
             Else
 
                 Return Me.Merge({type})
@@ -165,9 +165,9 @@ Namespace Manager
 
             If Me.Types Is Nothing Then Return True
 
-            If TypeOf t Is RkSomeType Then
+            If TypeOf t Is RkUnionType Then
 
-                Return CType(t, RkSomeType).Types.Or(Function(x) Me.Is(x))
+                Return CType(t, RkUnionType).Types.Or(Function(x) Me.Is(x))
             Else
 
                 Return Me.Types.Or(Function(x) x.Is(t))

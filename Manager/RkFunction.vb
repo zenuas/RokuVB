@@ -130,7 +130,7 @@ Namespace Manager
                                     v = Nothing
 
                                 ElseIf TypeOf apply Is RkStruct OrElse
-                                    TypeOf apply Is RkSomeType Then
+                                    TypeOf apply Is RkUnionType Then
 
                                     v = apply
 
@@ -157,13 +157,13 @@ Namespace Manager
 
                             xs(atname.ApplyIndex) = p
 
-                        ElseIf TypeOf x Is RkSomeType Then
+                        ElseIf TypeOf x Is RkUnionType Then
 
-                            CType(x, RkSomeType).Merge(p)
+                            CType(x, RkUnionType).Merge(p)
 
-                        ElseIf TypeOf p Is RkSomeType Then
+                        ElseIf TypeOf p Is RkUnionType Then
 
-                            CType(p, RkSomeType).Merge(x)
+                            CType(p, RkUnionType).Merge(x)
                             xs(atname.ApplyIndex) = p
                         Else
 

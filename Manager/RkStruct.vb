@@ -33,7 +33,7 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            If TypeOf t Is RkSomeType Then Return t.Is(Me)
+            If TypeOf t Is RkUnionType Then Return t.Is(Me)
 
             If Me Is t Then Return True
             If Me.Scope Is t.Scope AndAlso Me.Name.Equals(t.Name) Then Return True

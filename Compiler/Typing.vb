@@ -114,7 +114,7 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node_num = CType(child, NumericNode)
-                        node_num.Type = New RkSomeType({
+                        node_num.Type = New RkUnionType({
                             LoadStruct(root, "Int32"),
                             LoadStruct(root, "Int64"),
                             LoadStruct(root, "Int16"),
@@ -130,7 +130,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is NullNode Then
 
                         Dim node_null = CType(child, NullNode)
-                        node_null.Type = New RkSomeType
+                        node_null.Type = New RkUnionType
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeFunctionNode Then
@@ -377,9 +377,9 @@ Namespace Compiler
                         ElseIf fs.Count >= 2 Then
 
                             Coverage.Case()
-                            Dim some = New RkSomeType(fs)
-                            byname.Type = some
-                            Return some
+                            Dim union = New RkUnionType(fs)
+                            byname.Type = union
+                            Return union
                         End If
 
                         Coverage.Case()
@@ -420,17 +420,17 @@ Namespace Compiler
                 End Function
 
             Dim apply_function =
-                Function(some As RkSomeType, f As FunctionCallNode)
+                Function(union As RkUnionType, f As FunctionCallNode)
 
-                    Dim before = some.Types.Count
+                    Dim before = union.Types.Count
                     Dim args = f.Arguments.Map(Function(x) fixed_var(x)).ToList
-                    some.Types = some.Types.Where(
+                    union.Types = union.Types.Where(
                         Function(x)
 
                             Dim r = CType(x, IFunction)
                             Return r.Arguments.Count = args.Count AndAlso r.Arguments.And(Function(arg, i) arg.Value.Is(args(i)))
                         End Function).ToList
-                    Return before <> some.Types.Count
+                    Return before <> union.Types.Count
                 End Function
 
             Dim fixed_function =
@@ -439,12 +439,12 @@ Namespace Compiler
                     Dim expr = fixed_var(f.Expression)
                     Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x))).ToList
 
-                    If TypeOf expr Is RkSomeType Then
+                    If TypeOf expr Is RkUnionType Then
 
                         Coverage.Case()
-                        Dim some = CType(expr, RkSomeType)
-                        apply_function(some, f)
-                        If Not some.HasIndefinite Then expr = some.Types(0)
+                        Dim union = CType(expr, RkUnionType)
+                        apply_function(union, f)
+                        If Not union.HasIndefinite Then expr = union.Types(0)
                     End If
 
                     If TypeOf expr Is RkByName Then
@@ -519,10 +519,10 @@ Namespace Compiler
                         Coverage.Case()
                         Return CType(r.FixedGeneric(r.ArgumentsToApply(f.Arguments.Map(Function(x) x.Type).ToArray)), IFunction)
 
-                    ElseIf TypeOf expr Is RkSomeType Then
+                    ElseIf TypeOf expr Is RkUnionType Then
 
                         Coverage.Case()
-                        Return CType(expr, RkSomeType)
+                        Return CType(expr, RkUnionType)
                     End If
 
                     Return Nothing
@@ -536,9 +536,9 @@ Namespace Compiler
 
                     If from.HasIndefinite Then
 
-                        If TypeOf from Is RkSomeType Then
+                        If TypeOf from Is RkUnionType Then
 
-                            CType(from, RkSomeType).Merge(to_)
+                            CType(from, RkUnionType).Merge(to_)
                             Coverage.Case()
 
                         ElseIf TypeOf from Is IApply Then
@@ -750,7 +750,7 @@ Namespace Compiler
                                 node_call.Function = fixed_function(node_call)
                                 Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
 
-                                If TypeOf node_call.Function Is RkSomeType AndAlso CType(node_call.Function, RkSomeType).Types.Count > 1 Then
+                                If TypeOf node_call.Function Is RkUnionType AndAlso CType(node_call.Function, RkUnionType).Types.Count > 1 Then
 
                                     Coverage.Case()
                                 Else
@@ -767,25 +767,25 @@ Namespace Compiler
                                 type_fix = True
                                 Coverage.Case()
 
-                            ElseIf TypeOf node_call.Function Is RkSomeType Then
+                            ElseIf TypeOf node_call.Function Is RkUnionType Then
 
-                                Dim some = CType(node_call.Function, RkSomeType)
-                                Dim before = some.Types.Count
-                                If some.Return Is Nothing OrElse (TypeOf some.Return Is RkSomeType AndAlso CType(some.Return, RkSomeType).Types.Count = 0) Then
+                                Dim union = CType(node_call.Function, RkUnionType)
+                                Dim before = union.Types.Count
+                                If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
 
-                                    If apply_function(some, node_call) Then type_fix = True
+                                    If apply_function(union, node_call) Then type_fix = True
                                     Coverage.Case()
                                 Else
 
                                     If before > 1 Then
 
-                                        some.Types = some.Types.Where(Function(x) some.Return.Is(CType(x, RkFunction).Return)).ToList
-                                        If before <> some.Types.Count Then type_fix = True
+                                        union.Types = union.Types.Where(Function(x) union.Return.Is(CType(x, RkFunction).Return)).ToList
+                                        If before <> union.Types.Count Then type_fix = True
                                         Coverage.Case()
                                     End If
                                 End If
 
-                                Debug.Assert(some.Types.Count > 0)
+                                Debug.Assert(union.Types.Count > 0)
                             End If
 
                         ElseIf TypeOf child Is StructNode Then
@@ -827,7 +827,7 @@ Namespace Compiler
                                     If CInt(count.GetValue(list)) = 0 Then
 
                                         Coverage.Case()
-                                        Return LoadStruct(root, "Array", New RkSomeType)
+                                        Return LoadStruct(root, "Array", New RkUnionType)
                                     Else
 
                                         Coverage.Case()
@@ -852,13 +852,13 @@ Namespace Compiler
                         Coverage.Case()
                         t = var_normalize(CType(t, RkByName).Type)
 
-                    ElseIf TypeOf t Is RkSomeType Then
+                    ElseIf TypeOf t Is RkUnionType Then
 
                         'ToDo: priority check
                         Coverage.Case()
-                        Dim some = CType(t, RkSomeType)
-                        If some.Types.Count > 1 Then some.Types.RemoveRange(1, some.Types.Count - 1)
-                        t = var_normalize(some.Types(0))
+                        Dim union = CType(t, RkUnionType)
+                        If union.Types.Count > 1 Then union.Types.RemoveRange(1, union.Types.Count - 1)
+                        t = var_normalize(union.Types(0))
 
                     ElseIf TypeOf t Is RkFunction Then
 
