@@ -622,15 +622,15 @@ Namespace Util
         Public Function FoldRight(Of T, R)(xs As IEnumerable(Of T), f As Func(Of T, R, R), acc As R) As R
 
             Dim xf As Func(Of IEnumerator(Of T), R) =
-            Function(a As IEnumerator(Of T)) As R
+                Function(a)
 
-                If a.MoveNext Then
+                    If a.MoveNext Then
 
-                    Return f(a.Current, xf(a))
-                Else
-                    Return acc
-                End If
-            End Function
+                        Return f(a.Current, xf(a))
+                    Else
+                        Return acc
+                    End If
+                End Function
             Return xf(xs.GetEnumerator)
         End Function
 
