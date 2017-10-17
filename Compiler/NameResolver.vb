@@ -70,23 +70,25 @@ Namespace Compiler
                         next_(child, node_case.Then)
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is LetNode Then
+
+                        Dim node_let = CType(child, LetNode)
+                        If node_let.Receiver Is Nothing Then
+
+                            node_let.Var.Scope = current
+                            If TypeOf current IsNot StructNode Then current.Scope.Add(node_let.Var.Name, node_let.Var)
+                        End If
+                        next_(child, current)
+                        Coverage.Case()
+
                     Else
 
                         next_(child, current)
                         If TypeOf child Is VariableNode Then
 
                             Dim var = CType(child, VariableNode)
-                            If TypeOf parent Is LetNode AndAlso CType(parent, LetNode).NameBinding AndAlso ref.Equals("Var") Then
-
-                                var.Scope = current
-                                If TypeOf current IsNot StructNode Then current.Scope.Add(var.Name, child)
-                                Coverage.Case()
-                            Else
-
-                                Coverage.Case()
-                                Return resolve_var(current, var)
-                            End If
-
+                            Coverage.Case()
+                            Return resolve_var(current, var)
                         End If
                         Coverage.Case()
                     End If

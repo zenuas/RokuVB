@@ -449,12 +449,12 @@ Namespace Parser
 
                 Case -40
                     Debug.WriteLine("let : LET var EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), True)
+                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.let_1, 4, yy_value)
 
                 Case -41
                     Debug.WriteLine("let : var EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), False)
+                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.let_1, 3, yy_value)
 
                 Case -42
@@ -494,7 +494,7 @@ Namespace Parser
 
                 Case -49
                     Debug.WriteLine("define : define LET var EQ expr EOL")
-                    Me.CurrentScope.AddLet(Me.CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), IEvaluableNode), True))
+                    Me.CurrentScope.AddLet(Me.CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), IEvaluableNode)))
                     yy_token = Me.DoAction(SymbolTypes.define, 6, yy_value)
 
                 Case -50

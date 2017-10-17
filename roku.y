@@ -102,8 +102,8 @@ listn : expr             {$$ = Me.CreateListNode($1)}
 
 
 ########## let ##########
-let : LET var EQ expr       {$$ = Me.CreateLetNode($2, $4, True)}
-    | var EQ expr           {$$ = Me.CreateLetNode($1, $3, False)}
+let : LET var EQ expr       {$$ = Me.CreateLetNode($2, $4)}
+    | var EQ expr           {$$ = Me.CreateLetNode($1, $3)}
     | expr '.' varx EQ expr {$$ = Me.CreateLetNode(New PropertyNode With {.Left = $1, .Right = $3}, $5)}
 
 
@@ -116,7 +116,7 @@ struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumbe
 
 define : void
        | define LET var ':' type EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
-       | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5, True))}
+       | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
        | define sub
 
 atvarn : atvar                         {$$ = Me.CreateListNode($1)}
