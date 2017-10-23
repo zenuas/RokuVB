@@ -2,10 +2,15 @@ struct Hoge
 	var a = 1
 
 sub f(hoge: Hoge?)
-	if hoge.isnull()
-		print(hoge.is().a)
+	if x: Hoge = hoge
+		print(x.a)
 	else
 		print("null")
 
+#=>null
 var x = null
 f(x)
+
+#=>1
+var y = Hoge()
+f(y)

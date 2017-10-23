@@ -69,6 +69,17 @@ Namespace Parser
             Return let_
         End Function
 
+        Protected Overridable Function CreateLetNode(
+                var As VariableNode,
+                type As TypeNode,
+                expr As IEvaluableNode
+            ) As LetNode
+
+            Dim let_ As New LetNode With {.Var = var, .Declare = type, .Expression = expr}
+            let_.AppendLineNumber(var)
+            Return let_
+        End Function
+
         Protected Overridable Function CreateFunctionCallNode(
                 expr As IEvaluableNode,
                 ParamArray args() As IEvaluableNode
