@@ -1,0 +1,15 @@
+#=>2
+var x: Int = add1_string_or_int(1)
+print(x)
+
+#=>1+1
+var y: String = add1_string_or_int(1)
+print(y)
+
+
+sub add1_string_or_int(n: Int) String
+	return(n.ToString() + "+1")
+
+sub add1_string_or_int(n: Int) Int
+	return(n + 1)
+

@@ -664,7 +664,13 @@ Namespace Compiler
 
                                 If node_let.Type.HasIndefinite Then
 
-                                    If CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
+                                    If node_let.Declare IsNot Nothing Then
+
+                                        CType(node_let.Type, RkUnionType).Merge(node_let.Declare.Type)
+                                        Coverage.Case()
+                                    End If
+
+                                    If TypeOf node_let.Expression Is IFeedback AndAlso CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
 
                                         node_let.Type = node_let.Expression.Type
                                         type_fix = True
