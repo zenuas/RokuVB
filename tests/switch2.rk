@@ -4,9 +4,9 @@ struct Hoge
 		
 sub show(x: @T)
 	switch x
-		Int n    : print("Int")
-		String s : print("String " + s)
-		Hoge h   : print(h.i)
+		n: Int    => print("Int")
+		s: String => print("String " + s)
+		h: Hoge   => print(h.i)
 
 
 #=>Int

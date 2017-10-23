@@ -171,16 +171,16 @@ elseif : ifthen ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
 
 ########## switch ##########
 switch     : SWITCH expr EOL case_block {$$ = $4 : $4.Expression = $2 : $4.AppendLineNumber($1)}
-case_block : BEGIN casen END         {$$ = $2}
-casen      : case                    {$$ = Me.CreateSwitchNode($1)}
-           | casen case              {$$ = $1 : $1.Case.Add($2)}
-case       : case_expr ':' EOL       {$$ = $1}
-           | case_expr ':' EOL block {$$ = $1 : $1.Then = $4}
-           | case_expr ':' expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
+case_block : BEGIN casen END           {$$ = $2}
+casen      : case                      {$$ = Me.CreateSwitchNode($1)}
+           | casen case                {$$ = $1 : $1.Case.Add($2)}
+case       : case_expr ALLOW EOL       {$$ = $1}
+           | case_expr ALLOW EOL block {$$ = $1 : $1.Then = $4}
+           | case_expr ALLOW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
 case_expr  : var
            | num
            | str
-           | type var               {$$ = Me.CreateCaseCastNode($1, $2)}
+           | var ':' type           {$$ = Me.CreateCaseCastNode($3, $1)}
            | '[' array_pattern ']'  {$$ = Me.CreateCaseArrayNode($2, $1)}
            | '(' tupple_pattern ')' {}
 

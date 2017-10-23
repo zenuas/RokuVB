@@ -11,7 +11,7 @@ show(xs)
 
 sub show(xs: [Int])
 	switch xs
-		[] :
-		[a, as] :
+		[] =>
+		[a, as] =>
 			print(a)
 			show(as)
