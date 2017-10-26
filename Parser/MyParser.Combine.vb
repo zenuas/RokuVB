@@ -174,6 +174,19 @@ Namespace Parser
             Return [if]
         End Function
 
+        Protected Overridable Function CreateIfCastNode(
+                var As VariableNode,
+                decla As TypeNode,
+                cond As IEvaluableNode,
+                [then] As BlockNode
+            ) As IfCastNode
+
+            If [then] IsNot Nothing Then [then].InnerScope = True
+            Dim [if] As New IfCastNode With {.Condition = cond, .Then = [then], .Var = var, .Declare = decla}
+            [if].AppendLineNumber(var)
+            Return [if]
+        End Function
+
         Protected Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
 
             Dim switch As New SwitchNode

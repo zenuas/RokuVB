@@ -259,8 +259,34 @@ Namespace Compiler
                     make_if =
                         Function(if_)
 
-                            Dim rk_if = New InIf With {.Condition = to_value(if_.Condition)}
+                            Dim rk_if = New InIf
                             Dim then_ = make_stmts(if_.Then.Statements)
+                            Dim body As New List(Of InCode0)
+
+                            If TypeOf if_ Is IfCastNode Then
+
+                                Dim ifcast = CType(if_, IfCastNode)
+                                Dim bool = LoadStruct(root, "Bool")
+                                Dim eq_r As New OpValue With {.Name = create_anonymus(), .Type = bool, .Scope = rk_func}
+
+                                body.Add(New InCode With {
+                                        .Operator = InOperator.CanCast,
+                                        .Return = eq_r,
+                                        .Left = to_value(ifcast.Condition),
+                                        .Right = to_value(ifcast.Declare)
+                                    })
+                                rk_if.Condition = eq_r
+                                then_.Insert(0, New InCode With {
+                                        .Operator = InOperator.Cast,
+                                        .Return = New OpValue With {.Name = ifcast.Var.Name, .Type = ifcast.Declare.Type, .Scope = rk_func},
+                                        .Left = to_value(ifcast.Condition),
+                                        .Right = to_value(ifcast.Declare)
+                                    })
+                            Else
+
+                                rk_if.Condition = to_value(if_.Condition)
+                            End If
+
                             Dim endif_ = New InLabel
                             If then_.Count > 0 Then
 
@@ -272,7 +298,6 @@ Namespace Compiler
                                 Debug.Fail("not test")
                             End If
 
-                            Dim body As New List(Of InCode0)
                             body.Add(rk_if)
                             body.AddRange(then_)
                             If if_.Else IsNot Nothing Then
@@ -288,6 +313,7 @@ Namespace Compiler
                                 rk_if.Else = endif_
                                 Coverage.Case()
                             End If
+
                             body.Add(endif_)
                             Return body
                         End Function

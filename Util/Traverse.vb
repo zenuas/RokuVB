@@ -204,6 +204,15 @@ Namespace Util
                             f("Name", x.Name)
                             f("Type", x.Type)
 
+                        Case TypeOf node_ Is IfCastNode
+
+                            Dim x = CType(node_, IfCastNode)
+                            f("Var", x.Var)
+                            f("Declare", x.Declare)
+                            f("Condition", x.Condition)
+                            f("Then", x.Then)
+                            f("Else", x.Else)
+
                         Case TypeOf node_ Is IfNode
 
                             Dim x = CType(node_, IfNode)
@@ -387,6 +396,15 @@ Namespace Util
                             Dim x = CType(node_, DeclareNode)
                             x.Name = CType(f("Name", x.Name), VariableNode)
                             x.Type = CType(f("Type", x.Type), TypeNode)
+
+                        Case TypeOf node_ Is IfCastNode
+
+                            Dim x = CType(node_, IfCastNode)
+                            x.Var = CType(f("Var", x.Var), VariableNode)
+                            x.Declare = CType(f("Declare", x.Declare), TypeNode)
+                            x.Condition = CType(f("Condition", x.Condition), IEvaluableNode)
+                            x.Then = CType(f("Then", x.Then), BlockNode)
+                            x.Else = CType(f("Else", x.Else), BlockNode)
 
                         Case TypeOf node_ Is IfNode
 

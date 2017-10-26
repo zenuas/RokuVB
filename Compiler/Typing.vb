@@ -608,7 +608,12 @@ Namespace Compiler
                         If Not isfirst Then Return
                         If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
 
-                        If TypeOf child Is CaseCastNode Then
+                        If TypeOf child Is IfCastNode Then
+
+                            Dim node_if = CType(child, IfCastNode)
+                            node_if.Var.Type = node_if.Declare.Type
+
+                        ElseIf TypeOf child Is CaseCastNode Then
 
                             Dim node_case = CType(child, CaseCastNode)
                             node_case.Var.Type = node_case.Declare.Type

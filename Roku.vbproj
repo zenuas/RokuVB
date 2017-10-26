@@ -77,6 +77,7 @@
     <Compile Include="Manager\RkUnionType.vb" />
     <Compile Include="Node\CaseCastNode.vb" />
     <Compile Include="Node\CaseArrayNode.vb" />
+    <Compile Include="Node\IfCastNode.vb" />
     <Compile Include="Node\IHaveScopeType.vb" />
     <Compile Include="Node\LambdaExpressionNode.vb" />
     <Compile Include="Node\IStatementNode.vb" />

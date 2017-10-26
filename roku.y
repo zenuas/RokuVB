@@ -40,6 +40,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %token<NumericNode> NUM
 %left  OPE
 %left  '.'
+%left  ':'
 %left  ALLOW
 
 %left  '?'
@@ -165,7 +166,8 @@ if     : ifthen
        | elseif
        | ifthen ELSE EOL block {$1.Else = $4 : $$ = $1}
        | elseif ELSE EOL block {$1.Else = $4 : $$ = $1}
-ifthen : IF expr EOL block     {$$ = Me.CreateIfNode($2, $4)}
+ifthen : IF expr EOL block                 {$$ = Me.CreateIfNode($2, $4)}
+       | IF var ':' type EQ expr EOL block {$$ = Me.CreateIfCastNode($2, $4, $6, $8)}
 elseif : ifthen ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
        | elseif ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
 
