@@ -34,8 +34,8 @@ distclean: clean
 
 release:
 	$(MAKE) RELEASE=Release all
-	git archive HEAD --output=Roku_$(subst /,.,$(shell cmd /c date /T)).zip
-	zip Roku_$(subst /,.,$(shell cmd /c date /T)).zip bin\Release\roku.exe
+	git archive HEAD --output=Roku-$(subst /,.,$(shell cmd /c date /T)).zip
+	powershell -NoProfile Compress-Archive -Force -Path bin\Release\roku.exe, README.md, LICENSE -DestinationPath Roku-bin-$(subst /,.,$(shell cmd /c date /T)).zip
 
 test: clean $(OUT)
 	del /F bin\$(RELEASE)\coverage.txt 2>NUL
