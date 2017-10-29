@@ -132,10 +132,10 @@ Namespace Parser
             Return New ListNode(Of T)
         End Function
 
-        Protected Overridable Function CreateListNode(Of T As INode)(expr As T) As ListNode(Of T)
+        Protected Overridable Function CreateListNode(Of T As INode)(ParamArray expr() As T) As ListNode(Of T)
 
             Dim list = Me.CreateListNode(Of T)
-            list.List.Add(expr)
+            list.List.AddRange(expr)
 
             Return list
         End Function

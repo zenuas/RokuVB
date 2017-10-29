@@ -18,8 +18,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<FunctionNode>   sub
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       type typex atvar
-%type<TypeListNode>   types typen atvarn
+%type<TypeNode>       type typex atvar union
+%type<TypeListNode>   types typen atvarn unionn typeor
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
 %type<CaseNode>       case case_expr
@@ -33,12 +33,13 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<StringNode>     str
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
+%type<TokenNode>      ope
 
 %left  VAR ATVAR STR NULL
 %left  USE
 %left  ELSE
 %token<NumericNode> NUM
-%left  OPE
+%left  OPE OR
 %left  '.'
 %left  ':'
 %left  ALLOW
@@ -73,6 +74,7 @@ line  : call EOL
       | switch
       | block
       | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}
+      | union       {Me.CurrentScope.Scope.Add($1.Name, $1)}
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber))}
@@ -87,9 +89,9 @@ expr : var
      | atvar
      | '[' list ']'      {$$ = $2}
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
-#     | OPE expr          {$$ = Me.CreateFunctionCallNode($1, $2)}
+#     | ope expr          {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
      | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}
-     | expr OPE expr     {$$ = Me.CreateFunctionCallNode($2, $1, $3)}
+     | expr ope expr     {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
      | expr '[' expr ']' {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
      | null
@@ -125,28 +127,38 @@ atvarn : atvar                         {$$ = Me.CreateListNode($1)}
        | atvarn ',' atvar              {$1.List.Add($3) : $$ = $1}
 
 
+########## union ##########
+union  : UNION var EOL BEGIN unionn END {$$ = New UnionNode($2, $5)}
+
+unionn : type EOL        {$$ = Me.CreateListNode($1)}
+       | unionn type EOL {$1.List.Add($2) : $$ = $1}
+
+
 ########## sub ##########
-sub   : SUB fn '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
-fn    : var
-      | OPE            {$$ = Me.CreateVariableNode($1)}
-args  : void           {$$ = Me.CreateListNode(Of DeclareNode)}
-      | argn extra
-argn  : decla          {$$ = Me.CreateListNode($1)}
-      | argn ',' decla {$1.List.Add($3) : $$ = $1}
-decla : var ':' type   {$$ = New DeclareNode($1, $3)}
-type  : var            {$$ = New TypeNode($1)}
-      | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
-      | '[' type ']'   {$$ = New TypeArrayNode($2)}
-      | atvar
-      | atvar '?'      {$$ = $1 : $1.Nullable = True}
-      | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
-      | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
-typex : void
-      | type
-types : void           {$$ = Me.CreateListNode(Of TypeNode)}
-      | typen extra
-typen : type           {$$ = Me.CreateListNode($1)}
-      | typen ',' type {$1.List.Add($3) : $$ = $1}
+sub    : SUB fn '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
+fn     : var
+       | ope            {$$ = Me.CreateVariableNode($1.Token)}
+args   : void           {$$ = Me.CreateListNode(Of DeclareNode)}
+       | argn extra
+argn   : decla          {$$ = Me.CreateListNode($1)}
+       | argn ',' decla {$1.List.Add($3) : $$ = $1}
+decla  : var ':' type   {$$ = New DeclareNode($1, $3)}
+type   : var            {$$ = New TypeNode($1)}
+       | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
+       | '[' type ']'   {$$ = New TypeArrayNode($2)}
+       | '[' typeor ']' {$$ = New UnionNode($2)}
+       | atvar
+       | atvar '?'      {$$ = $1 : $1.Nullable = True}
+       | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
+       | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
+typex  : void
+       | type
+types  : void           {$$ = Me.CreateListNode(Of TypeNode)}
+       | typen extra
+typen  : type           {$$ = Me.CreateListNode($1)}
+       | typen ',' type {$1.List.Add($3) : $$ = $1}
+typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
+       | typeor OR type {$1.List.Add($3) : $$ = $1}
 
 
 ########## lambda ##########
@@ -208,6 +220,8 @@ num   : NUM     {$$ = $1}
 str   : STR     {$$ = New StringNode($1)}
       | str STR {$1.String.Append($2.Name) : $$ = $1}
 null  : NULL    {$$ = New NullNode($1)}
+ope   : OPE     {$$ = New TokenNode($1)}
+      | OR      {$$ = New TokenNode($1)}
 
 extra : void
       | ','

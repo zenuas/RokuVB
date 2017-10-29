@@ -69,6 +69,9 @@ Namespace Parser
         ''' <summary>OPE</summary>
         OPE
 
+        ''' <summary>OR</summary>
+        [OR]
+
         ''' <summary>STR</summary>
         STR
 
@@ -80,6 +83,9 @@ Namespace Parser
 
         ''' <summary>SWITCH</summary>
         SWITCH
+
+        ''' <summary>UNION</summary>
+        UNION
 
         ''' <summary>USE</summary>
         USE
@@ -186,6 +192,9 @@ Namespace Parser
         ''' <summary>num</summary>
         num_1
 
+        ''' <summary>ope</summary>
+        ope_1
+
         ''' <summary>pattern</summary>
         pattern
 
@@ -231,11 +240,20 @@ Namespace Parser
         ''' <summary>typen</summary>
         typen
 
+        ''' <summary>typeor</summary>
+        typeor
+
         ''' <summary>types</summary>
         types
 
         ''' <summary>typex</summary>
         typex
+
+        ''' <summary>union</summary>
+        union_1
+
+        ''' <summary>unionn</summary>
+        unionn
 
         ''' <summary>use</summary>
         use_1

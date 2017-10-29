@@ -14,6 +14,7 @@ Namespace Parser
             Me.ReservedWord("sub") = SymbolTypes.SUB
             Me.ReservedWord("var") = SymbolTypes.LET
             Me.ReservedWord("struct") = SymbolTypes.STRUCT
+            Me.ReservedWord("union") = SymbolTypes.UNION
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
             Me.ReservedWord("switch") = SymbolTypes.SWITCH
@@ -400,6 +401,7 @@ RESTART_:
                 End If
             Loop
 
+            If buf.Length = 1 AndAlso buf(0) = "|"c Then Return New Token(SymbolTypes.OR, "|")
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function
 

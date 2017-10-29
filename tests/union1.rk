@@ -1,0 +1,22 @@
+#struct Circle
+#	var r: Int
+#
+#struct Triangle
+#	var bottom: Int
+#	var height: Int
+#
+#struct Rectangle
+#	var width: Int
+#	var height: Int
+
+union Prism
+	Circle
+	Triangle
+	Rectangle
+
+sub f(x: Prism)
+	switch x
+		c: Circle    => print(c.r * c.r * 3.14)
+		t: Triangle  => print((t.bottom * t.height) / 2)
+		r: Rectangle => print(r.width * r.height)
+

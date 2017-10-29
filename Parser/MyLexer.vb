@@ -37,10 +37,12 @@ Namespace Parser
             Me.ReservedWord("NULL") = SymbolTypes.NULL
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("OPE") = SymbolTypes.OPE
+            Me.ReservedWord("OR") = SymbolTypes.[OR]
             Me.ReservedWord("STR") = SymbolTypes.STR
             Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("SWITCH") = SymbolTypes.SWITCH
+            Me.ReservedWord("UNION") = SymbolTypes.UNION
             Me.ReservedWord("USE") = SymbolTypes.USE
             Me.ReservedWord("VAR") = SymbolTypes.VAR
         End Sub

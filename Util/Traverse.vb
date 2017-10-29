@@ -264,6 +264,14 @@ Namespace Util
                             Dim x = CType(node_, TypeArrayNode)
                             f("Item", x.Item)
 
+                        Case TypeOf node_ Is UnionNode
+
+                            Dim x = CType(node_, UnionNode)
+                            For i = 0 To x.Union.List.Count - 1
+
+                                f($"[{i}]", x.Union.List(i))
+                            Next
+
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
@@ -456,6 +464,14 @@ Namespace Util
 
                             Dim x = CType(node_, TypeArrayNode)
                             x.Item = CType(f("Item", x.Item), TypeNode)
+
+                        Case TypeOf node_ Is UnionNode
+
+                            Dim x = CType(node_, UnionNode)
+                            For i = 0 To x.Union.List.Count - 1
+
+                                x.Union.List(i) = CType(f($"[{i}]", x.Union.List(i)), TypeNode)
+                            Next
 
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,

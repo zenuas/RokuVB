@@ -85,7 +85,9 @@
     <Compile Include="Node\IAddFunction.vb" />
     <Compile Include="Node\IFeedback.vb" />
     <Compile Include="Node\CaseNode.vb" />
+    <Compile Include="Node\TokenNode.vb" />
     <Compile Include="Node\SwitchNode.vb" />
+    <Compile Include="Node\UnionNode.vb" />
     <Compile Include="Node\TypeArrayNode.vb" />
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\IBlock.vb" />
