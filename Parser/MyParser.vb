@@ -15,7 +15,7 @@ Namespace Parser
     Public Class MyParser
         Inherits Parser(Of INode)
 
-        Private Shared ReadOnly tables_(,) As Integer = {
+        Public Shared ReadOnly tables_(,) As Integer = {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -267,12 +267,12 @@ Namespace Parser
                 {-102, 0, 0, 0, 0, 0, -102, 0, 0, 0, 0, 0, 26, 0, -102, 0, 0, 0, 0, 0, -102, 0, 0, -102, 0, 0, 0, 0, 0, -102, 0, 0, 0, 0, 0, 0, 24, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
             }
 
-        Protected Overrides Function CreateTable() As Integer(,)
+        Public Overrides Function CreateTable() As Integer(,)
 
             Return tables_
         End Function
 
-        Protected Overrides Function RunAction(yy_no As Integer) As IToken(Of INode)
+        Public Overrides Function RunAction(yy_no As Integer) As IToken(Of INode)
 
             Dim yy_token As IToken(Of INode) = Nothing
             Dim yy_value As INode = Nothing
@@ -955,7 +955,7 @@ Namespace Parser
             Return yy_token
         End Function
 
-        Protected Overridable Overloads Function DoAction(
+        Public Overridable Overloads Function DoAction(
                 type As SymbolTypes,
                 length As Integer,
                 value As INode
@@ -964,7 +964,7 @@ Namespace Parser
             Return Me.DoAction(New Token(type), length, value)
         End Function
 
-        Protected Overrides Sub OnError(lex As Lexer(Of INode))
+        Public Overrides Sub OnError(lex As Lexer(Of INode))
 
             Debug.Fail("syntax error")
             Throw New SyntaxErrorException(lex.LineNumber, lex.LineColumn, "syntax error")

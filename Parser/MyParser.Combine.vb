@@ -10,15 +10,15 @@ Namespace Parser
 
 #Region "scope"
 
-        Protected Overridable Property CurrentScope As IScopeNode
+        Public Overridable Property CurrentScope As IScopeNode
 
-        Protected Overridable Sub PushScope(scope As IScopeNode)
+        Public Overridable Sub PushScope(scope As IScopeNode)
 
             scope.Parent = Me.CurrentScope
             Me.CurrentScope = scope
         End Sub
 
-        Protected Overridable Function PopScope() As IScopeNode
+        Public Overridable Function PopScope() As IScopeNode
 
             Dim prev_scope = Me.CurrentScope
             Me.CurrentScope = Me.CurrentScope.Parent
@@ -27,19 +27,19 @@ Namespace Parser
 
 #End Region
 
-        Protected Overridable Function AppendLineNumber(Of T As BaseNode)(node As T, token As Token) As T
+        Public Overridable Function AppendLineNumber(Of T As BaseNode)(node As T, token As Token) As T
 
             node.AppendLineNumber(token)
             Return node
         End Function
 
-        Protected Overridable Sub AddUse(use As UseNode)
+        Public Overridable Sub AddUse(use As UseNode)
 
             use.Module = Me.Loader.AddUse(use.GetNamespace)
             CType(Me.CurrentScope, ProgramNode).Uses.Add(use)
         End Sub
 
-        Protected Overridable Function CreateLetNode(
+        Public Overridable Function CreateLetNode(
                 var As VariableNode,
                 expr As IEvaluableNode
             ) As LetNode
@@ -49,7 +49,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Protected Overridable Function CreateLetNode(
+        Public Overridable Function CreateLetNode(
                 prop As PropertyNode,
                 expr As IEvaluableNode
             ) As LetNode
@@ -59,7 +59,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Protected Overridable Function CreateLetNode(
+        Public Overridable Function CreateLetNode(
                 var As VariableNode,
                 type As TypeNode
             ) As LetNode
@@ -69,7 +69,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Protected Overridable Function CreateLetNode(
+        Public Overridable Function CreateLetNode(
                 var As VariableNode,
                 type As TypeNode,
                 expr As IEvaluableNode
@@ -80,7 +80,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Protected Overridable Function CreateFunctionCallNode(
+        Public Overridable Function CreateFunctionCallNode(
                 expr As IEvaluableNode,
                 ParamArray args() As IEvaluableNode
             ) As FunctionCallNode
@@ -90,7 +90,7 @@ Namespace Parser
             Return fcall
         End Function
 
-        Protected Overridable Function CreateFunctionCallNode(
+        Public Overridable Function CreateFunctionCallNode(
                 ope As Token,
                 ParamArray args() As IEvaluableNode
             ) As FunctionCallNode
@@ -100,7 +100,7 @@ Namespace Parser
             Return Me.CreateFunctionCallNode(expr, args)
         End Function
 
-        Protected Overridable Function CreateExpressionNode(
+        Public Overridable Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String,
                 right As IEvaluableNode
@@ -111,7 +111,7 @@ Namespace Parser
             Return expr
         End Function
 
-        Protected Overridable Function CreateExpressionNode(
+        Public Overridable Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String
             ) As ExpressionNode
@@ -119,7 +119,7 @@ Namespace Parser
             Return Me.CreateExpressionNode(left, ope, Nothing)
         End Function
 
-        Protected Overridable Function CreateExpressionNode(
+        Public Overridable Function CreateExpressionNode(
                 left As IEvaluableNode
             ) As ExpressionNode
 
@@ -127,12 +127,12 @@ Namespace Parser
             Return Me.CreateExpressionNode(left, "", Nothing)
         End Function
 
-        Protected Overridable Function CreateListNode(Of T As INode)() As ListNode(Of T)
+        Public Overridable Function CreateListNode(Of T As INode)() As ListNode(Of T)
 
             Return New ListNode(Of T)
         End Function
 
-        Protected Overridable Function CreateListNode(Of T As INode)(ParamArray expr() As T) As ListNode(Of T)
+        Public Overridable Function CreateListNode(Of T As INode)(ParamArray expr() As T) As ListNode(Of T)
 
             Dim list = Me.CreateListNode(Of T)
             list.List.AddRange(expr)
@@ -140,12 +140,12 @@ Namespace Parser
             Return list
         End Function
 
-        Protected Overridable Function CreateVariableNode(s As Token) As VariableNode
+        Public Overridable Function CreateVariableNode(s As Token) As VariableNode
 
             Return Me.CreateVariableNode(s.Name, s)
         End Function
 
-        Protected Overridable Function CreateVariableNode(s As String, pos As Token) As VariableNode
+        Public Overridable Function CreateVariableNode(s As String, pos As Token) As VariableNode
 
             Dim var_ = New VariableNode(s)
             var_.AppendLineNumber(pos)
@@ -153,7 +153,7 @@ Namespace Parser
             Return var_
         End Function
 
-        Protected Overridable Function CreateIfNode(
+        Public Overridable Function CreateIfNode(
                 cond As IEvaluableNode,
                 [then] As BlockNode
             ) As IfNode
@@ -161,7 +161,7 @@ Namespace Parser
             Return Me.CreateIfNode(cond, [then], Nothing)
         End Function
 
-        Protected Overridable Function CreateIfNode(
+        Public Overridable Function CreateIfNode(
                 cond As IEvaluableNode,
                 [then] As BlockNode,
                 [else] As BlockNode
@@ -174,7 +174,7 @@ Namespace Parser
             Return [if]
         End Function
 
-        Protected Overridable Function CreateIfCastNode(
+        Public Overridable Function CreateIfCastNode(
                 var As VariableNode,
                 decla As TypeNode,
                 cond As IEvaluableNode,
@@ -187,7 +187,7 @@ Namespace Parser
             Return [if]
         End Function
 
-        Protected Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
+        Public Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
 
             Dim switch As New SwitchNode
             switch.Case.Add([case])
@@ -195,7 +195,7 @@ Namespace Parser
             Return switch
         End Function
 
-        Protected Overridable Function CreateCaseCastNode(
+        Public Overridable Function CreateCaseCastNode(
                 decla As TypeNode,
                 var As VariableNode
             ) As CaseCastNode
@@ -205,7 +205,7 @@ Namespace Parser
             Return [case]
         End Function
 
-        Protected Overridable Function CreateCaseArrayNode(
+        Public Overridable Function CreateCaseArrayNode(
                 pattern As ListNode(Of VariableNode),
                 token As Token
             ) As CaseArrayNode
@@ -215,7 +215,7 @@ Namespace Parser
             Return [case]
         End Function
 
-        Protected Overridable Function CreateFunctionNode(
+        Public Overridable Function CreateFunctionNode(
                 name As VariableNode,
                 args() As DeclareNode,
                 ret As TypeNode,
@@ -229,7 +229,7 @@ Namespace Parser
             Return f
         End Function
 
-        Protected Overridable Function CreateFunctionNode(
+        Public Overridable Function CreateFunctionNode(
                 args() As DeclareNode,
                 ret As TypeNode,
                 body As BlockNode
@@ -243,7 +243,7 @@ Namespace Parser
             Return f
         End Function
 
-        Protected Overridable Function CreateFunctionTypeNode(
+        Public Overridable Function CreateFunctionTypeNode(
                 args() As TypeNode,
                 ret As TypeNode,
                 token As Token
@@ -256,7 +256,7 @@ Namespace Parser
             Return t
         End Function
 
-        Protected Overridable Function CreateLambdaFunction(
+        Public Overridable Function CreateLambdaFunction(
                 args() As DeclareNode,
                 ret As TypeNode,
                 block As BlockNode
@@ -269,7 +269,7 @@ Namespace Parser
             Return v
         End Function
 
-        Protected Overridable Function ToLambdaExpression(expr As IEvaluableNode) As BlockNode
+        Public Overridable Function ToLambdaExpression(expr As IEvaluableNode) As BlockNode
 
             Dim block = New BlockNode(expr.LineNumber.Value)
             Dim lambda = New LambdaExpressionNode With {.Expression = expr}
@@ -279,7 +279,7 @@ Namespace Parser
             Return block
         End Function
 
-        Protected Overridable Function ToBlock(if_ As IfNode) As BlockNode
+        Public Overridable Function ToBlock(if_ As IfNode) As BlockNode
 
             Dim block = New BlockNode(if_.LineNumber.Value)
             if_.Parent = block

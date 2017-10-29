@@ -8,7 +8,7 @@ Namespace Node
         Implements IEvaluableNode
 
 
-        Public Sub New(ByVal s As String)
+        Public Sub New(s As String)
 
             Me.Name = s
         End Sub

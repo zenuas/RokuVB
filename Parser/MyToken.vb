@@ -10,12 +10,12 @@ Namespace Parser
     Public Class Token
         Implements IToken(Of INode)
 
-        Public Sub New(ByVal type As SymbolTypes)
+        Public Sub New(type As SymbolTypes)
 
             Me.Type = type
         End Sub
 
-        Public Sub New(ByVal type As SymbolTypes, ByVal name As String)
+        Public Sub New(type As SymbolTypes, name As String)
             Me.New(type)
 
             If Me.Type = SymbolTypes._END AndAlso Not name.Equals("") Then Throw New ArgumentException("eof with blank", "name")
@@ -23,7 +23,7 @@ Namespace Parser
             Me.Name = name
         End Sub
 
-        Protected Overridable ReadOnly Property InputToken() As Integer Implements IToken(Of INode).InputToken
+        Public Overridable ReadOnly Property InputToken() As Integer Implements IToken(Of INode).InputToken
             Get
                 Return Me.Type
             End Get
@@ -31,7 +31,7 @@ Namespace Parser
 
         Public Overridable Property Name As String
         Public Overridable Property Type As SymbolTypes
-        Protected Overridable Property TableIndex As Integer Implements IToken(Of INode).TableIndex
+        Public Overridable Property TableIndex As Integer Implements IToken(Of INode).TableIndex
         Public Overridable Property Value As INode Implements IToken(Of INode).Value
         Public Overridable Property LineNumber As Integer Implements IToken(Of INode).LineNumber
         Public Overridable Property LineColumn As Integer Implements IToken(Of INode).LineColumn

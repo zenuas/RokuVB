@@ -24,36 +24,36 @@ Namespace Parser
 
 #Region "reader"
 
-        Private token_stack_ As New List(Of IToken(Of INode))
-        Private indent_stack_ As New List(Of Integer)
+        Public Overridable ReadOnly Property TokenStack As New List(Of IToken(Of INode))
+        Public Overridable ReadOnly Property IndentStack As New List(Of Integer)
 
 
         Public Overrides Function Reader() As IToken(Of INode)
 
             Dim indent = 0
-            If token_stack_.Count = 0 Then
+            If TokenStack.Count = 0 Then
 
 READ_LINE_:
                 Dim begin = Me.ReaderNext
                 If begin.InputToken = SymbolTypes.EOL Then GoTo READ_LINE_
 
-                Dim count = Me.indent_stack_.Count
+                Dim count = Me.IndentStack.Count
                 indent = begin.Indent
-                If count = 0 OrElse Me.indent_stack_(count - 1) < indent Then
+                If count = 0 OrElse Me.IndentStack(count - 1) < indent Then
 
-                    Me.token_stack_.Add(Me.CreateBlockBegin(indent, begin.LineNumber))
-                    Me.indent_stack_.Add(indent)
+                    Me.TokenStack.Add(Me.CreateBlockBegin(indent, begin.LineNumber))
+                    Me.IndentStack.Add(indent)
                 Else
 
-                    Do While count > 0 AndAlso Me.indent_stack_(count - 1) > indent
+                    Do While count > 0 AndAlso Me.IndentStack(count - 1) > indent
 
-                        Me.token_stack_.Insert(0, Me.CreateBlockEnd(Me.indent_stack_(count - 1), begin.LineNumber))
-                        Me.indent_stack_.RemoveAt(count - 1)
+                        Me.TokenStack.Insert(0, Me.CreateBlockEnd(Me.IndentStack(count - 1), begin.LineNumber))
+                        Me.IndentStack.RemoveAt(count - 1)
                         count -= 1
                     Loop
                 End If
 
-                Me.token_stack_.Add(begin)
+                Me.TokenStack.Add(begin)
                 If Not begin.EndOfToken Then
 
 READ_CONTINUE_:
@@ -61,30 +61,30 @@ READ_CONTINUE_:
 
                         Dim t = Me.ReaderNext
                         t.Indent = indent
-                        Me.token_stack_.Add(t)
+                        Me.TokenStack.Add(t)
                         If t.InputToken = SymbolTypes.EOL Then Exit Do
                         If t.EndOfToken Then
 
-                            Me.token_stack_.Insert(Me.token_stack_.Count - 1, Me.CreateEndOfLine(t.LineNumber, t.LineColumn))
+                            Me.TokenStack.Insert(Me.TokenStack.Count - 1, Me.CreateEndOfLine(t.LineNumber, t.LineColumn))
                             Exit Do
                         End If
                     Loop
                 End If
 
-                If Me.token_stack_(Me.token_stack_.Count - 1).EndOfToken Then
+                If Me.TokenStack(Me.TokenStack.Count - 1).EndOfToken Then
 
-                    count = Me.indent_stack_.Count
+                    count = Me.IndentStack.Count
                     Do While count > 0
 
                         count -= 1
-                        Me.token_stack_.Insert(Me.token_stack_.Count - 1, Me.CreateBlockEnd(Me.indent_stack_(count), Me.LineNumber))
-                        Me.indent_stack_.RemoveAt(count)
+                        Me.TokenStack.Insert(Me.TokenStack.Count - 1, Me.CreateBlockEnd(Me.IndentStack(count), Me.LineNumber))
+                        Me.IndentStack.RemoveAt(count)
                     Loop
                 End If
             End If
 
-            Dim first = Me.token_stack_(0)
-            Me.token_stack_.RemoveAt(0)
+            Dim first = Me.TokenStack(0)
+            Me.TokenStack.RemoveAt(0)
             If first.InputToken = SymbolTypes.EOL AndAlso Not Me.Parser.IsAccept(first) Then
 
                 indent = first.Indent
@@ -93,7 +93,7 @@ READ_CONTINUE_:
             Return first
         End Function
 
-        Protected Overridable Function ReaderNext() As IToken(Of INode)
+        Public Overridable Function ReaderNext() As IToken(Of INode)
 
             If Me.EndOfStream() Then Return Me.CreateEndOfToken
 
@@ -134,7 +134,7 @@ READ_CONTINUE_:
             Return x
         End Function
 
-        Protected Overridable Overloads Function ReaderToken() As IToken(Of INode)
+        Public Overridable Overloads Function ReaderToken() As IToken(Of INode)
 
             If Me.EndOfStream() Then Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
             Dim c = Me.ReadChar
@@ -238,22 +238,22 @@ READ_CONTINUE_:
 
 #Region "type check"
 
-        Protected Overridable Function IsNumber(c As Char) As Boolean
+        Public Overridable Function IsNumber(c As Char) As Boolean
 
             Return (c >= "0"c AndAlso c <= "9"c)
         End Function
 
-        Protected Overridable Function IsBinary(c As Char) As Boolean
+        Public Overridable Function IsBinary(c As Char) As Boolean
 
             Return (c = "0"c OrElse c = "1"c)
         End Function
 
-        Protected Overridable Function IsOctal(c As Char) As Boolean
+        Public Overridable Function IsOctal(c As Char) As Boolean
 
             Return (c >= "0"c AndAlso c <= "7"c)
         End Function
 
-        Protected Overridable Function IsHexadecimal(c As Char) As Boolean
+        Public Overridable Function IsHexadecimal(c As Char) As Boolean
 
             Return _
                 ((c >= "0"c AndAlso c <= "9"c) OrElse
@@ -261,27 +261,27 @@ READ_CONTINUE_:
                 (c >= "A"c AndAlso c <= "F"c))
         End Function
 
-        Protected Overridable Function IsLowerAlphabet(c As Char) As Boolean
+        Public Overridable Function IsLowerAlphabet(c As Char) As Boolean
 
             Return (c >= "a"c AndAlso c <= "z"c)
         End Function
 
-        Protected Overridable Function IsUpperAlphabet(c As Char) As Boolean
+        Public Overridable Function IsUpperAlphabet(c As Char) As Boolean
 
             Return (c >= "A"c AndAlso c <= "Z"c)
         End Function
 
-        Protected Overridable Function IsAlphabet(c As Char) As Boolean
+        Public Overridable Function IsAlphabet(c As Char) As Boolean
 
             Return (Me.IsLowerAlphabet(c) OrElse Me.IsUpperAlphabet(c))
         End Function
 
-        Protected Overridable Function IsWord(c As Char) As Boolean
+        Public Overridable Function IsWord(c As Char) As Boolean
 
             Return (c = "_"c OrElse Me.IsLowerAlphabet(c) OrElse Me.IsUpperAlphabet(c) OrElse Me.IsNumber(c))
         End Function
 
-        Protected Overridable Function IsOperator(c As Char) As Boolean
+        Public Overridable Function IsOperator(c As Char) As Boolean
 
             Return (
                 c = "-"c OrElse
@@ -305,17 +305,17 @@ READ_CONTINUE_:
 
 #Region "read token"
 
-        Protected Overridable Sub ReadLineComment()
+        Public Overridable Sub ReadLineComment()
 
             Me.ReadLine()
         End Sub
 
-        Protected Overridable Function CreateEndOfLine(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
+        Public Overridable Function CreateEndOfLine(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
 
             Return New Token(SymbolTypes.EOL) With {.LineNumber = linenum, .LineColumn = linecolumn}
         End Function
 
-        Protected Overridable Overloads Function CreateEndOfToken(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
+        Public Overridable Overloads Function CreateEndOfToken(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
 
             Dim t = Me.CreateEndOfToken
             t.LineNumber = linenum
@@ -328,17 +328,17 @@ READ_CONTINUE_:
             Return New Token(x) With {.Name = c.ToString}
         End Function
 
-        Protected Overridable Function CreateBlockBegin(indent As Integer, linenum As Integer) As IToken(Of INode)
+        Public Overridable Function CreateBlockBegin(indent As Integer, linenum As Integer) As IToken(Of INode)
 
             Return New Token(SymbolTypes.BEGIN) With {.Indent = indent, .LineNumber = linenum, .LineColumn = 0}
         End Function
 
-        Protected Overridable Function CreateBlockEnd(indent As Integer, linenum As Integer) As IToken(Of INode)
+        Public Overridable Function CreateBlockEnd(indent As Integer, linenum As Integer) As IToken(Of INode)
 
             Return New Token(SymbolTypes.END) With {.Indent = indent, .LineNumber = linenum, .LineColumn = 0}
         End Function
 
-        Protected Overridable Function ReadVariableFirst(buf As System.Text.StringBuilder) As Token
+        Public Overridable Function ReadVariableFirst(buf As System.Text.StringBuilder) As Token
 
             If Me.EndOfStream Then Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "not variable")
 
@@ -348,7 +348,7 @@ READ_CONTINUE_:
             Return Me.ReadVariable(buf)
         End Function
 
-        Protected Overridable Function ReadVariable(buf As System.Text.StringBuilder) As Token
+        Public Overridable Function ReadVariable(buf As System.Text.StringBuilder) As Token
 
             Do While Not Me.EndOfStream AndAlso Me.IsWord(Me.NextChar)
 
@@ -360,7 +360,7 @@ READ_CONTINUE_:
             Return New Token(SymbolTypes.VAR, s)
         End Function
 
-        Protected Overridable Function ReadString(start_char As Char) As Token
+        Public Overridable Function ReadString(start_char As Char) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -373,7 +373,7 @@ READ_CONTINUE_:
             Return New Token(SymbolTypes.STR, buf.ToString)
         End Function
 
-        Protected Overridable Function ReadOperator(ByVal buf As System.Text.StringBuilder) As Token
+        Public Overridable Function ReadOperator(buf As System.Text.StringBuilder) As Token
 
             Do While Not Me.EndOfStream
 
@@ -393,7 +393,7 @@ READ_CONTINUE_:
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function
 
-        Protected Overridable Function ReadDecimal(buf As System.Text.StringBuilder) As Token
+        Public Overridable Function ReadDecimal(buf As System.Text.StringBuilder) As Token
 
             Do While Not Me.EndOfStream
 
@@ -414,7 +414,7 @@ READ_CONTINUE_:
             Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString))
         End Function
 
-        Protected Overridable Function ReadBinary() As Token
+        Public Overridable Function ReadBinary() As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -436,7 +436,7 @@ READ_CONTINUE_:
             Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 2))
         End Function
 
-        Protected Overridable Function ReadOctal() As Token
+        Public Overridable Function ReadOctal() As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -458,7 +458,7 @@ READ_CONTINUE_:
             Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 8))
         End Function
 
-        Protected Overridable Function ReadHexadecimal() As Token
+        Public Overridable Function ReadHexadecimal() As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -480,7 +480,7 @@ READ_CONTINUE_:
             Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 16))
         End Function
 
-        Protected Overridable Function CreateNumericToken(n As UInt32) As Token
+        Public Overridable Function CreateNumericToken(n As UInt32) As Token
 
             Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(n)}
         End Function

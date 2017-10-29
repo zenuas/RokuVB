@@ -9,7 +9,7 @@ Namespace Node
         Implements IEvaluableNode, IFeedback
 
 
-        Public Sub New(ByVal n As UInt32)
+        Public Sub New(n As UInt32)
 
             Me.Numeric = n
         End Sub
