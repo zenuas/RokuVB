@@ -7,6 +7,8 @@ Namespace Parser
         ReadOnly Property InputToken() As Integer
         Property TableIndex() As Integer
         Property Value() As T
+        Property LineNumber As Integer
+        Property LineColumn As Integer
         Property Indent As Integer
 
     End Interface

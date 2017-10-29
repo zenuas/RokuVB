@@ -24,98 +24,78 @@ Namespace Parser
 
 #Region "reader"
 
-        Private eol_ As New Token(SymbolTypes.EOL)
-        Private prev_ As IToken(Of INode) = Nothing
-        Private next_ As IToken(Of INode) = Nothing
+        Private token_stack_ As New List(Of IToken(Of INode))
         Private indent_stack_ As New List(Of Integer)
 
 
         Public Overrides Function Reader() As IToken(Of INode)
 
-            Me.CurrentWord.Clear()
-            If Me.next_ Is Nothing Then Me.next_ = Me.ReaderNext
+            Dim indent = 0
+            If token_stack_.Count = 0 Then
 
-            If Me.next_.InputToken = SymbolTypes.EOL Then
+READ_LINE_:
+                Dim begin = Me.ReaderNext
+                If begin.InputToken = SymbolTypes.EOL Then GoTo READ_LINE_
 
-                If Me.prev_ IsNot Nothing AndAlso Me.prev_.InputToken = SymbolTypes.EOL Then
+                Dim count = Me.indent_stack_.Count
+                indent = begin.Indent
+                If count = 0 OrElse Me.indent_stack_(count - 1) < indent Then
 
-                    Me.next_ = Nothing
-                    Me.next_ = Me.Reader
-                End If
-                Me.next_.Indent = 0
-                If Me.indent_stack_.Count > 0 Then Me.next_.Indent = Me.indent_stack_(Me.indent_stack_.Count - 1)
-                Me.prev_ = Me.next_
-                Me.next_ = Nothing
-                Return Me.prev_
-            End If
-
-            If Me.prev_ IsNot Nothing AndAlso
-                Me.prev_.InputToken <> SymbolTypes.EOL AndAlso
-                Me.prev_.InputToken <> SymbolTypes.END AndAlso
-                Me.indent_stack_.Count > 0 Then
-
-                Me.next_.Indent = Me.indent_stack_(Me.indent_stack_.Count - 1)
-            End If
-
-            If Me.indent_stack_.Count > 0 AndAlso
-                (Me.next_.InputToken = SymbolTypes._END OrElse
-                 Me.next_.Indent < Me.indent_stack_(Me.indent_stack_.Count - 1)) Then
-
-                Dim block_end = Me.CreateBlockEnd(Me.indent_stack_(Me.indent_stack_.Count - 1), Me.LineNumber)
-                Me.indent_stack_.RemoveAt(Me.indent_stack_.Count - 1)
-                Me.prev_ = block_end
-                Return block_end
-            End If
-
-            If Me.next_.InputToken = SymbolTypes._END Then
-
-                Me.next_.Indent = 0
-                Me.prev_ = Me.next_
-                Me.next_ = Nothing
-                Return Me.prev_
-            End If
-
-            If Me.indent_stack_.Count = 0 Then
-
-                Me.indent_stack_.Add(Me.next_.Indent)
-                Return Me.CreateBlockBegin(Me.next_.Indent, Me.LineNumber)
-            End If
-
-            If Me.prev_ IsNot Nothing AndAlso
-                (Me.prev_.InputToken = SymbolTypes.EOL OrElse
-                 Me.prev_.InputToken = SymbolTypes.BEGIN OrElse
-                 Me.prev_.InputToken = SymbolTypes.END) Then
-
-                Dim prev_indent = Me.indent_stack_(Me.indent_stack_.Count - 1)
-                Dim next_indent = Me.next_.Indent
-
-                If prev_indent = next_indent Then
-
-                    Me.prev_ = Me.next_
-                    Me.next_ = Nothing
-
-                ElseIf prev_indent < next_indent Then
-
-                    Me.indent_stack_.Add(next_indent)
-                    Me.prev_ = Me.CreateBlockBegin(next_indent, Me.LineNumber)
+                    Me.token_stack_.Add(Me.CreateBlockBegin(indent, begin.LineNumber))
+                    Me.indent_stack_.Add(indent)
                 Else
-                    Me.indent_stack_.RemoveAt(Me.indent_stack_.Count - 1)
-                    Me.prev_ = Me.CreateBlockEnd(prev_indent, Me.LineNumber)
+
+                    Do While count > 0 AndAlso Me.indent_stack_(count - 1) > indent
+
+                        Me.token_stack_.Insert(0, Me.CreateBlockEnd(Me.indent_stack_(count - 1), begin.LineNumber))
+                        Me.indent_stack_.RemoveAt(count - 1)
+                        count -= 1
+                    Loop
                 End If
 
-            Else
-                Me.next_.Indent = Me.indent_stack_(Me.indent_stack_.Count - 1)
-                Me.prev_ = Me.next_
-                Me.next_ = Nothing
+                Me.token_stack_.Add(begin)
+                If Not begin.EndOfToken Then
+
+READ_CONTINUE_:
+                    Do While True
+
+                        Dim t = Me.ReaderNext
+                        t.Indent = indent
+                        Me.token_stack_.Add(t)
+                        If t.InputToken = SymbolTypes.EOL Then Exit Do
+                        If t.EndOfToken Then
+
+                            Me.token_stack_.Insert(Me.token_stack_.Count - 1, Me.CreateEndOfLine(t.LineNumber, t.LineColumn))
+                            Exit Do
+                        End If
+                    Loop
+                End If
+
+                If Me.token_stack_(Me.token_stack_.Count - 1).EndOfToken Then
+
+                    count = Me.indent_stack_.Count
+                    Do While count > 0
+
+                        count -= 1
+                        Me.token_stack_.Insert(Me.token_stack_.Count - 1, Me.CreateBlockEnd(Me.indent_stack_(count), Me.LineNumber))
+                        Me.indent_stack_.RemoveAt(count)
+                    Loop
+                End If
             End If
 
-            Return Me.prev_
+            Dim first = Me.token_stack_(0)
+            Me.token_stack_.RemoveAt(0)
+            If first.InputToken = SymbolTypes.EOL AndAlso Not Me.Parser.IsAccept(first) Then
+
+                indent = first.Indent
+                GoTo READ_CONTINUE_
+            End If
+            Return first
         End Function
 
         Protected Overridable Function ReaderNext() As IToken(Of INode)
 
-RESTART_:
-            If Me.EndOfStream() Then Return Me.CreateEndOfToken_
+            If Me.EndOfStream() Then Return Me.CreateEndOfToken
 
             ' lex char
             Dim indent = 0
@@ -133,16 +113,16 @@ RESTART_:
                 End If
                 If c = Convert.ToChar(10) OrElse c = Convert.ToChar(13) Then
 
-                    If Me.Parser.IsAccept(Me.eol_) Then Return Me.CreateEndOfLine
-                    indent = 0
+                    Return Me.CreateEndOfLine(Me.LineNumber, Me.LineColumn)
                 End If
-                If Me.EndOfStream() Then Return Me.CreateEndOfToken_
+                If Me.EndOfStream() Then Return Me.CreateEndOfToken(Me.LineNumber, Me.LineColumn)
                 c = Me.NextChar
             Loop
             If c = "#"c Then
 
+                Dim eol = Me.CreateEndOfLine(Me.LineNumber, Me.LineColumn)
                 Me.ReadLineComment()
-                GoTo RESTART_
+                Return eol
             End If
             Dim lineno = Me.LineNumber
             Dim column = Me.LineColumn
@@ -160,7 +140,7 @@ RESTART_:
             Dim c = Me.ReadChar
             If Char.IsWhiteSpace(c) OrElse c = "#"c Then Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
 
-            If Me.ReservedChar.ContainsKey(c) Then Return Me.CreateCharToken(Me.ReservedChar(c))
+            If Me.ReservedChar.ContainsKey(c) Then Return Me.CreateCharToken(Me.ReservedChar(c), c)
 
             Dim buf As New System.Text.StringBuilder(c.ToString)
 
@@ -330,14 +310,22 @@ RESTART_:
             Me.ReadLine()
         End Sub
 
-        Protected Overridable Function CreateEndOfLine() As IToken(Of INode)
+        Protected Overridable Function CreateEndOfLine(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
 
-            Return New Token(SymbolTypes.EOL)
+            Return New Token(SymbolTypes.EOL) With {.LineNumber = linenum, .LineColumn = linecolumn}
         End Function
 
-        Protected Overridable Function CreateEndOfToken_() As IToken(Of INode)
+        Protected Overridable Overloads Function CreateEndOfToken(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
 
-            Return Me.CreateEndOfToken
+            Dim t = Me.CreateEndOfToken
+            t.LineNumber = linenum
+            t.LineColumn = linecolumn
+            Return t
+        End Function
+
+        Public Overridable Overloads Function CreateCharToken(x As SymbolTypes, c As Char) As IToken(Of INode)
+
+            Return New Token(x) With {.Name = c.ToString}
         End Function
 
         Protected Overridable Function CreateBlockBegin(indent As Integer, linenum As Integer) As IToken(Of INode)
