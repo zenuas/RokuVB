@@ -169,7 +169,7 @@ READ_CONTINUE_:
             ElseIf c = "="c Then
 
                 ' =    -> Equal
-                ' =>   -> Allow
+                ' =>   -> Arrow
                 ' ===? -> Operator
                 If Not Me.EndOfStream AndAlso Me.NextChar = "="c Then
 
@@ -180,7 +180,7 @@ READ_CONTINUE_:
                 ElseIf Not Me.EndOfStream AndAlso Me.NextChar = ">"c Then
 
                     buf.Append(Me.ReadChar())
-                    Return New Token(SymbolTypes.ALLOW, buf.ToString)
+                    Return New Token(SymbolTypes.ARROW, buf.ToString)
                 Else
                     Return New Token(SymbolTypes.EQ, buf.ToString)
                 End If

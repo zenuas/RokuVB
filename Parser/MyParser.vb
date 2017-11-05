@@ -634,7 +634,7 @@ Namespace Parser
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case -72
-                    Debug.WriteLine("type : '{' types '}' ALLOW type")
+                    Debug.WriteLine("type : '{' types '}' ARROW type")
                     yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode).List.ToArray, CType(Me.GetValue(-1), TypeNode),      CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
@@ -679,7 +679,7 @@ Namespace Parser
                     yy_token = Me.DoAction(SymbolTypes.typeor, 3, yy_value)
 
                 Case -81
-                    Debug.WriteLine("lambda : '{' lambda_args '}' typex ALLOW lambda_func")
+                    Debug.WriteLine("lambda : '{' lambda_args '}' typex ARROW lambda_func")
                     yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-5), DeclareListNode).List.ToArray, CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda, 6, yy_value)
 
@@ -784,17 +784,17 @@ Namespace Parser
                     yy_token = Me.DoAction(SymbolTypes.casen, 2, yy_value)
 
                 Case -102
-                    Debug.WriteLine("case : case_expr ALLOW EOL")
+                    Debug.WriteLine("case : case_expr ARROW EOL")
                     yy_value = CType(Me.GetValue(-3), CaseNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 3, yy_value)
 
                 Case -103
-                    Debug.WriteLine("case : case_expr ALLOW EOL block")
+                    Debug.WriteLine("case : case_expr ARROW EOL block")
                     yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = CType(Me.GetValue(-1), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -104
-                    Debug.WriteLine("case : case_expr ALLOW expr EOL")
+                    Debug.WriteLine("case : case_expr ARROW expr EOL")
                     yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = Me.ToLambdaExpression(CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 

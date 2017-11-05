@@ -42,7 +42,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  OPE OR
 %left  '.'
 %left  ':'
-%left  ALLOW
+%left  ARROW
 
 %left  '?'
 %right '(' '[' '{'
@@ -150,7 +150,7 @@ type   : var            {$$ = New TypeNode($1)}
        | atvar
        | atvar '?'      {$$ = $1 : $1.Nullable = True}
        | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
-       | '{' types '}' ALLOW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
+       | '{' types '}' ARROW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
 typex  : void
        | type
 types  : void           {$$ = Me.CreateListNode(Of TypeNode)}
@@ -162,7 +162,7 @@ typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args '}' typex ALLOW lambda_func {$$ = Me.CreateLambdaFunction($2.List.ToArray, $4, $6)}
+lambda      : '{' lambda_args '}' typex ARROW lambda_func {$$ = Me.CreateLambdaFunction($2.List.ToArray, $4, $6)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
             | block
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
@@ -189,9 +189,9 @@ switch     : SWITCH expr EOL case_block {$$ = $4 : $4.Expression = $2 : $4.Appen
 case_block : BEGIN casen END           {$$ = $2}
 casen      : case                      {$$ = Me.CreateSwitchNode($1)}
            | casen case                {$$ = $1 : $1.Case.Add($2)}
-case       : case_expr ALLOW EOL       {$$ = $1}
-           | case_expr ALLOW EOL block {$$ = $1 : $1.Then = $4}
-           | case_expr ALLOW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
+case       : case_expr ARROW EOL       {$$ = $1}
+           | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
+           | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
 case_expr  : var
            | num
            | str

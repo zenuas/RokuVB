@@ -33,8 +33,8 @@ Namespace Parser
         ''' <summary>'}'</summary>
         __x7D
 
-        ''' <summary>ALLOW</summary>
-        ALLOW
+        ''' <summary>ARROW</summary>
+        ARROW
 
         ''' <summary>ATVAR</summary>
         ATVAR

@@ -25,7 +25,7 @@ Namespace Parser
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("{"c) = SymbolTypes.__x7B
             Me.ReservedChar("}"c) = SymbolTypes.__x7D
-            Me.ReservedWord("ALLOW") = SymbolTypes.ALLOW
+            Me.ReservedWord("ARROW") = SymbolTypes.ARROW
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
