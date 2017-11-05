@@ -57,7 +57,7 @@ Namespace Architecture
 
         Public Overridable Iterator Function FindAllStructs(root As SystemLibrary) As IEnumerable(Of RkStruct)
 
-            For Each s In root.AllNamespace.Map(Function(x) x.Structs.Values.Flatten).Flatten
+            For Each s In root.AllNamespace.Map(Function(x) x.Structs.Values.Flatten).Flatten.By(Of RkStruct)
 
                 Yield s
 
@@ -84,7 +84,7 @@ Namespace Architecture
 
         Public Overridable Iterator Function FindInnerStructs(scope As IScope) As IEnumerable(Of RkStruct)
 
-            For Each s In scope.Structs.Values.Flatten
+            For Each s In scope.Structs.Values.Flatten.By(Of RkStruct)
 
                 Yield s
 

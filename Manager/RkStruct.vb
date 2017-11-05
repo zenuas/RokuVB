@@ -7,7 +7,7 @@ Imports Roku.Util.Extensions
 Namespace Manager
 
     Public Class RkStruct
-        Implements IType, IApply, IAddLet, IScope
+        Implements IStruct, IAddLet, IScope
 
         Public Overridable Property Super As IType
         Public Overridable Property Scope As IScope Implements IType.Scope
@@ -20,7 +20,7 @@ Namespace Manager
         Public Overridable Property Initializer As RkNativeFunction = Nothing
         Public Overridable Property ClosureEnvironment As Boolean = False
         Public Overridable Property Parent As IScope Implements IScope.Parent
-        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of IStruct)) Implements IScope.Structs
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
 
 
@@ -103,7 +103,7 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overridable Function GetBaseTypes() As List(Of RkStruct)
+        Public Overridable Function GetBaseTypes() As List(Of IStruct)
 
             If Me.Scope.Structs.ContainsKey(Me.Name) AndAlso Me.Scope.Structs(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Structs(Me.Name)
             Return Me.Scope.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
@@ -131,18 +131,18 @@ Namespace Manager
             Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
         End Function
 
-        Public Overridable Sub AddStruct(x As RkStruct) Implements IScope.AddStruct
+        Public Overridable Sub AddStruct(x As IStruct) Implements IScope.AddStruct
 
             Me.AddStruct(x, x.Name)
         End Sub
 
-        Public Overridable Sub AddStruct(x As RkStruct, name As String) Implements IScope.AddStruct
+        Public Overridable Sub AddStruct(x As IStruct, name As String) Implements IScope.AddStruct
 
-            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of RkStruct))
+            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of IStruct))
             Me.Structs(name).Add(x)
         End Sub
 
-        Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of RkStruct) Implements IScope.FindCurrentStruct
+        Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of IStruct) Implements IScope.FindCurrentStruct
 
             If Me.Structs.ContainsKey(name) Then
 

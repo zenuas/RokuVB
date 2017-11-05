@@ -23,7 +23,7 @@ Namespace Manager
         Public Overridable Property FunctionNode As FunctionNode = Nothing Implements IFunction.FunctionNode
         Public Overridable Property Closure As RkStruct = Nothing Implements IFunction.Closure
         Public Overridable Property Parent As IScope Implements IScope.Parent
-        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of RkStruct)) Implements IScope.Structs
+        Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of IStruct)) Implements IScope.Structs
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
 
 
@@ -235,18 +235,18 @@ Namespace Manager
             Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
         End Function
 
-        Public Overridable Sub AddStruct(x As RkStruct) Implements IScope.AddStruct
+        Public Overridable Sub AddStruct(x As IStruct) Implements IScope.AddStruct
 
             Me.AddStruct(x, x.Name)
         End Sub
 
-        Public Overridable Sub AddStruct(x As RkStruct, name As String) Implements IScope.AddStruct
+        Public Overridable Sub AddStruct(x As IStruct, name As String) Implements IScope.AddStruct
 
-            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of RkStruct))
+            If Not Me.Structs.ContainsKey(name) Then Me.Structs.Add(name, New List(Of IStruct))
             Me.Structs(name).Add(x)
         End Sub
 
-        Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of RkStruct) Implements IScope.FindCurrentStruct
+        Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of IStruct) Implements IScope.FindCurrentStruct
 
             If Me.Structs.ContainsKey(name) Then
 

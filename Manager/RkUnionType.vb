@@ -9,8 +9,9 @@ Imports Roku.Util.Extensions
 Namespace Manager
 
     Public Class RkUnionType
-        Implements IFunction
+        Implements IFunction, IStruct
 
+        Public Overridable Property UnionName As String = Nothing
         Public Overridable Property Types As List(Of IType)
         Public Overridable Property ReturnCache As RkUnionType
 
@@ -25,6 +26,7 @@ Namespace Manager
 
         Public Overridable Property Name As String Implements IEntry.Name
             Get
+                If Not String.IsNullOrEmpty(Me.UnionName) Then Return Me.UnionName
                 Return Me.GetDecideType.Name
             End Get
             Set(value As String)

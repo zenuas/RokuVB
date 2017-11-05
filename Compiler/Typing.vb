@@ -60,6 +60,13 @@ Namespace Compiler
                         next_(child, rk_struct)
                         Return
 
+                    ElseIf TypeOf child Is UnionNode Then
+
+                        Dim node_union = CType(child, UnionNode)
+                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name}
+                        node_union.Type = rk_union
+                        current.AddStruct(rk_union)
+
                     ElseIf TypeOf child Is ProgramNode Then
 
                         Dim node_pgm = CType(child, ProgramNode)
@@ -146,6 +153,12 @@ Namespace Compiler
 
                         Dim node_typearr = CType(child, TypeArrayNode)
                         If Not node_typearr.HasGeneric Then node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
+                        Coverage.Case()
+
+                    ElseIf TypeOf child Is UnionNode Then
+
+                        Dim node_union = CType(child, UnionNode)
+                        If Not node_union.IsGeneric Then CType(node_union.Type, RkUnionType).Merge(node_union.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeNode Then
@@ -815,7 +828,7 @@ Namespace Compiler
                                 End If
                                 If TypeOf t IsNot RkGenericEntry Then
 
-                                    For Each fix In rk_struct.Scope.FindCurrentStruct(rk_struct.Name)
+                                    For Each fix In rk_struct.Scope.FindCurrentStruct(rk_struct.Name).By(Of RkStruct)
 
                                         If fix.Local(s.Key) Is Nothing Then
 

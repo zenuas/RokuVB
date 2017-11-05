@@ -1,13 +1,13 @@
-#struct Circle
-#	var r: Int
-#
-#struct Triangle
-#	var bottom: Int
-#	var height: Int
-#
-#struct Rectangle
-#	var width: Int
-#	var height: Int
+struct Circle
+	var r: Int
+
+struct Triangle
+	var bottom: Int
+	var height: Int
+
+struct Rectangle
+	var width: Int
+	var height: Int
 
 union Prism
 	Circle
@@ -16,7 +16,23 @@ union Prism
 
 sub f(x: Prism)
 	switch x
-		c: Circle    => print(c.r * c.r * 3.14)
+		c: Circle    => print(c.r * c.r * 3) # 小数点に対応していないため仮に3
 		t: Triangle  => print((t.bottom * t.height) / 2)
 		r: Rectangle => print(r.width * r.height)
 
+#=>300
+var a = Circle()
+a.r = 10
+f(a)
+
+#=>10
+var b = Triangle()
+b.bottom = 5
+b.height = 4
+f(b)
+
+#=>42
+var c = Rectangle()
+c.width  = 6
+c.height = 7
+f(c)

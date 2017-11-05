@@ -262,7 +262,7 @@ Namespace Manager
             Return Nothing
         End Function
 
-        Public Shared Function LoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+        Public Shared Function LoadStruct(scope As IScope, name As String, ParamArray args() As IType) As IType
 
             Dim x = TryLoadStruct(scope, name, args)
             If x IsNot Nothing Then Return x
@@ -270,22 +270,30 @@ Namespace Manager
             Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
-        Public Shared Function TryCurrentLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+        Public Shared Function TryCurrentLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As IType
 
-            For Each f In scope.FindCurrentStruct(name).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
+            For Each f In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
 
                 If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
             Next
 
-            For Each f In scope.FindCurrentStruct(name).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
+            For Each f In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
 
                 Return CType(f.FixedGeneric(args), RkStruct)
             Next
 
+            If args.Length = 0 Then
+
+                For Each f In scope.FindCurrentStruct(name).By(Of RkUnionType)
+
+                    Return f
+                Next
+            End If
+
             Return Nothing
         End Function
 
-        Public Shared Function TryLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As RkStruct
+        Public Shared Function TryLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As IType
 
             If scope Is Nothing Then Return Nothing
 
