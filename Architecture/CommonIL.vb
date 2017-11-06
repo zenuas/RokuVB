@@ -703,7 +703,7 @@ CLASS_CAST_:
                         Debug.Fail("not yet")
                 End Select
             Next
-            If Not found_ret Then il.Emit(OpCodes.Ret)
+            If Not found_ret OrElse (stmts.Count > 0 AndAlso TypeOf stmts(stmts.Count - 1) Is InLabel) Then il.Emit(OpCodes.Ret)
         End Sub
 
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
