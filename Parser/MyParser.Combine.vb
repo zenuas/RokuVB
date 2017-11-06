@@ -187,6 +187,21 @@ Namespace Parser
             Return [if]
         End Function
 
+        Public Overridable Function AddElse(
+                [if] As IfNode,
+                [else] As BlockNode
+            ) As IfNode
+
+            If [if].Else Is Nothing Then
+
+                [if].Else = [else]
+            Else
+
+                Me.AddElse(CType([if].Else.Statements(0), IfNode), [else])
+            End If
+            Return [if]
+        End Function
+
         Public Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
 
             Dim switch As New SwitchNode

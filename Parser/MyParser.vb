@@ -735,12 +735,12 @@ Namespace Parser
 
                 Case -92
                     Debug.WriteLine("if : ifthen ELSE EOL block")
-                    CType(Me.GetValue(-4), IfNode).Else = CType(Me.GetValue(-1), BlockNode) : yy_value = CType(Me.GetValue(-4), IfNode)
+                    yy_value = Me.AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -93
                     Debug.WriteLine("if : elseif ELSE EOL block")
-                    CType(Me.GetValue(-4), IfNode).Else = CType(Me.GetValue(-1), BlockNode) : yy_value = CType(Me.GetValue(-4), IfNode)
+                    yy_value = Me.AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -94
@@ -755,12 +755,12 @@ Namespace Parser
 
                 Case -96
                     Debug.WriteLine("elseif : ifthen ELSE ifthen")
-                    CType(Me.GetValue(-3), IfNode).Else = Me.ToBlock(CType(Me.GetValue(-1), IfNode)) : yy_value = CType(Me.GetValue(-3), IfNode)
+                    yy_value = Me.AddElse(CType(Me.GetValue(-3), IfNode), Me.ToBlock(CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -97
                     Debug.WriteLine("elseif : elseif ELSE ifthen")
-                    CType(Me.GetValue(-3), IfNode).Else = Me.ToBlock(CType(Me.GetValue(-1), IfNode)) : yy_value = CType(Me.GetValue(-3), IfNode)
+                    yy_value = Me.AddElse(CType(Me.GetValue(-3), IfNode), Me.ToBlock(CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -98

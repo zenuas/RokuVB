@@ -176,12 +176,12 @@ lambda_argn : lambda_arg                 {$$ = Me.CreateListNode($1)}
 ########## if ##########
 if     : ifthen
        | elseif
-       | ifthen ELSE EOL block {$1.Else = $4 : $$ = $1}
-       | elseif ELSE EOL block {$1.Else = $4 : $$ = $1}
+       | ifthen ELSE EOL block {$$ = Me.AddElse($1, $4)}
+       | elseif ELSE EOL block {$$ = Me.AddElse($1, $4)}
 ifthen : IF expr EOL block                 {$$ = Me.CreateIfNode($2, $4)}
        | IF var ':' type EQ expr EOL block {$$ = Me.CreateIfCastNode($2, $4, $6, $8)}
-elseif : ifthen ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
-       | elseif ELSE ifthen    {$1.Else = Me.ToBlock($3) : $$ = $1}
+elseif : ifthen ELSE ifthen    {$$ = Me.AddElse($1, Me.ToBlock($3))}
+       | elseif ELSE ifthen    {$$ = Me.AddElse($1, Me.ToBlock($3))}
 
 
 ########## switch ##########
