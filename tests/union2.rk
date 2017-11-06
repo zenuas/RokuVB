@@ -1,0 +1,37 @@
+struct A
+	var a = 1
+
+struct B
+	var b = 2
+
+struct C
+	var c = 3
+
+union Test
+	A
+	B
+	C
+
+sub f(x: Int) Test
+	if x == 0
+		return(A())
+	else if x == 1
+		
+		return(B())
+		
+	else
+		return(C())
+
+#=>1
+var x = f(0)
+if v: A = x
+	print(v.a)
+else
+	print("not a")
+
+#=>not a
+var y = f(1)
+if v: A = y
+	print(v.a)
+else
+	print("not a")
