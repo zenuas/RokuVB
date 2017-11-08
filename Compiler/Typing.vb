@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Diagnostics
+Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Manager.SystemLibrary
@@ -63,7 +64,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node_union = CType(child, UnionNode)
-                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name}
+                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name, .Static = True}
                         node_union.Type = rk_union
                         current.AddStruct(rk_union)
 
@@ -881,8 +882,13 @@ Namespace Compiler
                         'ToDo: priority check
                         Coverage.Case()
                         Dim union = CType(t, RkUnionType)
-                        If union.Types.Count > 1 Then union.Types.RemoveRange(1, union.Types.Count - 1)
-                        t = var_normalize(union.Types(0))
+                        If union.Static Then
+
+                            t = root.LoadType(GetType(Object).GetTypeInfo)
+                        Else
+                            If union.Types.Count > 1 Then union.Types.RemoveRange(1, union.Types.Count - 1)
+                            t = var_normalize(union.Types(0))
+                        End If
 
                     ElseIf TypeOf t Is RkFunction Then
 
