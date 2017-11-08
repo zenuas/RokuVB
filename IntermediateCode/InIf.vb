@@ -12,7 +12,7 @@ Namespace IntermediateCode
         End Sub
 
         Public Overridable Property Condition As OpValue
-        Public Overridable Property [Then] As InLabel
+        'Public Overridable Property [Then] As InLabel
         Public Overridable Property [Else] As InLabel
 
     End Class

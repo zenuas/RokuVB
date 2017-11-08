@@ -288,16 +288,6 @@ Namespace Compiler
                             End If
 
                             Dim endif_ = New InLabel
-                            If then_.Count > 0 Then
-
-                                rk_if.Then = New InLabel
-                                then_.Insert(0, rk_if.Then)
-                                Coverage.Case()
-                            Else
-                                rk_if.Then = endif_
-                                Debug.Fail("not test")
-                            End If
-
                             body.Add(rk_if)
                             body.AddRange(then_)
                             If if_.Else IsNot Nothing Then
@@ -353,7 +343,7 @@ Namespace Compiler
                                             .Left = to_value(switch.Expression),
                                             .Right = to_value(case_cast.Declare)
                                         })
-                                    Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                    Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
                                     body.Add(New InCode With {
                                             .Operator = InOperator.Cast,
                                             .Return = New OpValue With {.Name = case_cast.Var.Name, .Type = case_cast.Declare.Type, .Scope = rk_func},
@@ -361,7 +351,6 @@ Namespace Compiler
                                             .Right = to_value(case_cast.Declare)
                                         })
                                     body.Add(if_)
-                                    body.Add(if_.Then)
                                     If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                     body.Add(New InGoto With {.Label = last_label})
 
@@ -377,9 +366,8 @@ Namespace Compiler
                                             '     goto last_label
                                             ' else ...
                                             body.AddRange(eq().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func}))
-                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
                                             body.Add(if_)
-                                            body.Add(if_.Then)
                                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                             body.Add(New InGoto With {.Label = last_label})
 
@@ -391,9 +379,8 @@ Namespace Compiler
                                             '     goto last_label
                                             ' else ...
                                             body.AddRange(eq().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 1, .Type = int_, .Scope = rk_func}))
-                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
                                             body.Add(if_)
-                                            body.Add(if_.Then)
                                             index().CreateCallReturn(to_value(case_array.Pattern(0)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = rk_func})
                                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                             body.Add(New InGoto With {.Label = last_label})
@@ -407,9 +394,8 @@ Namespace Compiler
                                             '     goto last_label
                                             ' else ...
                                             body.AddRange(gte().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = rk_func}))
-                                            Dim if_ As New InIf With {.Condition = eq_r, .Then = New InLabel, .Else = next_}
+                                            Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
                                             body.Add(if_)
-                                            body.Add(if_.Then)
                                             For j = 0 To case_array.Pattern.Count - 2
 
                                                 body.AddRange(index().CreateCallReturn(to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = rk_func}))

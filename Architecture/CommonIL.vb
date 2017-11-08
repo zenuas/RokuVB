@@ -656,8 +656,7 @@ ARRAY_CREATE_:
                     Case InOperator.If
                         Dim if_ = CType(stmt, InIf)
                         gen_il_load(il, if_.Condition, False)
-                        il.Emit(OpCodes.Brtrue, labels(if_.Then))
-                        il.Emit(OpCodes.Br, labels(if_.Else))
+                        il.Emit(OpCodes.Brfalse, labels(if_.Else))
 
                     Case InOperator.Goto
                         il.Emit(OpCodes.Br, labels(CType(stmt, InGoto).Label))
