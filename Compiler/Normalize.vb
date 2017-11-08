@@ -12,7 +12,7 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 node,
-                CType(node, BlockNode),
+                New With {.VarIndex = 0},
                 Sub(parent, ref, child, user, isfirst, next_)
 
                     If Not isfirst Then Return
@@ -20,16 +20,15 @@ Namespace Compiler
                     If TypeOf child Is BlockNode Then
 
                         Dim block = CType(child, BlockNode)
-                        Dim var_index = 0
                         Dim program_pointer = 0
 
                         Dim to_let =
                             Function(e As IEvaluableNode)
 
-                                Dim var As New VariableNode($"${var_index}") With {.Scope = block}
+                                Dim var As New VariableNode($"${user.VarIndex}") With {.Scope = block}
                                 var.LineNumber = e.LineNumber
                                 var.LineColumn = e.LineColumn
-                                var_index += 1
+                                user.VarIndex += 1
 
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
                                 block.Statements.Insert(program_pointer, let_)
@@ -152,11 +151,9 @@ Namespace Compiler
                             End If
                             program_pointer += 1
                         Loop
-
-                        next_(block, block)
-                    Else
-                        next_(child, user)
                     End If
+
+                    next_(child, If(TypeOf child Is IHaveScopeType, New With {.VarIndex = 0}, user))
                 End Sub)
         End Sub
 
