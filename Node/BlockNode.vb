@@ -36,6 +36,11 @@ Namespace Node
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable ReadOnly Property Functions As New List(Of FunctionNode) Implements IAddFunction.Functions
 
+        Public Overrides Function ToString() As String
+
+            Return $"line: {Me.LineNumber}"
+        End Function
+
     End Class
 
 End Namespace
