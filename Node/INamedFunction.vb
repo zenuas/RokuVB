@@ -3,7 +3,7 @@
 
 Namespace Node
 
-    Public Interface IBlock
+    Public Interface INamedFunction
         Inherits INode
 
         Property Name As String

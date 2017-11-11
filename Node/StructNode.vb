@@ -22,8 +22,9 @@ Namespace Node
         End Sub
 
         Public Overridable Property Name As String
+        Public Overridable Property Parent As IScopeNode Implements IScopeNode.Parent
         Public Overridable ReadOnly Property Statements As New List(Of IStatementNode)
-        Public Overridable Property Owner As IBlock Implements IScopeNode.Owner
+        Public Overridable Property Owner As INamedFunction Implements IScopeNode.Owner
         Public Overridable Property InnerScope As Boolean = False Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable Property Type As IType Implements IHaveScopeType.Type

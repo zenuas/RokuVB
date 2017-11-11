@@ -29,8 +29,9 @@ Namespace Node
             Me.Scope.Add(let_.Var.Name, let_)
         End Sub
 
+        Public Overridable Property Parent As IScopeNode Implements IScopeNode.Parent
         Public Overridable ReadOnly Property Statements As New List(Of IStatementNode)
-        Public Overridable Property Owner As IBlock Implements IScopeNode.Owner
+        Public Overridable Property Owner As INamedFunction Implements IScopeNode.Owner
         Public Overridable Property InnerScope As Boolean = True Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Scope As New Dictionary(Of String, INode) Implements IScopeNode.Scope
         Public Overridable ReadOnly Property Functions As New List(Of FunctionNode) Implements IAddFunction.Functions

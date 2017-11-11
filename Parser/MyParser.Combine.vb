@@ -297,7 +297,6 @@ Namespace Parser
         Public Overridable Function ToBlock(if_ As IfNode) As BlockNode
 
             Dim block = New BlockNode(if_.LineNumber.Value)
-            if_.Parent = block
             block.Statements.Add(if_)
             block.Parent = Me.CurrentScope
             Return block
