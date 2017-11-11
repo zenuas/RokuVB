@@ -928,7 +928,7 @@ Namespace Compiler
 
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
-                            If CType(func?.Type, RkFunction)?.Return Is Nothing Then
+                            If func?.Function?.Return Is Nothing Then
 
                                 If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
                                 block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
