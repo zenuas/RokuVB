@@ -22,7 +22,7 @@ Namespace Compiler
 
                         If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
 
-                            Do While current IsNot Nothing AndAlso current.InnerScope
+                            Do While current IsNot Nothing AndAlso var.Scope IsNot current AndAlso current.InnerScope
 
                                 current = current.Parent
                             Loop

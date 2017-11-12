@@ -88,6 +88,22 @@ Namespace Compiler
                         next_(child, current)
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is PropertyNode Then
+
+                        Dim prop = CType(child, PropertyNode)
+                        If TypeOf prop.Left Is VariableNode Then
+
+                            Dim var = CType(prop.Left, VariableNode)
+                            prop.Left = CType(resolve_var(current, var), IEvaluableNode)
+                            Coverage.Case()
+                        End If
+                        Coverage.Case()
+
+                    ElseIf TypeOf child Is IScopeNode Then
+
+                        Dim scope = CType(child, IScopeNode)
+                        next_(child, scope)
+                        Coverage.Case()
                     Else
 
                         next_(child, current)
