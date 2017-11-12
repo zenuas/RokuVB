@@ -823,7 +823,7 @@ Namespace Compiler
                             For Each s In node_struct.Scope.Where(Function(x) TypeOf x.Value Is LetNode)
 
                                 Dim t = CType(s.Value, LetNode).Type
-                                If rk_struct.Local(s.Key) Is Nothing Then
+                                If Not rk_struct.Local.ContainsKey(s.Key) Then
 
                                     rk_struct.Local(s.Key) = t
                                     If rk_struct.Local(s.Key) IsNot Nothing Then type_fix = True
