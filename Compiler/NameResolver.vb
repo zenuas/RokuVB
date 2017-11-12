@@ -9,6 +9,8 @@ Namespace Compiler
 
         Public Shared Sub ResolveName(node As ProgramNode)
 
+            Dim var_index = 0
+
             Dim resolve_name As Func(Of IScopeNode, String, INode) =
                 Function(current As IScopeNode, name As String)
 
@@ -83,7 +85,15 @@ Namespace Compiler
                         If node_let.Receiver Is Nothing Then
 
                             node_let.Var.Scope = current
-                            If TypeOf current IsNot StructNode Then current.Scope.Add(node_let.Var.Name, node_let.Var)
+                            If TypeOf current IsNot StructNode Then
+
+                                current.Scope.Add(node_let.Var.Name, node_let.Var)
+                                If current.Parent IsNot Nothing AndAlso resolve_name(current.Parent, node_let.Var.Name) IsNot Nothing Then
+
+                                    node_let.Var.Name = $"##{var_index}"
+                                    var_index += 1
+                                End If
+                            End If
                         End If
                         next_(child, current)
                         Coverage.Case()
