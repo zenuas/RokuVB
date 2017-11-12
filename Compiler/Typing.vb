@@ -731,8 +731,10 @@ Namespace Compiler
 
                                         Coverage.Case()
                                         Dim struct = CType(r, RkStruct)
-                                        Dim v = struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
-                                        If v IsNot Nothing Then Return v
+                                        If struct.Local.ContainsKey(node_prop.Right.Name) Then
+
+                                            Return struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
+                                        End If
 
                                         ' method call syntax sugar
                                         If struct.GenericBase IsNot Nothing Then struct = struct.GenericBase
