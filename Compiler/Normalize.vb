@@ -26,11 +26,11 @@ Namespace Compiler
                             Function(e As IEvaluableNode)
 
                                 Dim var As New VariableNode($"${user.VarIndex}") With {.Scope = block}
-                                var.LineNumber = e.LineNumber
-                                var.LineColumn = e.LineColumn
+                                var.AppendLineNumber(e)
                                 user.VarIndex += 1
 
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
+                                let_.AppendLineNumber(e)
                                 block.Statements.Insert(program_pointer, let_)
                                 program_pointer += 1
                                 Coverage.Case()
