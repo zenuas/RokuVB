@@ -100,6 +100,17 @@ Namespace Parser
             Return Me.CreateFunctionCallNode(expr, args)
         End Function
 
+        Public Overridable Function CreatePropertyNode(
+                left As IEvaluableNode,
+                dot As Token,
+                right As VariableNode
+            ) As PropertyNode
+
+            Dim prop As New PropertyNode With {.Left = left, .Right = right}
+            prop.AppendLineNumber(dot)
+            Return prop
+        End Function
+
         Public Overridable Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String,

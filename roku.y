@@ -90,7 +90,7 @@ expr : var
      | '[' list ']'      {$$ = $2}
      | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
 #     | ope expr          {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
-     | expr '.' varx     {$$ = New PropertyNode With {.Left = $1, .Right = $3}}
+     | expr '.' varx     {$$ = Me.CreatePropertyNode($1, $2, $3)}
      | expr ope expr     {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
      | expr '[' expr ']' {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
@@ -108,7 +108,7 @@ listn : expr             {$$ = Me.CreateListNode($1)}
 let : LET var EQ expr          {$$ = Me.CreateLetNode($2, $4)}
     | LET var ':' type EQ expr {$$ = Me.CreateLetNode($2, $4, $6)}
 #    | var EQ expr              {$$ = Me.CreateLetNode($1, $3)}
-    | expr '.' varx EQ expr    {$$ = Me.CreateLetNode(New PropertyNode With {.Left = $1, .Right = $3}, $5)}
+    | expr '.' varx EQ expr    {$$ = Me.CreateLetNode(Me.CreatePropertyNode($1, $2, $3), $5)}
 
 
 ########## struct ##########

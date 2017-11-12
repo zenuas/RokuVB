@@ -430,7 +430,7 @@ Namespace Parser
 
                 Case -31
                     Debug.WriteLine("expr : expr '.' varx")
-                    yy_value = New PropertyNode With {.Left = CType(Me.GetValue(-3), IEvaluableNode), .Right = CType(Me.GetValue(-1), VariableNode)}
+                    yy_value = Me.CreatePropertyNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetToken(-2), Token), CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -32
@@ -490,7 +490,7 @@ Namespace Parser
 
                 Case -43
                     Debug.WriteLine("let : expr '.' varx EQ expr")
-                    yy_value = Me.CreateLetNode(New PropertyNode With {.Left = CType(Me.GetValue(-5), IEvaluableNode), .Right = CType(Me.GetValue(-3), VariableNode)}, CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.CreateLetNode(Me.CreatePropertyNode(CType(Me.GetValue(-5), IEvaluableNode), CType(Me.GetToken(-4), Token), CType(Me.GetValue(-3), VariableNode)), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.let_1, 5, yy_value)
 
                 Case -44
