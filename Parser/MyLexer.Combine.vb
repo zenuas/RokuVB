@@ -146,6 +146,11 @@ READ_CONTINUE_:
 
             If c = "_"c Then
 
+                If Me.EndOfStream OrElse (Me.NextChar <> "_"c AndAlso Not Me.IsAlphabet(Me.NextChar)) Then
+
+                    Return New Token(SymbolTypes.IGNORE, c)
+                End If
+
                 Do While Not Me.EndOfStream AndAlso Me.NextChar = "_"c
 
                     buf.Append(Me.ReadChar)
@@ -196,6 +201,9 @@ READ_CONTINUE_:
 
             ElseIf Me.IsNumber(c) Then
 
+                Dim linenum = Me.LineNumber
+                Dim linecol = Me.LineColumn - 1
+
                 ' 0      -> Numeric(zero)
                 ' 0[0-7] -> Numeric(oct)
                 ' 0b     -> Numeric(bin)
@@ -209,26 +217,26 @@ READ_CONTINUE_:
                         If Me.NextChar = "x"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadHexadecimal()
+                            Return Me.ReadHexadecimal(linenum, linecol)
 
                         ElseIf Me.NextChar = "o"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadOctal()
+                            Return Me.ReadOctal(linenum, linecol)
 
                         ElseIf Me.IsOctal(Me.NextChar) Then
 
-                            Return Me.ReadOctal()
+                            Return Me.ReadOctal(linenum, linecol)
 
                         ElseIf Me.NextChar = "b"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadBinary()
+                            Return Me.ReadBinary(linenum, linecol)
                         End If
                     End If
                 End If
 
-                Return Me.ReadDecimal(buf)
+                Return Me.ReadDecimal(buf, linenum, linecol)
             End If
 
             Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
@@ -393,7 +401,7 @@ READ_CONTINUE_:
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function
 
-        Public Overridable Function ReadDecimal(buf As System.Text.StringBuilder) As Token
+        Public Overridable Function ReadDecimal(buf As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
 
             Do While Not Me.EndOfStream
 
@@ -411,10 +419,10 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString))
+            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadBinary() As Token
+        Public Overridable Function ReadBinary(linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -433,10 +441,10 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 2))
+            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 2), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadOctal() As Token
+        Public Overridable Function ReadOctal(linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -455,10 +463,10 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 8))
+            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 8), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadHexadecimal() As Token
+        Public Overridable Function ReadHexadecimal(linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -477,12 +485,12 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 16))
+            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 16), linenum, linecol)
         End Function
 
-        Public Overridable Function CreateNumericToken(n As UInt32) As Token
+        Public Overridable Function CreateNumericToken(n As UInt32, linenum As Integer, linecol As Integer) As Token
 
-            Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(n)}
+            Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(n) With {.LineNumber = linenum, .LineColumn = linecol}}
         End Function
 
 #End Region

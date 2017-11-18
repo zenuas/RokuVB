@@ -57,6 +57,9 @@ Namespace Parser
         ''' <summary>IF</summary>
         [IF]
 
+        ''' <summary>IGNORE</summary>
+        IGNORE
+
         ''' <summary>LET</summary>
         [LET]
 

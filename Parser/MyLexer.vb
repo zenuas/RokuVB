@@ -33,6 +33,7 @@ Namespace Parser
             Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("EQ") = SymbolTypes.EQ
             Me.ReservedWord("IF") = SymbolTypes.[IF]
+            Me.ReservedWord("IGNORE") = SymbolTypes.IGNORE
             Me.ReservedWord("LET") = SymbolTypes.[LET]
             Me.ReservedWord("NULL") = SymbolTypes.NULL
             Me.ReservedWord("NUM") = SymbolTypes.NUM

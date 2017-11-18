@@ -1,0 +1,9 @@
+sub test(f: {} => Int)
+	print(f())
+
+#=>1
+#=>2
+#=>3
+test({} Int => 1)
+test({} Int => 2)
+test({} Int => 3)

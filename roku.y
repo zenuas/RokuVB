@@ -42,10 +42,11 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  OPE OR
 %left  '.'
 %left  ':'
-%left  ARROW
+%left  IGNORE
 
 %left  '?'
 %right '(' '[' '{'
+%left  ARROW
 %left  EOL
 
 %%
@@ -208,23 +209,23 @@ patternn       : pattern              {$$ = Me.CreateListNode($1)}
 pattern        : var
 
 ########## other ##########
-var   : VAR     {$$ = Me.CreateVariableNode($1)}
-varx  : var
-      | SUB     {$$ = Me.CreateVariableNode($1)}
-      | IF      {$$ = Me.CreateVariableNode($1)}
-      | ELSE    {$$ = Me.CreateVariableNode($1)}
-      | LET     {$$ = Me.CreateVariableNode($1)}
-      | USE     {$$ = Me.CreateVariableNode($1)}
-atvar : ATVAR   {$$ = New TypeNode(Me.CreateVariableNode($1)) With {.IsGeneric = True}}
-num   : NUM     {$$ = $1}
-str   : STR     {$$ = New StringNode($1)}
-      | str STR {$1.String.Append($2.Name) : $$ = $1}
-null  : NULL    {$$ = New NullNode($1)}
-ope   : OPE     {$$ = New TokenNode($1)}
-      | OR      {$$ = New TokenNode($1)}
+var    : VAR     {$$ = Me.CreateVariableNode($1)}
+varx   : var
+       | SUB     {$$ = Me.CreateVariableNode($1)}
+       | IF      {$$ = Me.CreateVariableNode($1)}
+       | ELSE    {$$ = Me.CreateVariableNode($1)}
+       | LET     {$$ = Me.CreateVariableNode($1)}
+       | USE     {$$ = Me.CreateVariableNode($1)}
+atvar  : ATVAR   {$$ = New TypeNode(Me.CreateVariableNode($1)) With {.IsGeneric = True}}
+num    : NUM     {$$ = $1}
+str    : STR     {$$ = New StringNode($1)}
+       | str STR {$1.String.Append($2.Name) : $$ = $1}
+null   : NULL    {$$ = New NullNode($1)}
+ope    : OPE     {$$ = New TokenNode($1)}
+       | OR      {$$ = New TokenNode($1)}
 
-extra : void
-      | ','
+extra  : void
+       | ','
 
-void  : {$$ = Nothing}
+void   : {$$ = Nothing}
 
