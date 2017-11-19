@@ -165,7 +165,15 @@ Namespace Compiler
                                 Coverage.Case()
                                 Dim func = CType(stmt, FunctionCallNode)
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
-                                If TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
+                                If func.Function.IsAnonymous Then
+
+                                    args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
+                                    args(0).Name = CType(func.Expression, VariableNode).Name
+
+                                ElseIf TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then
+
+                                    args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
+                                End If
                                 Return func.Function.CreateCallReturn(ret, args.ToArray)
 
                             ElseIf TypeOf stmt Is VariableNode OrElse

@@ -936,7 +936,17 @@ Namespace Compiler
                                 block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
                             Else
 
-                                Throw New Exception("lambda expression not yet support")
+                                Dim v As New VariableNode("$ret") With {.Type = lambda.Type}
+                                Dim let_ As New LetNode With {.Var = v, .Type = lambda.Type, .Expression = lambda.Expression}
+                                Dim ret As New VariableNode("return") With {.Type = New RkByName With {.Scope = block.Owner.Function, .Name = "return"}}
+                                Dim fcall As New FunctionCallNode With {.Expression = ret, .Arguments = New IEvaluableNode() {v}}
+                                v.AppendLineNumber(lambda)
+                                let_.AppendLineNumber(lambda)
+                                ret.AppendLineNumber(lambda)
+                                fcall.AppendLineNumber(lambda)
+                                fcall.Function = fixed_function(fcall)
+                                block.Statements(block.Statements.Count - 1) = let_
+                                block.Statements.Add(fcall)
                             End If
                             Coverage.Case()
                         End If
