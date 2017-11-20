@@ -107,6 +107,10 @@ Namespace Compiler
                             prop.Left = CType(resolve_var(current, var), IEvaluableNode)
                             Coverage.Case()
                         End If
+                        Dim t = prop.Right
+                        prop.Right = Nothing
+                        next_(child, current)
+                        prop.Right = t
                         Coverage.Case()
 
                     ElseIf TypeOf child Is IScopeNode Then
