@@ -292,6 +292,22 @@ Namespace Compiler
                                             arr.Add(copy(CType(base(i), INode)))
                                         Next
                                         p.Item2.SetValue(clone, arr)
+
+
+                                    ElseIf IsGeneric(t, GetType(Dictionary(Of ,))) AndAlso (IsInterface(t.GenericTypeArguments(0), GetType(INode)) OrElse IsInterface(t.GenericTypeArguments(1), GetType(INode))) Then
+
+                                        Dim base = CType(p.Item1, System.Collections.IDictionary)
+                                        Dim hash = CType(Activator.CreateInstance(GetType(Dictionary(Of ,)).MakeGenericType(t.GenericTypeArguments(0), t.GenericTypeArguments(1))), System.Collections.IDictionary)
+
+                                        For Each key In base.Keys
+
+                                            Dim value = base(key)
+                                            If TypeOf key Is INode Then key = copy(CType(key, INode))
+                                            If TypeOf value Is INode Then value = copy(CType(value, INode))
+
+                                            hash(key) = value
+                                        Next
+                                        p.Item2.SetValue(clone, hash)
                                     End If
                                 End If
                             Next
@@ -318,14 +334,13 @@ Namespace Compiler
                     Return clone
                 End Function
 
-            Dim fixed_var As Func(Of IEvaluableNode, IType) =
-                Function(e As IEvaluableNode) As IType
+            Dim fixed_var As Func(Of IType, IType) =
+                Function(e)
 
-                    If TypeOf e.Type Is RkByNameWithReceiver Then
+                    If TypeOf e Is RkByNameWithReceiver Then
 
-                        Dim byname = CType(e.Type, RkByNameWithReceiver)
-                        Dim receiver = byname.Receiver
-                        Dim r = fixed_var(receiver)
+                        Dim byname = CType(e, RkByNameWithReceiver)
+                        Dim r = fixed_var(byname.Receiver.Type)
 
                         If TypeOf r Is RkStruct Then
 
@@ -366,9 +381,10 @@ Namespace Compiler
                             byname.Scope = ns2
                         End If
 
-                    ElseIf TypeOf e.Type Is RkByName Then
+                    ElseIf TypeOf e Is RkByName Then
 
-                        Dim byname = CType(e.Type, RkByName)
+                        Dim byname = CType(e, RkByName)
+                        If byname.Type IsNot Nothing Then Return fixed_var(byname.Type)
 
                         Coverage.Case()
                         Dim t = TryLoadStruct(byname.Scope, byname.Name)
@@ -411,7 +427,7 @@ Namespace Compiler
                     End If
 
                     Coverage.Case()
-                    Return e.Type
+                    Return e
                 End Function
 
             Dim fixed_byname As Func(Of IType, IType) =
@@ -437,7 +453,7 @@ Namespace Compiler
                 Function(union As RkUnionType, f As FunctionCallNode)
 
                     Dim before = union.Types.Count
-                    Dim args = f.Arguments.Map(Function(x) fixed_var(x)).ToList
+                    Dim args = f.Arguments.Map(Function(x) fixed_var(x.Type)).ToList
                     union.Types = union.Types.Where(
                         Function(x)
 
@@ -450,8 +466,8 @@ Namespace Compiler
             Dim fixed_function =
                 Function(f As FunctionCallNode) As IFunction
 
-                    Dim expr = fixed_var(f.Expression)
-                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x))).ToList
+                    Dim expr = fixed_var(f.Expression.Type)
+                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x.Type))).ToList
 
                     If TypeOf expr Is RkUnionType Then
 
@@ -488,7 +504,7 @@ Namespace Compiler
                                 Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
                             End If
 
-                            args.Insert(0, fixed_var(receiver))
+                            args.Insert(0, fixed_var(receiver.Type))
                             r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
 
                             If r IsNot Nothing Then
@@ -600,18 +616,38 @@ Namespace Compiler
                 Dim set_type =
                     Function(n As IEvaluableNode, f As Func(Of IType))
 
-                        If n.Type IsNot Nothing Then Return False
-
-                        n.Type = f()
                         If n.Type IsNot Nothing Then
 
-                            type_fix = True
-                            Return True
+                            If TypeOf n.Type Is RkByName Then
+
+                                Dim byname = CType(n.Type, RkByName)
+                                Do While byname.Type IsNot Nothing
+
+                                    If TypeOf byname.Type Is RkByNameWithReceiver Then Return False
+                                    If TypeOf byname.Type IsNot RkByName Then Return False
+                                    byname = CType(byname.Type, RkByName)
+                                Loop
+
+                                Dim x = f()
+                                If x Is n.Type Then Return False
+                                byname.Type = x
+                                If x IsNot Nothing Then
+
+                                    type_fix = True
+                                    Return True
+                                End If
+                            End If
                         Else
 
-                            Coverage.Case()
-                            Return False
+                            n.Type = f()
+                            If n.Type IsNot Nothing Then
+
+                                type_fix = True
+                                Return True
+                            End If
                         End If
+
+                        Return False
                     End Function
 
                 Util.Traverse.NodesOnce(
@@ -625,12 +661,12 @@ Namespace Compiler
                         If TypeOf child Is IfCastNode Then
 
                             Dim node_if = CType(child, IfCastNode)
-                            node_if.Var.Type = node_if.Declare.Type
+                            set_type(node_if.Var, Function() node_if.Declare.Type)
 
                         ElseIf TypeOf child Is CaseCastNode Then
 
                             Dim node_case = CType(child, CaseCastNode)
-                            node_case.Var.Type = node_case.Declare.Type
+                            set_type(node_case.Var, Function() node_case.Declare.Type)
 
                         ElseIf TypeOf child Is CaseArrayNode Then
 
@@ -645,12 +681,12 @@ Namespace Compiler
 
                                     If node_case.Pattern.Count = 1 Then
 
-                                        node_case.Pattern(0).Type = x
+                                        set_type(node_case.Pattern(0), Function() x)
                                         Coverage.Case()
 
                                     ElseIf node_case.Pattern.Count > 1 Then
 
-                                        node_case.Pattern.Do(Sub(p, i) p.Type = If(i < node_case.Pattern.Count - 1, x, xs))
+                                        node_case.Pattern.Do(Sub(p, i) set_type(p, Function() If(i < node_case.Pattern.Count - 1, x, xs)))
                                         Coverage.Case()
                                     End If
                                 End If
@@ -662,7 +698,19 @@ Namespace Compiler
                         If TypeOf child Is VariableNode Then
 
                             Dim node_var = CType(child, VariableNode)
-                            set_type(node_var, Function() New RkByName With {.Scope = current, .Name = node_var.Name})
+                            If node_var.Type Is Nothing Then
+
+                                set_type(node_var,
+                                    Function()
+
+                                        If node_var.Scope IsNot Nothing Then
+
+                                            Dim x = node_var.Scope.Scope(node_var.Name)
+                                            If TypeOf x Is IEvaluableNode AndAlso CType(x, IEvaluableNode).Type IsNot Nothing Then Return CType(x, IEvaluableNode).Type
+                                        End If
+                                        Return New RkByName With {.Scope = current, .Name = node_var.Name}
+                                    End Function)
+                            End If
 
                         ElseIf TypeOf child Is TypeNode Then
 
@@ -675,7 +723,7 @@ Namespace Compiler
                             Dim node_let = CType(child, LetNode)
                             If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
 
-                                node_let.Var.Type = node_let.Type
+                                set_type(node_let.Var, Function() node_let.Type)
                                 If node_let.Expression IsNot Nothing Then node_let.IsInstance = node_let.Expression.IsInstance
                                 Coverage.Case()
 
@@ -691,8 +739,7 @@ Namespace Compiler
 
                                     If TypeOf node_let.Expression Is IFeedback AndAlso CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
 
-                                        node_let.Type = node_let.Expression.Type
-                                        type_fix = True
+                                        set_type(node_let, Function() node_let.Expression.Type)
                                         Coverage.Case()
                                     End If
 
@@ -700,8 +747,7 @@ Namespace Compiler
 
                                     If CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
 
-                                        node_let.Type = node_let.Expression.Type
-                                        type_fix = True
+                                        set_type(node_let, Function() node_let.Expression.Type)
                                         Coverage.Case()
                                     End If
 
@@ -723,7 +769,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
-                            Dim r = fixed_var(node_prop.Left)
+                            Dim r = fixed_var(node_prop.Left.Type)
                             If TypeOf r Is RkStruct Then
 
                                 If set_type(node_prop,
@@ -761,7 +807,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            node_declare.Name.Type = node_declare.Type.Type
+                            set_type(node_declare.Name, Function() node_declare.Type.Type)
                             Coverage.Case()
 
                         ElseIf TypeOf child Is FunctionNode Then
@@ -861,7 +907,7 @@ Namespace Compiler
                                         Dim item = list.GetType.GetProperty("Item")
                                         Dim item0 = CType(item.GetValue(list, New Object() {0}), IEvaluableNode)
                                         CType(child, IEvaluableNode).IsInstance = item0.IsInstance
-                                        Return LoadStruct(root, "Array", fixed_var(item0))
+                                        Return LoadStruct(root, "Array", fixed_var(item0.Type))
                                     End If
 
                                 End Function)

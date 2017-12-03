@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports Roku.Manager
 Imports Roku.Node
 Imports Roku.Util
 
@@ -11,32 +12,33 @@ Namespace Compiler
 
             Dim var_index = 0
 
-            Dim resolve_name As Func(Of IScopeNode, String, INode) =
-                Function(current As IScopeNode, name As String)
+            Dim resolve_name As Func(Of IScopeNode, String, IScopeNode) =
+                Function(current, name)
 
                     If current.Scope.ContainsKey(name) Then
 
                         Dim x = current.Scope(name)
                         If TypeOf x IsNot IEvaluableNode Then Return Nothing
-                        Return x
+                        Return current
                     End If
                     If current.Parent Is Nothing Then Return Nothing
                     Return resolve_name(current.Parent, name)
                 End Function
 
-            Dim resolve_var As Func(Of IScopeNode, VariableNode, INode) =
-                Function(current As IScopeNode, v As VariableNode)
+            Dim resolve_var As Func(Of IScopeNode, VariableNode, IScopeNode) =
+                Function(current, v)
 
                     Dim x = resolve_name(current, v.Name)
-                    Return If(x Is Nothing, v, If(TypeOf x Is LetNode, CType(x, LetNode).Var, x))
+                    If x Is Nothing Then Return v.Scope
+                    Return x
                 End Function
 
-            Util.Traverse.NodesReplaceOnce(
+            Util.Traverse.NodesOnce(
                 node,
                 CType(node, IScopeNode),
-                Function(parent, ref, child, current, isfirst, next_)
+                Sub(parent, ref, child, current, isfirst, next_)
 
-                    If Not isfirst Then Return child
+                    If Not isfirst Then Return
 
                     If TypeOf child Is FunctionNode Then
 
@@ -75,7 +77,10 @@ Namespace Compiler
                     ElseIf TypeOf child Is CaseArrayNode Then
 
                         Dim node_case = CType(child, CaseArrayNode)
-                        If node_case.Then IsNot Nothing Then node_case.Pattern.Do(Sub(x) node_case.Then.Scope.Add(x.Name, x))
+                        If node_case.Then IsNot Nothing Then
+
+                            node_case.Pattern.Do(Sub(x) node_case.Then.Scope.Add(x.Name, x))
+                        End If
                         next_(child, node_case.Then)
                         Coverage.Case()
 
@@ -92,6 +97,7 @@ Namespace Compiler
 
                                     node_let.Var.Name = $"##{var_index}"
                                     var_index += 1
+                                    current.Scope.Add(node_let.Var.Name, node_let.Var)
                                 End If
                             End If
                         End If
@@ -101,12 +107,6 @@ Namespace Compiler
                     ElseIf TypeOf child Is PropertyNode Then
 
                         Dim prop = CType(child, PropertyNode)
-                        If TypeOf prop.Left Is VariableNode Then
-
-                            Dim var = CType(prop.Left, VariableNode)
-                            prop.Left = CType(resolve_var(current, var), IEvaluableNode)
-                            Coverage.Case()
-                        End If
                         Dim t = prop.Right
                         prop.Right = Nothing
                         next_(child, current)
@@ -125,13 +125,11 @@ Namespace Compiler
 
                             Dim var = CType(child, VariableNode)
                             Coverage.Case()
-                            Return resolve_var(current, var)
+                            var.Scope = resolve_var(current, var)
                         End If
                         Coverage.Case()
                     End If
-
-                    Return child
-                End Function)
+                End Sub)
 
         End Sub
 

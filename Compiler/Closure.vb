@@ -1,4 +1,5 @@
-﻿Imports Roku.Node
+﻿Imports System
+Imports Roku.Node
 Imports Roku.Util
 
 
@@ -7,6 +8,8 @@ Namespace Compiler
     Public Class Closure
 
         Public Shared Sub Capture(node As ProgramNode)
+
+            Dim get_inner_scope As Func(Of IScopeNode, IScopeNode) = Function(x) If(x Is Nothing OrElse Not x.InnerScope, x, get_inner_scope(x.Parent))
 
             Util.Traverse.NodesOnce(
                 node,
@@ -19,20 +22,14 @@ Namespace Compiler
                     If TypeOf child Is VariableNode Then
 
                         Dim var = CType(child, VariableNode)
+                        Dim var_scope = get_inner_scope(var.Scope)
+                        Dim inner_scope = get_inner_scope(current)
 
-                        If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
-
-                            Do While current IsNot Nothing AndAlso var.Scope IsNot current AndAlso current.InnerScope
-
-                                current = current.Parent
-                            Loop
-                            Coverage.Case()
-                        End If
-
-                        If var.Scope IsNot Nothing AndAlso var.Scope IsNot current Then
+                        If var_scope IsNot Nothing AndAlso var_scope IsNot inner_scope Then
 
                             var.ClosureEnvironment = True
-                            Dim scope = current
+                            CType(var.Scope.Scope(var.Name), VariableNode).ClosureEnvironment = True
+                            Dim scope = inner_scope
                             Do
                                 If TypeOf scope.Owner Is FunctionNode Then
 
@@ -42,7 +39,7 @@ Namespace Compiler
                                 End If
                                 scope = scope.Parent
 
-                            Loop While var.Scope IsNot scope
+                            Loop While var_scope IsNot scope
                             Coverage.Case()
                         End If
                     End If

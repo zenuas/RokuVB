@@ -9,7 +9,7 @@ Namespace Util
 
         Public Shared Function IsInterface(p As Type, interf As Type) As Boolean
 
-            Return p.GetTypeInfo.ImplementedInterfaces.FindFirstOrNull(Function(x) x Is interf) IsNot Nothing
+            Return p Is interf OrElse p.GetTypeInfo.ImplementedInterfaces.FindFirstOrNull(Function(x) x Is interf) IsNot Nothing
         End Function
 
         Public Shared Function IsGeneric(p As Type, generic As Type) As Boolean

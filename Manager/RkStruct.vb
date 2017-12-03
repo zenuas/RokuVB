@@ -33,6 +33,8 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
+            If t Is Nothing Then Return False
+            If TypeOf t Is RkByName Then Return Me.Is(CType(t, RkByName).Type)
             If TypeOf t Is RkUnionType Then Return t.Is(Me)
 
             If Me Is t Then Return True
