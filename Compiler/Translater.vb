@@ -102,6 +102,10 @@ Namespace Compiler
                                 If var.ClosureEnvironment Then
 
                                     Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = t, .Scope = rk_func}
+
+                                ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Scope(var.Name) Is VariableNode AndAlso CType(var.Scope.Scope(var.Name), VariableNode).LocalVariable Then
+
+                                    Return New OpValue With {.Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
                                 Else
 
                                     Return New OpValue With {.Name = var.Name, .Type = t, .Scope = rk_func}

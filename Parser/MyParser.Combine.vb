@@ -41,9 +41,11 @@ Namespace Parser
 
         Public Overridable Function CreateLetNode(
                 var As VariableNode,
-                expr As IEvaluableNode
+                expr As IEvaluableNode,
+                Optional local_var As Boolean = False
             ) As LetNode
 
+            var.LocalVariable = local_var
             Dim let_ As New LetNode With {.Var = var, .Expression = expr}
             let_.AppendLineNumber(var)
             Return let_
@@ -61,9 +63,11 @@ Namespace Parser
 
         Public Overridable Function CreateLetNode(
                 var As VariableNode,
-                type As TypeNode
+                type As TypeNode,
+                Optional local_var As Boolean = False
             ) As LetNode
 
+            var.LocalVariable = local_var
             Dim let_ As New LetNode With {.Var = var, .Declare = type}
             let_.AppendLineNumber(var)
             Return let_
@@ -72,9 +76,11 @@ Namespace Parser
         Public Overridable Function CreateLetNode(
                 var As VariableNode,
                 type As TypeNode,
-                expr As IEvaluableNode
+                expr As IEvaluableNode,
+                Optional local_var As Boolean = False
             ) As LetNode
 
+            var.LocalVariable = local_var
             Dim let_ As New LetNode With {.Var = var, .Declare = type, .Expression = expr}
             let_.AppendLineNumber(var)
             Return let_

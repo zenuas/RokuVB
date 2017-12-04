@@ -90,16 +90,7 @@ Namespace Compiler
                         If node_let.Receiver Is Nothing Then
 
                             node_let.Var.Scope = current
-                            If TypeOf current IsNot StructNode Then
-
-                                current.Scope.Add(node_let.Var.Name, node_let.Var)
-                                If current.Parent IsNot Nothing AndAlso resolve_name(current.Parent, node_let.Var.Name) IsNot Nothing Then
-
-                                    node_let.Var.Name = $"##{var_index}"
-                                    var_index += 1
-                                    current.Scope.Add(node_let.Var.Name, node_let.Var)
-                                End If
-                            End If
+                            If TypeOf current IsNot StructNode Then current.Scope.Add(node_let.Var.Name, node_let.Var)
                         End If
                         next_(child, current)
                         Coverage.Case()

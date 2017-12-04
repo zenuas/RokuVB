@@ -480,12 +480,12 @@ Namespace Parser
 
                 Case -41
                     Debug.WriteLine("let : LET var EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 4, yy_value)
 
                 Case -42
                     Debug.WriteLine("let : LET var ':' type EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 6, yy_value)
 
                 Case -43

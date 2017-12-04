@@ -106,8 +106,8 @@ listn : expr             {$$ = Me.CreateListNode($1)}
 
 
 ########## let ##########
-let : LET var EQ expr          {$$ = Me.CreateLetNode($2, $4)}
-    | LET var ':' type EQ expr {$$ = Me.CreateLetNode($2, $4, $6)}
+let : LET var EQ expr          {$$ = Me.CreateLetNode($2, $4, True)}
+    | LET var ':' type EQ expr {$$ = Me.CreateLetNode($2, $4, $6, True)}
 #    | var EQ expr              {$$ = Me.CreateLetNode($1, $3)}
     | expr '.' varx EQ expr    {$$ = Me.CreateLetNode(Me.CreatePropertyNode($1, $2, $3), $5)}
 
