@@ -271,7 +271,8 @@ Namespace Compiler
                                 If TypeOf p.Item1 Is INode Then
 
                                     p.Item2.SetValue(clone, copy(CType(p.Item1, INode)))
-                                Else
+
+                                ElseIf p.Item1 IsNot Nothing Then
 
                                     Dim t = p.Item2.FieldType
                                     If t.IsArray AndAlso IsInterface(t.GetElementType, GetType(INode)) Then
@@ -292,7 +293,6 @@ Namespace Compiler
                                             arr.Add(copy(CType(base(i), INode)))
                                         Next
                                         p.Item2.SetValue(clone, arr)
-
 
                                     ElseIf IsGeneric(t, GetType(Dictionary(Of ,))) AndAlso (IsInterface(t.GenericTypeArguments(0), GetType(INode)) OrElse IsInterface(t.GenericTypeArguments(1), GetType(INode))) Then
 
@@ -322,7 +322,11 @@ Namespace Compiler
                 Function(f As IFunction)
 
                     Dim base = f.GenericBase.FunctionNode
+                    Dim bind = base.Bind
+                    base.Bind = Nothing
                     Dim clone = CType(node_deep_copy(base), FunctionNode)
+                    base.Bind = bind
+                    clone.Bind = bind
 
                     For i = 0 To clone.Arguments.Length - 1
 

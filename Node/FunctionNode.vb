@@ -19,7 +19,7 @@ Namespace Node
         Public Overridable Property [Return] As TypeNode
         Public Overridable Property Body As BlockNode
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
-        Public Overridable ReadOnly Property Bind As New Dictionary(Of IScopeNode, Boolean)
+        Public Overridable Property Bind As New Dictionary(Of IScopeNode, Boolean)
 
         Public Overridable Property [Function] As RkFunction Implements INamedFunction.Function
             Get
