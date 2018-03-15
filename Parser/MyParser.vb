@@ -967,7 +967,8 @@ Namespace Parser
         Public Overrides Sub OnError(lex As Lexer(Of INode))
 
             Debug.Fail("syntax error")
-            Throw New SyntaxErrorException(lex.LineNumber, lex.LineColumn, "syntax error")
+            Dim t = lex.PeekToken
+            Throw New SyntaxErrorException(t.LineNumber, t.LineColumn, "syntax error")
         End Sub
     End Class
 

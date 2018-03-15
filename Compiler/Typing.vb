@@ -825,7 +825,7 @@ Namespace Compiler
                             If node_call.Function Is Nothing Then
 
                                 node_call.Function = fixed_function(node_call)
-                                Debug.Assert(node_call.Function IsNot Nothing, "function is not found")
+                                If node_call.Function Is Nothing Then Throw New CompileErrorException(node_call, "function is not found")
 
                                 If TypeOf node_call.Function Is RkUnionType AndAlso CType(node_call.Function, RkUnionType).Types.Count > 1 Then
 

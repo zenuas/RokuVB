@@ -1,0 +1,3 @@
+#=2>(3, 2): function is not found
+var a: Int = 1
+a.xxx()

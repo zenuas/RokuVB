@@ -80,20 +80,7 @@ Namespace Parser
             Dim parser As New MyParser With {.Loader = Me}
             Dim lex As New MyLexer(reader) With {.Parser = parser}
 
-            Return Util.Errors.Logging(Function() CType(parser.Parse(lex), ProgramNode),
-                Sub(ex As SyntaxErrorException)
-
-                    Dim src = lex.ReadLine
-                    Console.WriteLine(ex.Message)
-                    Console.WriteLine(src)
-                    If lex.StoreToken IsNot Nothing Then
-
-                        Dim store = CType(lex.StoreToken, Token)
-                        Dim indent = src.Substring(0, Math.Max(store.LineColumn - 1, 0)).FoldLeft(Function(acc, c) If(c = Convert.ToChar(9), ((acc + 1) \ 8 + If((acc + 1) Mod 8 > 0, 1, 0)) * 8, acc + 1), 0)
-                        Console.Write("".PadLeft(indent))
-                        Console.WriteLine("".PadLeft(If(store.Name Is Nothing, 1, store.Name.Length), "~"c))
-                    End If
-                End Sub)
+            Return CType(parser.Parse(lex), ProgramNode)
         End Function
 
         Public Overridable Function AddNode(ns As String, node As Func(Of ProgramNode)) As ProgramNode

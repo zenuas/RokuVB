@@ -98,11 +98,15 @@ READ_CONTINUE_:
             If Me.EndOfStream() Then Return Me.CreateEndOfToken
 
             ' lex char
+            Dim lineno = 0
+            Dim column = 0
             Dim indent = 0
             Dim c = Me.NextChar
             Do While Char.IsWhiteSpace(c)
 
                 indent += 1
+                lineno = Me.LineNumber
+                column = Me.LineColumn
                 Me.ReadChar()
                 If c = Convert.ToChar(13) Then
 
@@ -113,9 +117,9 @@ READ_CONTINUE_:
                 End If
                 If c = Convert.ToChar(10) OrElse c = Convert.ToChar(13) Then
 
-                    Return Me.CreateEndOfLine(Me.LineNumber, Me.LineColumn)
+                    Return Me.CreateEndOfLine(lineno, column)
                 End If
-                If Me.EndOfStream() Then Return Me.CreateEndOfToken(Me.LineNumber, Me.LineColumn)
+                If Me.EndOfStream() Then Return Me.CreateEndOfToken(lineno, column)
                 c = Me.NextChar
             Loop
             If c = "#"c Then
@@ -124,8 +128,8 @@ READ_CONTINUE_:
                 Me.ReadLineComment()
                 Return eol
             End If
-            Dim lineno = Me.LineNumber
-            Dim column = Me.LineColumn
+            lineno = Me.LineNumber
+            column = Me.LineColumn
 
             Dim x = CType(Me.ReaderToken(), Token)
             x.Indent = indent

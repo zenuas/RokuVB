@@ -28,9 +28,10 @@ exit /B 0
 	set RKOUT=obj\%RK:.rk=.exe%
 	
 	if not exist %RKOUT%.testlib. (
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#=^^^>(.*)$/$1/ %RK% > %RKOUT%.testout "
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#^^^<=(.*)$/$1/ %RK% > %RKOUT%.testin "
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*##\*(.*)$/$1/   %RK% > %RKOUT%.testargs "
+		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#=^^^>(.*)$/$1/  %RK% > %RKOUT%.testout "
+		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#=2^^^>(.*)$/$1/ %RK% > %RKOUT%.testerr "
+		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#^^^<=(.*)$/$1/  %RK% > %RKOUT%.testin "
+		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*##\*(.*)$/$1/    %RK% > %RKOUT%.testargs "
 	)
 	
 	exit /B 0
@@ -53,6 +54,6 @@ exit /B 0
 	)
 	
 	echo %BIN% %RK% -o %RKOUT% %LIB%
-	start /B %BIN% %RK% -o %RKOUT% %LIB%
+	start /B %BIN% %RK% -o %RKOUT% %LIB% 2>%RKOUT%.stderr
 	exit /B 0
 

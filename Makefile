@@ -45,17 +45,19 @@ test: clean $(OUT)
 tests: $(OUT) $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe
-	-@if exist $<. $< $(shell cmd /d /c type $<.testargs) < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff) || echo failed!
+	-@if exist $<. $< $(shell cmd /d /c type $<.testargs) < $<.testin > $<.stdout && (fc $<.testout $<.stdout >nul || type $<.diff) || echo failed!
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
 	-@del /F $@ 2>NUL
-	-@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) $(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $< | build-tools\xargs -Q echo.)
+	-@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) $(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $< | build-tools\xargs -Q echo.) 2> $(subst tests\,,$@).stderr
 	-@if exist $@. ildasm $@ /out:$@.il /nobar
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/"   $< > $@.testout
+	@build-tools\sed -p "s/^\s*\#=2>(.*)$/$1/"  $< > $@.testerr
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/"   $< > $@.testin
 	@build-tools\sed -p "s/^\s*\#\#\*(.*)$/$1/" $< | build-tools\xargs -Q echo > $@.testargs
 	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $< | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
+	@fc $@.testerr $@.stderr >nul || type $@.stderr
 
 $(RKSRCS):
 	@echo $@
