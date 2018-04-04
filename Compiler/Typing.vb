@@ -138,7 +138,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is NullNode Then
 
                         Dim node_null = CType(child, NullNode)
-                        node_null.Type = New RkUnionType
+                        node_null.Type = LoadStruct(root, "Null")
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeFunctionNode Then

@@ -115,6 +115,7 @@ Namespace Architecture
                     v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
             Next
+            map.Add(CType(root.FindCurrentStruct("Null").First, RkStruct), New TypeData With {.Type = GetType(Object)})
 
             Return map
         End Function

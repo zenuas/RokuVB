@@ -111,6 +111,10 @@ Namespace Manager
             type.Return = type_t
             Me.AddFunction(type)
 
+            ' struct Null
+            Dim null As New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
+            Me.AddStruct(null, "Null")
+
         End Sub
 
         Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)
