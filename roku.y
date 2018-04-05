@@ -18,7 +18,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<FunctionNode>   sub
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       type typex atvar union
+%type<TypeNode>       type typev typex atvar union
 %type<TypeListNode>   types typen atvarn unionn typeor
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
@@ -144,14 +144,14 @@ args   : void           {$$ = Me.CreateListNode(Of DeclareNode)}
 argn   : decla          {$$ = Me.CreateListNode($1)}
        | argn ',' decla {$1.List.Add($3) : $$ = $1}
 decla  : var ':' type   {$$ = New DeclareNode($1, $3)}
-type   : var            {$$ = New TypeNode($1)}
-       | var '?'        {$$ = New TypeNode($1) With {.Nullable = True}}
-       | '[' type ']'   {$$ = New TypeArrayNode($2)}
-       | '[' typeor ']' {$$ = New UnionNode($2)}
-       | atvar
-       | atvar '?'      {$$ = $1 : $1.Nullable = True}
+type   : typev
+       | typev '?'                {$$ = $1 : $1.Nullable = True}
        | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
        | '{' types '}' ARROW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
+typev  : var            {$$ = New TypeNode($1)}
+       | '[' type ']'   {$$ = New TypeArrayNode($2)}
+       | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
+       | atvar
 typex  : void
        | type
 types  : void           {$$ = Me.CreateListNode(Of TypeNode)}
