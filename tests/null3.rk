@@ -1,0 +1,23 @@
+struct Foo
+	var a = 1
+
+struct Bar
+	var b = 2
+
+sub f(x: [Foo | Bar]?)
+	switch x
+		f: Foo  => print(f.a)
+		b: Bar  => print(b.b)
+		n: Null => print("null")
+
+#=>null
+var x = null
+f(x)
+
+#=>1
+var y = Foo()
+f(y)
+
+#=>2
+var z = Bar()
+f(z)

@@ -66,7 +66,7 @@ Namespace Compiler
                         Dim node_union = CType(child, UnionNode)
                         Dim rk_union = New RkUnionType With {.UnionName = node_union.Name, .Static = True}
                         node_union.Type = rk_union
-                        current.AddStruct(rk_union)
+                        If Not String.IsNullOrEmpty(node_union.Name) Then current.AddStruct(rk_union)
 
                     ElseIf TypeOf child Is ProgramNode Then
 

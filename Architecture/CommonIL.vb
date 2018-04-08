@@ -15,12 +15,14 @@ Namespace Architecture
     Public Class CommonIL
 
         Public Overridable Property [Module] As ModuleBuilder
+        Public Overridable Property NullType As RkStruct
 
         Public Overridable Sub Assemble(ns As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
 
             Dim name As New AssemblyName(entrypoint.Name)
             Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
             Me.Module = asm.DefineDynamicModule(entrypoint.Name, System.IO.Path.GetRandomFileName, True)
+            Me.NullType = CType(ns.FindCurrentStruct("Null").First, RkStruct)
 
             Dim structs = Me.DeclareStructs(ns)
             Dim functions = Me.DeclareMethods(ns, structs)
@@ -115,7 +117,7 @@ Namespace Architecture
                     v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
             Next
-            map.Add(CType(root.FindCurrentStruct("Null").First, RkStruct), New TypeData With {.Type = GetType(Object)})
+            map.Add(Me.NullType, New TypeData With {.Type = GetType(Object)})
 
             Return map
         End Function
@@ -694,9 +696,16 @@ CLASS_CAST_:
 
                             il.Emit(OpCodes.Box, t)
                         End If
-                        il.Emit(OpCodes.Isinst, t)
-                        il.Emit(OpCodes.Ldnull)
-                        il.Emit(OpCodes.Cgt_Un)
+                        If cancast.Right.Type Is Me.NullType Then
+
+                            il.Emit(OpCodes.Ldnull)
+                            il.Emit(OpCodes.Ceq)
+                        Else
+
+                            il.Emit(OpCodes.Isinst, t)
+                            il.Emit(OpCodes.Ldnull)
+                            il.Emit(OpCodes.Cgt_Un)
+                        End If
                         gen_il_store(il, cancast.Return)
 
                     Case Else
