@@ -55,7 +55,7 @@ $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/"   $< > $@.testout
 	@build-tools\sed -p "s/^\s*\#=2>(.*)$/$1/"  $< > $@.testerr
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/"   $< > $@.testin
-	@build-tools\sed -p "s/^\s*\#\#\*(.*)$/$1/" $< | build-tools\xargs -Q echo > $@.testargs
+	@build-tools\sed -p "s/^\s*\#\#\*(.*)$/$1/" $< | build-tools\xargs -Q echo. > $@.testargs
 	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $< | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
 	@fc $@.testerr $@.stderr >nul || type $@.stderr
 
