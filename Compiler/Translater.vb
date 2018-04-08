@@ -355,14 +355,13 @@ Namespace Compiler
                                             .Left = to_value(switch.Expression),
                                             .Right = to_value(case_cast.Declare)
                                         })
-                                    Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
+                                    body.Add(New InIf With {.Condition = eq_r, .Else = next_})
                                     body.Add(New InCode With {
                                             .Operator = InOperator.Cast,
                                             .Return = New OpValue With {.Name = case_cast.Var.Name, .Type = case_cast.Declare.Type, .Scope = rk_func},
                                             .Left = to_value(switch.Expression),
                                             .Right = to_value(case_cast.Declare)
                                         })
-                                    body.Add(if_)
                                     If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                                     body.Add(New InGoto With {.Label = last_label})
 
