@@ -560,12 +560,14 @@ Namespace Architecture
                         Else
 
                             Dim cc = CType(stmt, InCall)
+                            Dim env = 0
                             cc.Function.Arguments.Do(
                                 Sub(x)
 
                                     If TypeOf x.Value Is RkStruct AndAlso CType(x.Value, RkStruct).ClosureEnvironment Then
 
                                         gen_il_load(il, New OpValue With {.Name = x.Name, .Type = x.Value}, False)
+                                        env += 1
                                     End If
                                 End Sub)
                             cc.Arguments.Do(
@@ -585,6 +587,15 @@ Namespace Architecture
                                         End If
                                     End If
                                     gen_il_load(il, arg, ref)
+                                    If Not ref Then
+
+                                        Dim ai = cc.Function.Arguments(env + i).Value
+                                        If Me.RkToCILType(arg.Type, structs).Type.IsValueType AndAlso
+                                            Not Me.RkToCILType(ai, structs).Type.IsValueType Then
+
+                                            il.Emit(OpCodes.Box, Me.RkToCILType(arg.Type, structs).Type)
+                                        End If
+                                    End If
                                 End Sub)
                             If TypeOf cc.Function Is RkCILConstructor Then
 
@@ -673,15 +684,21 @@ ARRAY_CREATE_:
                         If TypeOf cast.Right.Type Is RkCILStruct Then
 
                             Dim ct = CType(cast.Right.Type, RkCILStruct)
-                            Select Case True
-                                Case ct.TypeInfo Is GetType(Int32) : il.Emit(OpCodes.Conv_I4)
-                                Case ct.TypeInfo Is GetType(Int64) : il.Emit(OpCodes.Conv_I8)
-                                Case ct.TypeInfo Is GetType(Int16) : il.Emit(OpCodes.Conv_I2)
-                                Case ct.TypeInfo Is GetType(Byte) : il.Emit(OpCodes.Conv_U1)
+                            If Me.RkToCILType(cast.Left.Type, structs).Type.IsValueType Then
 
-                                Case Else
-                                    GoTo CLASS_CAST_
-                            End Select
+                                Select Case True
+                                    Case ct.TypeInfo Is GetType(Int32) : il.Emit(OpCodes.Conv_I4)
+                                    Case ct.TypeInfo Is GetType(Int64) : il.Emit(OpCodes.Conv_I8)
+                                    Case ct.TypeInfo Is GetType(Int16) : il.Emit(OpCodes.Conv_I2)
+                                    Case ct.TypeInfo Is GetType(Byte) : il.Emit(OpCodes.Conv_U1)
+
+                                    Case Else
+                                        GoTo CLASS_CAST_
+                                End Select
+                            Else
+
+                                il.Emit(OpCodes.Unbox_Any, ct.TypeInfo)
+                            End If
                         Else
 CLASS_CAST_:
                             il.Emit(OpCodes.Isinst, Me.RkToCILType(cast.Right.Type, structs).Type)

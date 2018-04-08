@@ -12,7 +12,6 @@ Namespace Manager
         Implements IFunction, IStruct
 
         Public Overridable Property UnionName As String = Nothing
-        Public Overridable Property [Static] As Boolean = False
         Public Overridable Property Types As List(Of IType)
         Public Overridable Property ReturnCache As RkUnionType
 
@@ -120,6 +119,31 @@ Namespace Manager
             End Get
         End Property
 
+        Public Overridable Sub Add(type As IType)
+
+            If TypeOf type Is RkUnionType Then
+
+                Me.Add(CType(type, RkUnionType).Types)
+            Else
+
+                Me.Add({type})
+            End If
+        End Sub
+
+        Public Overridable Sub Add(types As IEnumerable(Of IType))
+
+            If types Is Nothing Then Return
+
+            Me.ReturnCache = Nothing
+            If Me.Types Is Nothing Then
+
+                Me.Types = types.ToList
+            Else
+
+                Me.Types.AddRange(types.Where(Function(x) Me.Types.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing))
+            End If
+        End Sub
+
         Public Overridable Function Merge(type As IType) As Boolean
 
             If TypeOf type Is RkUnionType Then
@@ -142,8 +166,6 @@ Namespace Manager
                 Return True
 
             ElseIf Me.Types.Count > 0 Then
-
-                If Me.Static Then Return False
 
                 Dim before = Me.Types.Count
                 Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList

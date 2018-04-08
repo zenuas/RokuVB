@@ -15,6 +15,20 @@ Namespace Compiler
 
     Public Class Typing
 
+        Private Shared Property NumericTypes_ As IType() = Nothing
+        Public Shared Function NumericTypes(root As SystemLibrary) As IType()
+
+            If NumericTypes_ Is Nothing Then
+
+                NumericTypes_ = {
+                    LoadStruct(root, "Int32"),
+                    LoadStruct(root, "Int64"),
+                    LoadStruct(root, "Int16"),
+                    LoadStruct(root, "Byte")}
+            End If
+            Return NumericTypes_
+        End Function
+
         Public Shared Sub Prototype(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
@@ -64,7 +78,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node_union = CType(child, UnionNode)
-                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name, .Static = True}
+                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name}
                         node_union.Type = rk_union
                         If Not String.IsNullOrEmpty(node_union.Name) Then current.AddStruct(rk_union)
 
@@ -122,11 +136,7 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node_num = CType(child, NumericNode)
-                        node_num.Type = New RkUnionType({
-                            LoadStruct(root, "Int32"),
-                            LoadStruct(root, "Int64"),
-                            LoadStruct(root, "Int16"),
-                            LoadStruct(root, "Byte")})
+                        node_num.Type = New RkUnionType(NumericTypes(root))
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
@@ -720,6 +730,15 @@ Namespace Compiler
 
                             Dim node_type = CType(child, TypeNode)
                             If node_type.IsGeneric Then set_type(node_type, Function() get_generic(node_type.Name, current))
+                            If node_type.Nullable AndAlso Not node_type.NullAdded Then
+
+                                Dim t = node_type.Type
+                                If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
+                                CType(t, RkUnionType).Add(LoadStruct(root, "Null"))
+                                node_type.Type = t
+                                node_type.NullAdded = True
+                                type_fix = True
+                            End If
                             Coverage.Case()
 
                         ElseIf TypeOf child Is LetNode Then
@@ -811,7 +830,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is DeclareNode Then
 
                             Dim node_declare = CType(child, DeclareNode)
-                            set_type(node_declare.Name, Function() node_declare.Type.Type)
+                            node_declare.Name.Type = node_declare.Type.Type
                             Coverage.Case()
 
                         ElseIf TypeOf child Is FunctionNode Then
@@ -934,13 +953,8 @@ Namespace Compiler
                         'ToDo: priority check
                         Coverage.Case()
                         Dim union = CType(t, RkUnionType)
-                        If union.Static Then
-
-                            t = root.LoadType(GetType(Object).GetTypeInfo)
-                        Else
-                            If union.Types.Count > 1 Then union.Types.RemoveRange(1, union.Types.Count - 1)
-                            t = var_normalize(union.Types(0))
-                        End If
+                        Dim not_num = union.Types.FindFirstOrNull(Function(x) NumericTypes(root).FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
+                        t = var_normalize(If(not_num, union.Types(0)))
 
                     ElseIf TypeOf t Is RkFunction Then
 

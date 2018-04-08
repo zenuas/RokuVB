@@ -1,0 +1,15 @@
+struct Hoge
+	var a = 1
+
+sub f(x: [Int | Hoge])
+	switch x
+		n: Int  => print(n)
+		h: Hoge => print(h.a)
+
+#=>1
+var y = Hoge()
+f(y)
+
+#=>10
+var z = 10
+f(z)
