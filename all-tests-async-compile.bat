@@ -1,15 +1,12 @@
 @prompt $$$S
 @echo off
 
-cd tests
+mkdir tests\obj 2>NUL
 
-mkdir obj 2>NUL
-
-for %%f in (*.rk) do (
+for %%f in (tests\*.rk) do (
 	call :TESTFILE %%f
 )
 
-cd ..
 call .\make.bat
 cd tests
 
@@ -25,13 +22,14 @@ exit /B 0
 
 :TESTFILE
 	set RK=%1
-	set RKOUT=obj\%RK:.rk=.exe%
+	set RKOUT=tests\obj\%~n1.exe
 	
 	if not exist %RKOUT%.testlib. (
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#=^^^>(.*)$/$1/  %RK% > %RKOUT%.testout "
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#=2^^^>(.*)$/$1/ %RK% > %RKOUT%.testerr "
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*#^^^<=(.*)$/$1/  %RK% > %RKOUT%.testin "
-		start /B cmd /d /c "..\build-tools\sed.bat -p s/^^^^\s*##\*(.*)$/$1/    %RK% > %RKOUT%.testargs "
+		start /B cmd /d /c ".\build-tools\sed.bat -p s/^^^^\s*#=^^^>(.*)$/$1/  %RK% > %RKOUT%.testout "
+		start /B cmd /d /c ".\build-tools\sed.bat -p s/^^^^\s*#=2^^^>(.*)$/$1/ %RK% > %RKOUT%.testerr "
+		start /B cmd /d /c ".\build-tools\sed.bat -p s/^^^^\s*#^^^<=(.*)$/$1/  %RK% > %RKOUT%.testin "
+		start /B cmd /d /c ".\build-tools\sed.bat -p s/^^^^\s*##\*(.*)$/$1/    %RK% > %RKOUT%.testargs "
+		start /B cmd /d /c ".\build-tools\sed.bat -p s/^^^^\s*##\?(.*)$/$1/    %RK% | .\build-tools\xargs.bat -n 1 cmd /d /c "
 	)
 	
 	exit /B 0
