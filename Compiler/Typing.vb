@@ -15,20 +15,6 @@ Namespace Compiler
 
     Public Class Typing
 
-        Private Shared Property NumericTypes_ As IType() = Nothing
-        Public Shared Function NumericTypes(root As SystemLibrary) As IType()
-
-            If NumericTypes_ Is Nothing Then
-
-                NumericTypes_ = {
-                    LoadStruct(root, "Int32"),
-                    LoadStruct(root, "Int64"),
-                    LoadStruct(root, "Int16"),
-                    LoadStruct(root, "Byte")}
-            End If
-            Return NumericTypes_
-        End Function
-
         Public Shared Sub Prototype(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
@@ -136,7 +122,7 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node_num = CType(child, NumericNode)
-                        node_num.Type = New RkUnionType(NumericTypes(root))
+                        node_num.Type = New RkUnionType(root.NumericTypes)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
@@ -148,7 +134,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is NullNode Then
 
                         Dim node_null = CType(child, NullNode)
-                        node_null.Type = LoadStruct(root, "Null")
+                        node_null.Type = root.NullType
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeFunctionNode Then
@@ -734,7 +720,7 @@ Namespace Compiler
 
                                 Dim t = node_type.Type
                                 If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
-                                CType(t, RkUnionType).Add(LoadStruct(root, "Null"))
+                                CType(t, RkUnionType).Add(root.NullType)
                                 node_type.Type = t
                                 node_type.NullAdded = True
                                 type_fix = True
@@ -953,7 +939,7 @@ Namespace Compiler
                         'ToDo: priority check
                         Coverage.Case()
                         Dim union = CType(t, RkUnionType)
-                        Dim not_num = union.Types.FindFirstOrNull(Function(x) NumericTypes(root).FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
+                        Dim not_num = union.Types.FindFirstOrNull(Function(x) root.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
                         t = var_normalize(If(not_num, union.Types(0)))
 
                     ElseIf TypeOf t Is RkFunction Then

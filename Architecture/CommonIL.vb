@@ -15,18 +15,16 @@ Namespace Architecture
     Public Class CommonIL
 
         Public Overridable Property [Module] As ModuleBuilder
-        Public Overridable Property NullType As RkStruct
 
-        Public Overridable Sub Assemble(ns As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
+        Public Overridable Sub Assemble(root As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
 
             Dim name As New AssemblyName(entrypoint.Name)
             Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
             Me.Module = asm.DefineDynamicModule(entrypoint.Name, System.IO.Path.GetRandomFileName, True)
-            Me.NullType = CType(ns.FindCurrentStruct("Null").First, RkStruct)
 
-            Dim structs = Me.DeclareStructs(ns)
-            Dim functions = Me.DeclareMethods(ns, structs)
-            Me.DeclareStatements(functions, structs)
+            Dim structs = Me.DeclareStructs(root)
+            Dim functions = Me.DeclareMethods(root, structs)
+            Me.DeclareStatements(root, functions, structs)
             structs.Do(Sub(x) If TypeOf x.Value.Type Is TypeBuilder Then CType(x.Value.Type, TypeBuilder).CreateType())
             Me.Binders.Do(Sub(x) CType(x.Value.Type, TypeBuilder).CreateType())
 
@@ -117,7 +115,7 @@ Namespace Architecture
                     v.Value.Fields(x.Key) = builder.DefineField(x.Key, Me.RkToCILType(x.Value, map).Type, FieldAttributes.Public)
                 Next
             Next
-            map.Add(Me.NullType, New TypeData With {.Type = GetType(Object)})
+            map.Add(root.NullType, New TypeData With {.Type = GetType(Object)})
 
             Return map
         End Function
@@ -215,7 +213,7 @@ Namespace Architecture
             Return Me.Binders(f)
         End Function
 
-        Public Overridable Sub DeclareStatements(functions As Dictionary(Of IFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
+        Public Overridable Sub DeclareStatements(root As SystemLibrary, functions As Dictionary(Of IFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData))
 
             Dim gen_il_loadc =
                 Sub(il As ILGenerator, v As OpValue)
@@ -336,6 +334,7 @@ Namespace Architecture
 
                 Dim get_local = gen_local_store(f.Key.Arguments)
                 Me.DeclareStatement(
+                    root,
                     CType(f.Value, MethodBuilder).GetILGenerator,
                     Sub(il, v, ref)
 
@@ -400,6 +399,7 @@ Namespace Architecture
 
                 Dim get_local = gen_local_store(New List(Of NamedValue))
                 Me.DeclareStatement(
+                    root,
                     CType(s.Value.Constructor, ConstructorBuilder).GetILGenerator,
                     Sub(il, v, ref)
 
@@ -440,6 +440,7 @@ Namespace Architecture
         End Sub
 
         Public Overridable Sub DeclareStatement(
+                root As SystemLibrary,
                 il As ILGenerator,
                 gen_il_load As Action(Of ILGenerator, OpValue, Boolean),
                 gen_il_store As Action(Of ILGenerator, OpValue),
@@ -713,7 +714,7 @@ CLASS_CAST_:
 
                             il.Emit(OpCodes.Box, t)
                         End If
-                        If cancast.Right.Type Is Me.NullType Then
+                        If cancast.Right.Type Is root.NullType Then
 
                             il.Emit(OpCodes.Ldnull)
                             il.Emit(OpCodes.Ceq)

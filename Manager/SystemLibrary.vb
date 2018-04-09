@@ -111,11 +111,34 @@ Namespace Manager
             type.Return = type_t
             Me.AddFunction(type)
 
-            ' struct Null
-            Dim null As New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
-            Me.AddStruct(null, "Null")
-
         End Sub
+
+        Private Property NullType_ As RkStruct = Nothing
+        Public Overridable Function NullType() As RkStruct
+
+            ' struct Null
+            If Me.NullType_ Is Nothing Then
+
+                Me.NullType_ = New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
+                Me.AddStruct(Me.NullType_, "Null")
+            End If
+            Return Me.NullType_
+        End Function
+
+        Private Property NumericTypes_ As IType() = Nothing
+        Public Overridable Function NumericTypes() As IType()
+
+            ' [Int32 | Int64 | Int16 | Byte]
+            If NumericTypes_ Is Nothing Then
+
+                NumericTypes_ = {
+                    LoadStruct(Me, "Int32"),
+                    LoadStruct(Me, "Int64"),
+                    LoadStruct(Me, "Int16"),
+                    LoadStruct(Me, "Byte")}
+            End If
+            Return NumericTypes_
+        End Function
 
         Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)
 
