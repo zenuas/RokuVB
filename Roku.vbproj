@@ -74,9 +74,11 @@
   <ItemGroup>
     <Compile Include="Compiler\CompileErrorException.vb" />
     <Compile Include="Manager\IApply.vb" />
+    <Compile Include="Manager\IClosure.vb" />
     <Compile Include="Manager\IFunction.vb" />
     <Compile Include="Manager\IScope.vb" />
     <Compile Include="Manager\IStruct.vb" />
+    <Compile Include="Manager\RkScope.vb" />
     <Compile Include="Manager\RkUnionType.vb" />
     <Compile Include="Node\CaseCastNode.vb" />
     <Compile Include="Node\CaseArrayNode.vb" />

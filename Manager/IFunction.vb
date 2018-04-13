@@ -7,7 +7,7 @@ Imports Roku.IntermediateCode
 Namespace Manager
 
     Public Interface IFunction
-        Inherits IType, IApply
+        Inherits IType, IApply, IClosure
 
         ReadOnly Property Arguments As List(Of NamedValue)
         Property [Return] As IType
@@ -15,7 +15,6 @@ Namespace Manager
         ReadOnly Property Generics As List(Of RkGenericEntry)
         Property GenericBase As RkFunction
         Property FunctionNode As FunctionNode
-        Property Closure As RkStruct
         ReadOnly Property IsAnonymous As Boolean
         Function ArgumentsToApply(ParamArray args() As IType) As IType()
         Function ApplyFunction(ParamArray args() As IType) As IFunction

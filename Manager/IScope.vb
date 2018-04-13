@@ -4,6 +4,7 @@
 Namespace Manager
 
     Public Interface IScope
+        Inherits IClosure
 
         ReadOnly Property Name As String
         Property Parent As IScope
