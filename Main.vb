@@ -158,6 +158,7 @@ align = left,
 
                 If TypeOf parent Is RootNode Then
 
+                    If ref.Equals("`Sys") Then Return
                     out.WriteLine($"subgraph cluster_root_{child.GetHashCode} {{")
                     out.WriteLine("  style=solid;")
                     out.WriteLine("  color=black;")
