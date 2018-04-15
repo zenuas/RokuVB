@@ -16,7 +16,6 @@ Namespace Compiler
                 CType(node, IScopeNode),
                 Sub(parent, ref, child, current, isfirst, next_)
 
-                    If TypeOf child Is FunctionNode Then current = CType(child, FunctionNode).Body
                     If TypeOf child Is IScopeNode Then current = CType(child, IScopeNode)
 
                     If TypeOf child Is VariableNode Then
@@ -28,7 +27,7 @@ Namespace Compiler
                         If var_scope IsNot Nothing AndAlso var_scope IsNot inner_scope Then
 
                             var.ClosureEnvironment = True
-                            CType(var.Scope.Scope(var.Name), VariableNode).ClosureEnvironment = True
+                            CType(var.Scope.Lets(var.Name), VariableNode).ClosureEnvironment = True
                             Dim scope = inner_scope
                             Do
                                 If TypeOf scope.Owner Is FunctionNode Then

@@ -26,7 +26,7 @@ Namespace Compiler
                             Function(e As IEvaluableNode)
 
                                 Dim var As New VariableNode($"${user.VarIndex}") With {.Scope = block}
-                                block.Scope.Add(var.Name, var)
+                                block.Lets.Add(var.Name, var)
                                 var.AppendLineNumber(e)
                                 user.VarIndex += 1
 
@@ -154,7 +154,7 @@ Namespace Compiler
                         Loop
                     End If
 
-                    next_(child, If(TypeOf child Is IHaveScopeType, New With {.VarIndex = 0}, user))
+                    next_(child, user)
                 End Sub)
         End Sub
 

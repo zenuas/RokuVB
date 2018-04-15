@@ -248,30 +248,32 @@ Namespace Parser
         End Function
 
         Public Overridable Function CreateFunctionNode(
+                f As FunctionNode,
                 name As VariableNode,
                 args() As DeclareNode,
-                ret As TypeNode,
-                body As BlockNode
+                ret As TypeNode
             ) As FunctionNode
 
-            Dim f As New FunctionNode(name.Name) With {.Arguments = args, .Return = ret, .Body = body}
-            body.InnerScope = False
-            body.Owner = f
-            f.AppendLineNumber(name)
+            f.Name = name.Name
+            f.Arguments = args
+            f.Return = ret
+            f.InnerScope = False
+            f.Owner = f
             Return f
         End Function
 
         Public Overridable Function CreateFunctionNode(
+                f As FunctionNode,
                 args() As DeclareNode,
-                ret As TypeNode,
-                body As BlockNode
+                ret As TypeNode
             ) As FunctionNode
 
             args.Do(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
-            Dim f As New FunctionNode($"#{body.LineNumber},{body.LineColumn}") With {.Arguments = args, .Return = ret, .Body = body}
-            body.InnerScope = False
-            body.Owner = f
-            f.AppendLineNumber(body)
+            f.Name = $"#{f.LineNumber},{f.LineColumn}"
+            f.Arguments = args
+            f.Return = ret
+            f.InnerScope = False
+            f.Owner = f
             Return f
         End Function
 
@@ -289,19 +291,29 @@ Namespace Parser
         End Function
 
         Public Overridable Function CreateLambdaFunction(
+                f As FunctionNode,
                 args() As DeclareNode,
-                ret As TypeNode,
-                block As BlockNode
+                ret As TypeNode
             ) As VariableNode
 
-            Dim f = Me.CreateFunctionNode(args, ret, block)
+            f = Me.CreateFunctionNode(f, args, ret)
             Dim v = New VariableNode(f.Name)
-            v.AppendLineNumber(block)
-            Me.CurrentScope.Scope.Add(f.Name, f)
+            v.AppendLineNumber(f)
+            Me.CurrentScope.Lets.Add(f.Name, f)
             Return v
         End Function
 
-        Public Overridable Function ToLambdaExpression(expr As IEvaluableNode) As BlockNode
+        Public Overridable Function ToLambdaExpression(expr As IEvaluableNode) As FunctionNode
+
+            Dim f = New FunctionNode(expr.LineNumber.Value)
+            Dim lambda = New LambdaExpressionNode With {.Expression = expr}
+            lambda.AppendLineNumber(expr)
+            f.Statements.Add(lambda)
+            f.Parent = Me.CurrentScope
+            Return f
+        End Function
+
+        Public Overridable Function ToLambdaExpressionBlock(expr As IEvaluableNode) As BlockNode
 
             Dim block = New BlockNode(expr.LineNumber.Value)
             Dim lambda = New LambdaExpressionNode With {.Expression = expr}

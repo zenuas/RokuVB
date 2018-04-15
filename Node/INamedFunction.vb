@@ -7,7 +7,7 @@ Namespace Node
         Inherits INode
 
         Property Name As String
-        Property [Function] As RkFunction
+        Property Scope As RkScope
 
     End Interface
 

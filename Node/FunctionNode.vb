@@ -5,29 +5,37 @@ Imports Roku.Manager
 Namespace Node
 
     Public Class FunctionNode
-        Inherits BaseNode
-        Implements IHaveScopeType, INamedFunction
+        Inherits BlockNode
+        Implements IHaveScopeType
 
 
-        Public Sub New(name As String)
+        Public Sub New(linenum As Integer)
+            MyBase.New(linenum)
 
-            Me.Name = name
         End Sub
 
-        Public Overridable Property Name As String = "" Implements INamedFunction.Name
         Public Overridable Property Arguments As DeclareNode()
         Public Overridable Property [Return] As TypeNode
-        Public Overridable Property Body As BlockNode
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable Property Bind As New Dictionary(Of IScopeNode, Boolean)
 
-        Public Overridable Property [Function] As RkFunction Implements INamedFunction.Function
+        Public Overridable Property [Function] As RkFunction
             Get
                 Return CType(Me.Type, RkFunction)
             End Get
             Set(value As RkFunction)
 
                 Me.Type = value
+            End Set
+        End Property
+
+        Public Overrides Property Scope As RkScope
+            Get
+                Return Me.Function
+            End Get
+            Set(value As RkScope)
+
+                Me.Function = CType(value, RkFunction)
             End Set
         End Property
     End Class

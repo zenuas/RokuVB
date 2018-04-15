@@ -111,19 +111,12 @@ Namespace Manager
             type.Return = type_t
             Me.AddFunction(type)
 
+            ' struct Null
+            Me.NullType = New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
+            Me.AddStruct(Me.NullType, "Null")
         End Sub
 
-        Private Property NullType_ As RkStruct = Nothing
-        Public Overridable Function NullType() As RkStruct
-
-            ' struct Null
-            If Me.NullType_ Is Nothing Then
-
-                Me.NullType_ = New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
-                Me.AddStruct(Me.NullType_, "Null")
-            End If
-            Return Me.NullType_
-        End Function
+        Public Overridable Property NullType() As RkStruct
 
         Private Property NumericTypes_ As IType() = Nothing
         Public Overridable Function NumericTypes() As IType()
@@ -392,13 +385,14 @@ Namespace Manager
             End If
         End Function
 
-        Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
+        Public Shared Function FindLoadFunction(scope As IScope, name As String) As IEnumerable(Of IFunction)
 
-            For Each f In FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+            Return FindLoadFunction(scope, name, Function(x) True)
+        End Function
 
-                Yield f
-            Next
+        Public Shared Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
+            Return FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
         End Function
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)

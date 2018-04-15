@@ -231,6 +231,12 @@ Namespace Parser
         ''' <summary>sub</summary>
         sub_1
 
+        ''' <summary>sub_begin</summary>
+        sub_begin
+
+        ''' <summary>sub_block</summary>
+        sub_block
+
         ''' <summary>switch</summary>
         switch_1
 
