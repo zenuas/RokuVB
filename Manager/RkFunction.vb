@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Diagnostics
+Imports System.Reflection
 Imports Roku.Node
 Imports Roku.Operator
 Imports Roku.IntermediateCode
@@ -107,6 +108,22 @@ Namespace Manager
 
         Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
 
+            Dim fixed_byname As Func(Of IType, IType) =
+                Function(t)
+
+                    If TypeOf t Is RkByNameWithReceiver Then
+
+                        Return fixed_byname(CType(t, RkByNameWithReceiver).Type)
+
+                    ElseIf TypeOf t Is RkByName Then
+
+                        Return fixed_byname(CType(t, RkByName).Type)
+                    Else
+
+                        Return t
+                    End If
+                End Function
+
             Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
                 Sub(arg, p, gen_to_type)
 
@@ -139,6 +156,27 @@ Namespace Manager
                                     Throw New Exception("unknown apply")
                                 End If
                                 generic_match(x, v, gen_to_type)
+                            End Sub)
+
+                    ElseIf arg.HasGeneric Then
+
+                        Dim struct = CType(arg, RkStruct)
+                        Dim t = fixed_byname(p)
+                        If TypeOf struct Is RkCILStruct AndAlso TypeOf t Is RkCILStruct Then
+
+                            Dim cs = CType(struct, RkCILStruct)
+                            Dim ts = CType(t, RkCILStruct)
+                            If cs.TypeInfo = GetType(List(Of )) AndAlso ts.TypeInfo.IsArray Then
+
+                                gen_to_type(cs.Generics(0), ts.FunctionNamespace.Root.LoadType(ts.TypeInfo.GetElementType.GetTypeInfo))
+                                Return
+                            End If
+                        End If
+                        struct.Generics.Do(
+                            Sub(x, i)
+
+                                Dim apply = CType(t, RkStruct).Apply(i)
+                                gen_to_type(x, apply)
                             End Sub)
                     End If
                 End Sub
