@@ -477,13 +477,13 @@ Namespace Compiler
                 Function(union As RkUnionType, f As FunctionCallNode)
 
                     Dim before = union.Types.Count
-                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x.Type))).ToList
-                    union.Types = union.Types.Where(
-                        Function(x)
-
-                            Dim r = CType(x, IFunction)
-                            Return r.Arguments.Count = args.Count AndAlso r.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))
-                        End Function).ToList
+                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x.Type))).ToArray
+                    union.Types = union.Types.
+                        By(Of IFunction).
+                        Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
+                        Map(Function(x) CType(x, IFunction).ApplyFunction(args)).
+                        By(Of IType).
+                        ToList
                     Return before <> union.Types.Count
                 End Function
 
@@ -498,7 +498,11 @@ Namespace Compiler
                         Coverage.Case()
                         Dim union = CType(expr, RkUnionType)
                         apply_function(union, f)
-                        If Not union.HasIndefinite Then expr = union.Types(0)
+                        If Not union.HasIndefinite Then
+
+                            expr = union.Types(0)
+                            f.Expression.Type = expr
+                        End If
                     End If
 
                     If TypeOf expr Is RkByName Then
