@@ -70,7 +70,7 @@ Namespace Manager
             Me.AddStruct(int32, "Int")
 
             ' struct Array(@T) : List(@T)
-            Dim arr = Me.LoadType(GetType(List(Of )).GetTypeInfo)
+            Dim arr = Me.LoadArrayType(GetType(List(Of )).GetTypeInfo)
             Me.AddStruct(arr, "Array")
 
             ' struct Char : Char
@@ -205,12 +205,46 @@ Namespace Manager
             Next
         End Sub
 
+        Public Overridable Function LoadArrayType(ti As TypeInfo) As RkCILStruct
+
+            If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
+
+            Dim ns = Me.CreateNamespace(ti.Namespace)
+            Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
+            Me.AddTypeCache(ti, ns, s)
+
+            If ns.Namespaces.ContainsKey(ti.Name) Then
+
+                'ToDo: generics suport
+            Else
+                s.FunctionNamespace = New RkCILArrayNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                ns.AddNamespace(s.FunctionNamespace)
+            End If
+
+            Return s
+        End Function
+
         Public Overridable Function LoadType(ti As TypeInfo) As RkCILStruct
 
             If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
 
             Dim ns = Me.CreateNamespace(ti.Namespace)
             Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
+            Me.AddTypeCache(ti, ns, s)
+
+            If ns.Namespaces.ContainsKey(ti.Name) Then
+
+                'ToDo: generics suport
+            Else
+                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                ns.AddNamespace(s.FunctionNamespace)
+            End If
+
+            Return s
+        End Function
+
+        Public Overridable Sub AddTypeCache(ti As TypeInfo, ns As RkNamespace, s As RkCILStruct)
+
             Me.TypeCache(ti) = s
 
             If ti.IsGenericType Then
@@ -226,17 +260,7 @@ Namespace Manager
 
                 ns.AddStruct(s)
             End If
-
-            If ns.Namespaces.ContainsKey(ti.Name) Then
-
-                'ToDo: generics suport
-            Else
-                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
-                ns.AddNamespace(s.FunctionNamespace)
-            End If
-
-            Return s
-        End Function
+        End Sub
 
         Public Shared Function CurrentNamespace(scope As IScope) As RkNamespace
 
@@ -445,6 +469,21 @@ Namespace Manager
             If TypeOf t Is RkByName Then Return Me.GetArrayType(CType(t, RkByName).Type)
             If Not Me.IsArray(t) Then Throw New Exception("not array")
             Return CType(t, RkCILStruct).Apply(0)
+        End Function
+
+        Public Shared Function FixedByName(t As IType) As IType
+
+            If TypeOf t Is RkByNameWithReceiver Then
+
+                Return FixedByName(CType(t, RkByNameWithReceiver).Type)
+
+            ElseIf TypeOf t Is RkByName Then
+
+                Return FixedByName(CType(t, RkByName).Type)
+            Else
+
+                Return t
+            End If
         End Function
 
     End Class

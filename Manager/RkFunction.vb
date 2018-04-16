@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Diagnostics
 Imports System.Reflection
 Imports Roku.Node
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util.Extensions
@@ -108,22 +109,6 @@ Namespace Manager
 
         Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
 
-            Dim fixed_byname As Func(Of IType, IType) =
-                Function(t)
-
-                    If TypeOf t Is RkByNameWithReceiver Then
-
-                        Return fixed_byname(CType(t, RkByNameWithReceiver).Type)
-
-                    ElseIf TypeOf t Is RkByName Then
-
-                        Return fixed_byname(CType(t, RkByName).Type)
-                    Else
-
-                        Return t
-                    End If
-                End Function
-
             Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
                 Sub(arg, p, gen_to_type)
 
@@ -161,7 +146,7 @@ Namespace Manager
                     ElseIf arg.HasGeneric Then
 
                         Dim struct = CType(arg, RkStruct)
-                        Dim t = fixed_byname(p)
+                        Dim t = FixedByName(p)
                         If TypeOf struct Is RkCILStruct AndAlso TypeOf t Is RkCILStruct Then
 
                             Dim cs = CType(struct, RkCILStruct)

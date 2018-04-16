@@ -454,30 +454,11 @@ Namespace Compiler
                     Return e
                 End Function
 
-            Dim fixed_byname As Func(Of IType, IType) =
-                Function(t)
-
-                    If TypeOf t Is RkByNameWithReceiver Then
-
-                        Coverage.Case()
-                        Return fixed_byname(CType(t, RkByNameWithReceiver).Type)
-
-                    ElseIf TypeOf t Is RkByName Then
-
-                        Coverage.Case()
-                        Return fixed_byname(CType(t, RkByName).Type)
-                    Else
-
-                        Coverage.Case()
-                        Return t
-                    End If
-                End Function
-
             Dim apply_function =
                 Function(union As RkUnionType, f As FunctionCallNode)
 
                     Dim before = union.Types.Count
-                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x.Type))).ToArray
+                    Dim args = f.Arguments.Map(Function(x) FixedByName(fixed_var(x.Type))).ToArray
                     union.Types = union.Types.
                         By(Of IFunction).
                         Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
@@ -491,7 +472,7 @@ Namespace Compiler
                 Function(f As FunctionCallNode) As IFunction
 
                     Dim expr = fixed_var(f.Expression.Type)
-                    Dim args = f.Arguments.Map(Function(x) fixed_byname(fixed_var(x.Type))).ToList
+                    Dim args = f.Arguments.Map(Function(x) FixedByName(fixed_var(x.Type))).ToList
 
                     If TypeOf expr Is RkUnionType Then
 
@@ -575,7 +556,7 @@ Namespace Compiler
                         If Not r.HasGeneric Then Return r
 
                         Coverage.Case()
-                        Return CType(r.FixedGeneric(r.ArgumentsToApply(f.Arguments.Map(Function(x) x.Type).ToArray)), IFunction)
+                        Return r.ApplyFunction(f.Arguments.Map(Function(x) x.Type).ToArray)
 
                     ElseIf TypeOf expr Is RkUnionType Then
 
