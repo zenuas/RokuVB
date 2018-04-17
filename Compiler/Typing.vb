@@ -892,13 +892,13 @@ Namespace Compiler
                             For Each s In node_struct.Lets.Where(Function(x) TypeOf x.Value Is LetNode)
 
                                 Dim t = CType(s.Value, LetNode).Type
-                                If Not rk_struct.Local.ContainsKey(s.Key) Then
+                                If Not rk_struct.Local.ContainsKey(s.Key) OrElse rk_struct.Local(s.Key) Is Nothing Then
 
                                     rk_struct.Local(s.Key) = t
                                     If rk_struct.Local(s.Key) IsNot Nothing Then type_fix = True
                                     Coverage.Case()
                                 End If
-                                If TypeOf t IsNot RkGenericEntry Then
+                                If rk_struct.HasGeneric AndAlso TypeOf t IsNot RkGenericEntry Then
 
                                     For Each fix In rk_struct.Scope.FindCurrentStruct(rk_struct.Name).By(Of RkStruct)
 
