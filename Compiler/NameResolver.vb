@@ -14,12 +14,7 @@ Namespace Compiler
             Dim resolve_name As Func(Of IScopeNode, String, IScopeNode) =
                 Function(current, name)
 
-                    If current.Lets.ContainsKey(name) Then
-
-                        Dim x = current.Lets(name)
-                        If TypeOf x IsNot IEvaluableNode Then Return Nothing
-                        Return current
-                    End If
+                    If current.Lets.ContainsKey(name) Then Return current
                     If current.Parent Is Nothing Then Return Nothing
                     Return resolve_name(current.Parent, name)
                 End Function

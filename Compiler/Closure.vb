@@ -24,7 +24,7 @@ Namespace Compiler
                         Dim var_scope = get_inner_scope(var.Scope)
                         Dim inner_scope = get_inner_scope(current)
 
-                        If var_scope IsNot Nothing AndAlso var_scope IsNot inner_scope Then
+                        If var_scope IsNot Nothing AndAlso var_scope IsNot inner_scope AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode Then
 
                             var.ClosureEnvironment = True
                             CType(var.Scope.Lets(var.Name), VariableNode).ClosureEnvironment = True

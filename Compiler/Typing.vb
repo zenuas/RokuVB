@@ -104,6 +104,16 @@ Namespace Compiler
 
                         next_(child, rk_func)
                         Return
+
+                    ElseIf TypeOf child Is BlockNode Then
+
+                        Dim node_block = CType(child, BlockNode)
+                        Dim rk_scope = New RkScope With {.Name = $"#{child.LineNumber}", .Parent = current}
+                        node_block.Scope = rk_scope
+                        Coverage.Case()
+
+                        next_(child, rk_scope)
+                        Return
                     End If
 
                     next_(child, current)
@@ -716,6 +726,7 @@ Namespace Compiler
 
                                             Dim x = node_var.Scope.Lets(node_var.Name)
                                             If TypeOf x Is IEvaluableNode AndAlso CType(x, IEvaluableNode).Type IsNot Nothing Then Return CType(x, IEvaluableNode).Type
+                                            If TypeOf x Is IHaveScopeType AndAlso CType(x, IHaveScopeType).Type IsNot Nothing Then Return CType(x, IHaveScopeType).Type
                                         End If
                                         Return New RkByName With {.Scope = current, .Name = node_var.Name}
                                     End Function)
