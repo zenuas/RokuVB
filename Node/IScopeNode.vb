@@ -7,10 +7,10 @@ Namespace Node
         Inherits INode
 
         Property Parent As IScopeNode
-        ReadOnly Property Scope As Dictionary(Of String, INode)
+        ReadOnly Property Lets As Dictionary(Of String, INode)
         Sub AddLet(let_ As LetNode)
 
-        Property Owner As INamedFunction
+        ReadOnly Property Owner As INamedFunction
         Property InnerScope As Boolean
 
     End Interface

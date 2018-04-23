@@ -25,7 +25,7 @@ Namespace Compiler
 
                     Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = scope.Owner.Function}
                     env.Name = $"##{scope.Owner.Name}"
-                    For Each var In scope.Scope.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
+                    For Each var In scope.Lets.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
 
                         env.AddLet(var.Key, CType(var.Value, VariableNode).Type)
                     Next
@@ -103,7 +103,7 @@ Namespace Compiler
 
                                     Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = t, .Scope = rk_func}
 
-                                ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Scope(var.Name) Is VariableNode AndAlso CType(var.Scope.Scope(var.Name), VariableNode).LocalVariable Then
+                                ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode AndAlso CType(var.Scope.Lets(var.Name), VariableNode).LocalVariable Then
 
                                     Return New OpValue With {.Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
                                 Else
@@ -468,17 +468,21 @@ Namespace Compiler
                         Next
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is ProgramNode Then
+
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = node_func.Function
-                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Body.Statements)
+                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Statements)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is FunctionCallNode Then
 
                         Dim node_call = CType(child, FunctionCallNode)
-                        If node_call.Function?.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Body.Statements)
+                        If node_call.Function?.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Statements)
                         Coverage.Case()
 
                     End If

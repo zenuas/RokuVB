@@ -70,7 +70,7 @@ Namespace Manager
             Me.AddStruct(int32, "Int")
 
             ' struct Array(@T) : List(@T)
-            Dim arr = Me.LoadType(GetType(List(Of )).GetTypeInfo)
+            Dim arr = Me.LoadArrayType(GetType(List(Of )).GetTypeInfo)
             Me.AddStruct(arr, "Array")
 
             ' struct Char : Char
@@ -111,19 +111,12 @@ Namespace Manager
             type.Return = type_t
             Me.AddFunction(type)
 
+            ' struct Null
+            Me.NullType = New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
+            Me.AddStruct(Me.NullType, "Null")
         End Sub
 
-        Private Property NullType_ As RkStruct = Nothing
-        Public Overridable Function NullType() As RkStruct
-
-            ' struct Null
-            If Me.NullType_ Is Nothing Then
-
-                Me.NullType_ = New RkStruct With {.Name = "Null", .Scope = Me, .Parent = Me}
-                Me.AddStruct(Me.NullType_, "Null")
-            End If
-            Return Me.NullType_
-        End Function
+        Public Overridable Property NullType() As RkStruct
 
         Private Property NumericTypes_ As IType() = Nothing
         Public Overridable Function NumericTypes() As IType()
@@ -212,12 +205,46 @@ Namespace Manager
             Next
         End Sub
 
+        Public Overridable Function LoadArrayType(ti As TypeInfo) As RkCILStruct
+
+            If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
+
+            Dim ns = Me.CreateNamespace(ti.Namespace)
+            Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
+            Me.AddTypeCache(ti, ns, s)
+
+            If ns.Namespaces.ContainsKey(ti.Name) Then
+
+                'ToDo: generics suport
+            Else
+                s.FunctionNamespace = New RkCILArrayNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                ns.AddNamespace(s.FunctionNamespace)
+            End If
+
+            Return s
+        End Function
+
         Public Overridable Function LoadType(ti As TypeInfo) As RkCILStruct
 
             If Me.TypeCache.ContainsKey(ti) Then Return Me.TypeCache(ti)
 
             Dim ns = Me.CreateNamespace(ti.Namespace)
             Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
+            Me.AddTypeCache(ti, ns, s)
+
+            If ns.Namespaces.ContainsKey(ti.Name) Then
+
+                'ToDo: generics suport
+            Else
+                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                ns.AddNamespace(s.FunctionNamespace)
+            End If
+
+            Return s
+        End Function
+
+        Public Overridable Sub AddTypeCache(ti As TypeInfo, ns As RkNamespace, s As RkCILStruct)
+
             Me.TypeCache(ti) = s
 
             If ti.IsGenericType Then
@@ -233,17 +260,7 @@ Namespace Manager
 
                 ns.AddStruct(s)
             End If
-
-            If ns.Namespaces.ContainsKey(ti.Name) Then
-
-                'ToDo: generics suport
-            Else
-                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
-                ns.AddNamespace(s.FunctionNamespace)
-            End If
-
-            Return s
-        End Function
+        End Sub
 
         Public Shared Function CurrentNamespace(scope As IScope) As RkNamespace
 
@@ -392,13 +409,14 @@ Namespace Manager
             End If
         End Function
 
-        Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
+        Public Shared Function FindLoadFunction(scope As IScope, name As String) As IEnumerable(Of IFunction)
 
-            For Each f In FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+            Return FindLoadFunction(scope, name, Function(x) True)
+        End Function
 
-                Yield f
-            Next
+        Public Shared Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
+            Return FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
         End Function
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)
@@ -451,6 +469,21 @@ Namespace Manager
             If TypeOf t Is RkByName Then Return Me.GetArrayType(CType(t, RkByName).Type)
             If Not Me.IsArray(t) Then Throw New Exception("not array")
             Return CType(t, RkCILStruct).Apply(0)
+        End Function
+
+        Public Shared Function FixedByName(t As IType) As IType
+
+            If TypeOf t Is RkByNameWithReceiver Then
+
+                Return FixedByName(CType(t, RkByNameWithReceiver).Type)
+
+            ElseIf TypeOf t Is RkByName Then
+
+                Return FixedByName(CType(t, RkByName).Type)
+            Else
+
+                Return t
+            End If
         End Function
 
     End Class

@@ -1,0 +1,30 @@
+#=>1
+#=>2
+#=>3
+#=>2
+#=>1
+
+struct A
+	var x = 1
+
+sub f()
+	struct A # 関数はスコープを持つので外の構造体とは別に作れる
+		var a = 2
+	var a = A()
+	print(a.a)
+	#var a = 9 # 同一ブロックに同じ変数は作れない
+	
+	if a.a > 0
+		#print(a.a) # このaはifの外のaを指す
+		
+		struct A # 同一スコープに同じ名前の構造体は作れない(ifはスコープを持たない)
+			var b = 3
+		var a = A() # これはブロックが違うのでOK
+		print(a.b) # このaは↑のaを指す
+		
+	print(a.a)
+
+var a = A()
+print(a.x)
+f()
+print(a.x)

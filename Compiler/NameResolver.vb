@@ -1,5 +1,4 @@
 ﻿Imports System
-Imports Roku.Manager
 Imports Roku.Node
 Imports Roku.Util
 
@@ -15,12 +14,7 @@ Namespace Compiler
             Dim resolve_name As Func(Of IScopeNode, String, IScopeNode) =
                 Function(current, name)
 
-                    If current.Scope.ContainsKey(name) Then
-
-                        Dim x = current.Scope(name)
-                        If TypeOf x IsNot IEvaluableNode Then Return Nothing
-                        Return current
-                    End If
+                    If current.Lets.ContainsKey(name) Then Return current
                     If current.Parent Is Nothing Then Return Nothing
                     Return resolve_name(current.Parent, name)
                 End Function
@@ -40,17 +34,22 @@ Namespace Compiler
 
                     If Not isfirst Then Return
 
-                    If TypeOf child Is FunctionNode Then
+                    If TypeOf child Is ProgramNode Then
+
+                        Dim pgm = CType(child, ProgramNode)
+                        next_(child, pgm)
+                        Coverage.Case()
+
+                    ElseIf TypeOf child Is FunctionNode Then
 
                         Dim func = CType(child, FunctionNode)
-                        Dim body = func.Body
-                        body.Parent = current
+                        func.Parent = current
                         For Each x In func.Arguments
 
-                            x.Name.Scope = body
-                            body.Scope.Add(x.Name.Name, x.Name)
+                            x.Name.Scope = func
+                            func.Lets.Add(x.Name.Name, x.Name)
                         Next
-                        next_(child, body)
+                        next_(child, func)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StructNode Then
@@ -63,14 +62,16 @@ Namespace Compiler
                     ElseIf TypeOf child Is IfCastNode Then
 
                         Dim node_if = CType(child, IfCastNode)
-                        node_if.Then.Scope.Add(node_if.Var.Name, node_if.Var)
+                        node_if.Then.Lets.Add(node_if.Var.Name, node_if.Var)
+                        node_if.Then.Parent = current
                         next_(child, node_if.Then)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is CaseCastNode Then
 
                         Dim node_case = CType(child, CaseCastNode)
-                        node_case.Then.Scope.Add(node_case.Var.Name, node_case.Var)
+                        node_case.Then.Lets.Add(node_case.Var.Name, node_case.Var)
+                        node_case.Then.Parent = current
                         next_(child, node_case.Then)
                         Coverage.Case()
 
@@ -79,7 +80,8 @@ Namespace Compiler
                         Dim node_case = CType(child, CaseArrayNode)
                         If node_case.Then IsNot Nothing Then
 
-                            node_case.Pattern.Do(Sub(x) node_case.Then.Scope.Add(x.Name, x))
+                            node_case.Pattern.Do(Sub(x) node_case.Then.Lets.Add(x.Name, x))
+                            node_case.Then.Parent = current
                         End If
                         next_(child, node_case.Then)
                         Coverage.Case()
@@ -90,7 +92,7 @@ Namespace Compiler
                         If node_let.Receiver Is Nothing Then
 
                             node_let.Var.Scope = current
-                            If TypeOf current IsNot StructNode Then current.Scope.Add(node_let.Var.Name, node_let.Var)
+                            If TypeOf current IsNot StructNode Then current.Lets.Add(node_let.Var.Name, node_let.Var)
                         End If
                         next_(child, current)
                         Coverage.Case()

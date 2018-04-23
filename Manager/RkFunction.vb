@@ -1,7 +1,9 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports System.Diagnostics
+Imports System.Reflection
 Imports Roku.Node
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
 Imports Roku.Util.Extensions
@@ -139,6 +141,27 @@ Namespace Manager
                                     Throw New Exception("unknown apply")
                                 End If
                                 generic_match(x, v, gen_to_type)
+                            End Sub)
+
+                    ElseIf arg.HasGeneric Then
+
+                        Dim struct = CType(arg, RkStruct)
+                        Dim t = FixedByName(p)
+                        If TypeOf struct Is RkCILStruct AndAlso TypeOf t Is RkCILStruct Then
+
+                            Dim cs = CType(struct, RkCILStruct)
+                            Dim ts = CType(t, RkCILStruct)
+                            If cs.TypeInfo = GetType(List(Of )) AndAlso ts.TypeInfo.IsArray Then
+
+                                gen_to_type(cs.Generics(0), ts.FunctionNamespace.Root.LoadType(ts.TypeInfo.GetElementType.GetTypeInfo))
+                                Return
+                            End If
+                        End If
+                        struct.Generics.Do(
+                            Sub(x, i)
+
+                                Dim apply = CType(t, RkStruct).Apply(i)
+                                gen_to_type(x, apply)
                             End Sub)
                     End If
                 End Sub

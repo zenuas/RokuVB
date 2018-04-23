@@ -7,6 +7,12 @@ Namespace Util
 
     Public Class TypeHelper
 
+        Public Shared Function IsJust(Of T)(p As Object) As Boolean
+
+            If TypeOf p IsNot T Then Return False
+            Return Object.Equals(p.GetType.TypeHandle, GetType(T).TypeHandle)
+        End Function
+
         Public Shared Function IsInterface(p As Type, interf As Type) As Boolean
 
             Return p Is interf OrElse p.GetTypeInfo.ImplementedInterfaces.FindFirstOrNull(Function(x) x Is interf) IsNot Nothing

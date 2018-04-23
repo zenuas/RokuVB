@@ -130,33 +130,18 @@ Namespace Util
 
                     Select Case True
 
-                        Case TypeOf node_ Is BlockNode
-
-                            Dim x = CType(node_, BlockNode)
-                            f("Owner", x.Owner)
-                            For i = 0 To x.Statements.Count - 1
-
-                                f($"[{i}]", x.Statements(i))
-                            Next
-
-                            For Each key In x.Scope.Keys
-
-                                f($"`{key}", x.Scope(key))
-                            Next
-
-                            For i = 0 To x.Functions.Count - 1
-
-                                f($"`{x.Functions(i).Name}", x.Functions(i))
-                            Next
-
                         Case TypeOf node_ Is StructNode
 
                             Dim x = CType(node_, StructNode)
                             f("Owner", x.Owner)
-                            For Each key In x.Scope.Keys
+                            For Each key In x.Lets.Keys
 
-                                f($"`{key}", x.Scope(key))
+                                f($"`{key}", x.Lets(key))
                             Next
+
+                        Case TypeOf node_ Is ProgramNode
+
+                            GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is FunctionNode
 
@@ -166,7 +151,27 @@ Namespace Util
                                 f($"[{i}]", x.Arguments(i))
                             Next
                             f("Return", x.Return)
-                            f("Body", x.Body)
+                            GoTo BLOCK_NODE_
+
+                        Case TypeOf node_ Is BlockNode
+
+BLOCK_NODE_:
+                            Dim x = CType(node_, BlockNode)
+                            f("Owner", x.Owner)
+                            For i = 0 To x.Statements.Count - 1
+
+                                f($"[{i}]", x.Statements(i))
+                            Next
+
+                            For Each key In x.Lets.Keys
+
+                                f($"`{key}", x.Lets(key))
+                            Next
+
+                            For i = 0 To x.Functions.Count - 1
+
+                                f($"`{x.Functions(i).Name}", x.Functions(i))
+                            Next
 
                         Case TypeOf node_ Is LetNode
 
@@ -331,33 +336,18 @@ Namespace Util
 
                     Select Case True
 
-                        Case TypeOf node_ Is BlockNode
-
-                            Dim x = CType(node_, BlockNode)
-                            x.Owner = CType(f("Owner", x.Owner), INamedFunction)
-                            For i = 0 To x.Statements.Count - 1
-
-                                x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IStatementNode)
-                            Next
-
-                            For Each key In New List(Of String)(x.Scope.Keys)
-
-                                x.Scope(key) = f($"`{key}", x.Scope(key))
-                            Next
-
-                            For i = 0 To x.Functions.Count - 1
-
-                                x.Functions(i) = CType(f($"`{x.Functions(i).Name}", x.Functions(i)), FunctionNode)
-                            Next
-
                         Case TypeOf node_ Is StructNode
 
                             Dim x = CType(node_, StructNode)
-                            x.Owner = CType(f("Owner", x.Owner), INamedFunction)
-                            For Each key In New List(Of String)(x.Scope.Keys)
+                            'x.Owner = CType(f("Owner", x.Owner), INamedFunction)
+                            For Each key In New List(Of String)(x.Lets.Keys)
 
-                                x.Scope(key) = f($"`{key}", x.Scope(key))
+                                x.Lets(key) = f($"`{key}", x.Lets(key))
                             Next
+
+                        Case TypeOf node_ Is ProgramNode
+
+                            GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is FunctionNode
 
@@ -367,7 +357,27 @@ Namespace Util
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), DeclareNode)
                             Next
                             x.Return = CType(f("Return", x.Return), TypeNode)
-                            x.Body = CType(f("Body", x.Body), BlockNode)
+                            GoTo BLOCK_NODE_
+
+                        Case TypeOf node_ Is BlockNode
+
+BLOCK_NODE_:
+                            Dim x = CType(node_, BlockNode)
+                            'x.Owner = CType(f("Owner", x.Owner), INamedFunction)
+                            For i = 0 To x.Statements.Count - 1
+
+                                x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IStatementNode)
+                            Next
+
+                            For Each key In New List(Of String)(x.Lets.Keys)
+
+                                x.Lets(key) = f($"`{key}", x.Lets(key))
+                            Next
+
+                            For i = 0 To x.Functions.Count - 1
+
+                                x.Functions(i) = CType(f($"`{x.Functions(i).Name}", x.Functions(i)), FunctionNode)
+                            Next
 
                         Case TypeOf node_ Is LetNode
 

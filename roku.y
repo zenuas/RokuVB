@@ -12,10 +12,10 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %define YYNAMESPACE     Parser
 %define YYMYNAMESPACE   Parser
 
-%type<BlockNode>      block stmt lambda_func
+%type<BlockNode>      block stmt
 %type<IStatementNode> line
 %type<LetNode>        let
-%type<FunctionNode>   sub
+%type<FunctionNode>   sub sub_block lambda_func
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
 %type<TypeNode>       type typev typex atvar union
@@ -74,8 +74,8 @@ line  : call EOL
       | if
       | switch
       | block
-      | struct      {Me.CurrentScope.Scope.Add($1.Name, $1)}
-      | union       {Me.CurrentScope.Scope.Add($1.Name, $1)}
+      | struct      {Me.CurrentScope.Lets.Add($1.Name, $1)}
+      | union       {Me.CurrentScope.Lets.Add($1.Name, $1)}
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber))}
@@ -136,7 +136,11 @@ unionn : type EOL        {$$ = Me.CreateListNode($1)}
 
 
 ########## sub ##########
-sub    : SUB fn '(' args ')' typex EOL block {$$ = Me.CreateFunctionNode($2, $4.List.ToArray, $6, $8)}
+sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = Me.CreateFunctionNode($8, $2, $4.List.ToArray, $6)}
+
+sub_block : sub_begin stmt END {$$ = Me.PopScope}
+sub_begin : BEGIN              {Me.PushScope(New FunctionNode($1.LineNumber))}
+
 fn     : var
        | ope            {$$ = Me.CreateVariableNode($1.Token)}
 args   : void           {$$ = Me.CreateListNode(Of DeclareNode)}
@@ -163,9 +167,9 @@ typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args '}' typex ARROW lambda_func {$$ = Me.CreateLambdaFunction($2.List.ToArray, $4, $6)}
+lambda      : '{' lambda_args '}' typex ARROW lambda_func {$$ = Me.CreateLambdaFunction($6, $2.List.ToArray, $4)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
-            | block
+            | sub_block
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
             | decla
 lambda_args : void                       {$$ = Me.CreateListNode(Of DeclareNode)}
@@ -192,7 +196,7 @@ casen      : case                      {$$ = Me.CreateSwitchNode($1)}
            | casen case                {$$ = $1 : $1.Case.Add($2)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
-           | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpression($3)}
+           | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpressionBlock($3)}
 case_expr  : var
            | num
            | str
