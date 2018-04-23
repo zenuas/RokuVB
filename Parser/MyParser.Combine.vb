@@ -258,7 +258,6 @@ Namespace Parser
             f.Arguments = args
             f.Return = ret
             f.InnerScope = False
-            f.Owner = f
             Return f
         End Function
 
@@ -273,7 +272,6 @@ Namespace Parser
             f.Arguments = args
             f.Return = ret
             f.InnerScope = False
-            f.Owner = f
             Return f
         End Function
 

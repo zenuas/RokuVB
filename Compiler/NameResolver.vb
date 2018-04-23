@@ -63,6 +63,7 @@ Namespace Compiler
 
                         Dim node_if = CType(child, IfCastNode)
                         node_if.Then.Lets.Add(node_if.Var.Name, node_if.Var)
+                        node_if.Then.Parent = current
                         next_(child, node_if.Then)
                         Coverage.Case()
 
@@ -70,6 +71,7 @@ Namespace Compiler
 
                         Dim node_case = CType(child, CaseCastNode)
                         node_case.Then.Lets.Add(node_case.Var.Name, node_case.Var)
+                        node_case.Then.Parent = current
                         next_(child, node_case.Then)
                         Coverage.Case()
 
@@ -79,6 +81,7 @@ Namespace Compiler
                         If node_case.Then IsNot Nothing Then
 
                             node_case.Pattern.Do(Sub(x) node_case.Then.Lets.Add(x.Name, x))
+                            node_case.Then.Parent = current
                         End If
                         next_(child, node_case.Then)
                         Coverage.Case()

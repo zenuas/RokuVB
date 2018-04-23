@@ -73,7 +73,6 @@ Namespace Compiler
                         Dim ctor As New RkFunction With {.Name = node_pgm.Name, .FunctionNode = node, .Scope = ns, .Parent = ns}
                         node_pgm.Scope = ctor
                         node_pgm.Function = ctor
-                        node_pgm.Owner = node_pgm
                         current.AddFunction(ctor)
                         Coverage.Case()
 
@@ -353,10 +352,14 @@ Namespace Compiler
 
                     Dim base = f.GenericBase.FunctionNode
                     Dim bind = base.Bind
+                    Dim parent = base.Parent
                     base.Bind = Nothing
+                    base.Parent = Nothing
                     Dim clone = CType(node_deep_copy(base), FunctionNode)
                     base.Bind = bind
+                    base.Parent = parent
                     clone.Bind = bind
+                    clone.Parent = parent
 
                     For i = 0 To clone.Arguments.Length - 1
 

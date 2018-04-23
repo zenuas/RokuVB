@@ -339,7 +339,7 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is StructNode
 
                             Dim x = CType(node_, StructNode)
-                            x.Owner = CType(f("Owner", x.Owner), INamedFunction)
+                            'x.Owner = CType(f("Owner", x.Owner), INamedFunction)
                             For Each key In New List(Of String)(x.Lets.Keys)
 
                                 x.Lets(key) = f($"`{key}", x.Lets(key))
@@ -363,7 +363,7 @@ BLOCK_NODE_:
 
 BLOCK_NODE_:
                             Dim x = CType(node_, BlockNode)
-                            x.Owner = CType(f("Owner", x.Owner), INamedFunction)
+                            'x.Owner = CType(f("Owner", x.Owner), INamedFunction)
                             For i = 0 To x.Statements.Count - 1
 
                                 x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IStatementNode)
