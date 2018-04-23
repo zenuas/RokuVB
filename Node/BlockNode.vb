@@ -6,7 +6,7 @@ Namespace Node
 
     Public Class BlockNode
         Inherits BaseNode
-        Implements IScopeNode, IAddFunction, INamedFunction
+        Implements IScopeNode, IAddFunction
 
 
         Public Sub New(linenum As Integer)
@@ -36,8 +36,7 @@ Namespace Node
         Public Overridable Property InnerScope As Boolean = True Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Lets As New Dictionary(Of String, INode) Implements IScopeNode.Lets
         Public Overridable ReadOnly Property Functions As New List(Of FunctionNode) Implements IAddFunction.Functions
-        Public Overridable Property Name As String = "" Implements INamedFunction.Name
-        Public Overridable Property Scope As RkScope Implements INamedFunction.Scope
+        Public Overridable Property Scope As RkScope
 
         Public Overrides Function ToString() As String
 

@@ -23,7 +23,7 @@ Namespace Compiler
 
                     If closures.ContainsKey(scope) Then Return closures(scope)
 
-                    Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = scope.Owner.Scope}
+                    Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = scope.Owner.Function}
                     env.Name = $"##{scope.Owner.Name}"
                     For Each var In scope.Lets.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
 
@@ -32,7 +32,7 @@ Namespace Compiler
                     env.Initializer = CType(LoadFunction(root, "#Alloc", env), RkNativeFunction)
                     closures.Add(scope, env)
                     root.AddStruct(env)
-                    scope.Owner.Scope.Closure = env
+                    scope.Owner.Function.Closure = env
                     Coverage.Case()
                     Return env
                 End Function

@@ -6,7 +6,7 @@ Namespace Node
 
     Public Class FunctionNode
         Inherits BlockNode
-        Implements IHaveScopeType
+        Implements IHaveScopeType, INamedFunction
 
 
         Public Sub New(linenum As Integer)
@@ -18,8 +18,9 @@ Namespace Node
         Public Overridable Property [Return] As TypeNode
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable Property Bind As New Dictionary(Of IScopeNode, Boolean)
+        Public Overridable Property Name As String Implements INamedFunction.Name
 
-        Public Overridable Property [Function] As RkFunction
+        Public Overridable Property [Function] As RkFunction Implements INamedFunction.Function
             Get
                 Return CType(Me.Type, RkFunction)
             End Get
@@ -38,6 +39,7 @@ Namespace Node
                 Me.Function = CType(value, RkFunction)
             End Set
         End Property
+
     End Class
 
 End Namespace

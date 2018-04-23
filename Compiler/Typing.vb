@@ -1013,7 +1013,7 @@ Namespace Compiler
 
                                 Dim v As New VariableNode("$ret") With {.Type = lambda.Type}
                                 Dim let_ As New LetNode With {.Var = v, .Type = lambda.Type, .Expression = lambda.Expression}
-                                Dim ret As New VariableNode("return") With {.Type = New RkByName With {.Scope = block.Owner.Scope, .Name = "return"}}
+                                Dim ret As New VariableNode("return") With {.Type = New RkByName With {.Scope = block.Owner.Function, .Name = "return"}}
                                 Dim fcall As New FunctionCallNode With {.Expression = ret, .Arguments = New IEvaluableNode() {v}}
                                 v.AppendLineNumber(lambda)
                                 let_.AppendLineNumber(lambda)
