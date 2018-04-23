@@ -31,6 +31,11 @@ Namespace Compiler
                         node_struct.Generics.Do(Sub(x) rk_struct.DefineGeneric(x.Name))
                         current.AddStruct(rk_struct)
 
+                        If node_struct.Parent IsNot node_struct.Owner Then
+
+                            node_struct.Owner.Function.AddStruct(rk_struct, $"##{node_struct.LineNumber.Value}")
+                        End If
+
                         For Each x In node_struct.Lets.Values
 
                             If TypeOf x Is LetNode Then
