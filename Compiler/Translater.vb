@@ -51,7 +51,7 @@ Namespace Compiler
                         node_func.Bind.Do(
                             Sub(x)
 
-                                Dim env = make_closure(x.Key)
+                                Dim env = make_closure(CType(x.Key, IScopeNode))
                                 rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
                                 Coverage.Case()
                             End Sub)

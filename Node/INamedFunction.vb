@@ -1,4 +1,5 @@
-﻿Imports Roku.Manager
+﻿Imports System.Collections.Generic
+Imports Roku.Manager
 
 
 Namespace Node
@@ -8,6 +9,7 @@ Namespace Node
 
         Property Name As String
         Property [Function] As RkFunction
+        Property Bind As Dictionary(Of INamedFunction, Boolean)
 
     End Interface
 

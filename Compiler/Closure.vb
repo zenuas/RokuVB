@@ -33,8 +33,8 @@ Namespace Compiler
                                 If TypeOf scope.Owner Is FunctionNode Then
 
                                     Dim func = CType(scope.Owner, FunctionNode)
-                                    If func.Bind.ContainsKey(var.Scope) Then Exit Do
-                                    func.Bind.Add(var.Scope, True)
+                                    If func.Bind.ContainsKey(CType(var.Scope, INamedFunction)) Then Exit Do
+                                    func.Bind.Add(CType(var.Scope, INamedFunction), True)
                                 End If
                                 scope = scope.Parent
 
