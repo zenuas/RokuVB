@@ -17,25 +17,30 @@ Namespace Compiler
 
         Public Shared Sub ClosureTranslate(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
-            Dim closures As New Dictionary(Of IScopeNode, RkStruct)
-            Dim make_closure =
-                Function(scope As IScopeNode)
+            Dim closures As New Dictionary(Of INamedFunction, RkStruct)
+            Dim make_env =
+                Function(owner As INamedFunction)
 
-                    If closures.ContainsKey(scope) Then Return closures(scope)
+                    If closures.ContainsKey(owner) Then Return closures(owner)
 
-                    Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = scope.Owner.Function}
-                    env.Name = $"##{scope.Owner.Name}"
-                    For Each var In scope.Lets.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
-
-                        env.AddLet(var.Key, CType(var.Value, VariableNode).Type)
-                    Next
+                    Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = owner.Function}
+                    env.Name = $"##{owner.Name}"
                     env.Initializer = CType(LoadFunction(root, "#Alloc", env), RkNativeFunction)
-                    closures.Add(scope, env)
+                    closures.Add(owner, env)
                     root.AddStruct(env)
-                    scope.Owner.Function.Closure = env
+                    owner.Function.Closure = env
                     Coverage.Case()
                     Return env
                 End Function
+
+            Dim make_closure =
+                Sub(scope As IScopeNode)
+
+                    For Each var In scope.Lets.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
+
+                        make_env(scope.Owner).AddLet(var.Key, CType(var.Value, VariableNode).Type)
+                    Next
+                End Sub
 
             Util.Traverse.NodesOnce(
                 node,
@@ -44,6 +49,12 @@ Namespace Compiler
 
                     If Not isfirst Then Return
 
+                    If TypeOf child Is BlockNode Then
+
+                        Dim node_block = CType(child, BlockNode)
+                        make_closure(node_block)
+                    End If
+
                     If TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
@@ -51,7 +62,7 @@ Namespace Compiler
                         node_func.Bind.Do(
                             Sub(x)
 
-                                Dim env = make_closure(CType(x.Key, IScopeNode))
+                                Dim env = make_env(x.Key)
                                 rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
                                 Coverage.Case()
                             End Sub)

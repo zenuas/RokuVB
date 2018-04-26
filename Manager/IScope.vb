@@ -10,12 +10,15 @@ Namespace Manager
         Property Parent As IScope
         ReadOnly Property Structs As Dictionary(Of String, List(Of IStruct))
         ReadOnly Property Functions As Dictionary(Of String, List(Of IFunction))
+        ReadOnly Property InnerScopes As List(Of IScope)
 
         Sub AddStruct(x As IStruct)
         Sub AddStruct(x As IStruct, name As String)
 
         Sub AddFunction(x As IFunction)
         Sub AddFunction(x As IFunction, name As String)
+
+        Sub AddInnerScope(x As IScope)
 
         Function FindCurrentStruct(name As String) As IEnumerable(Of IStruct)
         Function FindCurrentFunction(name As String) As IEnumerable(Of IFunction)

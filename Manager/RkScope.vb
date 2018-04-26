@@ -11,7 +11,7 @@ Namespace Manager
         Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of IStruct)) Implements IScope.Structs
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
         Public Overridable Property Closure As RkStruct Implements IClosure.Closure
-
+        Public Overridable ReadOnly Property InnerScopes As New List(Of IScope) Implements IScope.InnerScopes
 
         Public Overridable Sub AddStruct(x As IStruct) Implements IScope.AddStruct
 
@@ -44,6 +44,11 @@ Namespace Manager
 
             If Not Me.Functions.ContainsKey(name) Then Me.Functions.Add(name, New List(Of IFunction))
             Me.Functions(name).Add(x)
+        End Sub
+
+        Public Overridable Sub AddInnerScope(x As IScope) Implements IScope.AddInnerScope
+
+            If Not Me.InnerScopes.Contains(x) Then Me.InnerScopes.Add(x)
         End Sub
 
         Public Overridable Iterator Function FindCurrentFunction(name As String) As IEnumerable(Of IFunction) Implements IScope.FindCurrentFunction

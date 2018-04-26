@@ -33,10 +33,10 @@ Namespace Compiler
                                 If TypeOf scope.Owner Is FunctionNode Then
 
                                     Dim func = CType(scope.Owner, FunctionNode)
-                                    If func.Bind.ContainsKey(CType(var.Scope, INamedFunction)) Then Exit Do
-                                    func.Bind.Add(CType(var.Scope, INamedFunction), True)
+                                    If func.Bind.ContainsKey(var.Scope.Owner) Then Exit Do
+                                    func.Bind.Add(var.Scope.Owner, True)
                                 End If
-                                scope = scope.Parent
+                                scope = get_inner_scope(scope.Parent)
 
                             Loop While var_scope IsNot scope
                             Coverage.Case()

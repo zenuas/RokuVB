@@ -150,6 +150,14 @@ Namespace Architecture
                     Next
                 End If
             Next
+
+            For Each inner In scope.InnerScopes
+
+                For Each f In Me.FindInnerMethods(inner)
+
+                    Yield f
+                Next
+            Next
         End Function
 
         Public Overridable Function DeclareMethods(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
@@ -758,9 +766,16 @@ CLASS_CAST_:
             Dim args = r.Arguments.Where(Function(x) Not (TypeOf x.Value Is RkStruct AndAlso CType(x.Value, RkStruct).ClosureEnvironment)).Map(Function(x) Me.RkToCILType(x.Value, structs).Type).ToList
             If r.Return Is Nothing Then
 
-                Dim t = Type.GetType($"System.Action`{args.Count}")
-                Dim g = t.MakeGenericType(args.ToArray)
-                Return New TypeData With {.Type = g, .Constructor = g.GetConstructor({GetType(Object), GetType(IntPtr)})}
+                If args.Count = 0 Then
+
+                    Dim t = Type.GetType("System.Action")
+                    Return New TypeData With {.Type = t, .Constructor = t.GetConstructor({GetType(Object), GetType(IntPtr)})}
+                Else
+
+                    Dim t = Type.GetType($"System.Action`{args.Count}")
+                    Dim g = t.MakeGenericType(args.ToArray)
+                    Return New TypeData With {.Type = g, .Constructor = g.GetConstructor({GetType(Object), GetType(IntPtr)})}
+                End If
             Else
 
                 Dim t = Type.GetType($"System.Func`{args.Count + 1}")
