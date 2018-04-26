@@ -17,7 +17,7 @@ sub f()
 	if a.a > 0
 		#print(a.a) # このaはifの外のaを指す
 		
-		struct A # 同一スコープに同じ名前の構造体は作れない(ifはスコープを持たない)
+		struct A # ifのスコープに名前の構造体を作れる
 			var b = 3
 		var a = A() # これはブロックが違うのでOK
 		print(a.b) # このaは↑のaを指す
