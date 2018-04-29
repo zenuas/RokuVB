@@ -51,7 +51,7 @@ $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
 	-@del /F $@ 2>NUL
 	-@cd tests && ..\$(OUT) $(subst tests\,,$<) -o $(subst tests\,,$@) $(shell cmd /d /c build-tools\sed -p "s/^\s*\#\#!(.*)$/$1/" $< | build-tools\xargs -Q echo.) 2> $(subst tests\,,$@).stderr
-	-@if exist $@. ildasm $@ /out:$@.il /nobar
+	-@if exist $@. ildasm $@ /out:$@.fat.il /nobar && build-tools\strip-il $@.fat.il > $@.il && del /F $@.fat.il
 	@build-tools\sed -p "s/^\s*\#=>(.*)$/$1/"   $< > $@.testout
 	@build-tools\sed -p "s/^\s*\#=2>(.*)$/$1/"  $< > $@.testerr
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/"   $< > $@.testin
