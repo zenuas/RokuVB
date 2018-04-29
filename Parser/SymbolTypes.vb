@@ -87,6 +87,9 @@ Namespace Parser
         ''' <summary>SWITCH</summary>
         SWITCH
 
+        ''' <summary>UNARY</summary>
+        UNARY
+
         ''' <summary>UNION</summary>
         UNION
 

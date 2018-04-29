@@ -40,6 +40,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  ELSE
 %token<NumericNode> NUM
 %left  OPE OR
+%right UNARY
 %left  '.'
 %left  ':'
 %left  IGNORE
@@ -88,12 +89,12 @@ expr : var
      | call
      | lambda
      | atvar
-     | '[' list ']'      {$$ = $2}
-     | '(' expr ')'      {$$ = Me.CreateExpressionNode($2, "()")}
-#     | ope expr          {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
-     | expr '.' varx     {$$ = Me.CreatePropertyNode($1, $2, $3)}
-     | expr ope expr     {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr '[' expr ']' {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
+     | '[' list ']'         {$$ = $2}
+     | '(' expr ')'         {$$ = Me.CreateExpressionNode($2, "()")}
+     | ope expr %prec UNARY {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
+     | expr '.' varx        {$$ = Me.CreatePropertyNode($1, $2, $3)}
+     | expr ope expr        {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr '[' expr ']'    {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
      | null
 

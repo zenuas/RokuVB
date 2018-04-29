@@ -491,6 +491,15 @@ Namespace Architecture
                     End If
                 End Sub
 
+            Dim gen_il_uminus =
+                Sub(ope As OpCode, code As InCode)
+
+                    gen_il_load(il, New OpNumeric32 With {.Numeric = 0}, False)
+                    gen_il_load(il, code.Left, False)
+                    il.Emit(ope)
+                    If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
+                End Sub
+
             Dim get_ctor =
                 Function(r As RkStruct)
 
@@ -524,6 +533,7 @@ Namespace Architecture
                     Case InOperator.Lte : gen_il_3op_not(OpCodes.Cgt, CType(stmt, InCode))
                     Case InOperator.Gt : gen_il_3op(OpCodes.Cgt, CType(stmt, InCode))
                     Case InOperator.Gte : gen_il_3op_not(OpCodes.Clt, CType(stmt, InCode))
+                    Case InOperator.UMinus : gen_il_uminus(OpCodes.Sub, CType(stmt, InCode))
 
                     Case InOperator.Bind
                         Dim bind = CType(stmt, InCode)

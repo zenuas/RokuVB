@@ -44,6 +44,15 @@ Namespace Manager
                     Me.AddFunction(f)
                     Return f
                 End Function
+            Dim add_native_unary_function =
+                Function(t As IType, name As String, op As InOperator) As RkNativeFunction
+
+                    Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
+                    f.Return = t
+                    f.Arguments.Add(New NamedValue With {.Name = "left", .Value = t})
+                    Me.AddFunction(f)
+                    Return f
+                End Function
 
             ' struct Int32 : Numeric
             Dim define_num =
@@ -61,6 +70,7 @@ Namespace Manager
                     Dim num_gte = add_native_comparison_function(x, ">=", InOperator.Gte)
                     Dim num_lt = add_native_comparison_function(x, "<", InOperator.Lt)
                     Dim num_lte = add_native_comparison_function(x, "<=", InOperator.Lte)
+                    Dim num_uminus = add_native_unary_function(x, "-", InOperator.UMinus)
                     Return x
                 End Function
             Dim int64 = define_num(GetType(Int64))

@@ -1,0 +1,11 @@
+struct A
+	var a = 1
+
+struct B
+	var b = 2
+
+var a = A()
+var b = B()
+
+#=>-3
+print(-a.a + -b.b)

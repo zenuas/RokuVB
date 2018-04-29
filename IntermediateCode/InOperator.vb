@@ -35,9 +35,13 @@ Namespace IntermediateCode
         ''' <remarks>non-overflow check</remarks>
         Plus
 
-        ''' <summary>plus</summary>
+        ''' <summary>minus</summary>
         ''' <remarks>non-underflow check</remarks>
         Minus
+
+        ''' <summary>uminus</summary>
+        ''' <remarks>non-overflow check</remarks>
+        UMinus
 
         ''' <summary>multiple</summary>
         ''' <remarks>non-overflow check</remarks>
