@@ -108,6 +108,15 @@ Namespace Compiler
                                     Next
                                     Coverage.Case()
 
+                                ElseIf TypeOf e Is TupleNode Then
+
+                                    Dim tuple = CType(e, TupleNode)
+                                    For i = 0 To tuple.Items.Length - 1
+
+                                        tuple.Items(i) = insert_let(tuple.Items(i))
+                                    Next
+                                    Coverage.Case()
+
                                 ElseIf TypeOf e Is VariableNode Then
 
                                     Coverage.Case()
@@ -122,6 +131,11 @@ Namespace Compiler
                             If TypeOf v Is FunctionCallNode Then
 
                                 to_flat(CType(v, FunctionCallNode))
+                                Coverage.Case()
+
+                            ElseIf TypeOf v Is TupleNode Then
+
+                                to_flat(CType(v, TupleNode))
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is LambdaExpressionNode Then

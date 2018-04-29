@@ -216,26 +216,28 @@ READ_CONTINUE_:
                 ' other  -> Numeric(dec)
                 If c = "0"c Then
 
+                    buf.Append(c)
                     If Not Me.EndOfStream Then
 
+                        buf.Append(c)
                         If Me.NextChar = "x"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadHexadecimal(linenum, linecol)
+                            Return Me.ReadHexadecimal(buf, linenum, linecol)
 
                         ElseIf Me.NextChar = "o"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadOctal(linenum, linecol)
+                            Return Me.ReadOctal(buf, linenum, linecol)
 
                         ElseIf Me.IsOctal(Me.NextChar) Then
 
-                            Return Me.ReadOctal(linenum, linecol)
+                            Return Me.ReadOctal(buf, linenum, linecol)
 
                         ElseIf Me.NextChar = "b"c Then
 
                             Me.ReadChar()
-                            Return Me.ReadBinary(linenum, linecol)
+                            Return Me.ReadBinary(buf, linenum, linecol)
                         End If
                     End If
                 End If
@@ -423,10 +425,10 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString), linenum, linecol)
+            Return Me.CreateNumericToken(buf.ToString, Convert.ToUInt32(buf.ToString), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadBinary(linenum As Integer, linecol As Integer) As Token
+        Public Overridable Function ReadBinary(org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -443,12 +445,14 @@ READ_CONTINUE_:
                 Else
                     Exit Do
                 End If
+
+                org.Append(c)
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 2), linenum, linecol)
+            Return Me.CreateNumericToken(org.ToString, Convert.ToUInt32(buf.ToString, 2), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadOctal(linenum As Integer, linecol As Integer) As Token
+        Public Overridable Function ReadOctal(org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -465,12 +469,14 @@ READ_CONTINUE_:
                 Else
                     Exit Do
                 End If
+
+                org.Append(c)
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 8), linenum, linecol)
+            Return Me.CreateNumericToken(org.ToString, Convert.ToUInt32(buf.ToString, 8), linenum, linecol)
         End Function
 
-        Public Overridable Function ReadHexadecimal(linenum As Integer, linecol As Integer) As Token
+        Public Overridable Function ReadHexadecimal(org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
 
             Dim buf As New System.Text.StringBuilder
             Do While Not Me.EndOfStream
@@ -487,14 +493,16 @@ READ_CONTINUE_:
                 Else
                     Exit Do
                 End If
+
+                org.Append(c)
             Loop
 
-            Return Me.CreateNumericToken(Convert.ToUInt32(buf.ToString, 16), linenum, linecol)
+            Return Me.CreateNumericToken(org.ToString, Convert.ToUInt32(buf.ToString, 16), linenum, linecol)
         End Function
 
-        Public Overridable Function CreateNumericToken(n As UInt32, linenum As Integer, linecol As Integer) As Token
+        Public Overridable Function CreateNumericToken(format As String, n As UInt32, linenum As Integer, linecol As Integer) As Token
 
-            Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(n) With {.LineNumber = linenum, .LineColumn = linecol}}
+            Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(format, n) With {.LineNumber = linenum, .LineColumn = linecol}}
         End Function
 
 #End Region

@@ -26,9 +26,9 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<StructNode>     struct struct_block
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
-%type<IEvaluableListNode> list listn
+%type<IEvaluableListNode> list listn list2n
 %type<VariableListNode>   patternn array_pattern
-%type<VariableNode>   var varx fn pattern
+%type<VariableNode>   var varx fvar fn pattern
 %type<NumericNode>    num
 %type<StringNode>     str
 %type<UseNode>        use
@@ -45,6 +45,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  ':'
 %left  IGNORE
 
+%left  ','
 %left  '?'
 %right '(' '[' '{'
 %left  ARROW
@@ -91,8 +92,9 @@ expr : var
      | atvar
      | '[' list ']'         {$$ = $2}
      | '(' expr ')'         {$$ = Me.CreateExpressionNode($2, "()")}
+     | '(' list2n ')'       {$$ = Me.CreateTupleNode($2)}
      | ope expr %prec UNARY {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
-     | expr '.' varx        {$$ = Me.CreatePropertyNode($1, $2, $3)}
+     | expr '.' fvar        {$$ = Me.CreatePropertyNode($1, $2, $3)}
      | expr ope expr        {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
      | expr '[' expr ']'    {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
@@ -100,11 +102,12 @@ expr : var
 
 call : expr '(' list ')' {$$ = Me.CreateFunctionCallNode($1, $3.List.ToArray)}
 
-list  : void             {$$ = Me.CreateListNode(Of IEvaluableNode)}
-      | listn extra
-listn : expr             {$$ = Me.CreateListNode($1)}
-      | listn ',' expr   {$1.List.Add($3) : $$ = $1}
-
+list   : void            {$$ = Me.CreateListNode(Of IEvaluableNode)}
+       | listn extra
+listn  : expr            {$$ = Me.CreateListNode($1)}
+       | list2n
+list2n : expr ',' expr   {$$ = Me.CreateListNode($1, $3)}
+       | list2n ',' expr {$1.List.Add($3) : $$ = $1}
 
 ########## let ##########
 let : LET var EQ expr          {$$ = Me.CreateLetNode($2, $4, True)}
@@ -221,6 +224,8 @@ varx   : var
        | ELSE    {$$ = Me.CreateVariableNode($1)}
        | LET     {$$ = Me.CreateVariableNode($1)}
        | USE     {$$ = Me.CreateVariableNode($1)}
+fvar   : varx
+       | NUM     {$$ = Me.CreateVariableNode($1.Format, $1)}
 atvar  : ATVAR   {$$ = New TypeNode(Me.CreateVariableNode($1)) With {.IsGeneric = True}}
 num    : NUM     {$$ = $1}
 str    : STR     {$$ = New StringNode($1)}

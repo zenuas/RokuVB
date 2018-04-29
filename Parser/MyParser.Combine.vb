@@ -144,6 +144,15 @@ Namespace Parser
             Return Me.CreateExpressionNode(left, "", Nothing)
         End Function
 
+        Public Overridable Function CreateTupleNode(
+                items As ListNode(Of IEvaluableNode)
+            ) As TupleNode
+
+            Dim tuple As New TupleNode With {.Items = items.List.ToArray}
+            tuple.AppendLineNumber(items)
+            Return tuple
+        End Function
+
         Public Overridable Function CreateListNode(Of T As INode)() As ListNode(Of T)
 
             Return New ListNode(Of T)
@@ -166,6 +175,14 @@ Namespace Parser
 
             Dim var_ = New VariableNode(s)
             var_.AppendLineNumber(pos)
+
+            Return var_
+        End Function
+
+        Public Overridable Function CreateVariableNode(s As String, node As INode) As VariableNode
+
+            Dim var_ = New VariableNode(s)
+            var_.AppendLineNumber(node)
 
             Return var_
         End Function

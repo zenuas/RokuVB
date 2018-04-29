@@ -156,6 +156,9 @@ Namespace Parser
         ''' <summary>fn</summary>
         fn
 
+        ''' <summary>fvar</summary>
+        fvar
+
         ''' <summary>if</summary>
         if_1
 
@@ -185,6 +188,9 @@ Namespace Parser
 
         ''' <summary>list</summary>
         list
+
+        ''' <summary>list2n</summary>
+        list2n
 
         ''' <summary>listn</summary>
         listn

@@ -411,6 +411,21 @@ Namespace Compiler
                                 End If
                             End If
 
+                        ElseIf TypeOf r Is RkTuple Then
+
+                            Coverage.Case()
+                            Dim tuple = CType(r, RkTuple)
+                            If tuple.Local.ContainsKey(byname.Name) Then
+
+                                Dim t = tuple.Local(byname.Name)
+                                If t IsNot Nothing Then
+
+                                    Coverage.Case()
+                                    byname.Type = t
+                                    Return t
+                                End If
+                            End If
+
                         ElseIf TypeOf r Is RkNamespace Then
 
                             Coverage.Case()
@@ -807,6 +822,17 @@ Namespace Compiler
                                     Return node_expr.Function.Return
                                 End Function)
 
+                        ElseIf TypeOf child Is TupleNode Then
+
+                            Dim node_tuple = CType(child, TupleNode)
+                            set_type(node_tuple,
+                                Function()
+
+                                    Dim tuple As New RkTuple
+                                    node_tuple.Items.Do(Sub(x, i) tuple.AddLet((i + 1).ToString, x.Type))
+                                    Return tuple
+                                End Function)
+
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node_prop = CType(child, PropertyNode)
@@ -991,6 +1017,12 @@ Namespace Compiler
                         Coverage.Case()
                         Dim s = CType(t, RkStruct)
                         s.Local.Keys.ToList.Do(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
+
+                    ElseIf TypeOf t Is RkTuple Then
+
+                        Coverage.Case()
+                        Dim s = CType(t, RkTuple)
+                        s.Local.Keys.ToList.Do(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
                     End If
 
                     If TypeOf t Is IApply Then
@@ -1065,6 +1097,26 @@ Namespace Compiler
 
                 End Sub)
 
+        End Sub
+
+        Public Shared Sub AnonymouseTypeAllocation(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                node,
+                0,
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is IEvaluableNode Then
+
+                        Dim e = CType(child, IEvaluableNode)
+                        If TypeOf e.Type Is RkTuple Then e.Type = root.CreateTuple(CType(e.Type, RkTuple))
+                        Coverage.Case()
+                    End If
+
+                    next_(child, current + 1)
+                End Sub)
         End Sub
 
     End Class

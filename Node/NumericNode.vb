@@ -9,11 +9,13 @@ Namespace Node
         Implements IEvaluableNode, IFeedback
 
 
-        Public Sub New(n As UInt32)
+        Public Sub New(format As String, n As UInt32)
 
+            Me.Format = format
             Me.Numeric = n
         End Sub
 
+        Public Overridable Property Format As String
         Public Overridable Property Numeric As UInt32
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance

@@ -1,0 +1,12 @@
+var xs = []
+var x = (1, "str", xs)
+xs.Add(10)
+
+#=>1
+print(x.1)
+
+#=>str
+print(x.2)
+
+#=>10
+print(x.3[0])

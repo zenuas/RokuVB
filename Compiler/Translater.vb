@@ -206,6 +206,19 @@ Namespace Compiler
                                 Coverage.Case()
                                 Return {New InCode With {.Operator = InOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
 
+                            ElseIf TypeOf stmt Is TupleNode Then
+
+                                Coverage.Case()
+                                Dim tuple = CType(stmt, TupleNode)
+                                Dim body As New List(Of InCode0)
+                                body.AddRange(LoadFunction(root, "#Alloc", tuple.Type).CreateCallReturn(ret, New OpValue With {.Type = tuple.Type}))
+                                tuple.Items.Do(Sub(x, i) body.Add(New InCode With {
+                                        .Operator = InOperator.Bind,
+                                        .Return = New RkProperty With {.Receiver = ret, .Name = (i + 1).ToString, .Type = x.Type, .Scope = rk_func},
+                                        .Left = to_value(x)
+                                    }))
+                                Return body.ToArray
+
                             ElseIf IsGeneric(stmt.GetType, GetType(ListNode(Of ))) Then
 
                                 Dim xs As New OpArray With {.Type = stmt.Type}

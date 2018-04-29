@@ -193,6 +193,14 @@ BLOCK_NODE_:
                             f("Left", x.Left)
                             f("Right", x.Right)
 
+                        Case TypeOf node_ Is TupleNode
+
+                            Dim x = CType(node_, TupleNode)
+                            For i = 0 To x.Items.Length - 1
+
+                                f($"[{i}]", x.Items(i))
+                            Next
+
                         Case TypeOf node_ Is FunctionCallNode
 
                             Dim x = CType(node_, FunctionCallNode)
@@ -398,6 +406,14 @@ BLOCK_NODE_:
                             Dim x = CType(node_, PropertyNode)
                             x.Left = CType(f("Left", x.Left), IEvaluableNode)
                             x.Right = CType(f("Right", x.Right), VariableNode)
+
+                        Case TypeOf node_ Is TupleNode
+
+                            Dim x = CType(node_, TupleNode)
+                            For i = 0 To x.Items.Length - 1
+
+                                x.Items(i) = CType(f($"[{i}]", x.Items(i)), IEvaluableNode)
+                            Next
 
                         Case TypeOf node_ Is FunctionCallNode
 
