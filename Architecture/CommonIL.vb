@@ -378,9 +378,9 @@ Namespace Architecture
 
                             gen_il_loadc(il, v)
 
-                        ElseIf TypeOf v Is RkProperty Then
+                        ElseIf TypeOf v Is OpProperty Then
 
-                            Dim prop = CType(v, RkProperty)
+                            Dim prop = CType(v, OpProperty)
                             gen_il_load(il, get_local(il, prop.Receiver), ref)
                             il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
 
@@ -391,9 +391,9 @@ Namespace Architecture
                     End Sub,
                     Sub(il, v)
 
-                        If TypeOf v Is RkProperty Then
+                        If TypeOf v Is OpProperty Then
 
-                            Dim prop = CType(v, RkProperty)
+                            Dim prop = CType(v, OpProperty)
                             il.Emit(OpCodes.Stfld, structs(CType(prop.Receiver.Type, RkStruct)).Fields(prop.Name))
                         Else
                             gen_il_store(il, get_local(il, v))
@@ -423,9 +423,9 @@ Namespace Architecture
 
                             gen_il_loadc(il, v)
 
-                        ElseIf TypeOf v Is RkProperty Then
+                        ElseIf TypeOf v Is OpProperty Then
 
-                            Dim prop = CType(v, RkProperty)
+                            Dim prop = CType(v, OpProperty)
                             gen_il_load(il, get_local(il, prop.Receiver), ref)
                             il.Emit(OpCodes.Ldfld, Me.RkToCILType(CType(prop.Receiver.Type, RkStruct), structs).GetField(prop.Name))
 
@@ -518,9 +518,9 @@ Namespace Architecture
                     Dim bind = CType(stmt, IReturnBind)
                     If TypeOf bind.Return?.Type Is RkFunction AndAlso bind.Return.Type.HasGeneric Then Continue For
 
-                    If TypeOf bind.Return Is RkProperty Then
+                    If TypeOf bind.Return Is OpProperty Then
 
-                        Dim prop = CType(bind.Return, RkProperty)
+                        Dim prop = CType(bind.Return, OpProperty)
                         If prop.Receiver IsNot Nothing Then gen_il_load(il, prop.Receiver, False)
                     End If
                 End If

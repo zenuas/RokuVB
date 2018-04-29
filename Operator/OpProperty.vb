@@ -1,9 +1,6 @@
-﻿Imports Roku.Operator
+﻿Namespace [Operator]
 
-
-Namespace Manager
-
-    Public Class RkProperty
+    Public Class OpProperty
         Inherits OpValue
 
         Public Overridable Property Receiver As OpValue

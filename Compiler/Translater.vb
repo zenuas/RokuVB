@@ -118,7 +118,7 @@ Namespace Compiler
                                 Dim var = CType(x, VariableNode)
                                 If var.ClosureEnvironment Then
 
-                                    Return New RkProperty With {.Receiver = get_closure(var), .Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
+                                    Return New OpProperty With {.Receiver = get_closure(var), .Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
 
                                 ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode AndAlso CType(var.Scope.Lets(var.Name), VariableNode).LocalVariable Then
 
@@ -214,7 +214,7 @@ Namespace Compiler
                                 body.AddRange(LoadFunction(root, "#Alloc", tuple.Type).CreateCallReturn(ret, New OpValue With {.Type = tuple.Type}))
                                 tuple.Items.Do(Sub(x, i) body.Add(New InCode With {
                                         .Operator = InOperator.Bind,
-                                        .Return = New RkProperty With {.Receiver = ret, .Name = (i + 1).ToString, .Type = x.Type, .Scope = rk_func},
+                                        .Return = New OpProperty With {.Receiver = ret, .Name = (i + 1).ToString, .Type = x.Type, .Scope = rk_func},
                                         .Left = to_value(x)
                                     }))
                                 Return body.ToArray
@@ -248,7 +248,7 @@ Namespace Compiler
                             Dim ret As OpValue
                             If let_.Var.ClosureEnvironment Then
 
-                                ret = New RkProperty With {.Receiver = closure, .Name = $"{let_.Var.Name}:{let_.Var.Scope.LineNumber}", .Type = let_.Var.Type, .Scope = rk_func}
+                                ret = New OpProperty With {.Receiver = closure, .Name = $"{let_.Var.Name}:{let_.Var.Scope.LineNumber}", .Type = let_.Var.Type, .Scope = rk_func}
                                 Coverage.Case()
 
                             ElseIf let_.Receiver Is Nothing Then
@@ -257,7 +257,7 @@ Namespace Compiler
                                 Coverage.Case()
                             Else
 
-                                ret = New RkProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
+                                ret = New OpProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
                                 Coverage.Case()
                             End If
 
@@ -469,7 +469,7 @@ Namespace Compiler
                                 rk_func.Body.Add(
                                     New InCode With {
                                         .Operator = InOperator.Bind,
-                                        .Return = New RkProperty With {.Name = x.Name, .Receiver = closure, .Type = x.Value, .Scope = rk_func},
+                                        .Return = New OpProperty With {.Name = x.Name, .Receiver = closure, .Type = x.Value, .Scope = rk_func},
                                         .Left = New OpValue With {.Name = x.Name, .Type = x.Value, .Scope = rk_func}})
                                 Coverage.Case()
                             End Sub)

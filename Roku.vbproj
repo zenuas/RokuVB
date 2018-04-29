@@ -113,7 +113,7 @@
     <Compile Include="Manager\RkCILNamespace.vb" />
     <Compile Include="Manager\RkCILStruct.vb" />
     <Compile Include="Manager\RkCILFunction.vb" />
-    <Compile Include="Manager\RkProperty.vb" />
+    <Compile Include="Operator\OpProperty.vb" />
     <None Include="roku.y" />
     <EmbeddedResource Include="sys.rk" />
   </ItemGroup>
