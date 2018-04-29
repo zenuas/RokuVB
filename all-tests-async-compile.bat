@@ -52,6 +52,6 @@ exit /B 0
 	)
 	
 	echo %BIN% %RK% -o %RKOUT% %LIB%
-	start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% -N %RKOUT%.dot 2>%RKOUT%.stderr && dot -Tpng %RKOUT%.dot > %RKOUT%.png"
+	start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% -N %RKOUT%.dot 2>%RKOUT%.stderr & dot -Tpng %RKOUT%.dot > %RKOUT%.png"
 	exit /B 0
 
