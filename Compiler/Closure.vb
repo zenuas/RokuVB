@@ -46,6 +46,27 @@ Namespace Compiler
                     next_(child, current)
                 End Sub)
 
+            Util.Traverse.NodesOnce(
+                node,
+                CType(node, IScopeNode),
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If TypeOf child Is IScopeNode Then current = CType(child, IScopeNode)
+
+                    If TypeOf child Is VariableNode Then
+
+                        Dim var = CType(child, VariableNode)
+
+                        If var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode Then
+
+                            var.ClosureEnvironment = CType(var.Scope.Lets(var.Name), VariableNode).ClosureEnvironment
+                        End If
+                        Coverage.Case()
+                    End If
+
+                    next_(child, current)
+                End Sub)
+
         End Sub
 
     End Class

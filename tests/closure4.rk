@@ -1,0 +1,8 @@
+sub show(a: Int) {}
+	return({} => print(a))
+
+#=>1
+show(1)()
+
+#=>2
+show(2)()

@@ -36,9 +36,9 @@ Namespace Compiler
             Dim make_closure =
                 Sub(scope As IScopeNode)
 
-                    For Each var In scope.Lets.Where(Function(v) TypeOf v.Value Is VariableNode AndAlso CType(v.Value, VariableNode).ClosureEnvironment)
+                    For Each var In scope.Lets.Where(Function(x) TypeOf x.Value Is VariableNode AndAlso CType(x.Value, VariableNode).ClosureEnvironment).Map(Function(x) CType(x.Value, VariableNode))
 
-                        make_env(scope.Owner).AddLet(var.Key, CType(var.Value, VariableNode).Type)
+                        make_env(scope.Owner).AddLet($"{var.Name}:{var.Scope.LineNumber}", var.Type)
                     Next
                 End Sub
 
@@ -87,16 +87,22 @@ Namespace Compiler
                     'If TypeOf scope Is FunctionNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, FunctionNode).Function.Generics(i).Name) = x)
                     'If TypeOf scope Is StructNode Then rk_func.Apply.Do(Sub(x, i) fix_map(CType(scope, StructNode).Struct.Generics(i).Name) = x)
 
+                    If TypeOf scope Is FunctionNode Then
+
+                        CType(scope, FunctionNode).Arguments.Map(Function(x) x.Name).Do(Sub(arg) If arg.ClosureEnvironment Then rk_func.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name)).Name = $"{arg.Name}:{arg.Scope.LineNumber}")
+                    End If
+
                     Dim closure As OpValue = Nothing
 
                     Dim get_closure =
                         Function(var As VariableNode)
 
-                            If closure IsNot Nothing AndAlso CType(closure.Type, RkStruct).Local.Or(Function(x) x.Key.Equals(var.Name)) Then Return closure
+                            Dim name = $"{var.Name}:{var.Scope.LineNumber}"
+                            If closure IsNot Nothing AndAlso CType(closure.Type, RkStruct).Local.Or(Function(x) x.Key.Equals(name)) Then Return closure
                             Dim v = rk_func.Arguments.FindFirst(
                                 Function(arg) TypeOf arg.Value Is RkStruct AndAlso
                                         CType(arg.Value, RkStruct).ClosureEnvironment AndAlso
-                                        CType(arg.Value, RkStruct).Local.Or(Function(x) x.Key.Equals(var.Name))
+                                        CType(arg.Value, RkStruct).Local.Or(Function(x) x.Key.Equals(name))
                                     ).Value
                             Return New OpValue With {.Name = v.Name, .Type = v, .Scope = rk_func}
                         End Function
@@ -112,7 +118,7 @@ Namespace Compiler
                                 Dim var = CType(x, VariableNode)
                                 If var.ClosureEnvironment Then
 
-                                    Return New RkProperty With {.Receiver = get_closure(var), .Name = var.Name, .Type = t, .Scope = rk_func}
+                                    Return New RkProperty With {.Receiver = get_closure(var), .Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
 
                                 ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode AndAlso CType(var.Scope.Lets(var.Name), VariableNode).LocalVariable Then
 
@@ -229,7 +235,7 @@ Namespace Compiler
                             Dim ret As OpValue
                             If let_.Var.ClosureEnvironment Then
 
-                                ret = New RkProperty With {.Receiver = closure, .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = rk_func}
+                                ret = New RkProperty With {.Receiver = closure, .Name = $"{let_.Var.Name}:{let_.Var.Scope.LineNumber}", .Type = let_.Var.Type, .Scope = rk_func}
                                 Coverage.Case()
 
                             ElseIf let_.Receiver Is Nothing Then
