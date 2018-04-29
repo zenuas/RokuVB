@@ -173,7 +173,7 @@ Namespace Util
         Public Function ToHash_KeyDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of R, T)
 
             Dim hash As New Dictionary(Of R, T)
-            self.Do(Sub(x) hash(f(x)) = x)
+            self.Each(Sub(x) hash(f(x)) = x)
             Return hash
         End Function
 
@@ -182,7 +182,7 @@ Namespace Util
         Public Function ToHash_KeyDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of R, T)
 
             Dim hash As New Dictionary(Of R, T)
-            self.Do(Sub(x, i) hash(f(x, i)) = x)
+            self.Each(Sub(x, i) hash(f(x, i)) = x)
             Return hash
         End Function
 
@@ -191,7 +191,7 @@ Namespace Util
         Public Function ToHash_ValueDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of T, R)
 
             Dim hash As New Dictionary(Of T, R)
-            self.Do(Sub(x) hash(x) = f(x))
+            self.Each(Sub(x) hash(x) = f(x))
             Return hash
         End Function
 
@@ -200,7 +200,7 @@ Namespace Util
         Public Function ToHash_ValueDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As Dictionary(Of T, R)
 
             Dim hash As New Dictionary(Of T, R)
-            self.Do(Sub(x, i) hash(x) = f(x, i))
+            self.Each(Sub(x, i) hash(x) = f(x, i))
             Return hash
         End Function
 
@@ -223,7 +223,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Sub [Do](Of T)(self As IEnumerable(Of T), f As Action(Of T, Integer))
+        Public Sub [Each](Of T)(self As IEnumerable(Of T), f As Action(Of T, Integer))
 
             Dim i = 0
             For Each x In self
@@ -235,7 +235,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Sub [Do](Of T)(self As IEnumerable(Of T), f As Action(Of T))
+        Public Sub [Each](Of T)(self As IEnumerable(Of T), f As Action(Of T))
 
             For Each x In self
 

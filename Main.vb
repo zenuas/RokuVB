@@ -39,7 +39,7 @@ Public Class Main
         Dim xs = Command.Parser.Parse(opt, args)
         Dim loader As New Loader With {.CurrentDirectory = System.IO.Directory.GetCurrentDirectory}
         loader.LoadAssembly("mscorlib")
-        opt.Libraries.Do(Sub(x) loader.LoadAssembly(x))
+        opt.Libraries.Each(Sub(x) loader.LoadAssembly(x))
 
         If xs.Length = 0 Then
 

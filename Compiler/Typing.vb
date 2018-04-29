@@ -28,7 +28,7 @@ Namespace Compiler
                         Dim node_struct = CType(child, StructNode)
                         Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct, .Scope = current.Scope, .Parent = current.Scope}
                         node_struct.Type = rk_struct
-                        node_struct.Generics.Do(Sub(x) rk_struct.DefineGeneric(x.Name))
+                        node_struct.Generics.Each(Sub(x) rk_struct.DefineGeneric(x.Name))
                         current.Scope.AddStruct(rk_struct)
 
                         If node_struct.Parent IsNot node_struct.Owner Then
@@ -52,7 +52,7 @@ Namespace Compiler
                             Dim gens = node_struct.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
                             Dim self = rk_struct.FixedGeneric(gens)
                             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
-                            gens.Do(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = x}))
+                            gens.Each(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = x}))
                             alloc.Return = self
                             alloc.Scope.AddFunction(alloc)
                             Coverage.Case()
@@ -103,7 +103,7 @@ Namespace Compiler
                                 End If
                             End Sub
 
-                        node_func.Arguments.Do(Sub(x) create_generic(x.Type))
+                        node_func.Arguments.Each(Sub(x) create_generic(x.Type))
                         If node_func.Return IsNot Nothing Then create_generic(node_func.Return)
 
                         current.Scope.AddFunction(rk_func)
@@ -160,7 +160,7 @@ Namespace Compiler
 
                         Dim node_typef = CType(child, TypeFunctionNode)
                         Dim rk_func As New RkFunction With {.Scope = ns}
-                        node_typef.Arguments.Do(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
+                        node_typef.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
                         rk_func.Return = node_typef.Return?.Type
                         node_typef.Type = rk_func
                         Coverage.Case()
@@ -235,7 +235,7 @@ Namespace Compiler
                                 Return x.Type
                             End Function
 
-                        node_func.Arguments.Do(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
+                        node_func.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
 
                         Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
                         If node_func.Return IsNot Nothing Then
@@ -650,7 +650,7 @@ Namespace Compiler
                         Coverage.Case()
                     Else
 
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Do(Sub(x, i) node_call.Arguments(i).Type = var_feedback(node_call.Arguments(i).Type, x.Value))
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node_call.Arguments(i).Type = var_feedback(node_call.Arguments(i).Type, x.Value))
                         Coverage.Case()
                     End If
                 End Sub
@@ -732,7 +732,7 @@ Namespace Compiler
 
                                     ElseIf node_case.Pattern.Count > 1 Then
 
-                                        node_case.Pattern.Do(Sub(p, i) set_type(p, Function() If(i < node_case.Pattern.Count - 1, x, xs)))
+                                        node_case.Pattern.Each(Sub(p, i) set_type(p, Function() If(i < node_case.Pattern.Count - 1, x, xs)))
                                         Coverage.Case()
                                     End If
                                 End If
@@ -829,7 +829,7 @@ Namespace Compiler
                                 Function()
 
                                     Dim tuple As New RkTuple
-                                    node_tuple.Items.Do(Sub(x, i) tuple.AddLet((i + 1).ToString, x.Type))
+                                    node_tuple.Items.Each(Sub(x, i) tuple.AddLet((i + 1).ToString, x.Type))
                                     Return tuple
                                 End Function)
 
@@ -1009,20 +1009,20 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim f = CType(t, RkFunction)
-                        f.Arguments.Do(Sub(x) x.Value = var_normalize(x.Value))
+                        f.Arguments.Each(Sub(x) x.Value = var_normalize(x.Value))
                         f.Return = var_normalize(f.Return)
 
                     ElseIf TypeOf t Is RkStruct Then
 
                         Coverage.Case()
                         Dim s = CType(t, RkStruct)
-                        s.Local.Keys.ToList.Do(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
+                        s.Local.Keys.ToList.Each(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
 
                     ElseIf TypeOf t Is RkTuple Then
 
                         Coverage.Case()
                         Dim s = CType(t, RkTuple)
-                        s.Local.Keys.ToList.Do(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
+                        s.Local.Keys.ToList.Each(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
                     End If
 
                     If TypeOf t Is IApply Then

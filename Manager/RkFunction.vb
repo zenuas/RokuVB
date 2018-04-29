@@ -73,7 +73,7 @@ Namespace Manager
             If Not Me.HasGeneric Then Return Me
 
             Dim apply_map As New Dictionary(Of Integer, NamedValue)
-            Me.Generics.Do(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
+            Me.Generics.Each(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
             Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
             For Each fix In Me.GetBaseFunctions().Where(Function(g) g.Apply.Count = apply.Length)
 
@@ -98,12 +98,12 @@ Namespace Manager
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
             If Me.Return IsNot Nothing Then clone.Return = apply_fix(Me.Return)
-            Me.Arguments.Do(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
+            Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
             clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
-            Me.Functions.Do(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList.Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
+            Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList.Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
             Return clone
         End Function
 
@@ -119,7 +119,7 @@ Namespace Manager
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
                         Dim struct = CType(arg, RkStruct)
-                        struct.Generics.Do(
+                        struct.Generics.Each(
                             Sub(x, i)
 
                                 Dim apply = CType(p, RkStruct).Apply(i)
@@ -157,7 +157,7 @@ Namespace Manager
                                 Return
                             End If
                         End If
-                        struct.Generics.Do(
+                        struct.Generics.Each(
                             Sub(x, i)
 
                                 Dim apply = CType(t, RkStruct).Apply(i)

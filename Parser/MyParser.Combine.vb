@@ -284,7 +284,7 @@ Namespace Parser
                 ret As TypeNode
             ) As FunctionNode
 
-            args.Do(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
+            args.Each(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
             f.Name = $"#{f.LineNumber},{f.LineColumn}"
             f.Arguments = args
             f.Return = ret

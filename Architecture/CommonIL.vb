@@ -25,8 +25,8 @@ Namespace Architecture
             Dim structs = Me.DeclareStructs(root)
             Dim functions = Me.DeclareMethods(root, structs)
             Me.DeclareStatements(root, functions, structs)
-            structs.Do(Sub(x) If TypeOf x.Value.Type Is TypeBuilder Then CType(x.Value.Type, TypeBuilder).CreateType())
-            Me.Binders.Do(Sub(x) CType(x.Value.Type, TypeBuilder).CreateType())
+            structs.Each(Sub(x) If TypeOf x.Value.Type Is TypeBuilder Then CType(x.Value.Type, TypeBuilder).CreateType())
+            Me.Binders.Each(Sub(x) CType(x.Value.Type, TypeBuilder).CreateType())
 
             If subsystem <> PEFileKinds.Dll Then
 
@@ -106,7 +106,7 @@ Namespace Architecture
                 map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}")}
             Next
 
-            root.TupleCache.Do(Sub(x) map.Add(x.Value, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.Value.CreateManglingName}")}))
+            root.TupleCache.Each(Sub(x) map.Add(x.Value, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.Value.CreateManglingName}")}))
 
             For Each v In map
 
@@ -201,12 +201,12 @@ Namespace Architecture
                 Dim method = t.DefineMethod("Invoke", MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, Me.RkToCILType(args.ToList, structs))
 
                 Dim il = method.GetILGenerator
-                fields.Do(
+                fields.Each(
                     Sub(x)
                         il.Emit(OpCodes.Ldarg_0)
                         il.Emit(OpCodes.Ldfld, x)
                     End Sub)
-                args.Do(Sub(x, i) il.Emit(OpCodes.Ldarg, i + 1))
+                args.Each(Sub(x, i) il.Emit(OpCodes.Ldarg, i + 1))
                 il.Emit(OpCodes.Ldarg_0)
                 il.Emit(OpCodes.Ldfld, func)
                 il.EmitCalli(OpCodes.Calli, CallingConventions.Standard, method.ReturnType, Me.RkToCILType(f.Arguments.ToList, structs), Nothing)
@@ -214,7 +214,7 @@ Namespace Architecture
 
                 Dim builder = New TypeData With {.Type = t, .Constructor = ctor}
                 builder.Fields(func.Name) = func
-                fields.Do(Sub(x) builder.Fields(x.Name) = x)
+                fields.Each(Sub(x) builder.Fields(x.Name) = x)
                 builder.Methods(method.Name) = method
 
                 Me.Binders.Add(f, builder)
@@ -355,7 +355,7 @@ Namespace Architecture
                             il.Emit(OpCodes.Newobj, bind.Constructor)
                             Dim index = get_local(il, r)
                             gen_il_store(il, index)
-                            bind.Fields.Do(
+                            bind.Fields.Each(
                                 Sub(x)
 
                                     gen_il_load(il, index, ref)
@@ -575,14 +575,14 @@ Namespace Architecture
                             Dim cc = CType(stmt, InLambdaCall)
                             Dim bind = Me.RkFunctionToCILType(cc.Function, structs)
                             gen_il_load(il, cc.Value, False)
-                            cc.Arguments.Do(Sub(arg) gen_il_load(il, arg, False))
+                            cc.Arguments.Each(Sub(arg) gen_il_load(il, arg, False))
                             il.EmitCall(OpCodes.Callvirt, bind.GetMethod("Invoke"), Nothing)
                             If cc.Return IsNot Nothing Then gen_il_store(il, cc.Return)
                         Else
 
                             Dim cc = CType(stmt, InCall)
                             Dim env = 0
-                            cc.Function.Arguments.Do(
+                            cc.Function.Arguments.Each(
                                 Sub(x)
 
                                     If TypeOf x.Value Is RkStruct AndAlso CType(x.Value, RkStruct).ClosureEnvironment Then
@@ -591,7 +591,7 @@ Namespace Architecture
                                         env += 1
                                     End If
                                 End Sub)
-                            cc.Arguments.Do(
+                            cc.Arguments.Each(
                                 Sub(arg, i)
 
                                     Dim ref = False

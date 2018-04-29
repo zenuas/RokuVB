@@ -80,7 +80,7 @@ Namespace Compiler
                         Dim node_case = CType(child, CaseArrayNode)
                         If node_case.Then IsNot Nothing Then
 
-                            node_case.Pattern.Do(Sub(x) node_case.Then.Lets.Add(x.Name, x))
+                            node_case.Pattern.Each(Sub(x) node_case.Then.Lets.Add(x.Name, x))
                             node_case.Then.Parent = current
                         End If
                         next_(child, node_case.Then)

@@ -59,7 +59,7 @@ Namespace Compiler
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = CType(node_func.Type, RkFunction)
-                        node_func.Bind.Do(
+                        node_func.Bind.Each(
                             Sub(x)
 
                                 Dim env = make_env(x.Key)
@@ -89,7 +89,7 @@ Namespace Compiler
 
                     If TypeOf scope Is FunctionNode Then
 
-                        CType(scope, FunctionNode).Arguments.Map(Function(x) x.Name).Do(Sub(arg) If arg.ClosureEnvironment Then rk_func.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name)).Name = $"{arg.Name}:{arg.Scope.LineNumber}")
+                        CType(scope, FunctionNode).Arguments.Map(Function(x) x.Name).Each(Sub(arg) If arg.ClosureEnvironment Then rk_func.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name)).Name = $"{arg.Name}:{arg.Scope.LineNumber}")
                     End If
 
                     Dim closure As OpValue = Nothing
@@ -212,7 +212,7 @@ Namespace Compiler
                                 Dim tuple = CType(stmt, TupleNode)
                                 Dim body As New List(Of InCode0)
                                 body.AddRange(LoadFunction(root, "#Alloc", tuple.Type).CreateCallReturn(ret, New OpValue With {.Type = tuple.Type}))
-                                tuple.Items.Do(Sub(x, i) body.Add(New InCode With {
+                                tuple.Items.Each(Sub(x, i) body.Add(New InCode With {
                                         .Operator = InOperator.Bind,
                                         .Return = New OpProperty With {.Receiver = ret, .Name = (i + 1).ToString, .Type = x.Type, .Scope = rk_func},
                                         .Left = to_value(x)
@@ -463,7 +463,7 @@ Namespace Compiler
 
                         closure = New OpValue With {.Name = rk_func.Closure.Name, .Type = rk_func.Closure, .Scope = rk_func}
                         rk_func.Body.AddRange(rk_func.Closure.Initializer.CreateCallReturn(closure, New OpValue With {.Type = rk_func.Closure, .Scope = rk_func}))
-                        rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Do(
+                        rk_func.Arguments.Where(Function(arg) rk_func.Closure.Local.ContainsKey(arg.Name)).Each(
                             Sub(x)
 
                                 rk_func.Body.Add(

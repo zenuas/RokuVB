@@ -264,7 +264,7 @@ Namespace Manager
                 Dim gens = ti.GenericTypeParameters
                 Dim suffix = $"`{gens.Length}"
                 If type_name.EndsWith(suffix) Then type_name = type_name.Substring(0, type_name.Length - suffix.Length)
-                gens.Do(Sub(x) s.DefineGeneric(x.Name))
+                gens.Each(Sub(x) s.DefineGeneric(x.Name))
 
                 ns.AddStruct(s, type_name)
             Else
@@ -512,7 +512,7 @@ Namespace Manager
 
                 Dim t As New RkStruct With {.Name = name, .Parent = Me}
                 'Dim alloc = LoadFunction(Me, "#Alloc", t)
-                tuple.Local.Do(Sub(x) t.AddLet(x.Key, x.Value))
+                tuple.Local.Each(Sub(x) t.AddLet(x.Key, x.Value))
                 Me.TupleCache(tuple) = t
                 Me.AddStruct(t)
                 Return t

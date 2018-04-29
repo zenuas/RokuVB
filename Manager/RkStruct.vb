@@ -65,7 +65,7 @@ Namespace Manager
             If Not Me.HasGeneric Then Return Me
 
             Dim apply_map As New Dictionary(Of Integer, NamedValue)
-            Me.Generics.Do(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
+            Me.Generics.Each(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
             Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
             For Each fix In Me.GetBaseTypes.Where(Function(g) g.Apply.Count = apply.Length)
 
