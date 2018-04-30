@@ -158,6 +158,8 @@ align = left,
             Nothing,
             Sub(parent, ref, child, user, isfirst, next_)
 
+                If Not isfirst Then Return
+
                 If TypeOf parent Is RootNode Then
 
                     If ref.Equals("`Sys") Then Return
