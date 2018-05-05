@@ -1,0 +1,17 @@
+sub f(n: Int) [Int, String]
+	if n == 1
+		return((n, "hello"))
+	else if n == 2
+		return((n, "world"))
+	else
+		return((n, "!!"))
+
+var x = f(1)
+var y = f(2)
+var z = f(3)
+
+#=>6
+print(x.1 + y.1 + z.1)
+
+#=>helloworld!!
+print(x.2 + y.2 + z.2)

@@ -12,7 +12,7 @@ Namespace Manager
 
 
         Public Overridable ReadOnly Property TypeCache As New Dictionary(Of TypeInfo, RkCILStruct)
-        Public Overridable ReadOnly Property TupleCache As New Dictionary(Of RkTuple, RkStruct)
+        Public Overridable ReadOnly Property TupleCache As New Dictionary(Of IStruct, RkStruct)
 
         Public Sub New()
 
@@ -497,6 +497,23 @@ Namespace Manager
             End If
         End Function
 
+        Public Overridable Function CreateTuple(tuples() As IType) As RkStruct
+
+            Dim name = $"({String.Join(", ", tuples.Map(Function(x) x.ToString))})"
+            Dim same_type = Me.TupleCache.FindFirstOrNull(Function(x) x.Value.Name.Equals(name)).Value
+            If same_type IsNot Nothing Then
+
+                Return same_type
+            Else
+
+                Dim t As New RkStruct With {.Name = name, .Parent = Me}
+                'Dim alloc = LoadFunction(Me, "#Alloc", t)
+                tuples.Each(Sub(x, i) t.AddLet((i + 1).ToString, x))
+                Me.TupleCache(t) = t
+                Me.AddStruct(t)
+                Return t
+            End If
+        End Function
 
         Public Overridable Function CreateTuple(tuple As RkTuple) As RkStruct
 

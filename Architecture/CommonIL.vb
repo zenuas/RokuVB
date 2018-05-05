@@ -106,7 +106,7 @@ Namespace Architecture
                 map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}")}
             Next
 
-            root.TupleCache.Each(Sub(x) map.Add(x.Value, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.Value.CreateManglingName}")}))
+            root.TupleCache.Values.SortToList.Unique.Each(Sub(x) map.Add(x, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.CreateManglingName}")}))
 
             For Each v In map
 

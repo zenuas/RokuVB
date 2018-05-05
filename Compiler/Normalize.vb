@@ -39,7 +39,7 @@ Namespace Compiler
                             End Function
 
                         Dim insert_let As Func(Of IEvaluableNode, IEvaluableNode) =
-                            Function(e As IEvaluableNode) As IEvaluableNode
+                            Function(e)
 
                                 If TypeOf e Is ExpressionNode Then
 
@@ -68,6 +68,16 @@ Namespace Compiler
                                     Next
                                     Coverage.Case()
                                     Return to_let(call_)
+
+                                ElseIf TypeOf e Is TupleNode Then
+
+                                    Dim tuple = CType(e, TupleNode)
+                                    For i = 0 To tuple.Items.Length - 1
+
+                                        tuple.Items(i) = insert_let(tuple.Items(i))
+                                    Next
+                                    Coverage.Case()
+                                    Return to_let(e)
 
                                 ElseIf IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
 

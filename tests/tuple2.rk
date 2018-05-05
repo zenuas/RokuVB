@@ -1,0 +1,10 @@
+sub f() [Int, String]
+	return((1, "hello"))
+
+var x = f()
+
+#=>1
+print(x.1)
+
+#=>hello
+print(x.2)

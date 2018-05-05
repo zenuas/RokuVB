@@ -255,6 +255,9 @@ Namespace Parser
         ''' <summary>type</summary>
         type
 
+        ''' <summary>type2n</summary>
+        type2n
+
         ''' <summary>typen</summary>
         typen
 

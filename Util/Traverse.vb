@@ -277,6 +277,14 @@ BLOCK_NODE_:
                             Dim x = CType(node_, TypeArrayNode)
                             f("Item", x.Item)
 
+                        Case TypeOf node_ Is TypeTupleNode
+
+                            Dim x = CType(node_, TypeTupleNode)
+                            For i = 0 To x.Items.List.Count - 1
+
+                                f($"[{i}]", x.Items.List(i))
+                            Next
+
                         Case TypeOf node_ Is UnionNode
 
                             Dim x = CType(node_, UnionNode)
@@ -490,6 +498,14 @@ BLOCK_NODE_:
 
                             Dim x = CType(node_, TypeArrayNode)
                             x.Item = CType(f("Item", x.Item), TypeNode)
+
+                        Case TypeOf node_ Is TypeTupleNode
+
+                            Dim x = CType(node_, TypeTupleNode)
+                            For i = 0 To x.Items.List.Count - 1
+
+                                x.Items.List(i) = CType(f($"[{i}]", x.Items.List(i)), TypeNode)
+                            Next
 
                         Case TypeOf node_ Is UnionNode
 

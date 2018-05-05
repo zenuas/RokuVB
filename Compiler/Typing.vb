@@ -171,6 +171,12 @@ Namespace Compiler
                         If Not node_typearr.HasGeneric Then node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is TypeTupleNode Then
+
+                        Dim node_typetuple = CType(child, TypeTupleNode)
+                        If Not node_typetuple.HasGeneric Then node_typetuple.Type = root.CreateTuple(node_typetuple.Items.List.Map(Function(x) x.Type).ToArray)
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node_union = CType(child, UnionNode)
