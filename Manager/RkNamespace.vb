@@ -95,6 +95,11 @@ Namespace Manager
             Throw New NotImplementedException()
         End Function
 
+        Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
+
+            Throw New NotImplementedException()
+        End Function
+
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
             Throw New NotImplementedException()

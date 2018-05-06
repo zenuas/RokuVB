@@ -14,6 +14,7 @@ Namespace Node
         End Sub
 
         Public Overridable ReadOnly Property Uses As New List(Of UseNode)
+        Public Overridable ReadOnly Property FixedGenericFunction As New List(Of FunctionNode)
 
     End Class
 

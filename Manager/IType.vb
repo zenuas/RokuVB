@@ -11,6 +11,7 @@
         Function DefineGeneric(name As String) As RkGenericEntry
         Function FixedGeneric(ParamArray values() As IType) As IType
         Function FixedGeneric(ParamArray values() As NamedValue) As IType
+        Function TypeToApply(value As IType) As IType()
         Function HasGeneric() As Boolean
         Function CloneGeneric() As IType
         Function HasIndefinite() As Boolean

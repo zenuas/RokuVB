@@ -216,6 +216,11 @@ Namespace Manager
             Return Me.GetDecideType.FixedGeneric(values)
         End Function
 
+        Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
+
+            Return Me.GetDecideType.TypeToApply(value)
+        End Function
+
         Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
 
             Return CType(Me.GetDecideType, IFunction).ArgumentsToApply(args)

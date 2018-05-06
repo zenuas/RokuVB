@@ -141,6 +141,11 @@ Namespace Util
 
                         Case TypeOf node_ Is ProgramNode
 
+                            Dim x = CType(node_, ProgramNode)
+                            For i = 0 To x.FixedGenericFunction.Count - 1
+
+                                f($"`{x.FixedGenericFunction(i).Name}", x.FixedGenericFunction(i))
+                            Next
                             GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is FunctionNode
@@ -209,7 +214,6 @@ BLOCK_NODE_:
 
                                 f($"[{i}]", x.Arguments(i))
                             Next
-                            f($"FixedGenericFunction", x.FixedGenericFunction)
 
                         Case TypeOf node_ Is DeclareNode
 
@@ -363,6 +367,11 @@ BLOCK_NODE_:
 
                         Case TypeOf node_ Is ProgramNode
 
+                            Dim x = CType(node_, ProgramNode)
+                            For i = 0 To x.FixedGenericFunction.Count - 1
+
+                                x.FixedGenericFunction(i) = CType(f($"`{x.FixedGenericFunction(i).Name}", x.FixedGenericFunction(i)), FunctionNode)
+                            Next
                             GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is FunctionNode
@@ -431,7 +440,6 @@ BLOCK_NODE_:
 
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), IEvaluableNode)
                             Next
-                            x.FixedGenericFunction = CType(f($"FixedGenericFunction", x.FixedGenericFunction), FunctionNode)
 
                         Case TypeOf node_ Is DeclareNode
 

@@ -1,0 +1,11 @@
+sub each(xs: [@T], block: {@T})
+	switch xs
+		[] =>
+		[y, ys] =>
+			block(y)
+			each(ys, block)
+
+#=>1
+#=>2
+#=>3
+each([1, 2, 3], {x} => print(x))

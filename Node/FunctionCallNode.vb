@@ -22,9 +22,7 @@ Namespace Node
             End Set
         End Property
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
-
         Public Overridable Property [Function] As IFunction
-        Public Overridable Property FixedGenericFunction As FunctionNode
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 

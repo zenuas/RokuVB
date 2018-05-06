@@ -107,6 +107,12 @@ Namespace Manager
             Return clone
         End Function
 
+        Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
+
+            If TypeOf value IsNot IFunction Then Throw New ArgumentException("generics parameter miss match")
+            Return Me.ArgumentsToApply(CType(value, IFunction).Arguments.Map(Function(x) x.Value).ToArray)
+        End Function
+
         Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
 
             Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =

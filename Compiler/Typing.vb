@@ -365,7 +365,7 @@ Namespace Compiler
             Dim function_generic_fixed_to_node =
                 Function(f As IFunction)
 
-                    Dim base = f.GenericBase.FunctionNode
+                    Dim base = If(f.GenericBase?.FunctionNode, f.FunctionNode)
                     Dim bind = base.Bind
                     Dim parent = base.Parent
                     base.Bind = Nothing
@@ -633,11 +633,24 @@ Namespace Compiler
                             Debug.Fail("feedback error")
                         End If
 
+                    ElseIf from.HasGeneric Then
+
+                        Dim x = from.FixedGeneric(from.TypeToApply(to_))
+                        If TypeOf x Is IFunction Then
+
+                            Dim f = CType(x, IFunction)
+                            f.FunctionNode = function_generic_fixed_to_node(f)
+                            node.FixedGenericFunction.Add(f.FunctionNode)
+                        End If
+                        Coverage.Case()
+                        Return x
+
                     ElseIf TypeOf from Is RkByName Then
 
                         Coverage.Case()
                         Dim byname = CType(from, RkByName)
                         byname.Type = var_feedback(byname.Type, to_)
+
                     End If
 
                     Return from
@@ -910,7 +923,7 @@ Namespace Compiler
                                     If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                         node_call.Function.FunctionNode = function_generic_fixed_to_node(node_call.Function)
-                                        node_call.FixedGenericFunction = node_call.Function.FunctionNode
+                                        node.FixedGenericFunction.Add(node_call.Function.FunctionNode)
                                         Coverage.Case()
                                     End If
                                 End If
