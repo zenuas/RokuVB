@@ -122,6 +122,11 @@ Namespace Manager
 
                         gen_to_type(CType(arg, RkGenericEntry), p)
 
+                    ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkFunction Then
+
+                        Dim func = CType(p, RkFunction)
+                        CType(arg, RkFunction).Generics.Each(Sub(x) gen_to_type(x, func.Apply(x.ApplyIndex)))
+
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
                         Dim struct = CType(arg, RkStruct)
@@ -149,7 +154,7 @@ Namespace Manager
                                 generic_match(x, v, gen_to_type)
                             End Sub)
 
-                    ElseIf arg.HasGeneric Then
+                    ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkStruct Then
 
                         Dim struct = CType(arg, RkStruct)
                         Dim t = FixedByName(p)
@@ -177,6 +182,8 @@ Namespace Manager
 
                 generic_match(Me.Arguments(i).Value, args(i),
                     Sub(atname, p)
+
+                        If p Is Nothing Then Return
 
                         Dim x = xs(atname.ApplyIndex)
                         If x Is Nothing Then
@@ -222,7 +229,9 @@ Namespace Manager
         Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions
 
             If Me.Scope.Functions.ContainsKey(Me.Name) AndAlso Me.Scope.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Functions(Me.Name)
-            Return Me.Scope.Functions.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
+            Dim xs = Me.Scope.Functions.FindFirstOrNull(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
+            If xs IsNot Nothing Then Return xs
+            Return {CType(Me, IFunction)}.ToList
         End Function
 
         Public Overridable Function CreateCall(ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall

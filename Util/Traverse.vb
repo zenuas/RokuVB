@@ -142,9 +142,9 @@ Namespace Util
                         Case TypeOf node_ Is ProgramNode
 
                             Dim x = CType(node_, ProgramNode)
-                            For i = 0 To x.FixedGenericFunction.Count - 1
+                            For Each value In x.FixedGenericFunction.Values.ToList
 
-                                f($"`{x.FixedGenericFunction(i).Name}", x.FixedGenericFunction(i))
+                                f($"`{value.Name}", value)
                             Next
                             GoTo BLOCK_NODE_
 
@@ -360,7 +360,7 @@ BLOCK_NODE_:
 
                             Dim x = CType(node_, StructNode)
                             'x.Owner = CType(f("Owner", x.Owner), INamedFunction)
-                            For Each key In New List(Of String)(x.Lets.Keys)
+                            For Each key In x.Lets.Keys.ToList
 
                                 x.Lets(key) = f($"`{key}", x.Lets(key))
                             Next
@@ -368,9 +368,10 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is ProgramNode
 
                             Dim x = CType(node_, ProgramNode)
-                            For i = 0 To x.FixedGenericFunction.Count - 1
+                            For Each key In x.FixedGenericFunction.Keys.ToList
 
-                                x.FixedGenericFunction(i) = CType(f($"`{x.FixedGenericFunction(i).Name}", x.FixedGenericFunction(i)), FunctionNode)
+                                Dim value = x.FixedGenericFunction(key)
+                                x.FixedGenericFunction(key) = CType(f($"`{value.Name}", value), FunctionNode)
                             Next
                             GoTo BLOCK_NODE_
 
@@ -394,7 +395,7 @@ BLOCK_NODE_:
                                 x.Statements(i) = CType(f($"[{i}]", x.Statements(i)), IStatementNode)
                             Next
 
-                            For Each key In New List(Of String)(x.Lets.Keys)
+                            For Each key In x.Lets.Keys.ToList
 
                                 x.Lets(key) = f($"`{key}", x.Lets(key))
                             Next
@@ -534,7 +535,7 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is RootNode
 
                             Dim x = CType(node_, RootNode)
-                            For Each key In New List(Of String)(x.Namespaces.Keys)
+                            For Each key In x.Namespaces.Keys.ToList
 
                                 x.Namespaces(key) = CType(f($"`{key}", x.Namespaces(key)), ProgramNode)
                             Next

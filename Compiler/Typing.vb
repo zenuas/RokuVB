@@ -160,8 +160,20 @@ Namespace Compiler
 
                         Dim node_typef = CType(child, TypeFunctionNode)
                         Dim rk_func As New RkFunction With {.Scope = ns}
-                        node_typef.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Value = x.Type}))
-                        rk_func.Return = node_typef.Return?.Type
+                        Dim define_type As Func(Of RkFunction, TypeNode, IType) =
+                            Function(f, x)
+
+                                If x Is Nothing Then Return Nothing
+
+                                If x.IsGeneric Then
+
+                                    x.Type = f.DefineGeneric(x.Name)
+                                End If
+
+                                Return x.Type
+                            End Function
+                        node_typef.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = define_type(rk_func, x)}))
+                        rk_func.Return = define_type(rk_func, node_typef.Return)
                         node_typef.Type = rk_func
                         Coverage.Case()
 
@@ -297,93 +309,6 @@ Namespace Compiler
                         Return CType(scope, RkStruct).Generics.FindFirst(Function(x) name.Equals(x.Name))
                     End If
                     Throw New Exception("generic not found")
-                End Function
-
-            Dim node_deep_copy =
-                Function(n As INode)
-
-                    Dim cache As New Dictionary(Of INode, INode)
-                    Dim copy As Func(Of INode, INode) =
-                        Function(v)
-
-                            If cache.ContainsKey(v) Then Return cache(v)
-                            Dim clone = v.Clone
-                            cache(v) = clone
-
-                            For Each p In Util.Traverse.Fields(clone)
-
-                                If TypeOf p.Item1 Is INode Then
-
-                                    p.Item2.SetValue(clone, copy(CType(p.Item1, INode)))
-
-                                ElseIf p.Item1 IsNot Nothing Then
-
-                                    Dim t = p.Item2.FieldType
-                                    If t.IsArray AndAlso IsInterface(t.GetElementType, GetType(INode)) Then
-
-                                        Dim arr = CType(CType(p.Item1, Array).Clone, Array)
-                                        For i = 0 To arr.Length - 1
-
-                                            arr.SetValue(copy(CType(arr.GetValue(i), INode)), i)
-                                        Next
-                                        p.Item2.SetValue(clone, arr)
-
-                                    ElseIf IsGeneric(t, GetType(List(Of ))) AndAlso IsInterface(t.GenericTypeArguments(0), GetType(INode)) Then
-
-                                        Dim base = CType(p.Item1, System.Collections.IList)
-                                        Dim arr = CType(Activator.CreateInstance(GetType(List(Of )).MakeGenericType(t.GenericTypeArguments(0))), System.Collections.IList)
-                                        For i = 0 To base.Count - 1
-
-                                            arr.Add(copy(CType(base(i), INode)))
-                                        Next
-                                        p.Item2.SetValue(clone, arr)
-
-                                    ElseIf IsGeneric(t, GetType(Dictionary(Of ,))) AndAlso (IsInterface(t.GenericTypeArguments(0), GetType(INode)) OrElse IsInterface(t.GenericTypeArguments(1), GetType(INode))) Then
-
-                                        Dim base = CType(p.Item1, System.Collections.IDictionary)
-                                        Dim hash = CType(Activator.CreateInstance(GetType(Dictionary(Of ,)).MakeGenericType(t.GenericTypeArguments(0), t.GenericTypeArguments(1))), System.Collections.IDictionary)
-
-                                        For Each key In base.Keys
-
-                                            Dim value = base(key)
-                                            If TypeOf key Is INode Then key = copy(CType(key, INode))
-                                            If TypeOf value Is INode Then value = copy(CType(value, INode))
-
-                                            hash(key) = value
-                                        Next
-                                        p.Item2.SetValue(clone, hash)
-                                    End If
-                                End If
-                            Next
-
-                            Return clone
-                        End Function
-
-                    Return copy(n)
-                End Function
-
-            Dim function_generic_fixed_to_node =
-                Function(f As IFunction)
-
-                    Dim base = If(f.GenericBase?.FunctionNode, f.FunctionNode)
-                    Dim bind = base.Bind
-                    Dim parent = base.Parent
-                    base.Bind = Nothing
-                    base.Parent = Nothing
-                    Dim clone = CType(node_deep_copy(base), FunctionNode)
-                    base.Bind = bind
-                    base.Parent = parent
-                    clone.Bind = bind
-                    clone.Parent = parent
-
-                    For i = 0 To clone.Arguments.Length - 1
-
-                        clone.Arguments(i).Type.Type = f.Arguments(i).Value
-                    Next
-                    If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
-                    clone.Type = f
-
-                    Return clone
                 End Function
 
             Dim fixed_var As Func(Of IType, IType) =
@@ -638,9 +563,7 @@ Namespace Compiler
                         Dim x = from.FixedGeneric(from.TypeToApply(to_))
                         If TypeOf x Is IFunction Then
 
-                            Dim f = CType(x, IFunction)
-                            f.FunctionNode = function_generic_fixed_to_node(f)
-                            node.FixedGenericFunction.Add(f.FunctionNode)
+                            node.AddFixedGenericFunction(CType(x, IFunction))
                         End If
                         Coverage.Case()
                         Return x
@@ -922,8 +845,7 @@ Namespace Compiler
                                     apply_feedback(node_call.Function, node_call)
                                     If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
-                                        node_call.Function.FunctionNode = function_generic_fixed_to_node(node_call.Function)
-                                        node.FixedGenericFunction.Add(node_call.Function.FunctionNode)
+                                        node.AddFixedGenericFunction(node_call.Function)
                                         Coverage.Case()
                                     End If
                                 End If
