@@ -599,7 +599,7 @@ Namespace Compiler
                         If Not r.HasGeneric Then Return r
 
                         Coverage.Case()
-                        Return r.ApplyFunction(f.Arguments.Map(Function(x) x.Type).ToArray)
+                        Return r.ApplyFunction(args.ToArray)
 
                     ElseIf TypeOf expr Is RkUnionType Then
 
