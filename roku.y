@@ -47,8 +47,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %left  ','
 %left  '?'
-%right '(' '[' '{'
 %left  ARROW
+%left  '(' '[' '{'
 %left  EOL
 
 %%

@@ -1,5 +1,5 @@
 sub show(a: Int) {}
-	return({=> print(a)})
+	return(=> print(a))
 
 #=>1
 show(1)()
