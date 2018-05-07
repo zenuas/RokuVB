@@ -311,7 +311,7 @@ Namespace Parser
                 ret As TypeNode
             ) As VariableNode
 
-            f = Me.CreateFunctionNode(f, args, ret)
+            f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)
             Me.CurrentScope.Lets.Add(f.Name, f)

@@ -1,5 +1,5 @@
 
-var f = {a} => print(a)
+var f = {a => print(a)}
 
 #=>1
 f(1)

@@ -155,7 +155,7 @@ decla  : var ':' type   {$$ = New DeclareNode($1, $3)}
 type   : typev
        | typev '?'                {$$ = $1 : $1.Nullable = True}
        | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
-       | '{' types '}' ARROW type {$$ = CreateFunctionTypeNode($2.List.ToArray, $5,      $1)}
+       | '{' types ARROW type '}' {$$ = CreateFunctionTypeNode($2.List.ToArray, $4,      $1)}
 typev  : var            {$$ = New TypeNode($1)}
        | '[' type ']'   {$$ = New TypeArrayNode($2)}
        | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
@@ -173,7 +173,9 @@ typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args '}' typex ARROW lambda_func {$$ = Me.CreateLambdaFunction($6, $2.List.ToArray, $4)}
+lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($4, $2.List.ToArray, Nothing)}
+            | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($7, $3.List.ToArray, $5)}
+            |                               ARROW expr            {$$ = Me.CreateLambdaFunction(Me.ToLambdaExpression($2), Nothing, Nothing)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
             | sub_block
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}

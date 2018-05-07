@@ -8,4 +8,4 @@ sub each(xs: [@T], block: {@T})
 #=>1
 #=>2
 #=>3
-each([1, 2, 3], {x} => print(x))
+each([1, 2, 3], {x => print(x)})
