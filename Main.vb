@@ -111,6 +111,11 @@ Public Class Main
         arch.Assemble(root, root.Namespaces(loader.FileNameToNamespace(opt.EntryPoiny)), opt.Output, Emit.PEFileKinds.ConsoleApplication)
     End Sub
 
+    Public Shared Function GraphvizEscape(s As String) As String
+
+        Return Text.RegularExpressions.Regex.Replace(s, "[<>]", Function(x) $"\{x.Value}")
+    End Function
+
     Public Shared Sub TypeResult(out As IO.TextWriter, node As INode)
 
         Util.Traverse.NodesOnce(
@@ -121,7 +126,7 @@ Public Class Main
                 Dim name = child.GetType.Name
                 If child.LineNumber.HasValue Then name += $"( {child.LineNumber}, {child.LineColumn} )"
                 Select Case True
-                    Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $" {v.Name} : {v.Type?.ToString}"
+                    Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $" {GraphvizEscape(v.Name)} : {v.Type?.ToString}"
                     Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $" {v.Name} : {v.Type?.ToString}"
                     Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $" {v.Numeric} : {v.Type?.ToString}"
                     Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $" {v.String} : {v.Type?.ToString}"
@@ -222,7 +227,7 @@ align = left,
                     Dim name = ""
                     If child.LineNumber.HasValue Then name = $"\l( {child.LineNumber}, {child.LineColumn} )"
                     Select Case True
-                        Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $"\l{v.Name}\l`{v.Type?.Name}`"
+                        Case TypeOf child Is VariableNode : Dim v = CType(child, VariableNode) : name += $"\l{GraphvizEscape(v.Name)}\l`{v.Type?.Name}`"
                         Case TypeOf child Is TypeNode : Dim v = CType(child, TypeNode) : name += $"\l{v.Name}"
                         Case TypeOf child Is NumericNode : Dim v = CType(child, NumericNode) : name += $"\l{v.Numeric}"
                         Case TypeOf child Is StringNode : Dim v = CType(child, StringNode) : name += $"\l{v.String}"
