@@ -18,6 +18,7 @@ while(args.length > 0)
 	if(args.length >= 2 && args[0] == "-n") {opt.num = args[1] - 0; args.shift(); args.shift();}
 	else if(args[0] == "-q") {opt.quot   = true; args.shift();}
 	else if(args[0] == "-Q") {opt.noquot = true; args.shift();}
+	else
 	{
 		break;
 	}
