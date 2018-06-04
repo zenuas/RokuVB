@@ -21,6 +21,10 @@ Namespace Manager
 
         Public Overridable Sub Initialize()
 
+            ' struct Void : Void
+            Me.VoidType = Me.LoadType(GetType(Void).GetTypeInfo)
+            Me.AddStruct(Me.VoidType, "Void")
+
             ' struct Bool : Boolean
             Dim bool = Me.LoadType(GetType(Boolean).GetTypeInfo)
             Me.AddStruct(bool, "Bool")
@@ -127,6 +131,7 @@ Namespace Manager
             Me.AddStruct(Me.NullType, "Null")
         End Sub
 
+        Public Overridable Property VoidType() As RkStruct
         Public Overridable Property NullType() As RkStruct
 
         Private Property NumericTypes_ As IType() = Nothing

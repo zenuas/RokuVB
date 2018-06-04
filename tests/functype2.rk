@@ -2,4 +2,4 @@ sub test(f: {Int, String => String})
 	print(f(1, "Hello") + f(2, "World"))
 
 #=>2 Hello3 World
-test({(a: Int, b: String) String => (a + 1).ToString() + " " + b})
+test({a: Int, b: String => (a + 1).ToString() + " " + b})

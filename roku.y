@@ -38,6 +38,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %left  VAR ATVAR STR NULL
 %left  USE
 %left  ELSE
+%left  ARROW
 %token<NumericNode> NUM
 %left  OPE OR
 %right UNARY
@@ -47,7 +48,6 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 
 %left  ','
 %left  '?'
-%left  ARROW
 %left  '(' '[' '{'
 %left  EOL
 

@@ -104,7 +104,14 @@ Namespace Compiler
                             End Sub
 
                         node_func.Arguments.Each(Sub(x) create_generic(x.Type))
-                        If node_func.Return IsNot Nothing Then create_generic(node_func.Return)
+                        If node_func.Return IsNot Nothing Then
+
+                            create_generic(node_func.Return)
+
+                        ElseIf node_func.ImplicitReturn Then
+
+                            rk_func.Return = New RkUnionType
+                        End If
 
                         current.Scope.AddFunction(rk_func)
                         Coverage.Case()
@@ -255,14 +262,18 @@ Namespace Compiler
 
                         node_func.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
 
-                        Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
-                        If node_func.Return IsNot Nothing Then
+                        If Not node_func.ImplicitReturn Then
 
-                            Dim t = define_type(ret, node_func.Return)
-                            ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
-                            rk_function.Return = t
+                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
+                            If node_func.Return IsNot Nothing Then
+
+                                Dim t = define_type(ret, node_func.Return)
+                                ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
+                                rk_function.Return = t
+                            End If
+                            rk_function.AddFunction(ret)
                         End If
-                        rk_function.AddFunction(ret)
+
                         Coverage.Case()
 
                     End If
@@ -281,7 +292,21 @@ Namespace Compiler
 
                             rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
                         Next
-                        rk_function.Return = node_func.Return?.Type
+
+                        If node_func.ImplicitReturn Then
+
+                            Dim t = CType(node_func.Statements(node_func.Statements.Count - 1), LambdaExpressionNode).Type
+                            If t Is Nothing Then
+
+                                CType(rk_function.Return, RkUnionType).Merge(root.VoidType)
+                            Else
+
+                                CType(rk_function.Return, RkUnionType).Merge({root.VoidType, t})
+                            End If
+                        Else
+
+                            rk_function.Return = node_func.Return?.Type
+                        End If
                     End If
 
                     Return rk_function
@@ -574,6 +599,18 @@ Namespace Compiler
                         Dim byname = CType(from, RkByName)
                         byname.Type = var_feedback(byname.Type, to_)
 
+                    End If
+
+                    If TypeOf from Is RkFunction AndAlso CType(from, RkFunction).Return IsNot Nothing AndAlso
+                        TypeOf to_ Is RkFunction Then
+
+                        Dim from_return = CType(from, RkFunction).Return
+                        Dim to_return = CType(to_, RkFunction).Return
+
+                        If TypeOf from_return Is RkUnionType Then
+
+                            CType(from_return, RkUnionType).Merge(If(to_return, root.VoidType))
+                        End If
                     End If
 
                     Return from
@@ -990,11 +1027,20 @@ Namespace Compiler
 
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
-                            If func?.Function?.Return Is Nothing Then
+                            Dim ret_type = var_normalize(func?.Function?.Return)
+                            If ret_type Is Nothing OrElse ret_type Is root.VoidType Then
 
+                                If ret_type Is root.VoidType Then func.Function.Return = Nothing
                                 If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
                                 block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
                             Else
+
+                                If func.ImplicitReturn Then
+
+                                    Dim retf = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = func.Function, .Name = "return", .Parent = func.Function}
+                                    retf.Arguments.Add(New NamedValue With {.Name = "x", .Value = ret_type})
+                                    func.Function.AddFunction(retf)
+                                End If
 
                                 Dim v As New VariableNode("$ret") With {.Type = lambda.Type}
                                 Dim let_ As New LetNode With {.Var = v, .Type = lambda.Type, .Expression = lambda.Expression}
