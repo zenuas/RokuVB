@@ -312,6 +312,20 @@ Namespace Parser
             ) As VariableNode
 
             f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
+            Dim v = New VariableNode(f.Name)
+            v.AppendLineNumber(f)
+            Me.CurrentScope.Lets.Add(f.Name, f)
+            Return v
+        End Function
+
+        Public Overridable Function CreateImplicitLambdaFunction(
+                f As FunctionNode,
+                args() As DeclareNode,
+                ret As TypeNode
+            ) As VariableNode
+
+            f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
+            If args Is Nothing OrElse args.Length = 0 Then f.ImplicitArguments = True
             If ret Is Nothing Then f.ImplicitReturn = True
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)

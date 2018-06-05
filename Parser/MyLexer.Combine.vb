@@ -171,6 +171,23 @@ READ_CONTINUE_:
                 at.Type = SymbolTypes.ATVAR
                 Return at
 
+            ElseIf c = "$"c Then
+
+                buf.Clear()
+                If Not Me.EndOfStream Then
+
+                    c = Me.NextChar
+                    If Me.IsNoneZeroNumber(c) Then
+
+                        Dim imp = Me.ReadDecimal(buf, Me.LineNumber, Me.LineColumn - 1)
+                        Dim num = CType(imp.Value, NumericNode)
+                        imp.Type = SymbolTypes.VAR
+                        imp.Name = $"${num.Format}"
+                        imp.Value = New ImplicitParameterNode(imp.Name, num.Numeric)
+                        Return imp
+                    End If
+                End If
+
             ElseIf c = """"c Then
 
                 Return Me.ReadString(c)
@@ -216,18 +233,16 @@ READ_CONTINUE_:
                 ' other  -> Numeric(dec)
                 If c = "0"c Then
 
-                    buf.Append(c)
                     If Not Me.EndOfStream Then
 
-                        buf.Append(c)
                         If Me.NextChar = "x"c Then
 
-                            Me.ReadChar()
+                            buf.Append(Me.ReadChar())
                             Return Me.ReadHexadecimal(buf, linenum, linecol)
 
                         ElseIf Me.NextChar = "o"c Then
 
-                            Me.ReadChar()
+                            buf.Append(Me.ReadChar())
                             Return Me.ReadOctal(buf, linenum, linecol)
 
                         ElseIf Me.IsOctal(Me.NextChar) Then
@@ -236,13 +251,13 @@ READ_CONTINUE_:
 
                         ElseIf Me.NextChar = "b"c Then
 
-                            Me.ReadChar()
+                            buf.Append(Me.ReadChar())
                             Return Me.ReadBinary(buf, linenum, linecol)
                         End If
                     End If
                 End If
 
-                Return Me.ReadDecimal(buf, linenum, linecol)
+                Return Me.ReadDecimal(buf.ToString, buf, linenum, linecol)
             End If
 
             Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
@@ -255,6 +270,11 @@ READ_CONTINUE_:
         Public Overridable Function IsNumber(c As Char) As Boolean
 
             Return (c >= "0"c AndAlso c <= "9"c)
+        End Function
+
+        Public Overridable Function IsNoneZeroNumber(c As Char) As Boolean
+
+            Return (c >= "1"c AndAlso c <= "9"c)
         End Function
 
         Public Overridable Function IsBinary(c As Char) As Boolean
@@ -311,8 +331,7 @@ READ_CONTINUE_:
                 c = "\"c OrElse
                 c = "|"c OrElse
                 c = "?"c OrElse
-                c = "~"c OrElse
-                c = "$"c)
+                c = "~"c)
         End Function
 
 #End Region
@@ -407,14 +426,20 @@ READ_CONTINUE_:
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function
 
-        Public Overridable Function ReadDecimal(buf As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
+        Public Overridable Function ReadDecimal(org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
 
+            Return Me.ReadDecimal("", org, linenum, linecol)
+        End Function
+
+        Public Overridable Function ReadDecimal(readed As String, org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
+
+            Dim buf As New System.Text.StringBuilder(readed)
             Do While Not Me.EndOfStream
 
                 Dim c = Me.NextChar
                 If c = "_"c Then
 
-                    ' nothing
+                    Me.ReadChar()
 
                 ElseIf Me.IsNumber(c) Then
 
@@ -423,9 +448,11 @@ READ_CONTINUE_:
                 Else
                     Exit Do
                 End If
+
+                org.Append(c)
             Loop
 
-            Return Me.CreateNumericToken(buf.ToString, Convert.ToUInt32(buf.ToString), linenum, linecol)
+            Return Me.CreateNumericToken(org.ToString, Convert.ToUInt32(buf.ToString), linenum, linecol)
         End Function
 
         Public Overridable Function ReadBinary(org As System.Text.StringBuilder, linenum As Integer, linecol As Integer) As Token
@@ -436,7 +463,7 @@ READ_CONTINUE_:
                 Dim c = Me.NextChar
                 If c = "_"c Then
 
-                    ' nothing
+                    Me.ReadChar()
 
                 ElseIf Me.IsBinary(c) Then
 
@@ -460,7 +487,7 @@ READ_CONTINUE_:
                 Dim c = Me.NextChar
                 If c = "_"c Then
 
-                    ' nothing
+                    Me.ReadChar()
 
                 ElseIf Me.IsOctal(c) Then
 
@@ -484,7 +511,7 @@ READ_CONTINUE_:
                 Dim c = Me.NextChar
                 If c = "_"c Then
 
-                    ' nothing
+                    Me.ReadChar()
 
                 ElseIf Me.IsHexadecimal(c) Then
 

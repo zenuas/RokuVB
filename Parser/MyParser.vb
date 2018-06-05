@@ -748,7 +748,7 @@ Namespace Parser
 
                 Case -89
                     Debug.WriteLine("lambda : '{' lambda_args ARROW lambda_func '}'")
-                    yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode).List.ToArray, Nothing)
+                    yy_value = Me.CreateImplicitLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode).List.ToArray, Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 5, yy_value)
 
                 Case -90
@@ -758,7 +758,7 @@ Namespace Parser
 
                 Case -91
                     Debug.WriteLine("lambda : ARROW expr")
-                    yy_value = Me.CreateLambdaFunction(Me.ToLambdaExpression(CType(Me.GetValue(-1), IEvaluableNode)), Nothing, Nothing)
+                    yy_value = Me.CreateImplicitLambdaFunction(Me.ToLambdaExpression(CType(Me.GetValue(-1), IEvaluableNode)), Nothing, Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 2, yy_value)
 
                 Case -92

@@ -98,6 +98,7 @@
     <Compile Include="Node\TypeTupleNode.vb" />
     <Compile Include="Node\UnionNode.vb" />
     <Compile Include="Node\TypeArrayNode.vb" />
+    <Compile Include="Node\ImplicitParameterNode.vb" />
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\INamedFunction.vb" />
     <Compile Include="Node\NullNode.vb" />
