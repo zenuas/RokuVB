@@ -123,12 +123,13 @@ Namespace Compiler
                                 current = current.Parent
                             Loop
                             Dim func = CType(current, FunctionNode)
-                            For i = func.ImplicitArgumentsCount.Value To imp.Index - 1
+                            For i = func.ImplicitArgumentsCount.Value To imp.Index - 1UI
 
                                 Dim args = func.Arguments.ToList
-                                args.Add(New DeclareNode(imp, New TypeNode With {.Name = $"#{i}", .IsGeneric = True}))
+                                Dim arg = New ImplicitParameterNode($"${i + 1}", i + 1UI) With {.Scope = func}
+                                args.Add(New DeclareNode(arg, New TypeNode With {.Name = $"#{i}", .IsGeneric = True}))
                                 func.Arguments = args.ToArray
-                                func.Lets.Add(imp.Name, imp)
+                                func.Lets.Add(arg.Name, arg)
                             Next
                             func.ImplicitArgumentsCount = Math.Max(func.ImplicitArgumentsCount.Value, imp.Index)
                             imp.Scope = current

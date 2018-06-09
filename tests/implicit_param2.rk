@@ -1,0 +1,11 @@
+sub f(fx: {Int, String, Int})
+	fx(1, "hello", 3)
+
+#=>1
+f(=> print($1))
+
+#=>hello
+f(=> print($2))
+
+#=>3
+f(=> print($3))
