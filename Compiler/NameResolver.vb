@@ -114,7 +114,26 @@ Namespace Compiler
                     Else
 
                         next_(child, current)
-                        If TypeOf child Is VariableNode Then
+                        If TypeOf child Is ImplicitParameterNode Then
+
+                            Dim imp = CType(child, ImplicitParameterNode)
+                            Coverage.Case()
+                            Do While Not TypeOf current Is FunctionNode
+
+                                current = current.Parent
+                            Loop
+                            Dim func = CType(current, FunctionNode)
+                            For i = func.ImplicitArgumentsCount.Value To imp.Index - 1
+
+                                Dim args = func.Arguments.ToList
+                                args.Add(New DeclareNode(imp, New TypeNode With {.Name = $"#{i}", .IsGeneric = True}))
+                                func.Arguments = args.ToArray
+                                func.Lets.Add(imp.Name, imp)
+                            Next
+                            func.ImplicitArgumentsCount = Math.Max(func.ImplicitArgumentsCount.Value, imp.Index)
+                            imp.Scope = current
+
+                        ElseIf TypeOf child Is VariableNode Then
 
                             Dim var = CType(child, VariableNode)
                             Coverage.Case()

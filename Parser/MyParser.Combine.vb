@@ -173,6 +173,8 @@ Namespace Parser
 
         Public Overridable Function CreateVariableNode(s As String, pos As Token) As VariableNode
 
+            If TypeOf pos.Value Is VariableNode Then Return CType(pos.Value, VariableNode)
+
             Dim var_ = New VariableNode(s)
             var_.AppendLineNumber(pos)
 
@@ -325,7 +327,7 @@ Namespace Parser
             ) As VariableNode
 
             f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
-            If args Is Nothing OrElse args.Length = 0 Then f.ImplicitArguments = True
+            If args Is Nothing OrElse args.Length = 0 Then f.ImplicitArgumentsCount = 0
             If ret Is Nothing Then f.ImplicitReturn = True
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)

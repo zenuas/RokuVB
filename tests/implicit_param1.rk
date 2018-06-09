@@ -1,0 +1,5 @@
+sub f(fx: {Int})
+	fx(1)
+
+#=>1
+f(=> print($1))
