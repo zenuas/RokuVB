@@ -43,7 +43,18 @@ Namespace Manager
             If TypeOf t IsNot RkFunction Then Return False
 
             Dim f = CType(t, RkFunction)
-            If ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse (Me.Return IsNot Nothing AndAlso Me.Return.Is(f.Return))) AndAlso
+            Dim is_return_either_instance =
+                Function(a As IType, b As IType)
+
+                    If a Is Nothing Then
+
+                        Return b.Is(a)
+                    Else
+                        Return a.Is(b)
+                    End If
+                End Function
+
+            If ((Me.Return Is Nothing AndAlso f.Return Is Nothing) OrElse is_return_either_instance(Me.Return, f.Return)) AndAlso
                 (Me.Arguments.Count = f.Arguments.Count AndAlso Me.Arguments.And(Function(x, i) x.Value.Is(f.Arguments(i).Value))) Then Return True
 
             Return False

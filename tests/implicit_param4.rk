@@ -1,0 +1,12 @@
+
+sub test(f: {String, Int})
+	f("hello", 1)
+
+sub test(f: {String})
+	f("world")
+
+#=>hello1
+test(=> print($1 + $2.ToString()))
+
+#=>world
+test(=> print($1))

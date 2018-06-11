@@ -25,7 +25,7 @@ Namespace Compiler
                         Dim to_let =
                             Function(e As IEvaluableNode)
 
-                                Dim var As New VariableNode($"${user.VarIndex}") With {.Scope = block}
+                                Dim var As New VariableNode($"$${user.VarIndex}") With {.Scope = block}
                                 block.Lets.Add(var.Name, var)
                                 var.AppendLineNumber(e)
                                 user.VarIndex += 1

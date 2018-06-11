@@ -1,6 +1,9 @@
 sub f(fx: {Int, String, Int})
 	fx(1, "hello", 3)
 
+#=>none
+f(=> print("none"))
+
 #=>1
 f(=> print($1))
 
