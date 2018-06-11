@@ -507,7 +507,8 @@ Namespace Compiler
                             End If
 
                             args.Insert(0, fixed_var(receiver.Type))
-                            r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
+                            If TypeOf byname.Scope Is RkCILNamespace Then r = TryLoadFunction(ns, byname.Name, args.ToArray)
+                            If r Is Nothing Then r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
 
                             If r IsNot Nothing Then
 
