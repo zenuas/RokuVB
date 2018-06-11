@@ -175,9 +175,9 @@ typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
 ########## lambda ##########
 lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = Me.CreateImplicitLambdaFunction($4, $2.List.ToArray, Nothing)}
             | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($7, $3.List.ToArray, $5)}
-            |                               ARROW expr            {$$ = Me.CreateImplicitLambdaFunction(Me.ToLambdaExpression($2), Nothing, Nothing)}
+            |                               ARROW lambda_func     {$$ = Me.CreateImplicitLambdaFunction($2, Nothing, Nothing)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
-            | sub_block
+            | EOL sub_block              {$$ = $2}
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
             | decla
 lambda_args : void                       {$$ = Me.CreateListNode(Of DeclareNode)}

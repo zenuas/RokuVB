@@ -328,7 +328,7 @@ Namespace Parser
 
             f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
             If args Is Nothing OrElse args.Length = 0 Then f.ImplicitArgumentsCount = 0
-            If ret Is Nothing Then f.ImplicitReturn = True
+            If ret Is Nothing Then f.ImplicitReturn = (f.Statements.Count > 0 AndAlso TypeOf f.Statements(0) Is LambdaExpressionNode)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)
             Me.CurrentScope.Lets.Add(f.Name, f)

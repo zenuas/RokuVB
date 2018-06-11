@@ -184,6 +184,7 @@ READ_CONTINUE_:
                         imp.Type = SymbolTypes.VAR
                         imp.Name = $"${num.Format}"
                         imp.Value = New ImplicitParameterNode(imp.Name, num.Numeric)
+                        imp.Value.AppendLineNumber(imp)
                         Return imp
                     End If
                 End If

@@ -8,3 +8,32 @@ sub +(xs: [@T], ys: [@T]) [@T]
 	zs.AddRange(ys)
 	return(zs)
 
+sub foldl(xs: [@T], f: {@R, @T => @R}, acc: @R) @R
+	switch xs
+		[] => return(acc)
+		[y, ys] => return(foldl(ys, f, f(acc, y)))
+
+sub foldr(xs: [@T], f: {@T, @R => @R}, acc: @R) @R
+	switch xs
+		[] => return(acc)
+		[y, ys] => return(f(y, foldr(ys, f, acc)))
+
+#sub map(xs: [@T], f: {@T => @R}) [@R]
+#	return(foldl(xs, => [f($1)] + $2, []))
+
+sub each(xs: [@T], block: {@T})
+	switch xs
+		[] =>
+		[y, ys] =>
+			block(y)
+			each(ys, block)
+
+sub each(xs: [@T], block: {@T, Int})
+	_each(xs, block, 0)
+
+sub _each(xs: [@T], block: {@T, Int}, index: Int)
+	switch xs
+		[] =>
+		[y, ys] =>
+			block(y, index)
+			_each(ys, block, index + 1)
