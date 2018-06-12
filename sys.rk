@@ -12,14 +12,16 @@ sub foldl(xs: [@T], f: {@R, @T => @R}, acc: @R) @R
 	switch xs
 		[] => return(acc)
 		[y, ys] => return(foldl(ys, f, f(acc, y)))
+	return(acc)
 
 sub foldr(xs: [@T], f: {@T, @R => @R}, acc: @R) @R
 	switch xs
 		[] => return(acc)
 		[y, ys] => return(f(y, foldr(ys, f, acc)))
+	return(acc)
 
 #sub map(xs: [@T], f: {@T => @R}) [@R]
-#	return(foldl(xs, => [f($1)] + $2, []))
+#	return(foldr(xs, => [f($1)] + $2, []))
 
 sub each(xs: [@T], block: {@T})
 	switch xs

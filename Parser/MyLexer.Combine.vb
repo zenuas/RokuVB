@@ -530,7 +530,7 @@ READ_CONTINUE_:
 
         Public Overridable Function CreateNumericToken(format As String, n As UInt32, linenum As Integer, linecol As Integer) As Token
 
-            Return New Token(SymbolTypes.NUM, n.ToString) With {.Value = New NumericNode(format, n) With {.LineNumber = linenum, .LineColumn = linecol}}
+            Return New Token(SymbolTypes.NUM, n.ToString) With {.LineNumber = linenum, .LineColumn = linecol, .Value = New NumericNode(format, n) With {.LineNumber = linenum, .LineColumn = linecol}}
         End Function
 
 #End Region

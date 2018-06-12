@@ -56,7 +56,12 @@ Namespace Manager
                 If Me.Types Is Nothing OrElse Me.Types.Count = 0 Then Return Nothing
                 If Me.Types.Count = 1 Then Return Me.Types(0)
 
-                If Me.ReturnCache Is Nothing Then Me.ReturnCache = New RkUnionType(Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).Map(Function(x) x.Return))
+                If Me.ReturnCache Is Nothing Then
+
+                    Dim xs = Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).ToList
+                    If xs.Count = 0 Then Return Nothing
+                    Me.ReturnCache = New RkUnionType(xs.Map(Function(x) x.Return))
+                End If
                 Return Me.ReturnCache
             End Get
             Set(value As IType)
@@ -162,6 +167,7 @@ Namespace Manager
             Me.ReturnCache = Nothing
             If Me.Types Is Nothing Then
 
+                Diagnostics.Debug.Assert(types.ToList.Count > 0, "types is empty")
                 Me.Types = types.ToList
                 Return True
 

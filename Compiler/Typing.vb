@@ -980,9 +980,9 @@ Namespace Compiler
 
                         'ToDo: priority check
                         Coverage.Case()
-                        Dim union = CType(t, RkUnionType)
-                        Dim not_num = union.Types.FindFirstOrNull(Function(x) root.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
-                        t = var_normalize(If(not_num, union.Types(0)))
+                        Dim union = CType(t, RkUnionType).Types.Where(Function(x) x IsNot root.VoidType).ToList
+                        Dim not_num = union.FindFirstOrNull(Function(x) root.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
+                        t = var_normalize(If(not_num, If(union.Count > 0, union(0), root.VoidType)))
 
                     ElseIf TypeOf t Is RkFunction Then
 
@@ -1029,7 +1029,7 @@ Namespace Compiler
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
                             Dim ret_type = var_normalize(func?.Function?.Return)
-                            If ret_type Is Nothing OrElse ret_type Is root.VoidType Then
+                            If ret_type Is Nothing OrElse ret_type Is root.VoidType OrElse lambda.Type Is Nothing Then
 
                                 If ret_type Is root.VoidType Then func.Function.Return = Nothing
                                 If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")

@@ -339,6 +339,7 @@ Namespace Parser
 
             Dim f = New FunctionNode(expr.LineNumber.Value)
             Dim lambda = New LambdaExpressionNode With {.Expression = expr}
+            f.AppendLineNumber(expr)
             lambda.AppendLineNumber(expr)
             f.Statements.Add(lambda)
             f.Parent = Me.CurrentScope
