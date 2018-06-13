@@ -345,6 +345,7 @@ Namespace Architecture
                 Dim get_local = gen_local_store(f.Key.Arguments)
                 Me.DeclareStatement(
                     root,
+                    f.Key,
                     CType(f.Value, MethodBuilder).GetILGenerator,
                     Sub(il, v, ref)
 
@@ -410,6 +411,7 @@ Namespace Architecture
                 Dim get_local = gen_local_store(New List(Of NamedValue))
                 Me.DeclareStatement(
                     root,
+                    s.Key.Initializer,
                     CType(s.Value.Constructor, ConstructorBuilder).GetILGenerator,
                     Sub(il, v, ref)
 
@@ -451,6 +453,7 @@ Namespace Architecture
 
         Public Overridable Sub DeclareStatement(
                 root As SystemLibrary,
+                fn As IFunction,
                 il As ILGenerator,
                 gen_il_load As Action(Of ILGenerator, OpValue, Boolean),
                 gen_il_store As Action(Of ILGenerator, OpValue),
@@ -510,7 +513,6 @@ Namespace Architecture
 
             Dim labels = stmts.Where(Function(x) TypeOf x Is InLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
 
-            Dim found_ret = False
             For Each stmt In stmts
 
                 If TypeOf stmt Is IReturnBind Then
@@ -646,7 +648,6 @@ Namespace Architecture
                     Case InOperator.Return
                         If TypeOf stmt Is InCode Then gen_il_load(il, CType(stmt, InCode).Left, False)
                         il.Emit(OpCodes.Ret)
-                        found_ret = True
 
                     Case InOperator.Alloc
                         Dim alloc = CType(stmt, InCode)
@@ -750,7 +751,14 @@ CLASS_CAST_:
                         Debug.Fail("not yet")
                 End Select
             Next
-            If Not found_ret OrElse (stmts.Count > 0 AndAlso TypeOf stmts(stmts.Count - 1) Is InLabel) Then il.Emit(OpCodes.Ret)
+
+            If stmts.Count = 0 OrElse stmts(stmts.Count - 1).Operator <> InOperator.Return Then
+
+                If fn.Return IsNot Nothing AndAlso
+                    Not (TypeOf fn Is RkNativeFunction AndAlso CType(fn, RkNativeFunction).Operator = InOperator.Alloc) Then il.Emit(OpCodes.Ldnull)
+
+                il.Emit(OpCodes.Ret)
+            End If
         End Sub
 
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
