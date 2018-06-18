@@ -1,6 +1,14 @@
 @prompt $$$S
 @echo off
 
+set ENABLE_DOT=0
+
+for %%v in (%*) do (
+	if "%%v" == "--dot" (
+		set ENABLE_DOT=1
+	)
+)
+
 mkdir tests\obj 2>NUL
 
 for %%f in (tests\*.rk) do (
@@ -52,6 +60,10 @@ exit /B 0
 	)
 	
 	echo %BIN% %RK% -o %RKOUT% %LIB%
-	start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% -N %RKOUT%.dot 2>%RKOUT%.stderr & dot -Tpng %RKOUT%.dot > %RKOUT%.png"
+	if %ENABLE_DOT% equ 0 (
+		start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% 2>%RKOUT%.stderr"
+	) else (
+		start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% -N %RKOUT%.dot 2>%RKOUT%.stderr & dot -Tpng %RKOUT%.dot > %RKOUT%.png"
+	)
 	exit /B 0
 
