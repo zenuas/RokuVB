@@ -1,0 +1,12 @@
+use Sys
+
+#=>red
+#=>0
+#=>blue
+#=>1
+#=>yellow
+#=>2
+["red", "blue", "yellow"].each(=>
+	print($1)
+	print($2)
+)
