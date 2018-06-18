@@ -90,7 +90,7 @@ expr : var
      | call
      | lambda
      | atvar
-     | '[' list ']'         {$$ = $2}
+     | '[' list ']'         {$2.AppendLineNumber($1) : $$ = $2}
      | '(' expr ')'         {$$ = Me.CreateExpressionNode($2, "()")}
      | '(' list2n ')'       {$$ = Me.CreateTupleNode($2)}
      | ope expr %prec UNARY {$$ = Me.CreateFunctionCallNode($1.Token, $2)}

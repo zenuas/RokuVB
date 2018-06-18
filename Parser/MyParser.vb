@@ -453,7 +453,7 @@ Namespace Parser
 
                 Case -29
                     Debug.WriteLine("expr : '[' list ']'")
-                    yy_value = CType(Me.GetValue(-2), IEvaluableListNode)
+                    CType(Me.GetValue(-2), IEvaluableListNode).AppendLineNumber(CType(Me.GetToken(-3), Token)) : yy_value = CType(Me.GetValue(-2), IEvaluableListNode)
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -30
