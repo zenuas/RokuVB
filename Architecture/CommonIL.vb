@@ -165,7 +165,7 @@ Namespace Architecture
         Public Overridable Function DeclareMethods(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
             Dim map As New Dictionary(Of IFunction, MethodInfo)
-            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso x.FunctionNode IsNot Nothing)
+            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
 
                 Dim args = Me.RkToCILType(f.Arguments, structs)
                 map(f) = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)

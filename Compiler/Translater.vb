@@ -107,8 +107,8 @@ Namespace Compiler
                             Return New OpValue With {.Name = v.Name, .Type = v, .Scope = rk_func}
                         End Function
 
-                    Dim to_value =
-                        Function(x As IEvaluableNode)
+                    Dim to_value As Func(Of IEvaluableNode, OpValue) =
+                        Function(x)
 
                             Dim t = x.Type
                             If TypeOf t Is RkGenericEntry Then Return New OpValue With {.Name = t.Name, .Type = rk_func.Apply(CType(t, RkGenericEntry).ApplyIndex), .Scope = rk_func}
@@ -119,6 +119,27 @@ Namespace Compiler
                                 If var.ClosureEnvironment Then
 
                                     Return New OpProperty With {.Receiver = get_closure(var), .Name = $"{var.Name}:{var.Scope.LineNumber}", .Type = t, .Scope = rk_func}
+
+                                ElseIf TypeOf t Is RkNativeFunction Then
+
+                                    Dim f = CType(t, RkNativeFunction)
+                                    Dim name = $"##{f.Name}:({String.Join(", ", f.Arguments.Map(Function(arg) arg.Value))})=>{f.Return}"
+                                    Dim native = root.FindCurrentFunction(name).ToList
+                                    If native.Count = 0 Then
+
+                                        Dim wrapper As New RkFunction With {.Name = name, .Return = f.Return, .Scope = root, .Parent = root}
+                                        wrapper.Arguments.AddRange(f.Arguments)
+                                        ' $ret = $1 op $2
+                                        ' return($ret)
+                                        Dim ret As New OpValue With {.Name = "$ret", .Type = f.Return, .Scope = wrapper}
+                                        wrapper.Body.AddRange(f.CreateCallReturn(ret, f.Arguments.Map(Function(arg) to_value(New VariableNode(arg.Name) With {.Type = arg.Value})).ToArray))
+                                        wrapper.Body.Add(New InCode With {.Operator = InOperator.Return, .Left = ret})
+                                        root.AddFunction(wrapper)
+
+                                        Return New OpValue With {.Name = name, .Type = wrapper, .Scope = rk_func}
+                                    Else
+                                        Return New OpValue With {.Name = name, .Type = native(0), .Scope = rk_func}
+                                    End If
 
                                 ElseIf var.Scope IsNot Nothing AndAlso TypeOf var.Scope.Lets(var.Name) Is VariableNode AndAlso CType(var.Scope.Lets(var.Name), VariableNode).LocalVariable Then
 

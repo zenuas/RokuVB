@@ -221,7 +221,8 @@ patternn       : pattern              {$$ = Me.CreateListNode($1)}
 pattern        : var
 
 ########## other ##########
-var    : VAR     {$$ = Me.CreateVariableNode($1)}
+var    : VAR         {$$ = Me.CreateVariableNode($1)}
+       | '(' ope ')' {$$ = Me.CreateVariableNode($2.Token)}
 varx   : var
        | SUB     {$$ = Me.CreateVariableNode($1)}
        | IF      {$$ = Me.CreateVariableNode($1)}

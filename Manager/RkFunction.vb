@@ -135,8 +135,15 @@ Namespace Manager
 
                     ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkFunction Then
 
-                        Dim func = CType(p, RkFunction)
-                        CType(arg, RkFunction).Generics.Each(Sub(x) gen_to_type(x, func.Apply(x.ApplyIndex)))
+                        If TypeOf p Is RkFunction Then
+
+                            Dim func = CType(p, RkFunction)
+                            CType(arg, RkFunction).Generics.Each(Sub(x) If func.Apply.Count > x.ApplyIndex Then gen_to_type(x, func.Apply(x.ApplyIndex)))
+
+                        ElseIf TypeOf p Is RkUnionType Then
+
+                            CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_to_type))
+                        End If
 
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
