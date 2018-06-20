@@ -24,7 +24,7 @@ Namespace Compiler
                     If closures.ContainsKey(owner) Then Return closures(owner)
 
                     Dim env As New RkStruct With {.Scope = root, .ClosureEnvironment = True, .Parent = owner.Function}
-                    env.Name = $"##{owner.Name}"
+                    env.Name = $"##{owner.Name}:({String.Join(", ", owner.Function.Arguments.Map(Function(x) x.Value))})=>{owner.Function.Return}"
                     env.Initializer = CType(LoadFunction(root, "#Alloc", env), RkNativeFunction)
                     closures.Add(owner, env)
                     root.AddStruct(env)
@@ -52,21 +52,24 @@ Namespace Compiler
                     If TypeOf child Is BlockNode Then
 
                         Dim node_block = CType(child, BlockNode)
-                        make_closure(node_block)
+                        If Not node_block.Owner.Function.HasGeneric Then make_closure(node_block)
                     End If
 
                     If TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = CType(node_func.Type, RkFunction)
-                        node_func.Bind.Each(
-                            Sub(x)
+                        If Not rk_func.HasGeneric Then
 
-                                Dim env = make_env(x.Key)
-                                rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
-                                Coverage.Case()
-                            End Sub)
-                        Coverage.Case()
+                            node_func.Bind.Each(
+                                Sub(x)
+
+                                    Dim env = make_env(x.Key)
+                                    rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
+                                    Coverage.Case()
+                                End Sub)
+                            Coverage.Case()
+                        End If
                     End If
 
                     next_(child, current)

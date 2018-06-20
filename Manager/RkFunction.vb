@@ -100,14 +100,14 @@ Namespace Manager
 
                     ElseIf TypeOf c Is IApply AndAlso CType(c, IApply).Apply.And(Function(x) x IsNot Nothing) Then
 
-                        Return c.FixedGeneric(CType(c, IApply).Apply.Map(Function(x) values.FindFirst(Function(v) v.Name.Equals(x.Name)).Value).ToArray)
+                        Return c.FixedGeneric(CType(c, IApply).Apply.Map(Function(x) If(TypeOf x Is RkGenericEntry, values(CType(x, RkGenericEntry).ApplyIndex).Value, x)).ToArray)
                     Else
                         Return c.FixedGeneric(values)
                     End If
                 End Function
 
             Dim clone = CType(Me.CloneGeneric, RkFunction)
-            values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
+            values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(v.Value Is Nothing OrElse TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
             If Me.Return IsNot Nothing Then clone.Return = apply_fix(Me.Return)
             Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
             clone.Body.AddRange(Me.Body)
@@ -138,11 +138,22 @@ Namespace Manager
                         If TypeOf p Is RkFunction Then
 
                             Dim func = CType(p, RkFunction)
-                            CType(arg, RkFunction).Generics.Each(Sub(x) If func.Apply.Count > x.ApplyIndex Then gen_to_type(x, func.Apply(x.ApplyIndex)))
+                            Dim argf = CType(arg, RkFunction)
+                            argf.Generics.Each(Sub(x) If func.Apply.Count > x.ApplyIndex Then gen_to_type(x, func.Apply(x.ApplyIndex)))
+                            If argf.Return IsNot Nothing Then generic_match(argf.Return, func.Return, gen_to_type)
 
                         ElseIf TypeOf p Is RkUnionType Then
 
-                            CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_to_type))
+                            Dim gens As New Dictionary(Of RkGenericEntry, List(Of IType))
+                            Dim gen_add =
+                                Sub(g As RkGenericEntry, t As IType)
+
+                                    If t Is Nothing Then Return
+                                    If Not gens.ContainsKey(g) Then gens.Add(g, New List(Of IType))
+                                    If gens(g).And(Function(x) Not x.Is(t)) Then gens(g).Add(t)
+                                End Sub
+                            CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_add))
+                            gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value))))
                         End If
 
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
@@ -169,7 +180,7 @@ Namespace Manager
 
                                     Throw New Exception("unknown apply")
                                 End If
-                                generic_match(x, v, gen_to_type)
+                                generic_match(struct.Apply(x.ApplyIndex), v, gen_to_type)
                             End Sub)
 
                     ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkStruct Then
@@ -196,6 +207,7 @@ Namespace Manager
                 End Sub
 
             Dim xs(Me.Generics.Count - 1) As IType
+            If xs.Length = 0 Then Return xs
             For i = 0 To Me.Arguments.Count - 1
 
                 generic_match(Me.Arguments(i).Value, args(i),
@@ -219,6 +231,7 @@ Namespace Manager
                         Else
 
                             Debug.Assert(x.Is(p))
+                            If x.HasGeneric Then xs(atname.ApplyIndex) = p
                         End If
                     End Sub)
             Next

@@ -89,7 +89,12 @@ Namespace Manager
 
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
 
-            Throw New NotImplementedException()
+            Dim apply = CType(value, IApply)
+
+            Dim xs(Me.Generics.Count - 1) As IType
+            If xs.Length = 0 Then Return xs
+            Me.Generics.Each(Sub(x) xs(x.ApplyIndex) = apply.Apply(x.ApplyIndex))
+            Return xs
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

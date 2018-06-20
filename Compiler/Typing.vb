@@ -1085,6 +1085,23 @@ Namespace Compiler
 
                 End Sub)
 
+            Dim scope_normalize As Action(Of IScope) = Nothing
+            Dim function_normalize As Action(Of IFunction) =
+                Sub(f)
+
+                    f.Arguments.Each(Sub(x) x.Value = var_normalize(x.Value))
+                    f.Return = var_normalize(f.Return)
+
+                    If TypeOf f Is IScope Then scope_normalize(CType(f, IScope))
+                End Sub
+
+            scope_normalize =
+                Sub(scope)
+
+                    scope.Functions.Each(Sub(kv) kv.Value.Each(Sub(f) function_normalize(f)))
+                End Sub
+
+            scope_normalize(ns)
         End Sub
 
         Public Shared Sub AnonymouseTypeAllocation(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)

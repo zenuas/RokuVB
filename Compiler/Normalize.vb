@@ -81,6 +81,15 @@ Namespace Compiler
 
                                 ElseIf IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
 
+                                    Dim list = e.GetType.GetProperty("List").GetValue(e)
+                                    Dim count = list.GetType.GetProperty("Count")
+                                    Dim item = list.GetType.GetProperty("Item")
+                                    For i = 0 To CInt(count.GetValue(list)) - 1
+
+                                        Dim index = New Object() {i}
+                                        Dim x = CType(item.GetValue(list, index), IEvaluableNode)
+                                        item.SetValue(list, insert_let(x), index)
+                                    Next
                                     Coverage.Case()
                                     Return to_let(e)
 
