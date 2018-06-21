@@ -1,11 +1,17 @@
 @prompt $$$S
 @echo off
 
+set PATH=%PATH%;%PROGRAMFILES(X86)%\MSBuild\14.0\Bin;%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
+
 set ENABLE_DOT=0
+set ENABLE_IL=0
 
 for %%v in (%*) do (
 	if "%%v" == "--dot" (
 		set ENABLE_DOT=1
+	)
+	if "%%v" == "--il" (
+		set ENABLE_IL=1
 	)
 )
 
@@ -60,10 +66,14 @@ exit /B 0
 	)
 	
 	echo %BIN% %RK% -o %RKOUT% %LIB%
-	if %ENABLE_DOT% equ 0 (
-		start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% 2>%RKOUT%.stderr"
-	) else (
-		start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% -N %RKOUT%.dot 2>%RKOUT%.stderr & dot -Tpng %RKOUT%.dot > %RKOUT%.png"
+	set RKOPT=""
+	set RKCMD=""
+	if %ENABLE_DOT% equ 1 (
+		set RKOPT="%RKOPT:"=% -N %RKOUT%.dot"
+		set RKCMD="%RKCMD:"=% && dot -Tpng %RKOUT%.dot > %RKOUT%.png"
 	)
+	if %ENABLE_IL% equ 1 (
+		set RKCMD="%RKCMD:"=% && ildasm %RKOUT% /out:%RKOUT%.fat.il /nobar && ..\build-tools\strip-il %RKOUT%.fat.il > %RKOUT%.il && del /F %RKOUT%.fat.il"
+	)
+	start /B cmd /c "%BIN% %RK% -o %RKOUT% %LIB% %RKOPT:"=% 2>%RKOUT%.stderr %RKCMD:"=%"
 	exit /B 0
-
