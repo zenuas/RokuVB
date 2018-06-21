@@ -286,7 +286,7 @@ Namespace Manager
 
         Public Overridable Function CreateManglingName() As String Implements IFunction.CreateManglingName
 
-            Dim s = Me.Name
+            Dim s = $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value))})=>{Me.Return}"
             Dim p = Me.Parent
             Do While TypeOf p IsNot RkNamespace
 
