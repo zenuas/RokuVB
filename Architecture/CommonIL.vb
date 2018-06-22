@@ -353,7 +353,8 @@ Namespace Architecture
 
                         If TypeOf v.Type Is RkFunction AndAlso Not CType(v.Type, RkFunction).IsAnonymous Then
 
-                            Dim bind = Me.DeclareBind(CType(v.Type, RkFunction), structs)
+                            Dim fn = CType(v.Type, RkFunction)
+                            Dim bind = Me.DeclareBind(fn, structs)
                             Dim r = New OpValue With {.Name = v.Type.Name, .Type = v.Type}
                             il.Emit(OpCodes.Newobj, bind.Constructor)
                             Dim index = get_local(il, r)
@@ -364,16 +365,16 @@ Namespace Architecture
                                     gen_il_load(il, index, ref)
                                     If x.Key.Equals("f") Then
 
-                                        il.Emit(OpCodes.Ldftn, Me.RkToCILFunction(CType(v.Type, RkFunction), functions, structs))
+                                        il.Emit(OpCodes.Ldftn, Me.RkToCILFunction(fn, functions, structs))
                                     Else
 
-                                        gen_il_load(il, get_local(il, New OpValue With {.Name = x.Key}), ref)
+                                        gen_il_load(il, get_local(il, New OpValue With {.Name = x.Key, .Type = fn.Arguments.FindFirst(Function(arg) arg.Name.Equals(x.Key)).Value}), ref)
                                     End If
                                     il.Emit(OpCodes.Stfld, x.Value)
                                 End Sub)
                             gen_il_load(il, index, ref)
                             il.Emit(OpCodes.Ldftn, bind.GetMethod("Invoke"))
-                            il.Emit(OpCodes.Newobj, Me.RkFunctionToCILType(CType(v.Type, RkFunction), structs).Constructor)
+                            il.Emit(OpCodes.Newobj, Me.RkFunctionToCILType(fn, structs).Constructor)
 
                         ElseIf TypeOf v Is OpNumeric32 OrElse
                             TypeOf v Is OpString OrElse
