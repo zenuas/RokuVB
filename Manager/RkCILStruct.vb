@@ -33,6 +33,7 @@ Namespace Manager
         Public Overrides Function [Is](t As IType) As Boolean
 
             If MyBase.Is(t) Then Return True
+            If Me.TypeInfo = GetType(System.Void) AndAlso t Is Nothing Then Return True
 
             If TypeOf t Is RkCILStruct Then
 

@@ -1,0 +1,22 @@
+
+sub test(dummy: Int, f: {=> Int})
+	print(f())
+
+sub test(dummy: Int64, f: {})
+	print("Int64")
+
+sub need_Int(dummy: Int) Int
+	return(dummy)
+
+sub need_Int64(dummy: Int64) Int64
+	return(dummy)
+
+#=>3
+var a = 1
+test(a, => 3)
+need_Int(a)
+
+#=>Int64
+var b = 1
+test(b, => 3)
+need_Int64(b)
