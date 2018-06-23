@@ -212,8 +212,7 @@ Namespace Compiler
                                 Dim args = func.Arguments.Map(Function(x) to_value(x)).ToList
                                 If func.Function.IsAnonymous Then
 
-                                    args.Insert(0, New OpValue With {.Type = func.Type, .Scope = rk_func})
-                                    args(0).Name = CType(func.Expression, VariableNode).Name
+                                    args.Insert(0, to_value(func.Expression))
 
                                 ElseIf TypeOf func.Function Is RkNativeFunction AndAlso CType(func.Function, RkNativeFunction).Operator = InOperator.Alloc Then
 

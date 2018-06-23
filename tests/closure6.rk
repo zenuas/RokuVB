@@ -1,0 +1,10 @@
+var a = 1
+
+sub show2(f2: {=> Int})
+	print(f2())
+
+sub show1(f1: {=> Int})
+	show2(=> f1())
+
+#=>1
+show1(=> a)
