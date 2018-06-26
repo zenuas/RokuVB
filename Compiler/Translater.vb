@@ -33,8 +33,12 @@ Namespace Compiler
                     Return env
                 End Function
 
+            Dim make_closured As New Dictionary(Of IScopeNode, Boolean)
             Dim make_closure =
                 Sub(scope As IScopeNode)
+
+                    If make_closured.ContainsKey(scope) Then Return
+                    make_closured(scope) = True
 
                     For Each var In scope.Lets.Where(Function(x) TypeOf x.Value Is VariableNode AndAlso CType(x.Value, VariableNode).ClosureEnvironment).Map(Function(x) CType(x.Value, VariableNode))
 
@@ -64,6 +68,7 @@ Namespace Compiler
                             node_func.Bind.Each(
                                 Sub(x)
 
+                                    make_closure(CType(x.Key, FunctionNode))
                                     Dim env = make_env(x.Key)
                                     rk_func.Arguments.Insert(0, New NamedValue With {.Name = env.Name, .Value = env})
                                     Coverage.Case()
