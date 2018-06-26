@@ -7,7 +7,7 @@ Imports Roku.IntermediateCode
 Namespace Manager
 
     Public Interface IFunction
-        Inherits IType, IApply, IClosure
+        Inherits IType, IApply, IClosure, ICloneable
 
         ReadOnly Property Arguments As List(Of NamedValue)
         Property [Return] As IType

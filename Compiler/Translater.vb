@@ -56,7 +56,8 @@ Namespace Compiler
                     If TypeOf child Is BlockNode Then
 
                         Dim node_block = CType(child, BlockNode)
-                        If Not node_block.Owner.Function.HasGeneric Then make_closure(node_block)
+                        If node_block.Owner.Function.HasGeneric Then Return
+                        make_closure(node_block)
                     End If
 
                     If TypeOf child Is FunctionNode Then

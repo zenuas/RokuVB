@@ -1,0 +1,6 @@
+sub f(a: @T)
+	var fx = => print(a)
+	fx()
+
+#=>1
+f(1)

@@ -1,3 +1,10 @@
 use Sys
 
-map([1, 2, 3], {(a: Int) Int => a})
+var xs = map([1, 2, 3], {(a: Int) Int => a + 1})
+
+#=>2
+#=>3
+#=>4
+print(xs[0])
+print(xs[1])
+print(xs[2])

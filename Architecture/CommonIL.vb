@@ -845,6 +845,9 @@ CLASS_CAST_:
 
             If functions.ContainsKey(f) Then Return functions(f)
 
+            Dim namematch = functions.FindFirstOrNull(Function(kv) kv.Key.Name.Equals(f.Name))
+            If namematch.Value IsNot Nothing Then Return namematch.Value
+
             Throw New MissingMethodException
         End Function
 

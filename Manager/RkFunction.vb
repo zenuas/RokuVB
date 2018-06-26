@@ -301,6 +301,13 @@ Namespace Manager
             Return Me.Apply.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
         End Function
 
+        Public Overridable Function Clone(conv As Func(Of INode, INode)) As Node.ICloneable Implements Node.ICloneable.Clone
+
+            Dim copy = CType(Me.MemberwiseClone, RkFunction)
+            If copy.FunctionNode IsNot Nothing Then copy.FunctionNode = CType(conv(copy.FunctionNode), FunctionNode)
+            Return copy
+        End Function
+
         Public Overrides Function ToString() As String
 
             Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value.ToString))})" + If(Me.Return IsNot Nothing, $" {Me.Return.ToString}", "")

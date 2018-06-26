@@ -101,6 +101,10 @@ Namespace Node
                                     hash(key) = value
                                 Next
                                 p.Item2.SetValue(clone, hash)
+
+                            ElseIf TypeOf p.Item1 Is ICloneable Then
+
+                                p.Item2.SetValue(clone, CType(p.Item1, ICloneable).Clone(Function(x) copy(x)))
                             End If
                         End If
                     Next
