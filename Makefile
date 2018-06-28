@@ -15,8 +15,9 @@ RKOBJ=tests\obj\test.exe
 
 SRCS:=$(shell cmd /d /c build-tools\xpath Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | build-tools\xargs echo.) sys.rk
 RKSRCS:=$(wildcard tests\*.rk)
-RKTEST:=$(subst .rk,,$(RKSRCS))
+RKTEST:=$(patsubst %.rk,,$(RKSRCS))
 RKOUT:=$(subst tests\,tests\obj\,$(patsubst %.rk,%.exe,$(RKSRCS)))
+RKSTDOUT:=$(subst .exe,.exe.stdout,$(RKOUT))
 
 .PHONY: all clean distclean release test tests parser parserd node
 
@@ -44,8 +45,13 @@ test: clean $(OUT)
 
 tests: $(OUT) $(RKTEST)
 
-$(RKTEST): $(subst tests\,tests\obj\,$@).exe
-	-@if exist $<. $< $(shell cmd /d /c type $<.testargs) < $<.testin > $<.stdout && (fc $<.testout $<.stdout >$<.diff || type $<.diff) || echo failed!
+$(RKTEST): $(subst tests\,tests\obj\,$@).exe.stdout
+	@echo $@
+	@fc $(patsubst %.stdout,,$<).testerr $(patsubst %.stdout,,$<).stderr >nul || type $(patsubst %.stdout,,$<).stderr
+	@if exist $(patsubst %.stdout,,$<). (fc $(patsubst %.stdout,,$<).testout $(patsubst %.stdout,,$<).stdout >$(patsubst %.stdout,,$<).diff || type $(patsubst %.stdout,,$<).diff) || echo failed!
+
+$(RKSTDOUT): $(subst .exe.stdout,.exe,$@)
+	-@if exist $<. $< $(shell cmd /d /c type $<.testargs) < $<.testin > $<.stdout
 
 $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@mkdir tests\obj 2>NUL || exit /B 0
@@ -57,10 +63,6 @@ $(RKOUT): $(subst tests\obj\,tests\,$(patsubst %.exe,%.rk,$@)) $(OUT)
 	@build-tools\sed -p "s/^\s*\#<=(.*)$/$1/"   $< > $@.testin
 	@build-tools\sed -p "s/^\s*\#\#\*(.*)$/$1/" $< | build-tools\xargs -Q echo. > $@.testargs
 	@build-tools\sed -p "s/^\s*\#\#\?(.*)$/$1/" $< | build-tools\xargs -n 1 cmd /d /c >NUL 2>NUL
-	@fc $@.testerr $@.stderr >nul || type $@.stderr
-
-$(RKSRCS):
-	@echo $@
 
 node: $(OUT)
 	cd tests && ..\$(OUT) $(subst tests\,,$(RK)) -o $(subst tests\,,$(RKOBJ)) -N - | dot -Tpng > obj\node.png
