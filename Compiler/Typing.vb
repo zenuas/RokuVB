@@ -978,11 +978,8 @@ Namespace Compiler
 
                     ElseIf TypeOf t Is RkUnionType Then
 
-                        'ToDo: priority check
                         Coverage.Case()
-                        Dim union = CType(t, RkUnionType).Types.Where(Function(x) x IsNot root.VoidType).ToList
-                        Dim not_num = union.FindFirstOrNull(Function(x) root.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
-                        t = var_normalize(If(not_num, If(union.Count > 0, union(0), root.VoidType)))
+                        t = var_normalize(root.ChoosePriorityType(CType(t, RkUnionType).Types))
 
                     ElseIf TypeOf t Is RkFunction Then
 

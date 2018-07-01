@@ -149,6 +149,30 @@ Namespace Manager
             Return NumericTypes_
         End Function
 
+        Public Overridable Function ChoosePriorityType(types As List(Of IType)) As IType
+
+            Dim not_void = types.Where(Function(x) x IsNot Me.VoidType).ToList
+            If not_void.Count = 0 Then Return Me.VoidType
+
+            Dim not_num = not_void.FindFirstOrNull(Function(x) Me.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
+            If not_num IsNot Nothing Then Return not_num
+
+            Dim t As IType
+            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int32").Is(x))
+            If t IsNot Nothing Then Return t
+
+            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int64").Is(x))
+            If t IsNot Nothing Then Return t
+
+            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int16").Is(x))
+            If t IsNot Nothing Then Return t
+
+            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Byte").Is(x))
+            If t IsNot Nothing Then Return t
+
+            Return not_void(0)
+        End Function
+
         Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)
 
             For Each f In FindLoadFunction(scope, name, Function(x) True)
