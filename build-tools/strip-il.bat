@@ -18,6 +18,10 @@ function main(args)
 		while(!in_.AtEndOfStream)
 		{
 			var line = in_.ReadLine();
+			
+			line = line.replace(/\/\/.*/, "");
+			if(/^\s*$/.test(line)) {}
+			
 			if(!ismethod)
 			{
 				if(/^\{/.test(line)) {ismethod = true;}
