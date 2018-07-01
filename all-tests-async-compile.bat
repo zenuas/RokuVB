@@ -58,11 +58,11 @@ exit /B 0
 			set LIB=%%x
 		)
 	) else (
-		call .\build-tools\sed.bat -p "s/^\s*#=>(.*)$/$1/"   %RK% > %RKOUT%.testout
-		call .\build-tools\sed.bat -p "s/^\s*#=2^>(.*)$/$1/" %RK% > %RKOUT%.testerr
-		call .\build-tools\sed.bat -p "s/^\s*#<=(.*)$/$1/"   %RK% > %RKOUT%.testin
-		call .\build-tools\sed.bat -p "s/^\s*##\*(.*)$/$1/"  %RK% | .\build-tools\xargs -Q echo. > %RKOUT%.testargs
-		call .\build-tools\sed.bat -p "s/^\s*##\?(.*)$/$1/"  %RK% | .\build-tools\xargs.bat -n 1 cmd /d /c
+		call .\build-tools\sed.bat -p "s/^\s*#=>(.*)$/$1/"  %RK% > %RKOUT%.testout
+		call .\build-tools\sed.bat -p "s/^\s*#=2>(.*)$/$1/" %RK% > %RKOUT%.testerr
+		call .\build-tools\sed.bat -p "s/^\s*#<=(.*)$/$1/"  %RK% > %RKOUT%.testin
+		call .\build-tools\sed.bat -p "s/^\s*##\*(.*)$/$1/" %RK% | .\build-tools\xargs -Q echo. > %RKOUT%.testargs
+		call .\build-tools\sed.bat -p "s/^\s*##\?(.*)$/$1/" %RK% | .\build-tools\xargs.bat -n 1 cmd /d /c
 		type nul > %RKOUT%.testlib
 		for /f "DELIMS=" %%x in ('.\build-tools\sed.bat -p "s/^\s*##!(.*)$/$1/" %RK%') do (
 			set LIB=%%x
