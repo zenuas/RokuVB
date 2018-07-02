@@ -120,7 +120,7 @@ Namespace Manager
 
         Public Overridable ReadOnly Property Apply As List(Of IType) Implements IApply.Apply
             Get
-                Return CType(Me.GetDecideType, IFunction).Apply
+                Return CType(Me.GetDecideType, IApply).Apply
             End Get
         End Property
 

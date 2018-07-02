@@ -114,7 +114,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
-            Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList.Map(Function(f) CType(apply_fix(f), IFunction)).ToList))
+            Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList))
             Return clone
         End Function
 
@@ -158,6 +158,7 @@ Namespace Manager
 
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
+                        If TypeOf p Is RkUnionType Then p = CType(p, RkUnionType).GetDecideType
                         Dim struct = CType(arg, RkStruct)
                         struct.Generics.Each(
                             Sub(x, i)

@@ -1,0 +1,9 @@
+sub f1(a: @A, b: @B)
+	sub f2(c: @C, d: @D)
+		print(c)
+		print(d)
+	f2(b, a)
+
+#=>str
+#=>1
+f1(1, "str")

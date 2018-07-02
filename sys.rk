@@ -19,7 +19,7 @@ sub foldr(xs: [@T], f: {@T, @R => @R}, acc: @R) @R
 		[y, ys] => return(f(y, foldr(ys, f, acc)))
 
 sub map(xs: [@T], f: {@T => @R}) [@R]
-	return(foldr(xs, {(left: @T, right: [@R]) [@R] => [f(left)] + right}, []))
+	return(foldr(xs, => [f($1)] + $2, []))
 
 sub each(xs: [@T], block: {@T})
 	switch xs
