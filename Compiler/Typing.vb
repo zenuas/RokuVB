@@ -600,6 +600,11 @@ Namespace Compiler
                         Dim byname = CType(from, RkByName)
                         byname.Type = var_feedback(byname.Type, to_)
 
+                    ElseIf TypeOf from Is IApply Then
+
+                        Coverage.Case()
+                        Dim to_apply = CType(to_, IApply)
+                        CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, var_feedback(x, to_apply.Apply(i))))
                     End If
 
                     If TypeOf from Is RkFunction AndAlso CType(from, RkFunction).Return IsNot Nothing AndAlso
@@ -979,7 +984,9 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkUnionType Then
 
                         Coverage.Case()
-                        t = var_normalize(root.ChoosePriorityType(CType(t, RkUnionType).Types))
+                        Dim types = CType(t, RkUnionType).Types
+                        Debug.Assert(types IsNot Nothing)
+                        t = var_normalize(root.ChoosePriorityType(types))
 
                     ElseIf TypeOf t Is RkFunction Then
 
