@@ -29,11 +29,10 @@ sub each(xs: [@T], block: {@T})
 			each(ys, block)
 
 sub each(xs: [@T], block: {@T, Int})
+	sub _each(xs: [@T], block: {@T, Int}, index: Int)
+		switch xs
+			[] =>
+			[y, ys] =>
+				block(y, index)
+				_each(ys, block, index + 1)
 	_each(xs, block, 0)
-
-sub _each(xs: [@T], block: {@T, Int}, index: Int)
-	switch xs
-		[] =>
-		[y, ys] =>
-			block(y, index)
-			_each(ys, block, index + 1)
