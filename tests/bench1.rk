@@ -1,0 +1,43 @@
+use Sys
+
+struct Tree
+	var left: Tree?
+	var value: Int
+	var right: Tree?
+
+sub make_tree(start: Int, end: Int) Tree?
+	var pivot = ((end - start) / 2) + start
+	if start > end
+		return(null)
+	else
+		var x = Tree()
+		x.left  = make_tree(start, pivot - 1)
+		x.value = pivot
+		x.right = make_tree(pivot + 1, end)
+		return(x)
+
+sub get_list(tree: Tree?) [Int]
+	if x: Tree = tree
+		return(get_list(x.left) + [x.value] + get_list(x.right))
+	else
+		return([])
+
+var tree = make_tree(0, 100)
+var xs   = get_list(tree)
+
+#=>50
+#=>0
+#=>1
+#=>2
+#=>98
+#=>99
+#=>100
+
+if x: Tree = tree
+	print(x.value)
+print(xs[0])
+print(xs[1])
+print(xs[2])
+print(xs[98])
+print(xs[99])
+print(xs[100])

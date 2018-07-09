@@ -973,8 +973,12 @@ Namespace Compiler
                 If Not type_fix Then Exit Do
             Loop
 
+            Dim normalized As New Dictionary(Of IType, Boolean)
             Dim var_normalize As Func(Of IType, IType) =
                 Function(t)
+
+                    If t Is Nothing Then Return t
+                    If normalized.ContainsKey(t) Then Return t
 
                     If TypeOf t Is RkByName Then
 
@@ -991,6 +995,7 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkFunction Then
 
                         Coverage.Case()
+                        normalized(t) = True
                         Dim f = CType(t, RkFunction)
                         f.Arguments.Each(Sub(x) x.Value = var_normalize(x.Value))
                         f.Return = var_normalize(f.Return)
@@ -998,12 +1003,14 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkStruct Then
 
                         Coverage.Case()
+                        normalized(t) = True
                         Dim s = CType(t, RkStruct)
                         s.Local.Keys.ToList.Each(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
 
                     ElseIf TypeOf t Is RkTuple Then
 
                         Coverage.Case()
+                        normalized(t) = True
                         Dim s = CType(t, RkTuple)
                         s.Local.Keys.ToList.Each(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
                     End If
