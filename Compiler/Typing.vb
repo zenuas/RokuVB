@@ -534,6 +534,9 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim struct = CType(expr, RkStruct)
+                        Dim r = TryLoadFunction(struct.Scope, struct.Name, args.ToArray)
+                        If r IsNot Nothing Then Return r
+
                         args.Insert(0, expr)
                         Return LoadFunction(struct.Scope, "#Alloc", args.ToArray)
 

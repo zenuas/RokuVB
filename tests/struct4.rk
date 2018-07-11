@@ -1,0 +1,20 @@
+struct Point
+	var x: Int
+	var y: Int
+
+sub Point(x: Int, y: Int) Point
+	var p = Point()
+	p.x = x
+	p.y = y
+	return(p)
+
+var a = Point(1, 2)
+var b = Point(3, 4)
+#=>1
+print(a.x)
+#=>2
+print(a.y)
+#=>3
+print(b.x)
+#=>4
+print(b.y)

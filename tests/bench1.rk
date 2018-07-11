@@ -5,16 +5,19 @@ struct Tree
 	var value: Int
 	var right: Tree?
 
+sub Tree(left: Tree?, value: Int, right: Tree?) Tree
+	var x = Tree()
+	x.left  = left
+	x.value = value
+	x.right = right
+	return(x)
+
 sub make_tree(start: Int, end: Int) Tree?
 	var pivot = ((end - start) / 2) + start
 	if start > end
 		return(null)
 	else
-		var x = Tree()
-		x.left  = make_tree(start, pivot - 1)
-		x.value = pivot
-		x.right = make_tree(pivot + 1, end)
-		return(x)
+		return(Tree(make_tree(start, pivot - 1), pivot, make_tree(pivot + 1, end)))
 
 sub get_list(tree: Tree?) [Int]
 	if x: Tree = tree
