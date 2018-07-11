@@ -73,6 +73,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Compiler\CompileErrorException.vb" />
+    <Compile Include="Compiler\Coroutine.vb" />
     <Compile Include="Manager\IApply.vb" />
     <Compile Include="Manager\IClosure.vb" />
     <Compile Include="Manager\IFunction.vb" />

@@ -262,7 +262,25 @@ Namespace Compiler
 
                         node_func.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
 
-                        If Not node_func.ImplicitReturn Then
+                        If node_func.Coroutine Then
+
+                            Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
+                            rk_function.AddFunction(ret)
+
+                            Dim yield = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = rk_function, .Name = "yield", .Parent = rk_function}
+                            Dim t = define_type(yield, CType(node_func.Return, TypeArrayNode).Item)
+                            yield.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
+                            rk_function.AddFunction(yield)
+
+                            Dim yield2 = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = rk_function, .Name = "yield", .Parent = rk_function}
+                            Dim ts = define_type(yield2, node_func.Return)
+                            yield2.Arguments.Add(New NamedValue With {.Name = "xs", .Value = ts})
+                            rk_function.AddFunction(yield2)
+
+                            rk_function.Return = ts
+                            Coverage.Case()
+
+                        ElseIf Not node_func.ImplicitReturn Then
 
                             Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
                             If node_func.Return IsNot Nothing Then
@@ -270,11 +288,11 @@ Namespace Compiler
                                 Dim t = define_type(ret, node_func.Return)
                                 ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
                                 rk_function.Return = t
+                                Coverage.Case()
                             End If
                             rk_function.AddFunction(ret)
+                            Coverage.Case()
                         End If
-
-                        Coverage.Case()
 
                     End If
                 End Sub)

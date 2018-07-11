@@ -149,7 +149,13 @@ Namespace Compiler
                             Dim v = block.Statements(program_pointer)
                             If TypeOf v Is FunctionCallNode Then
 
-                                to_flat(CType(v, FunctionCallNode))
+                                Dim fcall = CType(v, FunctionCallNode)
+                                If TypeOf fcall.Expression Is VariableNode AndAlso CType(fcall.Expression, VariableNode).Name.Equals("yield") Then
+
+                                    block.Owner.Coroutine = True
+                                    Coverage.Case()
+                                End If
+                                to_flat(fcall)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is TupleNode Then

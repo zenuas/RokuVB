@@ -10,6 +10,7 @@ Namespace Node
         Property Name As String
         Property [Function] As RkFunction
         Property Bind As Dictionary(Of INamedFunction, Boolean)
+        Property Coroutine As Boolean
 
     End Interface
 

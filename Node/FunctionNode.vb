@@ -21,6 +21,7 @@ Namespace Node
         Public Overridable Property Name As String Implements INamedFunction.Name
         Public Overridable Property ImplicitArgumentsCount As UInteger? = Nothing
         Public Overridable Property ImplicitReturn As Boolean = False
+        Public Overridable Property Coroutine As Boolean = False Implements INamedFunction.Coroutine
 
         Public Overridable Property [Function] As RkFunction Implements INamedFunction.Function
             Get

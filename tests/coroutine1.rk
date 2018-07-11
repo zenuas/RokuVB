@@ -1,0 +1,13 @@
+use Sys
+
+sub co() [String]
+	yield("one")
+	yield("two")
+	yield("three")
+
+var xs = co()
+
+#=>one
+#=>two
+#=>three
+xs.each(=> print($1))

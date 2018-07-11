@@ -31,6 +31,10 @@ Namespace IntermediateCode
         ''' <remarks>0 or 1 opcode</remarks>
         [Return]
 
+        ''' <summary>yield</summary>
+        ''' <remarks>1 opcode</remarks>
+        Yield
+
         ''' <summary>plus</summary>
         ''' <remarks>non-overflow check</remarks>
         Plus
