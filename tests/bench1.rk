@@ -1,5 +1,3 @@
-use Sys
-
 struct Tree
 	var left: Tree?
 	var value: Int

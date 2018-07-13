@@ -88,7 +88,9 @@ Namespace Parser
             If Not Me.Root.Namespaces.ContainsKey(ns) Then
 
                 Me.Root.Namespaces(ns) = Nothing
-                Me.Root.Namespaces(ns) = node()
+                Dim pgm = node()
+                pgm.Uses.Add(New UseNode With {.Namespace = New VariableNode("Sys")})
+                Me.Root.Namespaces(ns) = pgm
             End If
 
             Return Me.Root.Namespaces(ns)

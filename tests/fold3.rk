@@ -1,5 +1,3 @@
-use Sys
-
 var xs = map([1, 2, 3], {(a: Int) Int => a + 1})
 
 #=>2

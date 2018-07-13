@@ -1,5 +1,3 @@
-use Sys
-
 sub co() [String]
 	yield("one")
 	yield("two")
