@@ -594,6 +594,21 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Iterator Function UniqueHash(Of T)(self As IEnumerable(Of T)) As IEnumerable(Of T)
+
+            Dim hash As New Dictionary(Of T, Boolean)
+            For Each x In self
+
+                If Not hash.ContainsKey(x) Then
+
+                    hash(x) = True
+                    Yield x
+                End If
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Iterator Function Flatten(Of T)(self As IEnumerable(Of IEnumerable(Of T))) As IEnumerable(Of T)
 
             For Each xs In self

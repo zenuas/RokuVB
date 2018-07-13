@@ -1010,7 +1010,6 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim types = CType(t, RkUnionType).Types
-                        Debug.Assert(types IsNot Nothing)
                         t = var_normalize(root.ChoosePriorityType(types))
 
                     ElseIf TypeOf t Is RkFunction Then

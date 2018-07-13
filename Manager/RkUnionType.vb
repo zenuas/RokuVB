@@ -168,7 +168,7 @@ Namespace Manager
             If Me.Types Is Nothing Then
 
                 Diagnostics.Debug.Assert(types.ToList.Count > 0, "types is empty")
-                Me.Types = types.ToList
+                Me.Types = types.UniqueHash.ToList
                 Return True
 
             ElseIf Me.Types.Count > 0 Then
