@@ -197,6 +197,16 @@ Namespace Manager
                                 gen_to_type(cs.Generics(0), ts.FunctionNamespace.Root.LoadType(ts.TypeInfo.GetElementType.GetTypeInfo))
                                 Return
                             End If
+
+                        ElseIf TypeOf struct Is RkCILNativeArray AndAlso TypeOf t Is RkCILStruct Then
+
+                            Dim cs = CType(struct, RkCILNativeArray)
+                            Dim ts = CType(t, RkCILStruct)
+                            If ts.TypeInfo.IsArray Then
+
+                                gen_to_type(cs.Generics(0), ts.FunctionNamespace.Root.LoadType(ts.TypeInfo.GetElementType.GetTypeInfo))
+                                Return
+                            End If
                         End If
                         struct.Generics.Each(
                             Sub(x, i)

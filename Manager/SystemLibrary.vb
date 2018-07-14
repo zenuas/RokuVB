@@ -84,6 +84,17 @@ Namespace Manager
             Dim int8 = define_num(GetType(Byte))
             Me.AddStruct(int32, "Int")
 
+            ' sub [](self: NativeArray(@T), index: Int32) @T
+            Dim native_array_index As New RkNativeFunction With {.Name = "[]", .Operator = InOperator.GetArrayIndex, .Scope = Me, .Parent = Me}
+            Dim native_array_index_t = native_array_index.DefineGeneric("@T")
+            Dim native_array As New RkCILNativeArray With {.Name = "#NativeArray", .Scope = Me, .Parent = Me}
+            native_array.DefineGeneric("@T")
+            Me.AddStruct(native_array)
+            native_array_index.Return = native_array_index_t
+            native_array_index.Arguments.Add(New NamedValue With {.Name = "xs", .Value = native_array.FixedGeneric(native_array_index_t)})
+            native_array_index.Arguments.Add(New NamedValue With {.Name = "index", .Value = int32})
+            Me.AddFunction(native_array_index)
+
             ' struct Array(@T) : List(@T)
             Dim arr = Me.LoadArrayType(GetType(List(Of )).GetTypeInfo)
             Me.AddStruct(arr, "Array")
@@ -425,16 +436,6 @@ Namespace Manager
 
             If fs.Count = 0 Then
 
-                If args.Length > 0 AndAlso TypeOf args(0) Is RkCILStruct Then
-
-                    Dim ci = CType(args(0), RkCILStruct)
-                    If ci.TypeInfo.IsArray Then
-
-                        Select Case name
-                            Case "[]" : Return TryLoadFunction(ci.FunctionNamespace, "GetValue", args)
-                        End Select
-                    End If
-                End If
                 Return Nothing
 
             ElseIf fs.Count = 1 Then

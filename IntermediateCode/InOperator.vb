@@ -129,6 +129,7 @@ Namespace IntermediateCode
         Label
         Array
         CanCast
+        GetArrayIndex
 
         [Try]
         [Catch]

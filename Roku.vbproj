@@ -81,6 +81,7 @@
     <Compile Include="Manager\IStruct.vb" />
     <Compile Include="Manager\RkCILArrayNamespace.vb" />
     <Compile Include="Manager\RkCILArrayFunction.vb" />
+    <Compile Include="Manager\RkCILNativeArray.vb" />
     <Compile Include="Manager\RkScope.vb" />
     <Compile Include="Manager\RkTuple.vb" />
     <Compile Include="Manager\RkUnionType.vb" />
