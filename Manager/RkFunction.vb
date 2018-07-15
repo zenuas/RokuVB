@@ -250,6 +250,11 @@ Namespace Manager
             Return xs
         End Function
 
+        Public Overridable Function IsArgumentsApply(ParamArray args() As IType) As Boolean Implements IFunction.IsArgumentsApply
+
+            Return (Me.Arguments.Count = args.Length AndAlso Me.Arguments.And(Function(x, i) args(i) Is Nothing OrElse x.Value.Is(args(i))))
+        End Function
+
         Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
 
             If Not Me.HasGeneric Then Return Me

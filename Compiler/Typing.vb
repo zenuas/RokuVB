@@ -472,7 +472,7 @@ Namespace Compiler
                     Dim args = f.Arguments.Map(Function(x) FixedByName(fixed_var(x.Type))).ToArray
                     union.Types = union.Types.
                         By(Of IFunction).
-                        Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
+                        Where(Function(x) x.IsArgumentsApply(args)).
                         Map(Function(x) CType(x, IFunction).ApplyFunction(args)).
                         By(Of IType).
                         ToList

@@ -41,15 +41,6 @@ Namespace Manager
                 Case InOperator.Nop
                     Return New InCode0() {}
 
-                Case InOperator.GetArrayIndex
-                    Dim ci = CType(args(0).Type, RkCILStruct)
-
-                    Dim x As New InCall
-                    x.Function = CType(SystemLibrary.TryLoadFunction(ci.FunctionNamespace, "GetValue", args.Map(Function(arg) arg.Type).ToArray), RkFunction)
-                    x.Return = return_
-                    x.Arguments.AddRange(args)
-                    Return New InCode0() {x}
-
                 Case Else
                     Dim x As New InCode With {.Operator = Me.Operator, .Left = If(args.Length > 0, args(0), Nothing), .Right = If(args.Length > 1, args(1), Nothing), .Return = return_}
                     Return New InCode0() {x}

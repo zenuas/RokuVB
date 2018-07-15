@@ -84,15 +84,18 @@ Namespace Manager
             Dim int8 = define_num(GetType(Byte))
             Me.AddStruct(int32, "Int")
 
-            ' sub [](self: NativeArray(@T), index: Int32) @T
-            Dim native_array_index As New RkNativeFunction With {.Name = "[]", .Operator = InOperator.GetArrayIndex, .Scope = Me, .Parent = Me}
-            Dim native_array_index_t = native_array_index.DefineGeneric("@T")
-            Dim native_array As New RkCILNativeArray With {.Name = "#NativeArray", .Scope = Me, .Parent = Me}
+            ' struct NativeArray(@T)
+            Dim native_array As New RkCILNativeArray With {.Name = "NativeArray", .Scope = Me, .Parent = Me}
             native_array.DefineGeneric("@T")
             Me.AddStruct(native_array)
+
+            ' sub [](self: NativeArray(@T), index: Int32) @T
+            Dim native_array_index As New RkCILArrayFunction With {.Name = "[]", .Scope = Me, .Parent = Me}
+            Dim native_array_index_t = native_array_index.DefineGeneric("@T")
             native_array_index.Return = native_array_index_t
             native_array_index.Arguments.Add(New NamedValue With {.Name = "xs", .Value = native_array.FixedGeneric(native_array_index_t)})
             native_array_index.Arguments.Add(New NamedValue With {.Name = "index", .Value = int32})
+            native_array_index.ReplacedFunction = Function(xs) TryLoadFunction(CType(FixedByName(xs(0)), RkCILStruct).FunctionNamespace, "Get", xs)
             Me.AddFunction(native_array_index)
 
             ' struct Array(@T) : List(@T)
