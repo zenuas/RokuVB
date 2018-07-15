@@ -232,14 +232,6 @@ Namespace Manager
             Return CType(Me.GetDecideType, IFunction).ArgumentsToApply(args)
         End Function
 
-        Public Overridable Function IsArgumentsApply(ParamArray args() As IType) As Boolean Implements IFunction.IsArgumentsApply
-
-            If Me.Types Is Nothing Then Return False
-
-            Me.Types = Me.Types.By(Of IFunction).Where(Function(x) x.IsArgumentsApply(args)).By(Of IType).ToList
-            Return Me.Types.Count > 0
-        End Function
-
         Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
 
             Return CType(Me.GetDecideType, IFunction).ApplyFunction(args)
