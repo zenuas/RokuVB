@@ -1,0 +1,6 @@
+#use System.Collections.Generic
+
+#=>1
+var xs: System.Collections.Generic.List(Int) = System.Collections.Generic.List(Int)()
+xs.Add(1)
+print(xs[0])

@@ -18,7 +18,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<FunctionNode>   sub sub_block lambda_func
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       type typev typex atvar union
+%type<TypeNode>       type typev typex atvar union nsvar
 %type<TypeListNode>   types typen type2n atvarn unionn typeor
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
@@ -156,11 +156,14 @@ type   : typev
        | typev '?'                {$$ = $1 : $1.Nullable = True}
        | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
        | '{' types ARROW type '}' {$$ = CreateFunctionTypeNode($2.List.ToArray, $4,      $1)}
-typev  : var            {$$ = New TypeNode($1)}
+typev  : nsvar
        | '[' type ']'   {$$ = New TypeArrayNode($2)}
        | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
        | atvar
        | '[' type2n ']' {$$ = New TypeTupleNode($2)}
+nsvar  : varx                {$$ = New TypeNode($1)}
+       | nsvar '.' varx      {$$ = New TypeNode($1, $3)}
+       | nsvar '(' typen ')' {$1.Arguments = $3.List.ToArray : $$ = $1}
 typex  : void
        | type
 types  : void           {$$ = Me.CreateListNode(Of TypeNode)}

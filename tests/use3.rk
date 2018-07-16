@@ -1,0 +1,5 @@
+#use System
+
+#=>1
+var a: System.Int64 = 1
+print(a)

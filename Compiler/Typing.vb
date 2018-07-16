@@ -137,6 +137,8 @@ Namespace Compiler
 
         Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
+            Dim load_ns As Func(Of RkNamespace, TypeNode, RkNamespace) = Function(base, t) If(t Is Nothing, base, LoadNamespace(load_ns(base, t.Namespace), t.Name))
+
             Util.Traverse.NodesOnce(
                 node,
                 0,
@@ -216,7 +218,14 @@ Namespace Compiler
                         Dim node_type = CType(child, TypeNode)
                         If Not node_type.IsGeneric Then
 
-                            Dim t = CType(LoadStruct(ns, node_type.Name), IType)
+                            Dim base = load_ns(ns, node_type.Namespace)
+                            Dim t As IType
+                            If node_type.Arguments?.Length > 0 Then
+
+                                t = LoadStruct(base, node_type.Name, node_type.Arguments.Map(Function(x) x.Type).ToArray)
+                            Else
+                                t = LoadStruct(base, node_type.Name)
+                            End If
                             If node_type.Nullable Then
 
                                 If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})

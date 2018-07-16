@@ -19,7 +19,15 @@ Namespace Node
             Me.AppendLineNumber(name)
         End Sub
 
+        Public Sub New(ns As TypeNode, name As VariableNode)
+            Me.New(name)
+
+            Me.Namespace = ns
+        End Sub
+
         Public Overridable Property Name As String
+        Public Overridable Property [Namespace] As TypeNode = Nothing
+        Public Overridable Property Arguments As TypeNode()
         Public Overridable Property IsGeneric As Boolean = False
         Public Overridable Property Nullable As Boolean = False
         Public Overridable Property NullAdded As Boolean = False

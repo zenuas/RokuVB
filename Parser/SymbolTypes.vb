@@ -198,6 +198,9 @@ Namespace Parser
         ''' <summary>namespace</summary>
         [namespace]
 
+        ''' <summary>nsvar</summary>
+        nsvar
+
         ''' <summary>null</summary>
         null_1
 

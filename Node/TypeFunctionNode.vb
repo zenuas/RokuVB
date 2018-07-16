@@ -7,7 +7,6 @@ Namespace Node
         Inherits TypeNode
 
 
-        Public Overridable Property Arguments As TypeNode()
         Public Overridable Property [Return] As TypeNode
 
         Public Overrides Function HasGeneric() As Boolean
