@@ -1,0 +1,10 @@
+struct Hoge(@T)
+	var i: @T
+
+sub show(x: Hoge(@T1))
+	print(x.i)
+
+#=>hello
+var a = Hoge(String)
+a.i = "hello"
+show(a)

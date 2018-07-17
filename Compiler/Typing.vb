@@ -97,9 +97,17 @@ Namespace Compiler
 
                                     rk_func.DefineGeneric(x.Name)
 
+                                ElseIf TypeOf x Is TypeFunctionNode Then
+
                                 ElseIf TypeOf x Is TypeArrayNode Then
 
                                     create_generic(CType(x, TypeArrayNode).Item)
+
+                                ElseIf TypeOf x Is TypeTupleNode Then
+
+                                Else
+
+                                    x.Arguments.Each(Sub(a) create_generic(a))
                                 End If
                             End Sub
 
@@ -222,6 +230,7 @@ Namespace Compiler
 
                                 t = LoadNamespace(base, node_type.Name)
                             Else
+
                                 If node_type.Arguments.Count > 0 Then
 
                                     t = LoadStruct(base, node_type.Name, node_type.Arguments.Map(Function(x) x.Type).ToArray)
@@ -257,15 +266,24 @@ Namespace Compiler
                         Dim define_type As Func(Of RkFunction, TypeNode, IType) =
                             Function(f, x)
 
-                                If x.Type Is Nothing Then
+                                If x.IsGeneric Then
 
-                                    If x.IsGeneric Then
+                                    x.Type = f.DefineGeneric(x.Name)
 
-                                        x.Type = f.DefineGeneric(x.Name)
+                                ElseIf TypeOf x Is TypeFunctionNode Then
 
-                                    ElseIf TypeOf x Is TypeArrayNode Then
+                                ElseIf TypeOf x Is TypeArrayNode Then
 
-                                        x.Type = LoadStruct(root, "Array", define_type(f, CType(x, TypeArrayNode).Item))
+                                    If x.Type Is Nothing Then x.Type = LoadStruct(root, "Array", define_type(f, CType(x, TypeArrayNode).Item))
+
+                                ElseIf TypeOf x Is TypeTupleNode Then
+
+                                Else
+
+                                    If x.Arguments.Count > 0 Then
+
+                                        x.Arguments.Each(Sub(a) define_type(f, a))
+                                        x.Type = x.Type.FixedGeneric(x.Arguments.Map(Function(a) a.Type).ToArray)
                                     End If
                                 End If
 
