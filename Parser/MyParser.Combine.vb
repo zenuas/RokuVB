@@ -269,12 +269,12 @@ Namespace Parser
         Public Overridable Function CreateFunctionNode(
                 f As FunctionNode,
                 name As VariableNode,
-                args() As DeclareNode,
+                args As ListNode(Of DeclareNode),
                 ret As TypeNode
             ) As FunctionNode
 
             f.Name = name.Name
-            f.Arguments = args
+            f.Arguments = args.List
             f.Return = ret
             f.InnerScope = False
             Return f
@@ -282,26 +282,26 @@ Namespace Parser
 
         Public Overridable Function CreateFunctionNode(
                 f As FunctionNode,
-                args() As DeclareNode,
+                args As ListNode(Of DeclareNode),
                 ret As TypeNode
             ) As FunctionNode
 
-            args.Each(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
+            args.List.Each(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
             f.Name = $"#{f.LineNumber},{f.LineColumn}"
-            f.Arguments = args
+            f.Arguments = args.List
             f.Return = ret
             f.InnerScope = False
             Return f
         End Function
 
         Public Overridable Function CreateFunctionTypeNode(
-                args() As TypeNode,
+                args As ListNode(Of TypeNode),
                 ret As TypeNode,
                 token As Token
             ) As TypeFunctionNode
 
             Dim t As New TypeFunctionNode
-            t.Arguments = args
+            t.Arguments = args.List
             t.Return = ret
             t.AppendLineNumber(token)
             Return t
@@ -309,11 +309,11 @@ Namespace Parser
 
         Public Overridable Function CreateLambdaFunction(
                 f As FunctionNode,
-                args() As DeclareNode,
+                args As ListNode(Of DeclareNode),
                 ret As TypeNode
             ) As VariableNode
 
-            f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
+            f = Me.CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)
             Me.CurrentScope.Lets.Add(f.Name, f)
@@ -322,12 +322,12 @@ Namespace Parser
 
         Public Overridable Function CreateImplicitLambdaFunction(
                 f As FunctionNode,
-                args() As DeclareNode,
+                args As ListNode(Of DeclareNode),
                 ret As TypeNode
             ) As VariableNode
 
-            f = Me.CreateFunctionNode(f, If(args, New DeclareNode() {}), ret)
-            If args Is Nothing OrElse args.Length = 0 Then f.ImplicitArgumentsCount = 0
+            f = Me.CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
+            If args Is Nothing OrElse args.List.Count = 0 Then f.ImplicitArgumentsCount = 0
             If ret Is Nothing Then f.ImplicitReturn = (f.Statements.Count > 0 AndAlso TypeOf f.Statements(0) Is LambdaExpressionNode)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)

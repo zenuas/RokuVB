@@ -619,7 +619,7 @@ Namespace Parser
 
                 Case -61
                     Debug.WriteLine("sub : SUB fn '(' args ')' typex EOL sub_block")
-                    yy_value = Me.CreateFunctionNode(CType(Me.GetValue(-1), FunctionNode), CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), DeclareListNode).List.ToArray, CType(Me.GetValue(-3), TypeNode))
+                    yy_value = Me.CreateFunctionNode(CType(Me.GetValue(-1), FunctionNode), CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), DeclareListNode), CType(Me.GetValue(-3), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.sub_1, 8, yy_value)
 
                 Case -62
@@ -679,12 +679,12 @@ Namespace Parser
 
                 Case -73
                     Debug.WriteLine("type : '{' types '}'")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-2), TypeListNode).List.ToArray, Nothing, CType(Me.GetToken(-3), Token))
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-2), TypeListNode), Nothing, CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case -74
                     Debug.WriteLine("type : '{' types ARROW type '}'")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode).List.ToArray, CType(Me.GetValue(-2), TypeNode),      CType(Me.GetToken(-5), Token))
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeNode), CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -75
@@ -724,7 +724,7 @@ Namespace Parser
 
                 Case -82
                     Debug.WriteLine("nsvar : nsvar '(' typen ')'")
-                    CType(Me.GetValue(-4), TypeNode).Arguments = CType(Me.GetValue(-2), TypeListNode).List.ToArray : yy_value = CType(Me.GetValue(-4), TypeNode)
+                    CType(Me.GetValue(-4), TypeNode).Arguments = CType(Me.GetValue(-2), TypeListNode).List : yy_value = CType(Me.GetValue(-4), TypeNode)
                     yy_token = Me.DoAction(SymbolTypes.nsvar, 4, yy_value)
 
                 Case -83
@@ -774,12 +774,12 @@ Namespace Parser
 
                 Case -92
                     Debug.WriteLine("lambda : '{' lambda_args ARROW lambda_func '}'")
-                    yy_value = Me.CreateImplicitLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode).List.ToArray, Nothing)
+                    yy_value = Me.CreateImplicitLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode), Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 5, yy_value)
 
                 Case -93
                     Debug.WriteLine("lambda : '{' '(' lambda_args ')' typex ARROW lambda_func '}'")
-                    yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-6), DeclareListNode).List.ToArray, CType(Me.GetValue(-4), TypeNode))
+                    yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-6), DeclareListNode), CType(Me.GetValue(-4), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda, 8, yy_value)
 
                 Case -94

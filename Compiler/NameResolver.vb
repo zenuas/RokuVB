@@ -128,7 +128,7 @@ Namespace Compiler
                                 Dim args = func.Arguments.ToList
                                 Dim arg = New ImplicitParameterNode($"${i + 1}", i + 1UI) With {.Scope = func}
                                 args.Add(New DeclareNode(arg, New TypeNode With {.Name = $"#{i}", .IsGeneric = True}))
-                                func.Arguments = args.ToArray
+                                func.Arguments = args
                                 func.Lets.Add(arg.Name, arg)
                             Next
                             func.ImplicitArgumentsCount = Math.Max(func.ImplicitArgumentsCount.Value, imp.Index)

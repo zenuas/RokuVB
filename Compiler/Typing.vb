@@ -137,8 +137,6 @@ Namespace Compiler
 
         Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
-            Dim load_ns As Func(Of RkNamespace, TypeNode, RkNamespace) = Function(base, t) If(t Is Nothing, base, LoadNamespace(load_ns(base, t.Namespace), t.Name))
-
             Util.Traverse.NodesOnce(
                 node,
                 0,
@@ -218,13 +216,18 @@ Namespace Compiler
                         Dim node_type = CType(child, TypeNode)
                         If Not node_type.IsGeneric Then
 
-                            Dim base = load_ns(ns, node_type.Namespace)
+                            Dim base = CType(If(node_type.Namespace Is Nothing, ns, node_type.Namespace.Type), IScope)
                             Dim t As IType
-                            If node_type.Arguments?.Length > 0 Then
+                            If node_type.IsNamespace Then
 
-                                t = LoadStruct(base, node_type.Name, node_type.Arguments.Map(Function(x) x.Type).ToArray)
+                                t = LoadNamespace(base, node_type.Name)
                             Else
-                                t = LoadStruct(base, node_type.Name)
+                                If node_type.Arguments.Count > 0 Then
+
+                                    t = LoadStruct(base, node_type.Name, node_type.Arguments.Map(Function(x) x.Type).ToArray)
+                                Else
+                                    t = LoadStruct(base, node_type.Name)
+                                End If
                             End If
                             If node_type.Nullable Then
 

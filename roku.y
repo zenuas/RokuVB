@@ -140,7 +140,7 @@ unionn : type EOL        {$$ = Me.CreateListNode($1)}
 
 
 ########## sub ##########
-sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = Me.CreateFunctionNode($8, $2, $4.List.ToArray, $6)}
+sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = Me.CreateFunctionNode($8, $2, $4, $6)}
 
 sub_block : sub_begin stmt END {$$ = Me.PopScope}
 sub_begin : BEGIN              {Me.PushScope(New FunctionNode($1.LineNumber))}
@@ -154,8 +154,8 @@ argn   : decla          {$$ = Me.CreateListNode($1)}
 decla  : var ':' type   {$$ = New DeclareNode($1, $3)}
 type   : typev
        | typev '?'                {$$ = $1 : $1.Nullable = True}
-       | '{' types '}'            {$$ = CreateFunctionTypeNode($2.List.ToArray, Nothing, $1)}
-       | '{' types ARROW type '}' {$$ = CreateFunctionTypeNode($2.List.ToArray, $4,      $1)}
+       | '{' types '}'            {$$ = CreateFunctionTypeNode($2, Nothing, $1)}
+       | '{' types ARROW type '}' {$$ = CreateFunctionTypeNode($2, $4,      $1)}
 typev  : nsvar
        | '[' type ']'   {$$ = New TypeArrayNode($2)}
        | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
@@ -163,7 +163,7 @@ typev  : nsvar
        | '[' type2n ']' {$$ = New TypeTupleNode($2)}
 nsvar  : varx                {$$ = New TypeNode($1)}
        | nsvar '.' varx      {$$ = New TypeNode($1, $3)}
-       | nsvar '(' typen ')' {$1.Arguments = $3.List.ToArray : $$ = $1}
+       | nsvar '(' typen ')' {$1.Arguments = $3.List : $$ = $1}
 typex  : void
        | type
 types  : void           {$$ = Me.CreateListNode(Of TypeNode)}
@@ -176,8 +176,8 @@ typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = Me.CreateImplicitLambdaFunction($4, $2.List.ToArray, Nothing)}
-            | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($7, $3.List.ToArray, $5)}
+lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = Me.CreateImplicitLambdaFunction($4, $2, Nothing)}
+            | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($7, $3, $5)}
             |                               ARROW lambda_func     {$$ = Me.CreateImplicitLambdaFunction($2, Nothing, Nothing)}
 lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
             | EOL sub_block              {$$ = $2}

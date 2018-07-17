@@ -1,4 +1,5 @@
-﻿Imports Roku.Manager
+﻿Imports System.Collections.Generic
+Imports Roku.Manager
 
 
 Namespace Node
@@ -22,13 +23,15 @@ Namespace Node
         Public Sub New(ns As TypeNode, name As VariableNode)
             Me.New(name)
 
+            ns.IsNamespace = True
             Me.Namespace = ns
         End Sub
 
         Public Overridable Property Name As String
         Public Overridable Property [Namespace] As TypeNode = Nothing
-        Public Overridable Property Arguments As TypeNode()
+        Public Overridable Property Arguments As New List(Of TypeNode)
         Public Overridable Property IsGeneric As Boolean = False
+        Public Overridable Property IsNamespace As Boolean = False
         Public Overridable Property Nullable As Boolean = False
         Public Overridable Property NullAdded As Boolean = False
         Public Overridable Property Type As IType Implements IEvaluableNode.Type

@@ -37,7 +37,7 @@ Namespace Node
                 clone.Bind = bind
                 clone.Parent = parent
 
-                For i = 0 To clone.Arguments.Length - 1
+                For i = 0 To clone.Arguments.Count - 1
 
                     clone.Arguments(i).Type.Type = f.Arguments(i).Value
                 Next
