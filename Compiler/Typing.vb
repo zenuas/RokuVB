@@ -283,7 +283,7 @@ Namespace Compiler
                         For Each let_ In node_struct.Lets.Values.By(Of LetNode)
 
                             Dim t = If(let_.Declare?.Type, let_.Expression?.Type)
-                            If t.HasGeneric Then
+                            If t?.HasGeneric Then
 
                                 t = t.FixedGeneric(let_.Declare.Arguments.Map(Function(x) define_type(rk_struct, x)).ToArray)
                             End If
