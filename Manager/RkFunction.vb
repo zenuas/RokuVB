@@ -270,10 +270,17 @@ Namespace Manager
 
         Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions
 
-            If Me.Scope.Functions.ContainsKey(Me.Name) AndAlso Me.Scope.Functions(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Functions(Me.Name)
-            Dim xs = Me.Scope.Functions.FindFirstOrNull(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
-            If xs IsNot Nothing Then Return xs
-            Return {CType(Me, IFunction)}.ToList
+            Dim xs As List(Of IFunction)
+            If Me.Scope.Functions.ContainsKey(Me.Name) AndAlso Me.Scope.Functions(Me.Name).Exists(Function(s) s Is Me) Then
+
+                xs = Me.Scope.Functions(Me.Name)
+            Else
+
+                xs = Me.Scope.Functions.FindFirstOrNull(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
+                If xs Is Nothing Then xs = {CType(Me, IFunction)}.ToList
+            End If
+
+            Return xs.Where(Function(x) Me.Arguments.Count = x.Arguments.Count AndAlso Me.Arguments.And(Function(arg, i) arg.Value.Is(x.Arguments(i).Value))).ToList
         End Function
 
         Public Overridable Function CreateCall(ParamArray args() As OpValue) As InCode0() Implements IFunction.CreateCall
