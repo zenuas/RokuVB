@@ -36,3 +36,31 @@ sub each(xs: [@T], block: {@T, Int})
 				block(y, index)
 				_each(ys, block, index + 1)
 	_each(xs, block, 0)
+
+struct List(@T)
+	var index = 0
+	var list: System.Collections.Generic.List(@T)
+
+sub List(index: Int, xs: System.Collections.Generic.List(@T)) List(@T)
+	var e = List(@T)()
+	e.index = index
+	e.list = xs
+	return(e)
+
+sub car(xs: System.Collections.Generic.List(@T)) @T
+	return(xs[0])
+
+sub car(xs: List(@T)) @T
+	return(xs.list[xs.index])
+
+sub cdr(xs: System.Collections.Generic.List(@T)) List(@T)
+	return(List(1, xs))
+
+sub cdr(xs: List(@T)) List(@T)
+	return(List(xs.index + 1, xs))
+
+sub isnull(xs: System.Collections.Generic.List(@T)) Bool
+	return(xs.Count() == 0)
+
+sub isnull(xs: List(@T)) Bool
+	return(xs.index >= xs.list.Count())

@@ -145,6 +145,35 @@ Namespace Compiler
 
         Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
+            Dim define_type As Func(Of IType, TypeNode, IType) =
+                Function(t, x)
+
+                    If x Is Nothing Then Return Nothing
+
+                    If x.IsGeneric Then
+
+                        x.Type = t.DefineGeneric(x.Name)
+
+                    ElseIf TypeOf x Is TypeFunctionNode Then
+
+                    ElseIf TypeOf x Is TypeArrayNode Then
+
+                        If x.Type Is Nothing Then x.Type = LoadStruct(root, "Array", define_type(t, CType(x, TypeArrayNode).Item))
+
+                    ElseIf TypeOf x Is TypeTupleNode Then
+
+                    Else
+
+                        If x.Arguments.Count > 0 Then
+
+                            x.Arguments.Each(Sub(a) define_type(t, a))
+                            x.Type = x.Type.FixedGeneric(x.Arguments.Map(Function(a) a.Type).ToArray)
+                        End If
+                    End If
+
+                    Return x.Type
+                End Function
+
             Util.Traverse.NodesOnce(
                 node,
                 0,
@@ -175,18 +204,6 @@ Namespace Compiler
 
                         Dim node_typef = CType(child, TypeFunctionNode)
                         Dim rk_func As New RkFunction With {.Scope = ns}
-                        Dim define_type As Func(Of RkFunction, TypeNode, IType) =
-                            Function(f, x)
-
-                                If x Is Nothing Then Return Nothing
-
-                                If x.IsGeneric Then
-
-                                    x.Type = f.DefineGeneric(x.Name)
-                                End If
-
-                                Return x.Type
-                            End Function
                         node_typef.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = define_type(rk_func, x)}))
                         rk_func.Return = define_type(rk_func, node_typef.Return)
                         node_typef.Type = rk_func
@@ -258,37 +275,26 @@ Namespace Compiler
 
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is StructNode Then
+
+                        Dim node_struct = CType(child, StructNode)
+                        Dim rk_struct = node_struct.Type
+
+                        For Each let_ In node_struct.Lets.Values.By(Of LetNode)
+
+                            Dim t = If(let_.Declare?.Type, let_.Expression?.Type)
+                            If t.HasGeneric Then
+
+                                t = t.FixedGeneric(let_.Declare.Arguments.Map(Function(x) define_type(rk_struct, x)).ToArray)
+                            End If
+                            let_.Type = t
+                        Next
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is FunctionNode Then
 
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_function = node_func.Function
-
-                        Dim define_type As Func(Of RkFunction, TypeNode, IType) =
-                            Function(f, x)
-
-                                If x.IsGeneric Then
-
-                                    x.Type = f.DefineGeneric(x.Name)
-
-                                ElseIf TypeOf x Is TypeFunctionNode Then
-
-                                ElseIf TypeOf x Is TypeArrayNode Then
-
-                                    If x.Type Is Nothing Then x.Type = LoadStruct(root, "Array", define_type(f, CType(x, TypeArrayNode).Item))
-
-                                ElseIf TypeOf x Is TypeTupleNode Then
-
-                                Else
-
-                                    If x.Arguments.Count > 0 Then
-
-                                        x.Arguments.Each(Sub(a) define_type(f, a))
-                                        x.Type = x.Type.FixedGeneric(x.Arguments.Map(Function(a) a.Type).ToArray)
-                                    End If
-                                End If
-
-                                Return x.Type
-                            End Function
 
                         node_func.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = define_type(rk_function, x.Type)}))
 

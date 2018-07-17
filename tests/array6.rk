@@ -1,0 +1,14 @@
+
+
+var xs = [0, 1, 2, 3, 4]
+
+#=>0
+print(car(xs))
+
+#=>1
+var next = cdr(xs)
+print(car(next))
+
+##=>2
+#var next2 = cdr(next)
+#print(car(next2))
