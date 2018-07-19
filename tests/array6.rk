@@ -9,6 +9,6 @@ print(car(xs))
 var next = cdr(xs)
 print(car(next))
 
-##=>2
-#var next2 = cdr(next)
-#print(car(next2))
+#=>2
+var next2 = cdr(next)
+print(car(next2))

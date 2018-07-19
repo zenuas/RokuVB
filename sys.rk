@@ -38,7 +38,7 @@ sub each(xs: [@T], block: {@T, Int})
 	_each(xs, block, 0)
 
 struct List(@T)
-	var index = 0
+	var index: Int
 	var list: System.Collections.Generic.List(@T)
 
 sub List(index: Int, xs: System.Collections.Generic.List(@T)) List(@T)
@@ -57,7 +57,7 @@ sub cdr(xs: System.Collections.Generic.List(@T)) List(@T)
 	return(List(1, xs))
 
 sub cdr(xs: List(@T)) List(@T)
-	return(List(xs.index + 1, xs))
+	return(List(xs.index + 1, xs.list))
 
 sub isnull(xs: System.Collections.Generic.List(@T)) Bool
 	return(xs.Count() == 0)
