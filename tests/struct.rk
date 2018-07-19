@@ -6,6 +6,6 @@ struct Hoge(@T)
 struct A
 	var i = 0
 
-var a = Hoge(Int)
+var a = Hoge(Int)()
 #=>hello world
 print(a.hello_world)

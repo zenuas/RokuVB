@@ -86,6 +86,20 @@ Public Class Main
 
             Dim pgm = ns.Value
             Dim current = root.GetNamespace(ns.Key)
+            Compiler.Typing.PrototypeStruct(pgm, root, current)
+        Next
+
+        For Each ns In loader.Root.Namespaces
+
+            Dim pgm = ns.Value
+            Dim current = root.GetNamespace(ns.Key)
+            Compiler.Typing.PrototypeFunction(pgm, root, current)
+        Next
+
+        For Each ns In loader.Root.Namespaces
+
+            Dim pgm = ns.Value
+            Dim current = root.GetNamespace(ns.Key)
 
             For Each use In pgm.Uses
 

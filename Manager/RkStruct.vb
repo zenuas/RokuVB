@@ -73,12 +73,40 @@ Namespace Manager
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
 
+            Dim search_gen_name = Function(name As String) values.FindFirst(Function(v) v.Name.Equals(name)).Value
+
+            Dim fixed_generic =
+                Function(t As IType)
+
+                    If t is nothing OrElse Not t.HasGeneric Then Return t
+
+                    If TypeOf t Is RkGenericEntry Then
+
+                        t = search_gen_name(t.Name)
+
+                    ElseIf TypeOf t Is RkStruct Then
+
+                        Dim rk_struct = CType(t, RkStruct)
+                        Dim xs(rk_struct.Generics.Count - 1) As IType
+                        rk_struct.Generics.Each(
+                            Sub(x)
+
+                                Dim p = rk_struct.Apply(x.ApplyIndex)
+                                If TypeOf p Is RkGenericEntry Then p = search_gen_name(p.name)
+                                xs(x.ApplyIndex) = p
+                            End Sub)
+                        Return rk_struct.FixedGeneric(xs)
+                    End If
+
+                    Return t
+                End Function
+
             Dim clone = CType(Me.CloneGeneric, RkStruct)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
             If Me.Super IsNot Nothing Then clone.Super = Me.Super.FixedGeneric(values)
             For Each v In Me.Local
 
-                clone.Local.Add(v.Key, v.Value?.FixedGeneric(values))
+                clone.Local.Add(v.Key, fixed_generic(v.Value))
             Next
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)

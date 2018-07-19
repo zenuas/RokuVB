@@ -1,0 +1,11 @@
+struct Hoge(@T)
+	var arr: System.Collections.Generic.List(@T)
+
+sub create(x: @T1) Hoge(@T1)
+	var a = Hoge(@T1)()
+	a.arr = [x]
+	return(a)
+
+#=>hello
+var h = create("hello")
+print(h.arr[0])
