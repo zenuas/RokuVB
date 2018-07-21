@@ -2,7 +2,7 @@
 %{
 Imports Roku.Node
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
-Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeNode)
+Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeBaseNode)
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %}
@@ -18,7 +18,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<FunctionNode>   sub sub_block lambda_func
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       type typev typex atvar union nsvar
+%type<TypeNode>       nsvar
+%type<TypeBaseNode>   type typev typex atvar union
 %type<TypeListNode>   types typen type2n atvarn unionn typeor
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
@@ -166,7 +167,7 @@ nsvar  : varx                {$$ = New TypeNode($1)}
        | nsvar '(' typen ')' {$1.Arguments = $3.List : $$ = $1}
 typex  : void
        | type
-types  : void           {$$ = Me.CreateListNode(Of TypeNode)}
+types  : void           {$$ = Me.CreateListNode(Of TypeBaseNode)}
        | typen extra
 typen  : type           {$$ = Me.CreateListNode($1)}
        | typen ',' type {$1.List.Add($3) : $$ = $1}

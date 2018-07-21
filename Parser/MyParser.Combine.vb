@@ -63,7 +63,7 @@ Namespace Parser
 
         Public Overridable Function CreateLetNode(
                 var As VariableNode,
-                type As TypeNode,
+                type As TypeBaseNode,
                 Optional local_var As Boolean = False
             ) As LetNode
 
@@ -75,7 +75,7 @@ Namespace Parser
 
         Public Overridable Function CreateLetNode(
                 var As VariableNode,
-                type As TypeNode,
+                type As TypeBaseNode,
                 expr As IEvaluableNode,
                 Optional local_var As Boolean = False
             ) As LetNode
@@ -212,7 +212,7 @@ Namespace Parser
 
         Public Overridable Function CreateIfCastNode(
                 var As VariableNode,
-                decla As TypeNode,
+                decla As TypeBaseNode,
                 cond As IEvaluableNode,
                 [then] As BlockNode
             ) As IfCastNode
@@ -247,7 +247,7 @@ Namespace Parser
         End Function
 
         Public Overridable Function CreateCaseCastNode(
-                decla As TypeNode,
+                decla As TypeBaseNode,
                 var As VariableNode
             ) As CaseCastNode
 
@@ -270,7 +270,7 @@ Namespace Parser
                 f As FunctionNode,
                 name As VariableNode,
                 args As ListNode(Of DeclareNode),
-                ret As TypeNode
+                ret As TypeBaseNode
             ) As FunctionNode
 
             f.Name = name.Name
@@ -283,7 +283,7 @@ Namespace Parser
         Public Overridable Function CreateFunctionNode(
                 f As FunctionNode,
                 args As ListNode(Of DeclareNode),
-                ret As TypeNode
+                ret As TypeBaseNode
             ) As FunctionNode
 
             args.List.Each(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
@@ -295,8 +295,8 @@ Namespace Parser
         End Function
 
         Public Overridable Function CreateFunctionTypeNode(
-                args As ListNode(Of TypeNode),
-                ret As TypeNode,
+                args As ListNode(Of TypeBaseNode),
+                ret As TypeBaseNode,
                 token As Token
             ) As TypeFunctionNode
 
@@ -310,7 +310,7 @@ Namespace Parser
         Public Overridable Function CreateLambdaFunction(
                 f As FunctionNode,
                 args As ListNode(Of DeclareNode),
-                ret As TypeNode
+                ret As TypeBaseNode
             ) As VariableNode
 
             f = Me.CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)

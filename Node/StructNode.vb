@@ -27,7 +27,7 @@ Namespace Node
         Public Overridable Property InnerScope As Boolean = False Implements IScopeNode.InnerScope
         Public Overridable ReadOnly Property Lets As New Dictionary(Of String, INode) Implements IScopeNode.Lets
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
-        Public Overridable ReadOnly Property Generics As New List(Of TypeNode)
+        Public Overridable ReadOnly Property Generics As New List(Of TypeBaseNode)
 
         Public Overridable ReadOnly Property Owner As INamedFunction Implements IScopeNode.Owner
             Get

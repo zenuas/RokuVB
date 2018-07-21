@@ -14,32 +14,33 @@ Namespace Compiler
 
     Public Class Typing
 
-        Public Shared Function DefineType(root As SystemLibrary, t As IType, node As TypeNode) As IType
+        Public Shared Function DefineType(root As SystemLibrary, t As IType, base As TypeBaseNode) As IType
 
-            If node Is Nothing Then Return Nothing
+            If base Is Nothing Then Return Nothing
 
-            If node.IsGeneric Then
+            If base.IsGeneric Then
 
-                node.Type = t.DefineGeneric(node.Name)
+                base.Type = t.DefineGeneric(base.Name)
 
-            ElseIf TypeOf node Is TypeFunctionNode Then
+            ElseIf TypeOf base Is TypeNode Then
 
-            ElseIf TypeOf node Is TypeArrayNode Then
-
-                If node.Type Is Nothing Then node.Type = LoadStruct(root, "Array", DefineType(root, t, CType(node, TypeArrayNode).Item))
-
-            ElseIf TypeOf node Is TypeTupleNode Then
-
-            Else
-
+                Dim node = CType(base, TypeNode)
                 If node.Arguments.Count > 0 Then
 
                     node.Arguments.Each(Sub(x) DefineType(root, t, x))
-                    node.Type = node.Type.FixedGeneric(node.Arguments.Map(Function(x) x.Type).ToArray)
+                    base.Type = base.Type.FixedGeneric(node.Arguments.Map(Function(x) x.Type).ToArray)
                 End If
+
+            ElseIf TypeOf base Is TypeFunctionNode Then
+
+            ElseIf TypeOf base Is TypeArrayNode Then
+
+                If base.Type Is Nothing Then base.Type = LoadStruct(root, "Array", DefineType(root, t, CType(base, TypeArrayNode).Item))
+
+            ElseIf TypeOf base Is TypeTupleNode Then
             End If
 
-            Return node.Type
+            Return base.Type
         End Function
 
         Public Shared Sub Prototype(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
@@ -199,7 +200,7 @@ Namespace Compiler
                             Dim t = If(DefineType(root, rk_struct, let_.Declare), let_.Expression?.Type)
                             If t?.HasGeneric AndAlso TypeOf t IsNot RkGenericEntry Then
 
-                                t = t.FixedGeneric(let_.Declare.Arguments.Map(Function(x) DefineType(root, rk_struct, x)).ToArray)
+                                t = t.FixedGeneric(CType(let_.Declare, TypeNode).Arguments.Map(Function(x) DefineType(root, rk_struct, x)).ToArray)
                             End If
                             let_.Type = t
                             rk_struct.AddLet(let_.Var.Name, t)
@@ -248,12 +249,16 @@ Namespace Compiler
                         Dim node_func = CType(child, FunctionNode)
                         Dim rk_func = CType(node_func.Type, RkFunction)
 
-                        Dim create_generic As Action(Of TypeNode) =
+                        Dim create_generic As Action(Of TypeBaseNode) =
                             Sub(x)
 
                                 If x.IsGeneric Then
 
                                     rk_func.DefineGeneric(x.Name)
+
+                                ElseIf TypeOf x Is TypeNode Then
+
+                                    CType(x, TypeNode).Arguments.Each(Sub(a) create_generic(a))
 
                                 ElseIf TypeOf x Is TypeFunctionNode Then
 
@@ -263,9 +268,6 @@ Namespace Compiler
 
                                 ElseIf TypeOf x Is TypeTupleNode Then
 
-                                Else
-
-                                    x.Arguments.Each(Sub(a) create_generic(a))
                                 End If
                             End Sub
 

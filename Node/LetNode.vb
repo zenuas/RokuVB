@@ -10,7 +10,7 @@ Namespace Node
 
         Public Overridable Property Receiver As IEvaluableNode
         Public Overridable Property Var As VariableNode
-        Public Overridable Property [Declare] As TypeNode
+        Public Overridable Property [Declare] As TypeBaseNode
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance

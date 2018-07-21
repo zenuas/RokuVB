@@ -270,7 +270,6 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is TypeFunctionNode
 
                             Dim x = CType(node_, TypeFunctionNode)
-                            f("Namespace", x.Namespace)
                             For i = 0 To x.Arguments.Count - 1
 
                                 f($"[{i}]", x.Arguments(i))
@@ -280,21 +279,11 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is TypeArrayNode
 
                             Dim x = CType(node_, TypeArrayNode)
-                            f("Namespace", x.Namespace)
-                            For i = 0 To x.Arguments.Count - 1
-
-                                f($"[{i}]", x.Arguments(i))
-                            Next
                             f("Item", x.Item)
 
                         Case TypeOf node_ Is TypeTupleNode
 
                             Dim x = CType(node_, TypeTupleNode)
-                            f("Namespace", x.Namespace)
-                            For i = 0 To x.Arguments.Count - 1
-
-                                f($"[{i}]", x.Arguments(i))
-                            Next
                             For i = 0 To x.Items.List.Count - 1
 
                                 f($"[{i}]", x.Items.List(i))
@@ -516,31 +505,20 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is TypeFunctionNode
 
                             Dim x = CType(node_, TypeFunctionNode)
-                            x.Namespace = CType(f("Namespace", x.Namespace), TypeNode)
                             For i = 0 To x.Arguments.Count - 1
 
-                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeNode)
+                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeBaseNode)
                             Next
-                            x.Return = CType(f("Return", x.Return), TypeNode)
+                            x.Return = CType(f("Return", x.Return), TypeBaseNode)
 
                         Case TypeOf node_ Is TypeArrayNode
 
                             Dim x = CType(node_, TypeArrayNode)
-                            x.Namespace = CType(f("Namespace", x.Namespace), TypeNode)
-                            For i = 0 To x.Arguments.Count - 1
-
-                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeNode)
-                            Next
-                            x.Item = CType(f("Item", x.Item), TypeNode)
+                            x.Item = CType(f("Item", x.Item), TypeBaseNode)
 
                         Case TypeOf node_ Is TypeTupleNode
 
                             Dim x = CType(node_, TypeTupleNode)
-                            x.Namespace = CType(f("Namespace", x.Namespace), TypeNode)
-                            For i = 0 To x.Arguments.Count - 1
-
-                                x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), TypeNode)
-                            Next
                             For i = 0 To x.Items.List.Count - 1
 
                                 x.Items.List(i) = CType(f($"[{i}]", x.Items.List(i)), TypeNode)

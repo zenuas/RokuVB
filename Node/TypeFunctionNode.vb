@@ -1,13 +1,15 @@
-﻿Imports Roku.Util.Extensions
+﻿Imports System.Collections.Generic
+Imports Roku.Util.Extensions
 
 
 Namespace Node
 
     Public Class TypeFunctionNode
-        Inherits TypeNode
+        Inherits TypeBaseNode
 
 
-        Public Overridable Property [Return] As TypeNode
+        Public Overridable Property Arguments As New List(Of TypeBaseNode)
+        Public Overridable Property [Return] As TypeBaseNode
 
         Public Overrides Function HasGeneric() As Boolean
 

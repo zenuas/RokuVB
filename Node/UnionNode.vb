@@ -4,23 +4,23 @@
 Namespace Node
 
     Public Class UnionNode
-        Inherits TypeNode
+        Inherits TypeBaseNode
 
 
-        Public Sub New(name As VariableNode, items As ListNode(Of TypeNode))
+        Public Sub New(name As VariableNode, items As ListNode(Of TypeBaseNode))
 
             Me.Name = name.Name
             Me.Union = items
             Me.AppendLineNumber(name)
         End Sub
 
-        Public Sub New(items As ListNode(Of TypeNode))
+        Public Sub New(items As ListNode(Of TypeBaseNode))
 
             Me.Union = items
             Me.AppendLineNumber(items)
         End Sub
 
-        Public Overridable ReadOnly Property Union As ListNode(Of TypeNode)
+        Public Overridable ReadOnly Property Union As ListNode(Of TypeBaseNode)
 
         Public Overrides Function HasGeneric() As Boolean
 

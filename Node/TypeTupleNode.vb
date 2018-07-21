@@ -4,16 +4,16 @@
 Namespace Node
 
     Public Class TypeTupleNode
-        Inherits TypeNode
+        Inherits TypeBaseNode
 
 
-        Public Sub New(items As ListNode(Of TypeNode))
+        Public Sub New(items As ListNode(Of TypeBaseNode))
 
             Me.Items = items
             Me.AppendLineNumber(items)
         End Sub
 
-        Public Overridable Property Items As ListNode(Of TypeNode)
+        Public Overridable Property Items As ListNode(Of TypeBaseNode)
 
         Public Overrides Function HasGeneric() As Boolean
 

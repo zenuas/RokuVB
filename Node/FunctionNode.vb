@@ -15,7 +15,7 @@ Namespace Node
         End Sub
 
         Public Overridable Property Arguments As List(Of DeclareNode)
-        Public Overridable Property [Return] As TypeNode
+        Public Overridable Property [Return] As TypeBaseNode
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable Property Bind As New Dictionary(Of INamedFunction, Boolean) Implements INamedFunction.Bind
         Public Overridable Property Name As String Implements INamedFunction.Name

@@ -8,7 +8,7 @@
 
         End Sub
 
-        Public Sub New(name As VariableNode, type As TypeNode)
+        Public Sub New(name As VariableNode, type As TypeBaseNode)
 
             Me.Name = name
             Me.Type = type
@@ -16,7 +16,7 @@
         End Sub
 
         Public Overridable Property Name As VariableNode
-        Public Overridable Property Type As TypeNode
+        Public Overridable Property Type As TypeBaseNode
 
     End Class
 
