@@ -9,8 +9,6 @@ Namespace Compiler
 
         Public Shared Sub ResolveName(node As ProgramNode)
 
-            Dim var_index = 0
-
             Dim resolve_name As Func(Of IScopeNode, String, IScopeNode) =
                 Function(current, name)
 
