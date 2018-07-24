@@ -27,19 +27,19 @@ Namespace Parser
 
 #End Region
 
-        Public Overridable Function AppendLineNumber(Of T As BaseNode)(node As T, token As Token) As T
+        Public Shared Function AppendLineNumber(Of T As BaseNode)(node As T, token As Token) As T
 
             node.AppendLineNumber(token)
             Return node
         End Function
 
-        Public Overridable Sub AddUse(use As UseNode)
+        Public Shared Sub AddUse(parser As MyParser, use As UseNode)
 
-            use.Module = Me.Loader.AddUse(use.GetNamespace)
-            CType(Me.CurrentScope, ProgramNode).Uses.Add(use)
+            use.Module = parser.Loader.AddUse(use.GetNamespace)
+            CType(parser.CurrentScope, ProgramNode).Uses.Add(use)
         End Sub
 
-        Public Overridable Function CreateLetNode(
+        Public Shared Function CreateLetNode(
                 var As VariableNode,
                 expr As IEvaluableNode,
                 Optional local_var As Boolean = False
@@ -51,7 +51,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Public Overridable Function CreateLetNode(
+        Public Shared Function CreateLetNode(
                 prop As PropertyNode,
                 expr As IEvaluableNode
             ) As LetNode
@@ -61,7 +61,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Public Overridable Function CreateLetNode(
+        Public Shared Function CreateLetNode(
                 var As VariableNode,
                 type As TypeBaseNode,
                 Optional local_var As Boolean = False
@@ -73,7 +73,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Public Overridable Function CreateLetNode(
+        Public Shared Function CreateLetNode(
                 var As VariableNode,
                 type As TypeBaseNode,
                 expr As IEvaluableNode,
@@ -86,7 +86,7 @@ Namespace Parser
             Return let_
         End Function
 
-        Public Overridable Function CreateFunctionCallNode(
+        Public Shared Function CreateFunctionCallNode(
                 expr As IEvaluableNode,
                 ParamArray args() As IEvaluableNode
             ) As FunctionCallNode
@@ -96,17 +96,17 @@ Namespace Parser
             Return fcall
         End Function
 
-        Public Overridable Function CreateFunctionCallNode(
+        Public Shared Function CreateFunctionCallNode(
                 ope As Token,
                 ParamArray args() As IEvaluableNode
             ) As FunctionCallNode
 
-            Dim expr = Me.CreateVariableNode(ope)
+            Dim expr = CreateVariableNode(ope)
             expr.AppendLineNumber(args(0))
-            Return Me.CreateFunctionCallNode(expr, args)
+            Return CreateFunctionCallNode(expr, args)
         End Function
 
-        Public Overridable Function CreatePropertyNode(
+        Public Shared Function CreatePropertyNode(
                 left As IEvaluableNode,
                 dot As Token,
                 right As VariableNode
@@ -117,7 +117,7 @@ Namespace Parser
             Return prop
         End Function
 
-        Public Overridable Function CreateExpressionNode(
+        Public Shared Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String,
                 right As IEvaluableNode
@@ -128,23 +128,23 @@ Namespace Parser
             Return expr
         End Function
 
-        Public Overridable Function CreateExpressionNode(
+        Public Shared Function CreateExpressionNode(
                 left As IEvaluableNode,
                 ope As String
             ) As ExpressionNode
 
-            Return Me.CreateExpressionNode(left, ope, Nothing)
+            Return CreateExpressionNode(left, ope, Nothing)
         End Function
 
-        Public Overridable Function CreateExpressionNode(
+        Public Shared Function CreateExpressionNode(
                 left As IEvaluableNode
             ) As ExpressionNode
 
             If TypeOf left Is ExpressionNode Then Return CType(left, ExpressionNode)
-            Return Me.CreateExpressionNode(left, "", Nothing)
+            Return CreateExpressionNode(left, "", Nothing)
         End Function
 
-        Public Overridable Function CreateTupleNode(
+        Public Shared Function CreateTupleNode(
                 items As ListNode(Of IEvaluableNode)
             ) As TupleNode
 
@@ -153,25 +153,25 @@ Namespace Parser
             Return tuple
         End Function
 
-        Public Overridable Function CreateListNode(Of T As INode)() As ListNode(Of T)
+        Public Shared Function CreateListNode(Of T As INode)() As ListNode(Of T)
 
             Return New ListNode(Of T)
         End Function
 
-        Public Overridable Function CreateListNode(Of T As INode)(ParamArray expr() As T) As ListNode(Of T)
+        Public Function CreateListNode(Of T As INode)(ParamArray expr() As T) As ListNode(Of T)
 
-            Dim list = Me.CreateListNode(Of T)
+            Dim list = CreateListNode(Of T)()
             list.List.AddRange(expr)
 
             Return list
         End Function
 
-        Public Overridable Function CreateVariableNode(s As Token) As VariableNode
+        Public Shared Function CreateVariableNode(s As Token) As VariableNode
 
-            Return Me.CreateVariableNode(s.Name, s)
+            Return CreateVariableNode(s.Name, s)
         End Function
 
-        Public Overridable Function CreateVariableNode(s As String, pos As Token) As VariableNode
+        Public Shared Function CreateVariableNode(s As String, pos As Token) As VariableNode
 
             If TypeOf pos.Value Is VariableNode Then Return CType(pos.Value, VariableNode)
 
@@ -181,7 +181,7 @@ Namespace Parser
             Return var_
         End Function
 
-        Public Overridable Function CreateVariableNode(s As String, node As INode) As VariableNode
+        Public Shared Function CreateVariableNode(s As String, node As INode) As VariableNode
 
             Dim var_ = New VariableNode(s)
             var_.AppendLineNumber(node)
@@ -189,15 +189,15 @@ Namespace Parser
             Return var_
         End Function
 
-        Public Overridable Function CreateIfNode(
+        Public Shared Function CreateIfNode(
                 cond As IEvaluableNode,
                 [then] As BlockNode
             ) As IfNode
 
-            Return Me.CreateIfNode(cond, [then], Nothing)
+            Return CreateIfNode(cond, [then], Nothing)
         End Function
 
-        Public Overridable Function CreateIfNode(
+        Public Shared Function CreateIfNode(
                 cond As IEvaluableNode,
                 [then] As BlockNode,
                 [else] As BlockNode
@@ -210,7 +210,7 @@ Namespace Parser
             Return [if]
         End Function
 
-        Public Overridable Function CreateIfCastNode(
+        Public Shared Function CreateIfCastNode(
                 var As VariableNode,
                 decla As TypeBaseNode,
                 cond As IEvaluableNode,
@@ -223,7 +223,7 @@ Namespace Parser
             Return [if]
         End Function
 
-        Public Overridable Function AddElse(
+        Public Shared Function AddElse(
                 [if] As IfNode,
                 [else] As BlockNode
             ) As IfNode
@@ -233,12 +233,12 @@ Namespace Parser
                 [if].Else = [else]
             Else
 
-                Me.AddElse(CType([if].Else.Statements(0), IfNode), [else])
+                AddElse(CType([if].Else.Statements(0), IfNode), [else])
             End If
             Return [if]
         End Function
 
-        Public Overridable Function CreateSwitchNode([case] As CaseNode) As SwitchNode
+        Public Shared Function CreateSwitchNode([case] As CaseNode) As SwitchNode
 
             Dim switch As New SwitchNode
             switch.Case.Add([case])
@@ -246,7 +246,7 @@ Namespace Parser
             Return switch
         End Function
 
-        Public Overridable Function CreateCaseCastNode(
+        Public Shared Function CreateCaseCastNode(
                 decla As TypeBaseNode,
                 var As VariableNode
             ) As CaseCastNode
@@ -256,7 +256,7 @@ Namespace Parser
             Return [case]
         End Function
 
-        Public Overridable Function CreateCaseArrayNode(
+        Public Shared Function CreateCaseArrayNode(
                 pattern As ListNode(Of VariableNode),
                 token As Token
             ) As CaseArrayNode
@@ -266,7 +266,7 @@ Namespace Parser
             Return [case]
         End Function
 
-        Public Overridable Function CreateFunctionNode(
+        Public Shared Function CreateFunctionNode(
                 f As FunctionNode,
                 name As VariableNode,
                 args As ListNode(Of DeclareNode),
@@ -280,7 +280,7 @@ Namespace Parser
             Return f
         End Function
 
-        Public Overridable Function CreateFunctionNode(
+        Public Shared Function CreateFunctionNode(
                 f As FunctionNode,
                 args As ListNode(Of DeclareNode),
                 ret As TypeBaseNode
@@ -294,7 +294,7 @@ Namespace Parser
             Return f
         End Function
 
-        Public Overridable Function CreateFunctionTypeNode(
+        Public Shared Function CreateFunctionTypeNode(
                 args As ListNode(Of TypeBaseNode),
                 ret As TypeBaseNode,
                 token As Token
@@ -307,60 +307,62 @@ Namespace Parser
             Return t
         End Function
 
-        Public Overridable Function CreateLambdaFunction(
+        Public Shared Function CreateLambdaFunction(
+                scope As IScopeNode,
                 f As FunctionNode,
                 args As ListNode(Of DeclareNode),
                 ret As TypeBaseNode
             ) As VariableNode
 
-            f = Me.CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
+            f = CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)
-            Me.CurrentScope.Lets.Add(f.Name, f)
+            scope.Lets.Add(f.Name, f)
             Return v
         End Function
 
-        Public Overridable Function CreateImplicitLambdaFunction(
+        Public Shared Function CreateImplicitLambdaFunction(
+                scope As IScopeNode,
                 f As FunctionNode,
                 args As ListNode(Of DeclareNode),
                 ret As TypeNode
             ) As VariableNode
 
-            f = Me.CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
+            f = CreateFunctionNode(f, If(args, New ListNode(Of DeclareNode)), ret)
             If args Is Nothing OrElse args.List.Count = 0 Then f.ImplicitArgumentsCount = 0
             If ret Is Nothing Then f.ImplicitReturn = (f.Statements.Count > 0 AndAlso TypeOf f.Statements(0) Is LambdaExpressionNode)
             Dim v = New VariableNode(f.Name)
             v.AppendLineNumber(f)
-            Me.CurrentScope.Lets.Add(f.Name, f)
+            scope.Lets.Add(f.Name, f)
             Return v
         End Function
 
-        Public Overridable Function ToLambdaExpression(expr As IEvaluableNode) As FunctionNode
+        Public Shared Function ToLambdaExpression(scope As IScopeNode, expr As IEvaluableNode) As FunctionNode
 
             Dim f = New FunctionNode(expr.LineNumber.Value)
             Dim lambda = New LambdaExpressionNode With {.Expression = expr}
             f.AppendLineNumber(expr)
             lambda.AppendLineNumber(expr)
             f.Statements.Add(lambda)
-            f.Parent = Me.CurrentScope
+            f.Parent = scope
             Return f
         End Function
 
-        Public Overridable Function ToLambdaExpressionBlock(expr As IEvaluableNode) As BlockNode
+        Public Shared Function ToLambdaExpressionBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
 
             Dim block = New BlockNode(expr.LineNumber.Value)
             Dim lambda = New LambdaExpressionNode With {.Expression = expr}
             lambda.AppendLineNumber(expr)
             block.Statements.Add(lambda)
-            block.Parent = Me.CurrentScope
+            block.Parent = scope
             Return block
         End Function
 
-        Public Overridable Function ToBlock(if_ As IfNode) As BlockNode
+        Public Shared Function ToBlock(scope As IScopeNode, if_ As IfNode) As BlockNode
 
             Dim block = New BlockNode(if_.LineNumber.Value)
             block.Statements.Add(if_)
-            block.Parent = Me.CurrentScope
+            block.Parent = scope
             Return block
         End Function
 

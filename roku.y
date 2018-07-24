@@ -59,12 +59,12 @@ start :                             {$$ = New ProgramNode}
 program_begin : BEGIN               {Me.PushScope(New ProgramNode)}
 
 uses  : void
-      | uses use EOL           {Me.AddUse($2)}
-use   : USE namespace          {$$ = Me.AppendLineNumber(New UseNode With {.Namespace = $2}, $1)}
-      | USE var EQ namespace   {$$ = Me.AppendLineNumber(New UseNode With {.Namespace = $4, .Alias = $2.Name}, $1)}
+      | uses use EOL           {AddUse(Me, $2)}
+use   : USE namespace          {$$ = AppendLineNumber(New UseNode With {.Namespace = $2}, $1)}
+      | USE var EQ namespace   {$$ = AppendLineNumber(New UseNode With {.Namespace = $4, .Alias = $2.Name}, $1)}
 
 namespace : varx               {$$ = $1}
-          | namespace '.' varx {$$ = Me.CreateExpressionNode($1, ".", $3)}
+          | namespace '.' varx {$$ = CreateExpressionNode($1, ".", $3)}
 
 
 ########## statement ##########
@@ -92,29 +92,29 @@ expr : var
      | lambda
      | atvar
      | '[' list ']'         {$2.AppendLineNumber($1) : $$ = $2}
-     | '(' expr ')'         {$$ = Me.CreateExpressionNode($2, "()")}
-     | '(' list2n ')'       {$$ = Me.CreateTupleNode($2)}
-     | ope expr %prec UNARY {$$ = Me.CreateFunctionCallNode($1.Token, $2)}
-     | expr '.' fvar        {$$ = Me.CreatePropertyNode($1, $2, $3)}
-     | expr ope expr        {$$ = Me.CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr '[' expr ']'    {$$ = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", $2), $1, $3)}
+     | '(' expr ')'         {$$ = CreateExpressionNode($2, "()")}
+     | '(' list2n ')'       {$$ = CreateTupleNode($2)}
+     | ope expr %prec UNARY {$$ = CreateFunctionCallNode($1.Token, $2)}
+     | expr '.' fvar        {$$ = CreatePropertyNode($1, $2, $3)}
+     | expr ope expr        {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr '[' expr ']'    {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr
      | null
 
-call : expr '(' list ')' {$$ = Me.CreateFunctionCallNode($1, $3.List.ToArray)}
+call : expr '(' list ')' {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
 
-list   : void            {$$ = Me.CreateListNode(Of IEvaluableNode)}
+list   : void            {$$ = CreateListNode(Of IEvaluableNode)}
        | listn extra
-listn  : expr            {$$ = Me.CreateListNode($1)}
+listn  : expr            {$$ = CreateListNode($1)}
        | list2n
-list2n : expr ',' expr   {$$ = Me.CreateListNode($1, $3)}
+list2n : expr ',' expr   {$$ = CreateListNode($1, $3)}
        | list2n ',' expr {$1.List.Add($3) : $$ = $1}
 
 ########## let ##########
-let : LET var EQ expr          {$$ = Me.CreateLetNode($2, $4, True)}
-    | LET var ':' type EQ expr {$$ = Me.CreateLetNode($2, $4, $6, True)}
-#    | var EQ expr              {$$ = Me.CreateLetNode($1, $3)}
-    | expr '.' varx EQ expr    {$$ = Me.CreateLetNode(Me.CreatePropertyNode($1, $2, $3), $5)}
+let : LET var EQ expr          {$$ = CreateLetNode($2, $4, True)}
+    | LET var ':' type EQ expr {$$ = CreateLetNode($2, $4, $6, True)}
+#    | var EQ expr              {$$ = CreateLetNode($1, $3)}
+    | expr '.' varx EQ expr    {$$ = CreateLetNode(CreatePropertyNode($1, $2, $3), $5)}
 
 
 ########## struct ##########
@@ -125,32 +125,32 @@ struct_block : struct_begin define END {$$ = Me.PopScope}
 struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber))}
 
 define : void
-       | define LET var ':' type EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
-       | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(Me.CreateLetNode($3, $5))}
+       | define LET var ':' type EOL   {Me.CurrentScope.AddLet(CreateLetNode($3, $5))}
+       | define LET var EQ  expr EOL   {Me.CurrentScope.AddLet(CreateLetNode($3, $5))}
        | define sub
 
-atvarn : atvar                         {$$ = Me.CreateListNode($1)}
+atvarn : atvar                         {$$ = CreateListNode($1)}
        | atvarn ',' atvar              {$1.List.Add($3) : $$ = $1}
 
 
 ########## union ##########
 union  : UNION var EOL BEGIN unionn END {$$ = New UnionNode($2, $5)}
 
-unionn : type EOL        {$$ = Me.CreateListNode($1)}
+unionn : type EOL        {$$ = CreateListNode($1)}
        | unionn type EOL {$1.List.Add($2) : $$ = $1}
 
 
 ########## sub ##########
-sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = Me.CreateFunctionNode($8, $2, $4, $6)}
+sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = CreateFunctionNode($8, $2, $4, $6)}
 
 sub_block : sub_begin stmt END {$$ = Me.PopScope}
 sub_begin : BEGIN              {Me.PushScope(New FunctionNode($1.LineNumber))}
 
 fn     : var
-       | ope            {$$ = Me.CreateVariableNode($1.Token)}
-args   : void           {$$ = Me.CreateListNode(Of DeclareNode)}
+       | ope            {$$ = CreateVariableNode($1.Token)}
+args   : void           {$$ = CreateListNode(Of DeclareNode)}
        | argn extra
-argn   : decla          {$$ = Me.CreateListNode($1)}
+argn   : decla          {$$ = CreateListNode($1)}
        | argn ',' decla {$1.List.Add($3) : $$ = $1}
 decla  : var ':' type   {$$ = New DeclareNode($1, $3)}
 type   : typev
@@ -167,75 +167,75 @@ nsvar  : varx                {$$ = New TypeNode($1)}
        | nsvar '(' typen ')' {$1.Arguments = $3.List : $$ = $1}
 typex  : void
        | type
-types  : void           {$$ = Me.CreateListNode(Of TypeBaseNode)}
+types  : void           {$$ = CreateListNode(Of TypeBaseNode)()}
        | typen extra
-typen  : type           {$$ = Me.CreateListNode($1)}
+typen  : type           {$$ = CreateListNode($1)}
        | typen ',' type {$1.List.Add($3) : $$ = $1}
 type2n : type ',' typen {$3.List.Insert(0, $1) : $$ = $3}
-typeor : type OR type   {$$ = Me.CreateListNode($1, $3)}
+typeor : type OR type   {$$ = CreateListNode($1, $3)}
        | typeor OR type {$1.List.Add($3) : $$ = $1}
 
 
 ########## lambda ##########
-lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = Me.CreateImplicitLambdaFunction($4, $2, Nothing)}
-            | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = Me.CreateLambdaFunction($7, $3, $5)}
-            |                               ARROW lambda_func     {$$ = Me.CreateImplicitLambdaFunction($2, Nothing, Nothing)}
-lambda_func : expr                       {$$ = Me.ToLambdaExpression($1)}
+lambda      : '{' lambda_args               ARROW lambda_func '}' {$$ = CreateImplicitLambdaFunction(Me.CurrentScope, $4, $2, Nothing)}
+            | '{' '(' lambda_args ')' typex ARROW lambda_func '}' {$$ = CreateLambdaFunction(Me.CurrentScope, $7, $3, $5)}
+            |                               ARROW lambda_func     {$$ = CreateImplicitLambdaFunction(Me.CurrentScope, $2, Nothing, Nothing)}
+lambda_func : expr                       {$$ = ToLambdaExpression(Me.CurrentScope, $1)}
             | EOL sub_block              {$$ = $2}
 lambda_arg  : var                        {$$ = New DeclareNode($1, Nothing)}
             | decla
-lambda_args : void                       {$$ = Me.CreateListNode(Of DeclareNode)}
+lambda_args : void                       {$$ = CreateListNode(Of DeclareNode)()}
             | lambda_argn extra
-lambda_argn : lambda_arg                 {$$ = Me.CreateListNode($1)}
+lambda_argn : lambda_arg                 {$$ = CreateListNode($1)}
             | lambda_argn ',' lambda_arg {$1.List.Add($3) : $$ = $1}
 
 
 ########## if ##########
 if     : ifthen
        | elseif
-       | ifthen ELSE EOL block {$$ = Me.AddElse($1, $4)}
-       | elseif ELSE EOL block {$$ = Me.AddElse($1, $4)}
-ifthen : IF expr EOL block                 {$$ = Me.CreateIfNode($2, $4)}
-       | IF var ':' type EQ expr EOL block {$$ = Me.CreateIfCastNode($2, $4, $6, $8)}
-elseif : ifthen ELSE ifthen    {$$ = Me.AddElse($1, Me.ToBlock($3))}
-       | elseif ELSE ifthen    {$$ = Me.AddElse($1, Me.ToBlock($3))}
+       | ifthen ELSE EOL block {$$ = AddElse($1, $4)}
+       | elseif ELSE EOL block {$$ = AddElse($1, $4)}
+ifthen : IF expr EOL block                 {$$ = CreateIfNode($2, $4)}
+       | IF var ':' type EQ expr EOL block {$$ = CreateIfCastNode($2, $4, $6, $8)}
+elseif : ifthen ELSE ifthen    {$$ = AddElse($1, ToBlock(Me.CurrentScope, $3))}
+       | elseif ELSE ifthen    {$$ = AddElse($1, ToBlock(Me.CurrentScope, $3))}
 
 
 ########## switch ##########
 switch     : SWITCH expr EOL case_block {$$ = $4 : $4.Expression = $2 : $4.AppendLineNumber($1)}
 case_block : BEGIN casen END           {$$ = $2}
-casen      : case                      {$$ = Me.CreateSwitchNode($1)}
+casen      : case                      {$$ = CreateSwitchNode($1)}
            | casen case                {$$ = $1 : $1.Case.Add($2)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
-           | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = Me.ToLambdaExpressionBlock($3)}
+           | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = ToLambdaExpressionBlock(Me.CurrentScope, $3)}
 case_expr  : var
            | num
            | str
-           | var ':' type           {$$ = Me.CreateCaseCastNode($3, $1)}
-           | '[' array_pattern ']'  {$$ = Me.CreateCaseArrayNode($2, $1)}
+           | var ':' type           {$$ = CreateCaseCastNode($3, $1)}
+           | '[' array_pattern ']'  {$$ = CreateCaseArrayNode($2, $1)}
            | '(' tupple_pattern ')' {}
 
 array_pattern  : patterns
 tupple_pattern : patterns
-patterns       : void                 {$$ = Me.CreateListNode(Of VariableNode)}
+patterns       : void                 {$$ = CreateListNode(Of VariableNode)()}
                | patternn extra
-patternn       : pattern              {$$ = Me.CreateListNode($1)}
+patternn       : pattern              {$$ = CreateListNode($1)}
                | patternn ',' pattern {$1.List.Add($3) : $$ = $1}
 pattern        : var
 
 ########## other ##########
-var    : VAR         {$$ = Me.CreateVariableNode($1)}
-       | '(' ope ')' {$$ = Me.CreateVariableNode($2.Token)}
+var    : VAR         {$$ = CreateVariableNode($1)}
+       | '(' ope ')' {$$ = CreateVariableNode($2.Token)}
 varx   : var
-       | SUB     {$$ = Me.CreateVariableNode($1)}
-       | IF      {$$ = Me.CreateVariableNode($1)}
-       | ELSE    {$$ = Me.CreateVariableNode($1)}
-       | LET     {$$ = Me.CreateVariableNode($1)}
-       | USE     {$$ = Me.CreateVariableNode($1)}
+       | SUB     {$$ = CreateVariableNode($1)}
+       | IF      {$$ = CreateVariableNode($1)}
+       | ELSE    {$$ = CreateVariableNode($1)}
+       | LET     {$$ = CreateVariableNode($1)}
+       | USE     {$$ = CreateVariableNode($1)}
 fvar   : varx
-       | NUM     {$$ = Me.CreateVariableNode($1.Format, $1)}
-atvar  : ATVAR   {$$ = New TypeNode(Me.CreateVariableNode($1)) With {.IsGeneric = True}}
+       | NUM     {$$ = CreateVariableNode($1.Format, $1)}
+atvar  : ATVAR   {$$ = New TypeNode(CreateVariableNode($1)) With {.IsGeneric = True}}
 num    : NUM     {$$ = $1}
 str    : STR     {$$ = New StringNode($1)}
        | str STR {$1.String.Append($2.Name) : $$ = $1}

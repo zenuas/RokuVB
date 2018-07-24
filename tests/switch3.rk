@@ -1,0 +1,21 @@
+
+
+var xs = [0, 1, 2, 3, 4]
+
+#=>0
+#=>1
+#=>2
+#=>3
+#=>last
+#=>end
+show(xs)
+
+sub show(xs: [Int])
+	switch xs
+		[] => print("end")
+		[a] =>
+			print("last")
+			show([])
+		[a, as] =>
+			print(a)
+			show(as)

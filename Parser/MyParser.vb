@@ -344,17 +344,17 @@ Namespace Parser
 
                 Case -6
                     Debug.WriteLine("uses : uses use EOL")
-                    Me.AddUse(CType(Me.GetValue(-2), UseNode))
+                    AddUse(Me, CType(Me.GetValue(-2), UseNode))
                     yy_token = Me.DoAction(SymbolTypes.uses, 3, yy_value)
 
                 Case -7
                     Debug.WriteLine("use : USE namespace")
-                    yy_value = Me.AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}, CType(Me.GetToken(-2), Token))
+                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}, CType(Me.GetToken(-2), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 2, yy_value)
 
                 Case -8
                     Debug.WriteLine("use : USE var EQ namespace")
-                    yy_value = Me.AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
+                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 4, yy_value)
 
                 Case -9
@@ -364,7 +364,7 @@ Namespace Parser
 
                 Case -10
                     Debug.WriteLine("namespace : namespace '.' varx")
-                    yy_value = Me.CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), ".", CType(Me.GetValue(-1), VariableNode))
+                    yy_value = CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), ".", CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 3, yy_value)
 
                 Case -11
@@ -464,32 +464,32 @@ Namespace Parser
 
                 Case -30
                     Debug.WriteLine("expr : '(' expr ')'")
-                    yy_value = Me.CreateExpressionNode(CType(Me.GetValue(-2), IEvaluableNode), "()")
+                    yy_value = CreateExpressionNode(CType(Me.GetValue(-2), IEvaluableNode), "()")
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -31
                     Debug.WriteLine("expr : '(' list2n ')'")
-                    yy_value = Me.CreateTupleNode(CType(Me.GetValue(-2), IEvaluableListNode))
+                    yy_value = CreateTupleNode(CType(Me.GetValue(-2), IEvaluableListNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -32
                     Debug.WriteLine("expr : ope expr")
-                    yy_value = Me.CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 2, yy_value)
 
                 Case -33
                     Debug.WriteLine("expr : expr '.' fvar")
-                    yy_value = Me.CreatePropertyNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetToken(-2), Token), CType(Me.GetValue(-1), VariableNode))
+                    yy_value = CreatePropertyNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetToken(-2), Token), CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -34
                     Debug.WriteLine("expr : expr ope expr")
-                    yy_value = Me.CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -35
                     Debug.WriteLine("expr : expr '[' expr ']'")
-                    yy_value = Me.CreateFunctionCallNode(Me.CreateVariableNode("[]", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableNode))
+                    yy_value = CreateFunctionCallNode(CreateVariableNode("[]", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 4, yy_value)
 
                 Case -36
@@ -504,12 +504,12 @@ Namespace Parser
 
                 Case -38
                     Debug.WriteLine("call : expr '(' list ')'")
-                    yy_value = Me.CreateFunctionCallNode(CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableListNode).List.ToArray)
+                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableListNode).List.ToArray)
                     yy_token = Me.DoAction(SymbolTypes.[call], 4, yy_value)
 
                 Case -39
                     Debug.WriteLine("list : void")
-                    yy_value = Me.CreateListNode(Of IEvaluableNode)
+                    yy_value = CreateListNode(Of IEvaluableNode)()
                     yy_token = Me.DoAction(SymbolTypes.list, 1, yy_value)
 
                 Case -40
@@ -519,7 +519,7 @@ Namespace Parser
 
                 Case -41
                     Debug.WriteLine("listn : expr")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.listn, 1, yy_value)
 
                 Case -42
@@ -529,7 +529,7 @@ Namespace Parser
 
                 Case -43
                     Debug.WriteLine("list2n : expr ',' expr")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.list2n, 3, yy_value)
 
                 Case -44
@@ -539,17 +539,17 @@ Namespace Parser
 
                 Case -45
                     Debug.WriteLine("let : LET var EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), True)
+                    yy_value = CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 4, yy_value)
 
                 Case -46
                     Debug.WriteLine("let : LET var ':' type EQ expr")
-                    yy_value = Me.CreateLetNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), IEvaluableNode), True)
+                    yy_value = CreateLetNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 6, yy_value)
 
                 Case -47
                     Debug.WriteLine("let : expr '.' varx EQ expr")
-                    yy_value = Me.CreateLetNode(Me.CreatePropertyNode(CType(Me.GetValue(-5), IEvaluableNode), CType(Me.GetToken(-4), Token), CType(Me.GetValue(-3), VariableNode)), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateLetNode(CreatePropertyNode(CType(Me.GetValue(-5), IEvaluableNode), CType(Me.GetToken(-4), Token), CType(Me.GetValue(-3), VariableNode)), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.let_1, 5, yy_value)
 
                 Case -48
@@ -579,12 +579,12 @@ Namespace Parser
 
                 Case -53
                     Debug.WriteLine("define : define LET var ':' type EOL")
-                    Me.CurrentScope.AddLet(Me.CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), TypeBaseNode)))
+                    Me.CurrentScope.AddLet(CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), TypeBaseNode)))
                     yy_token = Me.DoAction(SymbolTypes.define, 6, yy_value)
 
                 Case -54
                     Debug.WriteLine("define : define LET var EQ expr EOL")
-                    Me.CurrentScope.AddLet(Me.CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), IEvaluableNode)))
+                    Me.CurrentScope.AddLet(CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), IEvaluableNode)))
                     yy_token = Me.DoAction(SymbolTypes.define, 6, yy_value)
 
                 Case -55
@@ -594,7 +594,7 @@ Namespace Parser
 
                 Case -56
                     Debug.WriteLine("atvarn : atvar")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.atvarn, 1, yy_value)
 
                 Case -57
@@ -609,7 +609,7 @@ Namespace Parser
 
                 Case -59
                     Debug.WriteLine("unionn : type EOL")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-2), TypeBaseNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-2), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.unionn, 2, yy_value)
 
                 Case -60
@@ -619,7 +619,7 @@ Namespace Parser
 
                 Case -61
                     Debug.WriteLine("sub : SUB fn '(' args ')' typex EOL sub_block")
-                    yy_value = Me.CreateFunctionNode(CType(Me.GetValue(-1), FunctionNode), CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), DeclareListNode), CType(Me.GetValue(-3), TypeBaseNode))
+                    yy_value = CreateFunctionNode(CType(Me.GetValue(-1), FunctionNode), CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), DeclareListNode), CType(Me.GetValue(-3), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.sub_1, 8, yy_value)
 
                 Case -62
@@ -639,12 +639,12 @@ Namespace Parser
 
                 Case -65
                     Debug.WriteLine("fn : ope")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetValue(-1), TokenNode).Token)
+                    yy_value = CreateVariableNode(CType(Me.GetValue(-1), TokenNode).Token)
                     yy_token = Me.DoAction(SymbolTypes.fn, 1, yy_value)
 
                 Case -66
                     Debug.WriteLine("args : void")
-                    yy_value = Me.CreateListNode(Of DeclareNode)
+                    yy_value = CreateListNode(Of DeclareNode)()
                     yy_token = Me.DoAction(SymbolTypes.args, 1, yy_value)
 
                 Case -67
@@ -654,7 +654,7 @@ Namespace Parser
 
                 Case -68
                     Debug.WriteLine("argn : decla")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), DeclareNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), DeclareNode))
                     yy_token = Me.DoAction(SymbolTypes.argn, 1, yy_value)
 
                 Case -69
@@ -739,7 +739,7 @@ Namespace Parser
 
                 Case -85
                     Debug.WriteLine("types : void")
-                    yy_value = Me.CreateListNode(Of TypeBaseNode)
+                    yy_value = CreateListNode(Of TypeBaseNode)()
                     yy_token = Me.DoAction(SymbolTypes.types, 1, yy_value)
 
                 Case -86
@@ -749,7 +749,7 @@ Namespace Parser
 
                 Case -87
                     Debug.WriteLine("typen : type")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.typen, 1, yy_value)
 
                 Case -88
@@ -764,7 +764,7 @@ Namespace Parser
 
                 Case -90
                     Debug.WriteLine("typeor : type OR type")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), TypeBaseNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.typeor, 3, yy_value)
 
                 Case -91
@@ -774,22 +774,22 @@ Namespace Parser
 
                 Case -92
                     Debug.WriteLine("lambda : '{' lambda_args ARROW lambda_func '}'")
-                    yy_value = Me.CreateImplicitLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode), Nothing)
+                    yy_value = CreateImplicitLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode), Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 5, yy_value)
 
                 Case -93
                     Debug.WriteLine("lambda : '{' '(' lambda_args ')' typex ARROW lambda_func '}'")
-                    yy_value = Me.CreateLambdaFunction(CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-6), DeclareListNode), CType(Me.GetValue(-4), TypeBaseNode))
+                    yy_value = CreateLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-6), DeclareListNode), CType(Me.GetValue(-4), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda, 8, yy_value)
 
                 Case -94
                     Debug.WriteLine("lambda : ARROW lambda_func")
-                    yy_value = Me.CreateImplicitLambdaFunction(CType(Me.GetValue(-1), FunctionNode), Nothing, Nothing)
+                    yy_value = CreateImplicitLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-1), FunctionNode), Nothing, Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 2, yy_value)
 
                 Case -95
                     Debug.WriteLine("lambda_func : expr")
-                    yy_value = Me.ToLambdaExpression(CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = ToLambdaExpression(Me.CurrentScope, CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda_func, 1, yy_value)
 
                 Case -96
@@ -809,7 +809,7 @@ Namespace Parser
 
                 Case -99
                     Debug.WriteLine("lambda_args : void")
-                    yy_value = Me.CreateListNode(Of DeclareNode)
+                    yy_value = CreateListNode(Of DeclareNode)()
                     yy_token = Me.DoAction(SymbolTypes.lambda_args, 1, yy_value)
 
                 Case -100
@@ -819,7 +819,7 @@ Namespace Parser
 
                 Case -101
                     Debug.WriteLine("lambda_argn : lambda_arg")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), DeclareNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), DeclareNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda_argn, 1, yy_value)
 
                 Case -102
@@ -839,32 +839,32 @@ Namespace Parser
 
                 Case -105
                     Debug.WriteLine("if : ifthen ELSE EOL block")
-                    yy_value = Me.AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
+                    yy_value = AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -106
                     Debug.WriteLine("if : elseif ELSE EOL block")
-                    yy_value = Me.AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
+                    yy_value = AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -107
                     Debug.WriteLine("ifthen : IF expr EOL block")
-                    yy_value = Me.CreateIfNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
+                    yy_value = CreateIfNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.ifthen, 4, yy_value)
 
                 Case -108
                     Debug.WriteLine("ifthen : IF var ':' type EQ expr EOL block")
-                    yy_value = Me.CreateIfCastNode(CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), TypeBaseNode), CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
+                    yy_value = CreateIfCastNode(CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), TypeBaseNode), CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.ifthen, 8, yy_value)
 
                 Case -109
                     Debug.WriteLine("elseif : ifthen ELSE ifthen")
-                    yy_value = Me.AddElse(CType(Me.GetValue(-3), IfNode), Me.ToBlock(CType(Me.GetValue(-1), IfNode)))
+                    yy_value = AddElse(CType(Me.GetValue(-3), IfNode), ToBlock(Me.CurrentScope, CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -110
                     Debug.WriteLine("elseif : elseif ELSE ifthen")
-                    yy_value = Me.AddElse(CType(Me.GetValue(-3), IfNode), Me.ToBlock(CType(Me.GetValue(-1), IfNode)))
+                    yy_value = AddElse(CType(Me.GetValue(-3), IfNode), ToBlock(Me.CurrentScope, CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -111
@@ -879,7 +879,7 @@ Namespace Parser
 
                 Case -113
                     Debug.WriteLine("casen : case")
-                    yy_value = Me.CreateSwitchNode(CType(Me.GetValue(-1), CaseNode))
+                    yy_value = CreateSwitchNode(CType(Me.GetValue(-1), CaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 1, yy_value)
 
                 Case -114
@@ -899,7 +899,7 @@ Namespace Parser
 
                 Case -117
                     Debug.WriteLine("case : case_expr ARROW expr EOL")
-                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = Me.ToLambdaExpressionBlock(CType(Me.GetValue(-2), IEvaluableNode))
+                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = ToLambdaExpressionBlock(Me.CurrentScope, CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -118
@@ -919,17 +919,17 @@ Namespace Parser
 
                 Case -121
                     Debug.WriteLine("case_expr : var ':' type")
-                    yy_value = Me.CreateCaseCastNode(CType(Me.GetValue(-1), TypeBaseNode), CType(Me.GetValue(-3), VariableNode))
+                    yy_value = CreateCaseCastNode(CType(Me.GetValue(-1), TypeBaseNode), CType(Me.GetValue(-3), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -122
                     Debug.WriteLine("case_expr : '[' array_pattern ']'")
-                    yy_value = Me.CreateCaseArrayNode(CType(Me.GetValue(-2), VariableListNode), CType(Me.GetToken(-3), Token))
+                    yy_value = CreateCaseArrayNode(CType(Me.GetValue(-2), VariableListNode), CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -123
                     Debug.WriteLine("case_expr : '(' tupple_pattern ')'")
-                    
+
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -124
@@ -944,7 +944,7 @@ Namespace Parser
 
                 Case -126
                     Debug.WriteLine("patterns : void")
-                    yy_value = Me.CreateListNode(Of VariableNode)
+                    yy_value = CreateListNode(Of VariableNode)()
                     yy_token = Me.DoAction(SymbolTypes.patterns, 1, yy_value)
 
                 Case -127
@@ -954,7 +954,7 @@ Namespace Parser
 
                 Case -128
                     Debug.WriteLine("patternn : pattern")
-                    yy_value = Me.CreateListNode(CType(Me.GetValue(-1), VariableNode))
+                    yy_value = CreateListNode(CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.patternn, 1, yy_value)
 
                 Case -129
@@ -969,12 +969,12 @@ Namespace Parser
 
                 Case -131
                     Debug.WriteLine("var : VAR")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.var_1, 1, yy_value)
 
                 Case -132
                     Debug.WriteLine("var : '(' ope ')'")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetValue(-2), TokenNode).Token)
+                    yy_value = CreateVariableNode(CType(Me.GetValue(-2), TokenNode).Token)
                     yy_token = Me.DoAction(SymbolTypes.var_1, 3, yy_value)
 
                 Case -133
@@ -984,27 +984,27 @@ Namespace Parser
 
                 Case -134
                     Debug.WriteLine("varx : SUB")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -135
                     Debug.WriteLine("varx : IF")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -136
                     Debug.WriteLine("varx : ELSE")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -137
                     Debug.WriteLine("varx : LET")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -138
                     Debug.WriteLine("varx : USE")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetToken(-1), Token))
+                    yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -139
@@ -1014,12 +1014,12 @@ Namespace Parser
 
                 Case -140
                     Debug.WriteLine("fvar : NUM")
-                    yy_value = Me.CreateVariableNode(CType(Me.GetValue(-1), NumericNode).Format, CType(Me.GetValue(-1), NumericNode))
+                    yy_value = CreateVariableNode(CType(Me.GetValue(-1), NumericNode).Format, CType(Me.GetValue(-1), NumericNode))
                     yy_token = Me.DoAction(SymbolTypes.fvar, 1, yy_value)
 
                 Case -141
                     Debug.WriteLine("atvar : ATVAR")
-                    yy_value = New TypeNode(Me.CreateVariableNode(CType(Me.GetToken(-1), Token))) With {.IsGeneric = True}
+                    yy_value = New TypeNode(CreateVariableNode(CType(Me.GetToken(-1), Token))) With {.IsGeneric = True}
                     yy_token = Me.DoAction(SymbolTypes.atvar_1, 1, yy_value)
 
                 Case -142

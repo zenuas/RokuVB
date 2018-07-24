@@ -74,6 +74,7 @@ Public Class Main
             Compiler.NameResolver.ResolveName(pgm)
             Compiler.Normalize.Normalization(pgm)
             Compiler.Closure.Capture(pgm)
+            Compiler.Syntax.SwitchCaseArray(pgm, root, current)
             Compiler.Typing.Prototype(pgm, root, current)
         Next
 
@@ -114,11 +115,6 @@ Public Class Main
             Compiler.Typing.AnonymouseTypeAllocation(ns.Value, root, root.GetNamespace(ns.Key))
         Next
         If opt.TypeResult IsNot Nothing Then TypeResult(opt.TypeResult, loader.Root)
-
-        For Each ns In loader.Root.Namespaces
-
-            Compiler.Coroutine.ConvertEnumerator(ns.Value, root, root.GetNamespace(ns.Key))
-        Next
 
         For Each ns In loader.Root.Namespaces
 
