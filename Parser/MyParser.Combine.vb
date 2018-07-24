@@ -358,10 +358,10 @@ Namespace Parser
             Return block
         End Function
 
-        Public Shared Function ToBlock(scope As IScopeNode, if_ As IfNode) As BlockNode
+        Public Shared Function ToBlock(scope As IScopeNode, stmt As IStatementNode) As BlockNode
 
-            Dim block = New BlockNode(if_.LineNumber.Value)
-            block.Statements.Add(if_)
+            Dim block = New BlockNode(stmt.LineNumber.Value)
+            block.Statements.Add(stmt)
             block.Parent = scope
             Return block
         End Function

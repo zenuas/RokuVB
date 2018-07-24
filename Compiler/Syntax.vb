@@ -1,5 +1,6 @@
 ﻿Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Parser.MyParser
 
 
 Namespace Compiler
@@ -22,24 +23,64 @@ Namespace Compiler
 
                         If case_array.Pattern.Count = 0 Then
 
-                            ' if ! isnull(switch.Expression) then break
-                            'case_array.Statements.Add()
-
-                        ElseIf case_array.Pattern.Count = 1 Then
-
-                            ' if isnull(switch.Expression) then break
-                            ' case_array.Pattern[0] = car(switch.Expression)
+                            ' $s1 = isnull(switch.Expression)
+                            ' if $s1 else break
+                            Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
+                            case_array.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(Nothing, New BreakNode)))
                         Else
 
-                            ' if isnull(switch.Expression) then break
+                            ' $s1 = isnull(switch.Expression)
+                            ' if $s1 then break
+                            Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
+                            case_array.Statements.Add(CreateIfNode(s1, ToBlock(Nothing, New BreakNode)))
+
                             ' case_array.Pattern[0] = car(switch.Expression)
-                            ' $1 = cdr(switch.Expression)
-                            ' if isnull($1) then break
-                            ' case_array.Pattern[1] = car($1)
-                            ' $2 = cdr($1)
-                            ' if isnull($2) then break
-                            ' case_array.Pattern[3] = car($2)
-                            ' ...
+                            case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(CreateVariableNode("car", case_array), switch.Expression)))
+
+                            ' $s2 = cdr(switch.Expression)
+                            Dim s2 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(CreateVariableNode("cdr", case_array), switch.Expression)))
+
+                            If case_array.Pattern.Count = 1 Then
+
+                                ' $s3 = isnull($s2)
+                                Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                user.VarIndex += 1
+                                case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
+
+                                ' if $s3 else break
+                                case_array.Statements.Add(CreateIfNode(s3, Nothing, ToBlock(Nothing, New BreakNode)))
+                            Else
+
+                                For i = 1 To case_array.Pattern.Count - 2
+
+                                    ' $s3 = isnull($s2)
+                                    Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    user.VarIndex += 1
+                                    case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
+
+                                    ' if $s3 then break
+                                    case_array.Statements.Add(CreateIfNode(s3, ToBlock(Nothing, New BreakNode)))
+
+                                    ' case_array.Pattern[i] = car($s2)
+                                    case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(CreateVariableNode("car", case_array), s2)))
+
+                                    ' $s4 = cdr($s2)
+                                    Dim s4 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    user.VarIndex += 1
+                                    case_array.Statements.Add(CreateLetNode(s4, CreateFunctionCallNode(CreateVariableNode("cdr", case_array), s2)))
+
+                                    s2 = s4
+                                Next
+
+                                ' case_array.Pattern[N] = next
+                                case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s2))
+                            End If
                         End If
                     End If
 
