@@ -15,6 +15,7 @@ Namespace Parser
             Me.ReservedWord("var") = SymbolTypes.LET
             Me.ReservedWord("struct") = SymbolTypes.STRUCT
             Me.ReservedWord("union") = SymbolTypes.UNION
+            Me.ReservedWord("class") = SymbolTypes.CLASS
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
             Me.ReservedWord("switch") = SymbolTypes.SWITCH

@@ -36,7 +36,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<IEvaluableNode> namespace
 %type<TokenNode>      ope
 
-%left  VAR ATVAR STR NULL
+%left  VAR ATVAR STR NULL IF LET SUB
 %left  USE
 %left  ELSE
 %left  ARROW
@@ -79,6 +79,7 @@ line  : call EOL
       | block
       | struct      {Me.CurrentScope.Lets.Add($1.Name, $1)}
       | union       {Me.CurrentScope.Lets.Add($1.Name, $1)}
+      | class
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber))}
@@ -138,6 +139,18 @@ union  : UNION var EOL BEGIN unionn END {$$ = New UnionNode($2, $5)}
 
 unionn : type EOL        {$$ = CreateListNode($1)}
        | unionn type EOL {$1.List.Add($2) : $$ = $1}
+
+
+########## class ##########
+class : CLASS var '(' atvarn ')' EOL class_block
+
+class_block : class_begin condn END
+class_begin : BEGIN
+
+cond  : SUB fn '(' args        ')' typex EOL
+      | SUB fn '(' typen extra ')' typex EOL
+condn : cond
+      | condn cond
 
 
 ########## sub ##########

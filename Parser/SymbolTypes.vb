@@ -42,6 +42,9 @@ Namespace Parser
         ''' <summary>BEGIN</summary>
         BEGIN
 
+        ''' <summary>CLASS</summary>
+        [CLASS]
+
         ''' <summary>ELSE</summary>
         [ELSE]
 
@@ -137,6 +140,21 @@ Namespace Parser
 
         ''' <summary>casen</summary>
         casen
+
+        ''' <summary>class</summary>
+        class_1
+
+        ''' <summary>class_begin</summary>
+        class_begin
+
+        ''' <summary>class_block</summary>
+        class_block
+
+        ''' <summary>cond</summary>
+        cond
+
+        ''' <summary>condn</summary>
+        condn
 
         ''' <summary>decla</summary>
         decla

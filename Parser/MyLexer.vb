@@ -28,6 +28,7 @@ Namespace Parser
             Me.ReservedWord("ARROW") = SymbolTypes.ARROW
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
+            Me.ReservedWord("CLASS") = SymbolTypes.[CLASS]
             Me.ReservedWord("ELSE") = SymbolTypes.[ELSE]
             Me.ReservedWord("END") = SymbolTypes.[END]
             Me.ReservedWord("EOL") = SymbolTypes.EOL
