@@ -6,7 +6,7 @@ Namespace Node
 
     Public Class TupleNode
         Inherits BaseNode
-        Implements IEvaluableNode, IStatementNode
+        Implements IEvaluableNode
 
 
         Public Overridable Property Items As IEvaluableNode()

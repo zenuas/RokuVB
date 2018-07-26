@@ -158,11 +158,6 @@ Namespace Compiler
                                 to_flat(fcall)
                                 Coverage.Case()
 
-                            ElseIf TypeOf v Is TupleNode Then
-
-                                to_flat(CType(v, TupleNode))
-                                Coverage.Case()
-
                             ElseIf TypeOf v Is LambdaExpressionNode Then
 
                                 Dim lambda = CType(v, LambdaExpressionNode)
