@@ -11,12 +11,20 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 node,
-                New With {.VarIndex = 0},
+                New With {.VarIndex = 0, .Scope = CType(node, IScopeNode)},
                 Sub(parent, ref, child, user, isfirst, next_)
 
                     If Not isfirst Then Return
 
-                    If TypeOf child Is CaseArrayNode Then
+                    If TypeOf child Is IScopeNode Then
+
+                        Dim old = user.Scope
+                        user.Scope = CType(child, IScopeNode)
+                        next_(child, user)
+                        user.Scope = old
+                        Return
+
+                    ElseIf TypeOf child Is CaseArrayNode Then
 
                         Dim switch = CType(parent, SwitchNode)
                         Dim case_array = CType(child, CaseArrayNode)
@@ -28,7 +36,7 @@ Namespace Compiler
                             Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
                             case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
-                            case_array.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(Nothing, New BreakNode)))
+                            case_array.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
                         Else
 
                             ' $s1 = isnull(switch.Expression)
@@ -36,7 +44,7 @@ Namespace Compiler
                             Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
                             case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
-                            case_array.Statements.Add(CreateIfNode(s1, ToBlock(Nothing, New BreakNode)))
+                            case_array.Statements.Add(CreateIfNode(s1, ToBlock(user.Scope, New BreakNode)))
 
                             ' case_array.Pattern[0] = car(switch.Expression)
                             case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(CreateVariableNode("car", case_array), switch.Expression)))
@@ -54,7 +62,7 @@ Namespace Compiler
                                 case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
 
                                 ' if $s3 else break
-                                case_array.Statements.Add(CreateIfNode(s3, Nothing, ToBlock(Nothing, New BreakNode)))
+                                case_array.Statements.Add(CreateIfNode(s3, Nothing, ToBlock(user.Scope, New BreakNode)))
                             Else
 
                                 For i = 1 To case_array.Pattern.Count - 2
@@ -65,7 +73,7 @@ Namespace Compiler
                                     case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
 
                                     ' if $s3 then break
-                                    case_array.Statements.Add(CreateIfNode(s3, ToBlock(Nothing, New BreakNode)))
+                                    case_array.Statements.Add(CreateIfNode(s3, ToBlock(user.Scope, New BreakNode)))
 
                                     ' case_array.Pattern[i] = car($s2)
                                     case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(CreateVariableNode("car", case_array), s2)))

@@ -98,18 +98,32 @@ Namespace Architecture
             Next
         End Function
 
+        Public Shared Function CreateManglingName(struct As RkStruct) As String
+
+            Return $"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}"
+        End Function
+
+        Public Shared Function CreateManglingName(f As IFunction) As String
+
+            Return $"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}"
+        End Function
+
         Public Overridable Function DeclareStructs(root As SystemLibrary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
             For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
                 If map.ContainsKey(struct) Then Continue For
-                map(struct) = New TypeData With {.Type = Me.Module.DefineType($"{CurrentNamespace(struct.Scope).Name}.{struct.CreateManglingName}")}
+                Dim name = CreateManglingName(struct)
+                Dim exists = map.Values.FindFirstOrNull(Function(t) name.Equals(t.Type.FullName))
+                map(struct) = If(exists, New TypeData With {.Type = Me.Module.DefineType(name)})
             Next
 
             root.TupleCache.Values.SortToList.Unique.Each(Sub(x) map.Add(x, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.CreateManglingName}")}))
 
             For Each v In map
+
+                If v.Value.Constructor IsNot Nothing Then Continue For
 
                 Dim builder = CType(v.Value.Type, TypeBuilder)
                 v.Value.Constructor = If(v.Key.Initializer Is Nothing, builder.DefineDefaultConstructor(MethodAttributes.Public), builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes))
@@ -169,8 +183,9 @@ Namespace Architecture
             For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
 
                 If map.ContainsKey(f) Then Continue For
-                Dim args = Me.RkToCILType(f.Arguments, structs)
-                map(f) = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, args)
+                Dim name = CreateManglingName(f)
+                Dim exists = map.Values.FindFirstOrNull(Function(t) name.Equals(t.Name))
+                map(f) = If(exists, Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, Me.RkToCILType(f.Arguments, structs)))
             Next
 
             Return map

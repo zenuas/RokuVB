@@ -260,6 +260,10 @@ BLOCK_NODE_:
 
                                 f($"[{i}]", x.Pattern(i))
                             Next
+                            For i = 0 To x.Statements.Count - 1
+
+                                f($"Statements[{i}]", x.Statements(i))
+                            Next
                             f("Then", x.Then)
 
                         Case TypeOf node_ Is LambdaExpressionNode
@@ -309,7 +313,8 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
-                             TypeOf node_ Is NullNode
+                             TypeOf node_ Is NullNode,
+                             TypeOf node_ Is BreakNode
 
                             ' nothing
 
@@ -495,6 +500,10 @@ BLOCK_NODE_:
 
                                 x.Pattern(i) = CType(f($"[{i}]", x.Pattern(i)), VariableNode)
                             Next
+                            For i = 0 To x.Statements.Count - 1
+
+                                x.Statements(i) = CType(f($"Statements[{i}]", x.Statements(i)), IStatementNode)
+                            Next
                             x.Then = CType(f("Then", x.Then), BlockNode)
 
                         Case TypeOf node_ Is LambdaExpressionNode
@@ -544,7 +553,8 @@ BLOCK_NODE_:
                         Case TypeOf node_ Is VariableNode,
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
-                             TypeOf node_ Is NullNode
+                             TypeOf node_ Is NullNode,
+                             TypeOf node_ Is BreakNode
 
                             ' nothing
 

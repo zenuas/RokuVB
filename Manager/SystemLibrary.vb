@@ -447,10 +447,23 @@ Namespace Manager
             Else
 
                 fs.Done(Function(x) x.ApplyFunction(args))
-                fs = fs.ToHash_ValueDerivation(Function(x) True).Keys.ToList
-                If fs.Count <= 1 Then Return fs(0)
+                Dim unique As New List(Of IFunction)
+                For Each f In fs
 
-                Return New RkUnionType(fs)
+                    Dim same = False
+                    For Each u In unique
+
+                        If f.GenericBase Is u.GenericBase Then
+
+                            same = f.Apply.And(Function(x, i) x IsNot Nothing AndAlso x.Is(u.Apply(i)))
+                            If same Then Exit For
+                        End If
+                    Next
+                    If Not same Then unique.Add(f)
+                Next
+                If unique.Count <= 1 Then Return unique(0)
+
+                Return New RkUnionType(unique)
             End If
         End Function
 
