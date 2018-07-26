@@ -3,7 +3,7 @@
 #
 
 PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\MSBuild\14.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
-RELEASE=Trace
+RELEASE=Release
 OUT=bin\$(RELEASE)\roku.exe
 VBFLAGS=/debug-
 
@@ -39,9 +39,9 @@ release:
 	powershell -NoProfile Compress-Archive -Force -Path bin\Release\roku.exe, README.md, LICENSE -DestinationPath Roku-bin-$(subst /,.,$(shell cmd /c date /T)).zip
 
 test: clean $(OUT)
-	del /F bin\$(RELEASE)\coverage.txt 2>NUL
-	build-tools\time $(MAKE) tests
-	@build-tools\xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | build-tools\xargs grep.bat -n -e "^ *Coverage.Case" | build-tools\coverage bin\$(RELEASE)\coverage.txt Coverage.Case
+	-del /F bin\Trace\coverage.txt 2>NUL
+	build-tools\time $(MAKE) tests RELEASE=Trace
+	@build-tools\xpath.bat Roku.vbproj /Project/ItemGroup/Compile[@Include]/@Include | build-tools\xargs grep.bat -n -e "^ *Coverage.Case" | build-tools\coverage bin\Trace\coverage.txt Coverage.Case
 
 tests: $(OUT) $(RKTEST)
 

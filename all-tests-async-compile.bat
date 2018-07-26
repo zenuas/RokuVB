@@ -38,7 +38,7 @@ if %ENABLE_TEST% equ 1 (
 
 mkdir tests\obj 2>NUL
 
-call .\make.bat
+call .\make.bat RELEASE=Release
 
 for %%f in (tests\*.rk) do (
 	start /B cmd /d /c %0 %%f %*
@@ -75,7 +75,7 @@ exit /B 0
 	
 	set RK2=%RK:tests\=%
 	set RKOUT2=%RKOUT:tests\=%
-	set BIN=..\bin\Trace\roku.exe
+	set BIN=..\bin\Release\roku.exe
 	
 	echo %BIN% %RK% -o %RKOUT% %LIB%
 	set RKOPT=""
