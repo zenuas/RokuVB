@@ -133,6 +133,19 @@ Namespace Manager
 
                         gen_to_type(CType(arg, RkGenericEntry), p)
 
+                    ElseIf TypeOf p Is RkUnionType Then
+
+                        Dim gens As New Dictionary(Of RkGenericEntry, List(Of IType))
+                        Dim gen_add =
+                            Sub(g As RkGenericEntry, t As IType)
+
+                                If t Is Nothing Then Return
+                                If Not gens.ContainsKey(g) Then gens.Add(g, New List(Of IType))
+                                If gens(g).And(Function(x) Not x.Is(t)) Then gens(g).Add(t)
+                            End Sub
+                        CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_add))
+                        gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value))))
+
                     ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkFunction Then
 
                         If TypeOf p Is RkFunction Then
@@ -141,19 +154,6 @@ Namespace Manager
                             Dim argf = CType(arg, RkFunction)
                             argf.Generics.Each(Sub(x) If func.Apply.Count > x.ApplyIndex Then gen_to_type(x, func.Apply(x.ApplyIndex)))
                             If argf.Return IsNot Nothing Then generic_match(argf.Return, func.Return, gen_to_type)
-
-                        ElseIf TypeOf p Is RkUnionType Then
-
-                            Dim gens As New Dictionary(Of RkGenericEntry, List(Of IType))
-                            Dim gen_add =
-                                Sub(g As RkGenericEntry, t As IType)
-
-                                    If t Is Nothing Then Return
-                                    If Not gens.ContainsKey(g) Then gens.Add(g, New List(Of IType))
-                                    If gens(g).And(Function(x) Not x.Is(t)) Then gens(g).Add(t)
-                                End Sub
-                            CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_add))
-                            gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value))))
                         End If
 
                     ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
