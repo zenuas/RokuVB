@@ -10,7 +10,6 @@ Namespace Manager
         Inherits RkScope
         Implements IStruct, IAddLet
 
-        Public Overridable Property Super As IType
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
@@ -25,7 +24,6 @@ Namespace Manager
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
             If Me.Local.ContainsKey(name) Then Return Me.Local(name)
-            If Me.Super IsNot Nothing Then Return Me.Super.GetValue(name)
             Throw New ArgumentException($"``{name}'' was not found")
         End Function
 
@@ -103,7 +101,6 @@ Namespace Manager
 
             Dim clone = CType(Me.CloneGeneric, RkStruct)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
-            If Me.Super IsNot Nothing Then clone.Super = Me.Super.FixedGeneric(values)
             For Each v In Me.Local
 
                 clone.Local.Add(v.Key, fixed_generic(v.Value))
