@@ -5,6 +5,7 @@ Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeBaseNode)
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
+Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 
 
 Namespace Parser

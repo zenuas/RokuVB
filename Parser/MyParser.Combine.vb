@@ -1,4 +1,5 @@
-﻿Imports Roku.Node
+﻿Imports System.Collections.Generic
+Imports Roku.Node
 Imports Roku.Util.Extensions
 
 
@@ -266,6 +267,19 @@ Namespace Parser
             Return [case]
         End Function
 
+        Public Shared Function CreateClassNode(
+                name As VariableNode,
+                args As ListNode(Of TypeBaseNode),
+                conds As ListNode(Of FunctionNode)
+            ) As ClassNode
+
+            Dim class_ As New ClassNode(name.LineNumber.Value)
+            class_.Name = name.Name
+            class_.Generics.AddRange(args.List)
+            conds.List.Each(Sub(x) class_.AddFunction(x))
+            Return class_
+        End Function
+
         Public Shared Function CreateFunctionNode(
                 f As FunctionNode,
                 name As VariableNode,
@@ -289,6 +303,38 @@ Namespace Parser
             args.List.Each(Sub(x, i) If x.Type Is Nothing Then x.Type = New TypeNode With {.Name = $"#{i}", .IsGeneric = True})
             f.Name = $"#{f.LineNumber},{f.LineColumn}"
             f.Arguments = args.List
+            f.Return = ret
+            f.InnerScope = False
+            Return f
+        End Function
+
+        Public Shared Function CreateFunctionNode(
+                name As VariableNode,
+                args As ListNode(Of DeclareNode),
+                ret As TypeBaseNode
+            ) As FunctionNode
+
+            Return CreateFunctionNode(name, args, ret)
+        End Function
+
+        Public Shared Function CreateFunctionNode(
+                name As VariableNode,
+                args As ListNode(Of TypeBaseNode),
+                ret As TypeBaseNode
+            ) As FunctionNode
+
+            Return CreateFunctionNode(name, args.List.Map(Function(x, i) New DeclareNode(CreateVariableNode($"arg{i}", x), x)).ToList, ret)
+        End Function
+
+        Public Shared Function CreateFunctionNode(
+                name As VariableNode,
+                args As List(Of DeclareNode),
+                ret As TypeBaseNode
+            ) As FunctionNode
+
+            Dim f As New FunctionNode(name.LineNumber.Value)
+            f.Name = name.Name
+            f.Arguments = args
             f.Return = ret
             f.InnerScope = False
             Return f

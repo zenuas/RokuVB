@@ -5,6 +5,7 @@ Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeBaseNode)
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
+Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %}
 
 %default INode
@@ -15,7 +16,8 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<BlockNode>      block stmt
 %type<IStatementNode> line
 %type<LetNode>        let
-%type<FunctionNode>   sub sub_block lambda_func
+%type<FunctionNode>   sub sub_block lambda_func cond
+%type<FunctionListNode> condn class_block
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
 %type<TypeNode>       nsvar
@@ -25,6 +27,7 @@ Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
 %type<SwitchNode>     switch casen case_block
 %type<CaseNode>       case case_expr
 %type<StructNode>     struct struct_block
+%type<ClassNode>      class
 %type<IEvaluableNode> expr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list listn list2n
@@ -79,7 +82,7 @@ line  : call EOL
       | block
       | struct      {Me.CurrentScope.Lets.Add($1.Name, $1)}
       | union       {Me.CurrentScope.Lets.Add($1.Name, $1)}
-      | class
+      | class       {Me.CurrentScope.Lets.Add($1.Name, $1)}
 
 block : begin stmt END {$$ = Me.PopScope}
 begin : BEGIN          {Me.PushScope(New BlockNode($1.LineNumber))}
@@ -142,15 +145,14 @@ unionn : type EOL        {$$ = CreateListNode($1)}
 
 
 ########## class ##########
-class : CLASS var '(' atvarn ')' EOL class_block
+class : CLASS var '(' atvarn ')' EOL class_block {$$ = CreateClassNode($2, $4, $7)}
 
-class_block : class_begin condn END
-class_begin : BEGIN
+class_block : BEGIN condn END {$$ = $2}
 
-cond  : SUB fn '(' args        ')' typex EOL
-      | SUB fn '(' typen extra ')' typex EOL
-condn : cond
-      | condn cond
+cond  : SUB fn '(' args        ')' typex EOL {$$ = CreateFunctionNode($2, $4, $6)}
+      | SUB fn '(' typen extra ')' typex EOL {$$ = CreateFunctionNode($2, $4, $7)}
+condn : cond                                 {$$ = CreateListNode($1)}
+      | condn cond                           {$1.List.Add($2) : $$ = $1}
 
 
 ########## sub ##########

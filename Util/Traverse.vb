@@ -139,6 +139,15 @@ Namespace Util
                                 f($"`{key}", x.Lets(key))
                             Next
 
+                        Case TypeOf node_ Is ClassNode
+
+                            Dim x = CType(node_, ClassNode)
+
+                            For i = 0 To x.Functions.Count - 1
+
+                                f($"`{x.Functions(i).Name}", x.Functions(i))
+                            Next
+
                         Case TypeOf node_ Is ProgramNode
 
                             Dim x = CType(node_, ProgramNode)
@@ -376,6 +385,15 @@ BLOCK_NODE_:
                             For Each key In x.Lets.Keys.ToList
 
                                 x.Lets(key) = f($"`{key}", x.Lets(key))
+                            Next
+
+                        Case TypeOf node_ Is ClassNode
+
+                            Dim x = CType(node_, ClassNode)
+
+                            For i = 0 To x.Functions.Count - 1
+
+                                x.Functions(i) = CType(f($"`{x.Functions(i).Name}", x.Functions(i)), FunctionNode)
                             Next
 
                         Case TypeOf node_ Is ProgramNode

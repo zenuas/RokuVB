@@ -1,0 +1,3 @@
+class Hoge(@T)
+	sub foo(@T)
+

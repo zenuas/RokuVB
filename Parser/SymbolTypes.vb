@@ -144,9 +144,6 @@ Namespace Parser
         ''' <summary>class</summary>
         class_1
 
-        ''' <summary>class_begin</summary>
-        class_begin
-
         ''' <summary>class_block</summary>
         class_block
 
