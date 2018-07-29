@@ -14,13 +14,13 @@ Namespace Manager
 
         Public Overridable Function LoadConstructor(root As SystemLibrary, ParamArray args() As IType) As RkCILConstructor
 
-            Dim ci = Me.TypeInfo.GetConstructors.FindFirst(Function(ctor) ctor.GetParameters.Length = args.Length AndAlso ctor.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
+            Dim ci = Me.TypeInfo.GetConstructors.FindFirst(Function(x) x.GetParameters.Length = args.Length AndAlso x.GetParameters.And(Function(arg, i) root.LoadType(arg.ParameterType.GetTypeInfo).Is(args(i))))
             If Me.ConstructorCache.ContainsKey(ci) Then Return Me.ConstructorCache(ci)
 
-            Dim rk_ctor As New RkCILConstructor With {.Name = ci.Name, .TypeInfo = Me.TypeInfo, .ConstructorInfo = ci, .Return = Me}
-            Me.ConstructorCache(ci) = rk_ctor
-            rk_ctor.Arguments.AddRange(ci.GetParameters.Map(Function(arg) New NamedValue With {.Name = arg.Name, .Value = root.LoadType(arg.ParameterType.GetTypeInfo)}))
-            Return rk_ctor
+            Dim ctor As New RkCILConstructor With {.Name = ci.Name, .TypeInfo = Me.TypeInfo, .ConstructorInfo = ci, .Return = Me}
+            Me.ConstructorCache(ci) = ctor
+            ctor.Arguments.AddRange(ci.GetParameters.Map(Function(arg) New NamedValue With {.Name = arg.Name, .Value = root.LoadType(arg.ParameterType.GetTypeInfo)}))
+            Return ctor
         End Function
 
         Public Overrides Function CloneGeneric() As IType

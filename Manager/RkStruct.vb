@@ -84,16 +84,16 @@ Namespace Manager
 
                     ElseIf TypeOf t Is RkStruct Then
 
-                        Dim rk_struct = CType(t, RkStruct)
-                        Dim xs(rk_struct.Generics.Count - 1) As IType
-                        rk_struct.Generics.Each(
+                        Dim struct = CType(t, RkStruct)
+                        Dim xs(struct.Generics.Count - 1) As IType
+                        struct.Generics.Each(
                             Sub(x)
 
-                                Dim p = rk_struct.Apply(x.ApplyIndex)
-                                If TypeOf p Is RkGenericEntry Then p = search_gen_name(p.name)
+                                Dim p = struct.Apply(x.ApplyIndex)
+                                If TypeOf p Is RkGenericEntry Then p = search_gen_name(p.Name)
                                 xs(x.ApplyIndex) = p
                             End Sub)
-                        Return rk_struct.FixedGeneric(xs)
+                        Return struct.FixedGeneric(xs)
                     End If
 
                     Return t
