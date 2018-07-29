@@ -55,18 +55,18 @@ Namespace Compiler
 
                     If TypeOf child Is BlockNode Then
 
-                        Dim node_block = CType(child, BlockNode)
-                        If node_block.Owner.Function.HasGeneric Then Return
-                        make_closure(node_block)
+                        Dim node = CType(child, BlockNode)
+                        If node.Owner.Function.HasGeneric Then Return
+                        make_closure(node)
                     End If
 
                     If TypeOf child Is FunctionNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = CType(node_func.Type, RkFunction)
+                        Dim node = CType(child, FunctionNode)
+                        Dim rk_func = CType(node.Type, RkFunction)
                         If Not rk_func.HasGeneric Then
 
-                            node_func.Bind.Each(
+                            node.Bind.Each(
                                 Sub(x)
 
                                     make_closure(CType(x.Key, FunctionNode))
@@ -518,12 +518,12 @@ Namespace Compiler
 
                     If TypeOf child Is StructNode Then
 
-                        Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = CType(node_struct.Type, RkStruct)
+                        Dim node = CType(child, StructNode)
+                        Dim rk_struct = CType(node.Type, RkStruct)
                         For Each struct In rk_struct.Scope.FindCurrentStruct(rk_struct.Name).Where(Function(x) Not x.HasGeneric).By(Of RkStruct)
 
                             struct.Initializer = CType(LoadFunction(struct.Scope, "#Alloc", {CType(struct, IType)}.Join(struct.Apply).ToArray), RkNativeFunction)
-                            make_func(struct.Initializer, node_struct, node_struct.Statements)
+                            make_func(struct.Initializer, node, node.Statements)
                         Next
                         Coverage.Case()
 
@@ -533,15 +533,15 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is FunctionNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = node_func.Function
-                        If Not rk_func.HasGeneric Then make_func(rk_func, node_func, node_func.Statements)
+                        Dim node = CType(child, FunctionNode)
+                        Dim rk_func = node.Function
+                        If Not rk_func.HasGeneric Then make_func(rk_func, node, node.Statements)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is FunctionCallNode Then
 
-                        Dim node_call = CType(child, FunctionCallNode)
-                        If node_call.Function?.FunctionNode IsNot Nothing Then make_func(node_call.Function, node_call.Function.FunctionNode, node_call.Function.FunctionNode.Statements)
+                        Dim node = CType(child, FunctionCallNode)
+                        If node.Function?.FunctionNode IsNot Nothing Then make_func(node.Function, node.Function.FunctionNode, node.Function.FunctionNode.Statements)
                         Coverage.Case()
 
                     End If

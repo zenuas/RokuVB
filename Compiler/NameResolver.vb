@@ -34,74 +34,74 @@ Namespace Compiler
 
                     If TypeOf child Is ProgramNode Then
 
-                        Dim pgm = CType(child, ProgramNode)
-                        next_(child, pgm)
+                        Dim node = CType(child, ProgramNode)
+                        next_(child, node)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is FunctionNode Then
 
-                        Dim func = CType(child, FunctionNode)
-                        func.Parent = current
-                        For Each x In func.Arguments
+                        Dim node = CType(child, FunctionNode)
+                        node.Parent = current
+                        For Each x In node.Arguments
 
-                            x.Name.Scope = func
-                            func.Lets.Add(x.Name.Name, x.Name)
+                            x.Name.Scope = node
+                            node.Lets.Add(x.Name.Name, x.Name)
                         Next
-                        next_(child, func)
+                        next_(child, node)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StructNode Then
 
-                        Dim struct = CType(child, StructNode)
-                        struct.Parent = current
-                        next_(child, struct)
+                        Dim node = CType(child, StructNode)
+                        node.Parent = current
+                        next_(child, node)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is IfCastNode Then
 
-                        Dim node_if = CType(child, IfCastNode)
-                        node_if.Then.Lets.Add(node_if.Var.Name, node_if.Var)
-                        node_if.Then.Parent = current
-                        next_(child, node_if.Then)
+                        Dim node = CType(child, IfCastNode)
+                        node.Then.Lets.Add(node.Var.Name, node.Var)
+                        node.Then.Parent = current
+                        next_(child, node.Then)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is CaseCastNode Then
 
-                        Dim node_case = CType(child, CaseCastNode)
-                        node_case.Then.Lets.Add(node_case.Var.Name, node_case.Var)
-                        node_case.Then.Parent = current
-                        next_(child, node_case.Then)
+                        Dim node = CType(child, CaseCastNode)
+                        node.Then.Lets.Add(node.Var.Name, node.Var)
+                        node.Then.Parent = current
+                        next_(child, node.Then)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is CaseArrayNode Then
 
-                        Dim node_case = CType(child, CaseArrayNode)
-                        If node_case.Then IsNot Nothing Then
+                        Dim node = CType(child, CaseArrayNode)
+                        If node.Then IsNot Nothing Then
 
-                            node_case.Pattern.Each(Sub(x) node_case.Then.Lets.Add(x.Name, x))
-                            node_case.Then.Parent = current
+                            node.Pattern.Each(Sub(x) node.Then.Lets.Add(x.Name, x))
+                            node.Then.Parent = current
                         End If
-                        next_(child, node_case.Then)
+                        next_(child, node.Then)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is LetNode Then
 
-                        Dim node_let = CType(child, LetNode)
-                        If node_let.Receiver Is Nothing Then
+                        Dim node = CType(child, LetNode)
+                        If node.Receiver Is Nothing Then
 
-                            node_let.Var.Scope = current
-                            If TypeOf current IsNot StructNode Then current.Lets.Add(node_let.Var.Name, node_let.Var)
+                            node.Var.Scope = current
+                            If TypeOf current IsNot StructNode Then current.Lets.Add(node.Var.Name, node.Var)
                         End If
                         next_(child, current)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is PropertyNode Then
 
-                        Dim prop = CType(child, PropertyNode)
-                        Dim t = prop.Right
-                        prop.Right = Nothing
+                        Dim node = CType(child, PropertyNode)
+                        Dim t = node.Right
+                        node.Right = Nothing
                         next_(child, current)
-                        prop.Right = t
+                        node.Right = t
                         Coverage.Case()
 
                     ElseIf TypeOf child Is IScopeNode Then

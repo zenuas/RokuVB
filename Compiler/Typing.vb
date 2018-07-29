@@ -54,15 +54,15 @@ Namespace Compiler
 
                     If TypeOf child Is StructNode Then
 
-                        Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = New RkStruct With {.Name = node_struct.Name, .StructNode = node_struct, .Scope = current.Scope, .Parent = current.Scope}
-                        node_struct.Type = rk_struct
-                        node_struct.Generics.Each(Sub(x) rk_struct.DefineGeneric(x.Name))
+                        Dim node = CType(child, StructNode)
+                        Dim rk_struct = New RkStruct With {.Name = node.Name, .StructNode = node, .Scope = current.Scope, .Parent = current.Scope}
+                        node.Type = rk_struct
+                        node.Generics.Each(Sub(x) rk_struct.DefineGeneric(x.Name))
                         current.Scope.AddStruct(rk_struct)
 
-                        If node_struct.Parent IsNot node_struct.Owner Then
+                        If node.Parent IsNot node.Owner Then
 
-                            node_struct.Owner.Function.AddStruct(rk_struct, $"##{node_struct.LineNumber.Value}")
+                            node.Owner.Function.AddStruct(rk_struct, $"##{node.LineNumber.Value}")
                         End If
 
                         next_(child, New With {.Scope = CType(rk_struct, IScope), .Block = CType(rk_struct, IScope)})
@@ -70,22 +70,22 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is ClassNode Then
 
-                        Dim node_class = CType(child, ClassNode)
-                        Dim rk_class = New RkClass With {.Name = node_class.Name, .ClassNode = node_class, .Scope = current.Scope, .Parent = current.Scope}
+                        Dim node = CType(child, ClassNode)
+                        Dim rk_class = New RkClass With {.Name = node.Name, .ClassNode = node, .Scope = current.Scope, .Parent = current.Scope}
 
                     ElseIf TypeOf child Is UnionNode Then
 
-                        Dim node_union = CType(child, UnionNode)
-                        Dim rk_union = New RkUnionType With {.UnionName = node_union.Name}
-                        node_union.Type = rk_union
-                        If Not String.IsNullOrEmpty(node_union.Name) Then current.Scope.AddStruct(rk_union)
+                        Dim node = CType(child, UnionNode)
+                        Dim rk_union = New RkUnionType With {.UnionName = node.Name}
+                        node.Type = rk_union
+                        If Not String.IsNullOrEmpty(node.Name) Then current.Scope.AddStruct(rk_union)
 
                     ElseIf TypeOf child Is ProgramNode Then
 
-                        Dim node_pgm = CType(child, ProgramNode)
-                        Dim ctor As New RkFunction With {.Name = node_pgm.Name, .FunctionNode = pgm, .Scope = ns, .Parent = ns}
-                        node_pgm.Scope = ctor
-                        node_pgm.Function = ctor
+                        Dim node = CType(child, ProgramNode)
+                        Dim ctor As New RkFunction With {.Name = node.Name, .FunctionNode = pgm, .Scope = ns, .Parent = ns}
+                        node.Scope = ctor
+                        node.Function = ctor
                         current.Scope.AddFunction(ctor)
                         Coverage.Case()
 
@@ -94,9 +94,9 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is FunctionNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = New RkFunction With {.Name = node_func.Name, .FunctionNode = node_func, .Scope = current.Scope, .Parent = current.Scope}
-                        node_func.Type = rk_func
+                        Dim node = CType(child, FunctionNode)
+                        Dim rk_func = New RkFunction With {.Name = node.Name, .FunctionNode = node, .Scope = current.Scope, .Parent = current.Scope}
+                        node.Type = rk_func
 
                         current.Scope.AddFunction(rk_func)
                         Coverage.Case()
@@ -106,9 +106,9 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is BlockNode Then
 
-                        Dim node_block = CType(child, BlockNode)
+                        Dim node = CType(child, BlockNode)
                         Dim rk_scope = New RkScope With {.Name = $"#{child.LineNumber}", .Parent = current.Scope}
-                        node_block.Scope = rk_scope
+                        node.Scope = rk_scope
                         current.Block.AddInnerScope(rk_scope)
                         Coverage.Case()
 
@@ -132,75 +132,75 @@ Namespace Compiler
 
                     If TypeOf child Is TypeFunctionNode Then
 
-                        Dim node_typef = CType(child, TypeFunctionNode)
+                        Dim node = CType(child, TypeFunctionNode)
                         Dim rk_func As New RkFunction With {.Scope = ns}
-                        node_typef.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = DefineType(root, rk_func, x)}))
-                        rk_func.Return = DefineType(root, rk_func, node_typef.Return)
-                        node_typef.Type = rk_func
+                        node.Arguments.Each(Sub(x) rk_func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = DefineType(root, rk_func, x)}))
+                        rk_func.Return = DefineType(root, rk_func, node.Return)
+                        node.Type = rk_func
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeArrayNode Then
 
-                        Dim node_typearr = CType(child, TypeArrayNode)
-                        If Not node_typearr.HasGeneric Then node_typearr.Type = LoadStruct(root, "Array", node_typearr.Item.Type)
+                        Dim node = CType(child, TypeArrayNode)
+                        If Not node.HasGeneric Then node.Type = LoadStruct(root, "Array", node.Item.Type)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeTupleNode Then
 
-                        Dim node_typetuple = CType(child, TypeTupleNode)
-                        If Not node_typetuple.HasGeneric Then node_typetuple.Type = root.CreateTuple(node_typetuple.Items.List.Map(Function(x) x.Type).ToArray)
+                        Dim node = CType(child, TypeTupleNode)
+                        If Not node.HasGeneric Then node.Type = root.CreateTuple(node.Items.List.Map(Function(x) x.Type).ToArray)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is UnionNode Then
 
-                        Dim node_union = CType(child, UnionNode)
-                        If Not node_union.IsGeneric Then
+                        Dim node = CType(child, UnionNode)
+                        If Not node.IsGeneric Then
 
-                            Dim t = CType(node_union.Type, RkUnionType)
-                            t.Merge(node_union.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
-                            If node_union.Nullable Then
+                            Dim t = CType(node.Type, RkUnionType)
+                            t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
+                            If node.Nullable Then
 
                                 t.Add(root.NullType)
-                                node_union.NullAdded = True
+                                node.NullAdded = True
                             End If
                         End If
                         Coverage.Case()
 
                     ElseIf TypeOf child Is TypeNode Then
 
-                        Dim node_type = CType(child, TypeNode)
-                        If Not node_type.IsGeneric Then
+                        Dim node = CType(child, TypeNode)
+                        If Not node.IsGeneric Then
 
-                            Dim base = CType(If(node_type.Namespace Is Nothing, ns, node_type.Namespace.Type), IScope)
+                            Dim base = CType(If(node.Namespace Is Nothing, ns, node.Namespace.Type), IScope)
                             Dim t As IType
-                            If node_type.IsNamespace Then
+                            If node.IsNamespace Then
 
-                                t = LoadNamespace(base, node_type.Name)
+                                t = LoadNamespace(base, node.Name)
                             Else
 
-                                If node_type.Arguments.Count > 0 Then
+                                If node.Arguments.Count > 0 Then
 
-                                    t = LoadStruct(base, node_type.Name, node_type.Arguments.Map(Function(x) x.Type).ToArray)
+                                    t = LoadStruct(base, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray)
                                 Else
-                                    t = LoadStruct(base, node_type.Name)
+                                    t = LoadStruct(base, node.Name)
                                 End If
                             End If
-                            If node_type.Nullable Then
+                            If node.Nullable Then
 
                                 If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
                                 CType(t, RkUnionType).Add(root.NullType)
-                                node_type.NullAdded = True
+                                node.NullAdded = True
                             End If
-                            node_type.Type = t
+                            node.Type = t
                         End If
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StructNode Then
 
-                        Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = CType(node_struct.Type, RkStruct)
+                        Dim node = CType(child, StructNode)
+                        Dim rk_struct = CType(node.Type, RkStruct)
 
-                        For Each let_ In node_struct.Lets.Values.By(Of LetNode)
+                        For Each let_ In node.Lets.Values.By(Of LetNode)
 
                             Dim t = If(DefineType(root, rk_struct, let_.Declare), let_.Expression?.Type)
                             If t?.HasGeneric AndAlso TypeOf t IsNot RkGenericEntry Then
@@ -226,13 +226,13 @@ Namespace Compiler
 
                     If TypeOf child Is StructNode Then
 
-                        Dim node_struct = CType(child, StructNode)
-                        Dim rk_struct = CType(node_struct.Type, RkStruct)
+                        Dim node = CType(child, StructNode)
+                        Dim rk_struct = CType(node.Type, RkStruct)
 
                         If rk_struct.HasGeneric Then
 
                             Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = rk_struct.Scope, .Parent = rk_struct.Scope}
-                            Dim gens = node_struct.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
+                            Dim gens = node.Generics.Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
                             Dim self = rk_struct.FixedGeneric(gens)
                             alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
                             gens.Each(Sub(x) alloc.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = x}))
@@ -251,8 +251,8 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is FunctionNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_func = CType(node_func.Type, RkFunction)
+                        Dim node = CType(child, FunctionNode)
+                        Dim rk_func = CType(node.Type, RkFunction)
 
                         Dim create_generic As Action(Of TypeBaseNode) =
                             Sub(x)
@@ -276,12 +276,12 @@ Namespace Compiler
                                 End If
                             End Sub
 
-                        node_func.Arguments.Each(Sub(x) create_generic(x.Type))
-                        If node_func.Return IsNot Nothing Then
+                        node.Arguments.Each(Sub(x) create_generic(x.Type))
+                        If node.Return IsNot Nothing Then
 
-                            create_generic(node_func.Return)
+                            create_generic(node.Return)
 
-                        ElseIf node_func.ImplicitReturn Then
+                        ElseIf node.ImplicitReturn Then
 
                             rk_func.Return = New RkUnionType
                         End If
@@ -304,26 +304,26 @@ Namespace Compiler
 
                     If TypeOf child Is NumericNode Then
 
-                        Dim node_num = CType(child, NumericNode)
-                        node_num.Type = New RkUnionType(root.NumericTypes)
+                        Dim node = CType(child, NumericNode)
+                        node.Type = New RkUnionType(root.NumericTypes)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
 
-                        Dim node_str = CType(child, StringNode)
-                        node_str.Type = LoadStruct(root, "String")
+                        Dim node = CType(child, StringNode)
+                        node.Type = LoadStruct(root, "String")
                         Coverage.Case()
 
                     ElseIf TypeOf child Is NullNode Then
 
-                        Dim node_null = CType(child, NullNode)
-                        node_null.Type = root.NullType
+                        Dim node = CType(child, NullNode)
+                        node.Type = root.NullType
                         Coverage.Case()
 
                     ElseIf TypeOf child Is DeclareNode Then
 
-                        Dim node_declare = CType(child, DeclareNode)
-                        node_declare.Name.Type = node_declare.Type.Type
+                        Dim node = CType(child, DeclareNode)
+                        node.Name.Type = node.Type.Type
                         Coverage.Case()
 
                     ElseIf TypeOf child Is ProgramNode Then
@@ -332,35 +332,35 @@ Namespace Compiler
 
                     ElseIf TypeOf child Is FunctionNode Then
 
-                        Dim node_func = CType(child, FunctionNode)
-                        Dim rk_function = node_func.Function
+                        Dim node = CType(child, FunctionNode)
+                        Dim rk_function = node.Function
 
-                        node_func.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = DefineType(root, rk_function, x.Type)}))
+                        node.Arguments.Each(Sub(x) rk_function.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = DefineType(root, rk_function, x.Type)}))
 
-                        If node_func.Coroutine Then
+                        If node.Coroutine Then
 
                             Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
                             rk_function.AddFunction(ret)
 
                             Dim yield = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = rk_function, .Name = "yield", .Parent = rk_function}
-                            Dim t = DefineType(root, yield, CType(node_func.Return, TypeArrayNode).Item)
+                            Dim t = DefineType(root, yield, CType(node.Return, TypeArrayNode).Item)
                             yield.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
                             rk_function.AddFunction(yield)
 
                             Dim yield2 = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = rk_function, .Name = "yield", .Parent = rk_function}
-                            Dim ts = DefineType(root, yield2, node_func.Return)
+                            Dim ts = DefineType(root, yield2, node.Return)
                             yield2.Arguments.Add(New NamedValue With {.Name = "xs", .Value = ts})
                             rk_function.AddFunction(yield2)
 
                             rk_function.Return = ts
                             Coverage.Case()
 
-                        ElseIf Not node_func.ImplicitReturn Then
+                        ElseIf Not node.ImplicitReturn Then
 
                             Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = rk_function, .Name = "return", .Parent = rk_function}
-                            If node_func.Return IsNot Nothing Then
+                            If node.Return IsNot Nothing Then
 
-                                Dim t = DefineType(root, ret, node_func.Return)
+                                Dim t = DefineType(root, ret, node.Return)
                                 ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
                                 rk_function.Return = t
                                 Coverage.Case()
@@ -376,19 +376,19 @@ Namespace Compiler
         Public Shared Sub TypeInference(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim set_func =
-                Function(node_func As FunctionNode) As RkFunction
+                Function(node As FunctionNode) As RkFunction
 
-                    Dim rk_function = node_func.Function
+                    Dim rk_function = node.Function
                     If Not rk_function.HasGeneric Then
 
-                        For Each arg In node_func.Arguments
+                        For Each arg In node.Arguments
 
                             rk_function.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
                         Next
 
-                        If node_func.ImplicitReturn Then
+                        If node.ImplicitReturn Then
 
-                            Dim t = CType(node_func.Statements(node_func.Statements.Count - 1), LambdaExpressionNode).Type
+                            Dim t = CType(node.Statements(node.Statements.Count - 1), LambdaExpressionNode).Type
                             If t Is Nothing Then
 
                                 CType(rk_function.Return, RkUnionType).Merge(root.VoidType)
@@ -398,7 +398,7 @@ Namespace Compiler
                             End If
                         Else
 
-                            rk_function.Return = node_func.Return?.Type
+                            rk_function.Return = node.Return?.Type
                         End If
                     End If
 
@@ -719,7 +719,7 @@ Namespace Compiler
                 End Function
 
             Dim apply_feedback =
-                Sub(f As IFunction, node_call As FunctionCallNode)
+                Sub(f As IFunction, node As FunctionCallNode)
 
                     If TypeOf f Is RkNativeFunction AndAlso CType(f, RkNativeFunction).Operator = InOperator.Alloc Then
 
@@ -727,11 +727,11 @@ Namespace Compiler
 
                     ElseIf f.HasGeneric Then
 
-                        Dim apply = f.ArgumentsToApply(node_call.Arguments.Map(Function(x) x.Type).ToArray)
+                        Dim apply = f.ArgumentsToApply(node.Arguments.Map(Function(x) x.Type).ToArray)
                         Coverage.Case()
                     Else
 
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node_call.Arguments(i).Type = var_feedback(node_call.Arguments(i).Type, x.Value))
+                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
                         Coverage.Case()
                     End If
                 End Sub
@@ -787,33 +787,33 @@ Namespace Compiler
 
                         If TypeOf child Is IfCastNode Then
 
-                            Dim node_if = CType(child, IfCastNode)
-                            set_type(node_if.Var, Function() node_if.Declare.Type)
+                            Dim node = CType(child, IfCastNode)
+                            set_type(node.Var, Function() node.Declare.Type)
 
                         ElseIf TypeOf child Is CaseCastNode Then
 
-                            Dim node_case = CType(child, CaseCastNode)
-                            set_type(node_case.Var, Function() node_case.Declare.Type)
+                            Dim node = CType(child, CaseCastNode)
+                            set_type(node.Var, Function() node.Declare.Type)
 
                         ElseIf TypeOf child Is CaseArrayNode Then
 
-                            Dim node_switch = CType(parent, SwitchNode)
-                            Dim node_case = CType(child, CaseArrayNode)
+                            Dim switch = CType(parent, SwitchNode)
+                            Dim case_ = CType(child, CaseArrayNode)
 
-                            Dim xs = node_switch.Expression.Type
+                            Dim xs = switch.Expression.Type
                             If root.IsArray(xs) Then
 
                                 Dim x = root.GetArrayType(xs)
                                 If x IsNot Nothing Then
 
-                                    If node_case.Pattern.Count = 1 Then
+                                    If case_.Pattern.Count = 1 Then
 
-                                        set_type(node_case.Pattern(0), Function() x)
+                                        set_type(case_.Pattern(0), Function() x)
                                         Coverage.Case()
 
-                                    ElseIf node_case.Pattern.Count > 1 Then
+                                    ElseIf case_.Pattern.Count > 1 Then
 
-                                        node_case.Pattern.Each(Sub(p, i) set_type(p, Function() If(i < node_case.Pattern.Count - 1, x, xs)))
+                                        case_.Pattern.Each(Sub(p, i) set_type(p, Function() If(i < case_.Pattern.Count - 1, x, xs)))
                                         Coverage.Case()
                                     End If
                                 End If
@@ -824,67 +824,67 @@ Namespace Compiler
 
                         If TypeOf child Is VariableNode Then
 
-                            Dim node_var = CType(child, VariableNode)
-                            If node_var.Type Is Nothing Then
+                            Dim node = CType(child, VariableNode)
+                            If node.Type Is Nothing Then
 
-                                set_type(node_var,
+                                set_type(node,
                                     Function()
 
-                                        If node_var.Scope IsNot Nothing Then
+                                        If node.Scope IsNot Nothing Then
 
-                                            Dim x = node_var.Scope.Lets(node_var.Name)
+                                            Dim x = node.Scope.Lets(node.Name)
                                             If TypeOf x Is IEvaluableNode AndAlso CType(x, IEvaluableNode).Type IsNot Nothing Then Return CType(x, IEvaluableNode).Type
                                             If TypeOf x Is IHaveScopeType AndAlso CType(x, IHaveScopeType).Type IsNot Nothing Then Return CType(x, IHaveScopeType).Type
                                         End If
-                                        Return New RkByName With {.Scope = current, .Name = node_var.Name}
+                                        Return New RkByName With {.Scope = current, .Name = node.Name}
                                     End Function)
                             End If
 
                         ElseIf TypeOf child Is TypeNode Then
 
-                            Dim node_type = CType(child, TypeNode)
-                            If node_type.IsGeneric Then set_type(node_type, Function() get_generic(node_type.Name, current))
-                            If node_type.Nullable AndAlso Not node_type.NullAdded Then
+                            Dim node = CType(child, TypeNode)
+                            If node.IsGeneric Then set_type(node, Function() get_generic(node.Name, current))
+                            If node.Nullable AndAlso Not node.NullAdded Then
 
-                                Dim t = node_type.Type
+                                Dim t = node.Type
                                 If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
                                 CType(t, RkUnionType).Add(root.NullType)
-                                node_type.Type = t
-                                node_type.NullAdded = True
+                                node.Type = t
+                                node.NullAdded = True
                                 type_fix = True
                             End If
                             Coverage.Case()
 
                         ElseIf TypeOf child Is LetNode Then
 
-                            Dim node_let = CType(child, LetNode)
-                            If set_type(node_let, Function() If(node_let.Expression Is Nothing, node_let.Declare.Type, node_let.Expression.Type)) Then
+                            Dim node = CType(child, LetNode)
+                            If set_type(node, Function() If(node.Expression Is Nothing, node.Declare.Type, node.Expression.Type)) Then
 
-                                set_type(node_let.Var, Function() node_let.Type)
-                                If node_let.Expression IsNot Nothing Then node_let.IsInstance = node_let.Expression.IsInstance
+                                set_type(node.Var, Function() node.Type)
+                                If node.Expression IsNot Nothing Then node.IsInstance = node.Expression.IsInstance
                                 Coverage.Case()
 
-                            ElseIf node_let.Type IsNot Nothing Then
+                            ElseIf node.Type IsNot Nothing Then
 
-                                If node_let.Type.HasIndefinite Then
+                                If node.Type.HasIndefinite Then
 
-                                    If node_let.Declare IsNot Nothing Then
+                                    If node.Declare IsNot Nothing Then
 
-                                        CType(node_let.Type, RkUnionType).Merge(node_let.Declare.Type)
+                                        CType(node.Type, RkUnionType).Merge(node.Declare.Type)
                                         Coverage.Case()
                                     End If
 
-                                    If TypeOf node_let.Expression Is IFeedback AndAlso CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
+                                    If TypeOf node.Expression Is IFeedback AndAlso CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
 
-                                        set_type(node_let, Function() node_let.Expression.Type)
+                                        set_type(node, Function() node.Expression.Type)
                                         Coverage.Case()
                                     End If
 
-                                ElseIf node_let.Type.HasGeneric AndAlso TypeOf node_let.Expression Is IFeedback Then
+                                ElseIf node.Type.HasGeneric AndAlso TypeOf node.Expression Is IFeedback Then
 
-                                    If CType(node_let.Expression, IFeedback).Feedback(node_let.Var.Type) Then
+                                    If CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
 
-                                        set_type(node_let, Function() node_let.Expression.Type)
+                                        set_type(node, Function() node.Expression.Type)
                                         Coverage.Case()
                                     End If
 
@@ -894,40 +894,40 @@ Namespace Compiler
 
                         ElseIf TypeOf child Is ExpressionNode Then
 
-                            Dim node_expr = CType(child, ExpressionNode)
-                            set_type(node_expr,
+                            Dim node = CType(child, ExpressionNode)
+                            set_type(node,
                                 Function()
 
-                                    If node_expr.Function Is Nothing Then node_expr.Function = LoadFunction(current, node_expr.Operator, node_expr.Left.Type, node_expr.Right.Type)
+                                    If node.Function Is Nothing Then node.Function = LoadFunction(current, node.Operator, node.Left.Type, node.Right.Type)
                                     Coverage.Case()
-                                    Return node_expr.Function.Return
+                                    Return node.Function.Return
                                 End Function)
 
                         ElseIf TypeOf child Is TupleNode Then
 
-                            Dim node_tuple = CType(child, TupleNode)
-                            set_type(node_tuple,
+                            Dim node = CType(child, TupleNode)
+                            set_type(node,
                                 Function()
 
                                     Dim tuple As New RkTuple
-                                    node_tuple.Items.Each(Sub(x, i) tuple.AddLet((i + 1).ToString, x.Type))
+                                    node.Items.Each(Sub(x, i) tuple.AddLet((i + 1).ToString, x.Type))
                                     Return tuple
                                 End Function)
 
                         ElseIf TypeOf child Is PropertyNode Then
 
-                            Dim node_prop = CType(child, PropertyNode)
-                            Dim r = fixed_var(node_prop.Left.Type)
+                            Dim node = CType(child, PropertyNode)
+                            Dim r = fixed_var(node.Left.Type)
                             If TypeOf r Is RkStruct Then
 
-                                If set_type(node_prop,
+                                If set_type(node,
                                     Function()
 
                                         Coverage.Case()
                                         Dim struct = CType(r, RkStruct)
-                                        If struct.Local.ContainsKey(node_prop.Right.Name) Then
+                                        If struct.Local.ContainsKey(node.Right.Name) Then
 
-                                            Return struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node_prop.Right.Name)).Value
+                                            Return struct.Local.FindFirstOrNull(Function(x) x.Key.Equals(node.Right.Name)).Value
                                         End If
 
                                         ' method call syntax sugar
@@ -936,26 +936,26 @@ Namespace Compiler
 
                                             Coverage.Case()
                                             Dim cstruct = CType(struct, RkCILStruct)
-                                            Return New RkByNameWithReceiver With {.Scope = cstruct.FunctionNamespace, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                            Return New RkByNameWithReceiver With {.Scope = cstruct.FunctionNamespace, .Name = node.Right.Name, .Receiver = node.Left}
                                         Else
 
                                             Coverage.Case()
-                                            Return New RkByNameWithReceiver With {.Scope = struct, .Name = node_prop.Right.Name, .Receiver = node_prop.Left}
+                                            Return New RkByNameWithReceiver With {.Scope = struct, .Name = node.Right.Name, .Receiver = node.Left}
                                         End If
                                     End Function) Then
 
-                                    node_prop.Right.Type = node_prop.Type
+                                    node.Right.Type = node.Type
                                 End If
                             Else
 
-                                set_type(node_prop, Function() New RkByNameWithReceiver With {.Scope = node_prop.Left.Type.Scope, .Name = node_prop.Right.Name, .Receiver = node_prop.Left})
+                                set_type(node, Function() New RkByNameWithReceiver With {.Scope = node.Left.Type.Scope, .Name = node.Right.Name, .Receiver = node.Left})
                                 Coverage.Case()
                             End If
 
                         ElseIf TypeOf child Is DeclareNode Then
 
-                            Dim node_declare = CType(child, DeclareNode)
-                            node_declare.Name.Type = node_declare.Type.Type
+                            Dim node = CType(child, DeclareNode)
+                            node.Name.Type = node.Type.Type
                             Coverage.Case()
 
                         ElseIf TypeOf child Is ProgramNode Then
@@ -969,22 +969,22 @@ Namespace Compiler
 
                         ElseIf TypeOf child Is FunctionCallNode Then
 
-                            Dim node_call = CType(child, FunctionCallNode)
-                            If node_call.Function Is Nothing Then
+                            Dim node = CType(child, FunctionCallNode)
+                            If node.Function Is Nothing Then
 
-                                node_call.Function = fixed_function(node_call)
-                                If node_call.Function Is Nothing OrElse
-                                    (TypeOf node_call.Function Is RkUnionType AndAlso CType(node_call.Function, RkUnionType).Types.Count = 0) Then Throw New CompileErrorException(node_call, "function is not found")
+                                node.Function = fixed_function(node)
+                                If node.Function Is Nothing OrElse
+                                    (TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count = 0) Then Throw New CompileErrorException(node, "function is not found")
 
-                                If TypeOf node_call.Function Is RkUnionType AndAlso CType(node_call.Function, RkUnionType).Types.Count > 1 Then
+                                If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count > 1 Then
 
                                     Coverage.Case()
                                 Else
 
-                                    apply_feedback(node_call.Function, node_call)
-                                    If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
+                                    apply_feedback(node.Function, node)
+                                    If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
-                                        pgm.AddFixedGenericFunction(node_call.Function)
+                                        pgm.AddFixedGenericFunction(node.Function)
                                         Coverage.Case()
                                     End If
                                 End If
@@ -992,13 +992,13 @@ Namespace Compiler
                                 type_fix = True
                                 Coverage.Case()
 
-                            ElseIf TypeOf node_call.Function Is RkUnionType Then
+                            ElseIf TypeOf node.Function Is RkUnionType Then
 
-                                Dim union = CType(node_call.Function, RkUnionType)
+                                Dim union = CType(node.Function, RkUnionType)
                                 Dim before = union.Types.Count
                                 If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
 
-                                    If apply_function(union, node_call) Then type_fix = True
+                                    If apply_function(union, node) Then type_fix = True
                                     Coverage.Case()
                                 Else
 
@@ -1015,10 +1015,10 @@ Namespace Compiler
 
                         ElseIf TypeOf child Is StructNode Then
 
-                            Dim node_struct = CType(child, StructNode)
-                            Dim rk_struct = CType(node_struct.Type, RkStruct)
+                            Dim node = CType(child, StructNode)
+                            Dim rk_struct = CType(node.Type, RkStruct)
 
-                            For Each s In node_struct.Lets.Where(Function(x) TypeOf x.Value Is LetNode)
+                            For Each s In node.Lets.Where(Function(x) TypeOf x.Value Is LetNode)
 
                                 Dim t = CType(s.Value, LetNode).Type
                                 If Not rk_struct.Local.ContainsKey(s.Key) OrElse rk_struct.Local(s.Key) Is Nothing Then
@@ -1169,8 +1169,8 @@ Namespace Compiler
 
                     If TypeOf child Is FunctionCallNode Then
 
-                        Dim node_call = CType(child, FunctionCallNode)
-                        node_call.Function = CType(var_normalize(node_call.Function), IFunction)
+                        Dim node = CType(child, FunctionCallNode)
+                        node.Function = CType(var_normalize(node.Function), IFunction)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is IEvaluableNode Then
