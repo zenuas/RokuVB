@@ -9,11 +9,15 @@ Namespace Manager
         ReadOnly Property Name As String
         Property Parent As IScope
         ReadOnly Property Structs As Dictionary(Of String, List(Of IStruct))
+        ReadOnly Property Classes As Dictionary(Of String, List(Of RkClass))
         ReadOnly Property Functions As Dictionary(Of String, List(Of IFunction))
         ReadOnly Property InnerScopes As List(Of IScope)
 
         Sub AddStruct(x As IStruct)
         Sub AddStruct(x As IStruct, name As String)
+
+        Sub AddClass(x As RkClass)
+        Sub AddClass(x As RkClass, name As String)
 
         Sub AddFunction(x As IFunction)
         Sub AddFunction(x As IFunction, name As String)

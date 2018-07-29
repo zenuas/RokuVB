@@ -72,6 +72,12 @@ Namespace Compiler
 
                         Dim node = CType(child, ClassNode)
                         Dim class_ = New RkClass With {.Name = node.Name, .ClassNode = node, .Scope = current.Scope, .Parent = current.Scope}
+                        node.Type = class_
+                        node.Generics.Each(Sub(x) class_.DefineGeneric(x.Name))
+                        current.Scope.AddClass(class_)
+
+                        next_(child, New With {.Scope = CType(class_, IScope), .Block = CType(class_, IScope)})
+                        Return
 
                     ElseIf TypeOf child Is UnionNode Then
 
