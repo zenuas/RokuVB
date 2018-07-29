@@ -7,13 +7,13 @@ Namespace Compiler
 
     Public Class Closure
 
-        Public Shared Sub Capture(node As ProgramNode)
+        Public Shared Sub Capture(pgm As ProgramNode)
 
             Dim get_inner_scope As Func(Of IScopeNode, IScopeNode) = Function(x) If(x Is Nothing OrElse Not x.InnerScope, x, get_inner_scope(x.Parent))
 
             Util.Traverse.NodesOnce(
-                node,
-                CType(node, IScopeNode),
+                pgm,
+                CType(pgm, IScopeNode),
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If TypeOf child Is IScopeNode Then current = CType(child, IScopeNode)
@@ -47,8 +47,8 @@ Namespace Compiler
                 End Sub)
 
             Util.Traverse.NodesOnce(
-                node,
-                CType(node, IScopeNode),
+                pgm,
+                CType(pgm, IScopeNode),
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If TypeOf child Is IScopeNode Then current = CType(child, IScopeNode)

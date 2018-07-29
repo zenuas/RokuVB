@@ -8,10 +8,10 @@ Namespace Compiler
 
     Public Class Normalize
 
-        Public Shared Sub Normalization(node As ProgramNode)
+        Public Shared Sub Normalization(pgm As ProgramNode)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 New With {.VarIndex = 0},
                 Sub(parent, ref, child, user, isfirst, next_)
 

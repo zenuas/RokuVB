@@ -7,7 +7,7 @@ Namespace Compiler
 
     Public Class NameResolver
 
-        Public Shared Sub ResolveName(node As ProgramNode)
+        Public Shared Sub ResolveName(pgm As ProgramNode)
 
             Dim resolve_name As Func(Of IScopeNode, String, IScopeNode) =
                 Function(current, name)
@@ -26,8 +26,8 @@ Namespace Compiler
                 End Function
 
             Util.Traverse.NodesOnce(
-                node,
-                CType(node, IScopeNode),
+                pgm,
+                CType(pgm, IScopeNode),
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If Not isfirst Then Return

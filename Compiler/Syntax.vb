@@ -7,11 +7,11 @@ Namespace Compiler
 
     Public Class Syntax
 
-        Public Shared Sub SwitchCaseArray(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub SwitchCaseArray(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
-                New With {.VarIndex = 0, .Scope = CType(node, IScopeNode)},
+                pgm,
+                New With {.VarIndex = 0, .Scope = CType(pgm, IScopeNode)},
                 Sub(parent, ref, child, user, isfirst, next_)
 
                     If Not isfirst Then Return
@@ -96,10 +96,10 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub Coroutine(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub Coroutine(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, user, isfirst, next_)
 

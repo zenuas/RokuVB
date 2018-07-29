@@ -43,10 +43,10 @@ Namespace Compiler
             Return base.Type
         End Function
 
-        Public Shared Sub Prototype(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub Prototype(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 New With {.Scope = CType(ns, IScope), .Block = CType(ns, IScope)},
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -83,7 +83,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is ProgramNode Then
 
                         Dim node_pgm = CType(child, ProgramNode)
-                        Dim ctor As New RkFunction With {.Name = node_pgm.Name, .FunctionNode = node, .Scope = ns, .Parent = ns}
+                        Dim ctor As New RkFunction With {.Name = node_pgm.Name, .FunctionNode = pgm, .Scope = ns, .Parent = ns}
                         node_pgm.Scope = ctor
                         node_pgm.Function = ctor
                         current.Scope.AddFunction(ctor)
@@ -120,10 +120,10 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub PrototypeStruct(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub PrototypeStruct(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -215,10 +215,10 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub PrototypeFunction(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub PrototypeFunction(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -292,10 +292,10 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub TypeStatic(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub TypeStatic(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -373,7 +373,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub TypeInference(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub TypeInference(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim set_func =
                 Function(node_func As FunctionNode) As RkFunction
@@ -685,7 +685,7 @@ Namespace Compiler
                         Dim x = from.FixedGeneric(from.TypeToApply(to_))
                         If TypeOf x Is IFunction Then
 
-                            node.AddFixedGenericFunction(CType(x, IFunction))
+                            pgm.AddFixedGenericFunction(CType(x, IFunction))
                         End If
                         Coverage.Case()
                         Return x
@@ -778,7 +778,7 @@ Namespace Compiler
                     End Function
 
                 Util.Traverse.NodesOnce(
-                    node,
+                    pgm,
                     CType(ns, IScope),
                     Sub(parent, ref, child, current, isfirst, next_)
 
@@ -984,7 +984,7 @@ Namespace Compiler
                                     apply_feedback(node_call.Function, node_call)
                                     If node_call.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
-                                        node.AddFixedGenericFunction(node_call.Function)
+                                        pgm.AddFixedGenericFunction(node_call.Function)
                                         Coverage.Case()
                                     End If
                                 End If
@@ -1121,7 +1121,7 @@ Namespace Compiler
                 End Function
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -1210,10 +1210,10 @@ Namespace Compiler
             scope_normalize(ns)
         End Sub
 
-        Public Shared Sub AnonymouseTypeAllocation(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub AnonymouseTypeAllocation(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 0,
                 Sub(parent, ref, child, current, isfirst, next_)
 

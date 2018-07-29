@@ -15,7 +15,7 @@ Namespace Compiler
 
     Public Class Translater
 
-        Public Shared Sub ClosureTranslate(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub ClosureTranslate(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim closures As New Dictionary(Of INamedFunction, RkStruct)
             Dim make_env =
@@ -47,7 +47,7 @@ Namespace Compiler
                 End Sub
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 ns,
                 Sub(parent, ref, child, current, isfirst, next_)
 
@@ -82,7 +82,7 @@ Namespace Compiler
                 End Sub)
         End Sub
 
-        Public Shared Sub Translate(node As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub Translate(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim compleat As New Dictionary(Of IFunction, Boolean)
 
@@ -509,10 +509,10 @@ Namespace Compiler
                     compleat(rk_func) = True
                 End Sub
 
-            make_func(node.Function, Nothing, node.Statements)
+            make_func(pgm.Function, Nothing, pgm.Statements)
 
             Util.Traverse.NodesOnce(
-                node,
+                pgm,
                 root,
                 Sub(parent, ref, child, current, isfirst, next_)
 
