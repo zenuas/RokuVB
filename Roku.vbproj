@@ -83,6 +83,7 @@
     <Compile Include="Manager\RkCILArrayFunction.vb" />
     <Compile Include="Manager\RkCILNativeArray.vb" />
     <Compile Include="Manager\RkScope.vb" />
+    <Compile Include="Manager\RkClass.vb" />
     <Compile Include="Manager\RkTuple.vb" />
     <Compile Include="Manager\RkUnionType.vb" />
     <Compile Include="Node\CaseCastNode.vb" />

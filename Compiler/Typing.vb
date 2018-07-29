@@ -68,6 +68,11 @@ Namespace Compiler
                         next_(child, New With {.Scope = CType(rk_struct, IScope), .Block = CType(rk_struct, IScope)})
                         Return
 
+                    ElseIf TypeOf child Is ClassNode Then
+
+                        Dim node_class = CType(child, ClassNode)
+                        Dim rk_class = New RkClass With {.Name = node_class.Name, .ClassNode = node_class, .Scope = current.Scope, .Parent = current.Scope}
+
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node_union = CType(child, UnionNode)
