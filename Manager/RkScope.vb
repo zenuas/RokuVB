@@ -25,17 +25,6 @@ Namespace Manager
             Me.Structs(name).Add(x)
         End Sub
 
-        Public Overridable Sub AddClass(x As RkClass) Implements IScope.AddClass
-
-            Me.AddClass(x, x.Name)
-        End Sub
-
-        Public Overridable Sub AddClass(x As RkClass, name As String) Implements IScope.AddClass
-
-            If Not Me.Classes.ContainsKey(name) Then Me.Classes.Add(name, New List(Of RkClass))
-            Me.Classes(name).Add(x)
-        End Sub
-
         Public Overridable Iterator Function FindCurrentStruct(name As String) As IEnumerable(Of IStruct) Implements IScope.FindCurrentStruct
 
             If Me.Structs.ContainsKey(name) Then

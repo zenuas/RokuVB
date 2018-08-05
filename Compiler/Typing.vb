@@ -74,7 +74,7 @@ Namespace Compiler
                         Dim class_ = New RkClass With {.Name = node.Name, .ClassNode = node, .Scope = current.Scope, .Parent = current.Scope}
                         node.Type = class_
                         node.Generics.Each(Sub(x) class_.DefineGeneric(x.Name))
-                        current.Scope.AddClass(class_)
+                        current.Scope.AddStruct(class_)
 
                         next_(child, New With {.Scope = CType(class_, IScope), .Block = CType(class_, IScope)})
                         Return
@@ -269,7 +269,9 @@ Namespace Compiler
 
                                 ElseIf TypeOf x Is TypeNode Then
 
-                                    CType(x, TypeNode).Arguments.Each(Sub(a) create_generic(a))
+                                    Dim t = CType(x, TypeNode)
+                                    If TypeOf t.Type Is RkClass Then func.DefineGeneric(t.Name)
+                                    t.Arguments.Each(Sub(a) create_generic(a))
 
                                 ElseIf TypeOf x Is TypeFunctionNode Then
 

@@ -8,13 +8,13 @@ Namespace Manager
 
     Public Class RkClass
         Inherits RkScope
-        Implements IType
+        Implements IStruct
 
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property ClassNode As ClassNode = Nothing
-
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -24,14 +24,17 @@ Namespace Manager
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
             If t Is Nothing Then Return False
-            If TypeOf t Is RkByName Then Return Me.Is(CType(t, RkByName).Type)
-            If TypeOf t Is RkUnionType Then Return t.Is(Me)
-            If TypeOf t Is RkGenericEntry Then Return t.Is(Me)
 
-            If Me Is t Then Return True
-            If Me.Scope Is t.Scope AndAlso Me.Name.Equals(t.Name) Then Return True
+            For Each kv In Me.Functions
 
-            Return False
+                For Each f In kv.Value
+
+                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) x.Value).ToArray)
+                    If fx Is Nothing Then Return False
+                Next
+            Next
+
+            Return True
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
@@ -46,7 +49,7 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
 
-            Throw New NotImplementedException
+            Return values(0)
         End Function
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
@@ -56,7 +59,7 @@ Namespace Manager
 
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
 
-            Throw New NotImplementedException
+            Return {value}
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

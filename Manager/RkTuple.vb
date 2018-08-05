@@ -28,6 +28,7 @@ Namespace Manager
             If t Is Nothing Then Return False
             If TypeOf t Is RkByName Then Return Me.Is(CType(t, RkByName).Type)
             If TypeOf t Is RkUnionType Then Return t.Is(Me)
+            If TypeOf t Is RkClass Then Return t.Is(Me)
 
             If Me Is t Then Return True
             If Me.Scope Is t.Scope AndAlso Me.Name.Equals(t.Name) Then Return True

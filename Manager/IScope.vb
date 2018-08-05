@@ -16,9 +16,6 @@ Namespace Manager
         Sub AddStruct(x As IStruct)
         Sub AddStruct(x As IStruct, name As String)
 
-        Sub AddClass(x As RkClass)
-        Sub AddClass(x As RkClass, name As String)
-
         Sub AddFunction(x As IFunction)
         Sub AddFunction(x As IFunction, name As String)
 

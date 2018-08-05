@@ -383,6 +383,11 @@ Namespace Manager
 
             If args.Length = 0 Then
 
+                For Each f In scope.FindCurrentStruct(name).By(Of RkClass)
+
+                    Return f
+                Next
+
                 For Each f In scope.FindCurrentStruct(name).By(Of RkUnionType)
 
                     Return f

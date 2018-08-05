@@ -1,3 +1,11 @@
 class Hoge(@T)
 	sub foo(@T)
 
+sub foo(x: Int)
+	print(x)
+
+sub hoge(x: Hoge)
+	foo(x)
+
+#=>1
+hoge(1)
