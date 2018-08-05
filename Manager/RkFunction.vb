@@ -214,6 +214,13 @@ Namespace Manager
                                 Dim apply = CType(t, RkStruct).Apply(i)
                                 gen_to_type(x, apply)
                             End Sub)
+
+                    ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkClass Then
+
+                        ' ToDo: syntax suger (x: Hoge) == (x: @T => Hoge(@T))
+                        Dim class_ = CType(arg, RkClass)
+                        Dim t = FixedByName(p)
+                        If class_.Is(p) Then gen_to_type(New RkGenericEntry With {.ApplyIndex = 0}, t)
                     End If
                 End Sub
 

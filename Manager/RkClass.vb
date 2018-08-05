@@ -29,7 +29,7 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) x.Value).ToArray)
+                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) If(TypeOf x.Value Is RkGenericEntry, t, x.Value)).ToArray)
                     If fx Is Nothing Then Return False
                 Next
             Next
@@ -44,6 +44,7 @@ Namespace Manager
 
             x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
             Me.Generics.Add(x)
+            Me.Apply.Add(Nothing)
             Return x
         End Function
 
@@ -54,7 +55,7 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Throw New NotImplementedException
+            Return values(0).Value
         End Function
 
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
