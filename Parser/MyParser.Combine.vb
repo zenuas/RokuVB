@@ -239,7 +239,7 @@ Namespace Parser
             Return [if]
         End Function
 
-        Public Shared Function CreateSwitchNode([case] As CaseNode) As SwitchNode
+        Public Shared Function CreateSwitchNode([case] As ICaseNode) As SwitchNode
 
             Dim switch As New SwitchNode
             switch.Case.Add([case])

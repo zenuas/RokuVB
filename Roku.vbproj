@@ -98,7 +98,7 @@
     <Compile Include="Node\IStatementNode.vb" />
     <Compile Include="Node\IAddFunction.vb" />
     <Compile Include="Node\IFeedback.vb" />
-    <Compile Include="Node\CaseNode.vb" />
+    <Compile Include="Node\ICaseNode.vb" />
     <Compile Include="Node\TokenNode.vb" />
     <Compile Include="Node\SwitchNode.vb" />
     <Compile Include="Node\TypeBaseNode.vb" />

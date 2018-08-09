@@ -9,7 +9,7 @@ Namespace Node
 
 
         Public Overridable Property Expression As IEvaluableNode = Nothing
-        Public Overridable Property [Case] As New List(Of CaseNode)
+        Public Overridable Property [Case] As New List(Of ICaseNode)
     End Class
 
 End Namespace

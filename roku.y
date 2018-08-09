@@ -25,7 +25,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<TypeListNode>   types typen type2n atvarn unionn typeor
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
-%type<CaseNode>       case case_expr
+%type<ICaseNode>      case case_expr
 %type<StructNode>     struct struct_block
 %type<ClassNode>      class
 %type<IEvaluableNode> expr

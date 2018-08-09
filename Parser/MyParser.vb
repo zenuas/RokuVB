@@ -941,27 +941,27 @@ Namespace Parser
 
                 Case -120
                     Debug.WriteLine("casen : case")
-                    yy_value = CreateSwitchNode(CType(Me.GetValue(-1), CaseNode))
+                    yy_value = CreateSwitchNode(CType(Me.GetValue(-1), ICaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 1, yy_value)
 
                 Case -121
                     Debug.WriteLine("casen : casen case")
-                    yy_value = CType(Me.GetValue(-2), SwitchNode) : CType(Me.GetValue(-2), SwitchNode).Case.Add(CType(Me.GetValue(-1), CaseNode))
+                    yy_value = CType(Me.GetValue(-2), SwitchNode) : CType(Me.GetValue(-2), SwitchNode).Case.Add(CType(Me.GetValue(-1), ICaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 2, yy_value)
 
                 Case -122
                     Debug.WriteLine("case : case_expr ARROW EOL")
-                    yy_value = CType(Me.GetValue(-3), CaseNode)
+                    yy_value = CType(Me.GetValue(-3), ICaseNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 3, yy_value)
 
                 Case -123
                     Debug.WriteLine("case : case_expr ARROW EOL block")
-                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = CType(Me.GetValue(-1), BlockNode)
+                    yy_value = CType(Me.GetValue(-4), ICaseNode) : CType(Me.GetValue(-4), ICaseNode).Then = CType(Me.GetValue(-1), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -124
                     Debug.WriteLine("case : case_expr ARROW expr EOL")
-                    yy_value = CType(Me.GetValue(-4), CaseNode) : CType(Me.GetValue(-4), CaseNode).Then = ToLambdaExpressionBlock(Me.CurrentScope, CType(Me.GetValue(-2), IEvaluableNode))
+                    yy_value = CType(Me.GetValue(-4), ICaseNode) : CType(Me.GetValue(-4), ICaseNode).Then = ToLambdaExpressionBlock(Me.CurrentScope, CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -125

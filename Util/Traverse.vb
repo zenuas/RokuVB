@@ -501,7 +501,7 @@ BLOCK_NODE_:
                             x.Expression = CType(f("Expression", x.Expression), IEvaluableNode)
                             For i = 0 To x.Case.Count - 1
 
-                                x.Case(i) = CType(f($"[{i}]", x.Case(i)), CaseNode)
+                                x.Case(i) = CType(f($"[{i}]", x.Case(i)), ICaseNode)
                             Next
 
                         Case TypeOf node_ Is CaseCastNode
