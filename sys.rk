@@ -37,12 +37,17 @@ sub each(xs: [@T], block: {@T, Int})
 				_each(ys, block, index + 1)
 	_each(xs, block, 0)
 
-struct List(@T)
+class List(@T, @R)
+	sub car(@T) @R
+	sub cdr(@T) @X
+	sub isnull(@T) Bool
+
+struct ListIndex(@T)
 	var index: Int
 	var list: System.Collections.Generic.List(@T)
 
-sub List(index: Int, xs: System.Collections.Generic.List(@T)) List(@T)
-	var e = List(@T)()
+sub ListIndex(index: Int, xs: System.Collections.Generic.List(@T)) ListIndex(@T)
+	var e = ListIndex(@T)()
 	e.index = index
 	e.list = xs
 	return(e)
@@ -50,17 +55,17 @@ sub List(index: Int, xs: System.Collections.Generic.List(@T)) List(@T)
 sub car(xs: System.Collections.Generic.List(@T)) @T
 	return(xs[0])
 
-sub car(xs: List(@T)) @T
+sub car(xs: ListIndex(@T)) @T
 	return(xs.list[xs.index])
 
-sub cdr(xs: System.Collections.Generic.List(@T)) List(@T)
-	return(List(1, xs))
+sub cdr(xs: System.Collections.Generic.List(@T)) ListIndex(@T)
+	return(ListIndex(1, xs))
 
-sub cdr(xs: List(@T)) List(@T)
-	return(List(xs.index + 1, xs.list))
+sub cdr(xs: ListIndex(@T)) ListIndex(@T)
+	return(ListIndex(xs.index + 1, xs.list))
 
 sub isnull(xs: System.Collections.Generic.List(@T)) Bool
 	return(xs.Count() == 0)
 
-sub isnull(xs: List(@T)) Bool
+sub isnull(xs: ListIndex(@T)) Bool
 	return(xs.index >= xs.list.Count())
