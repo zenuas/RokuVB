@@ -1,4 +1,4 @@
-class Hoge(@T)
+class Hoge<@T>
 	sub foo(@T)
 
 sub foo(x: Int)

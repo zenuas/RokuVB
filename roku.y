@@ -44,7 +44,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  ELSE
 %left  ARROW
 %token<NumericNode> NUM
-%left  OPE OR
+%left  OPE OR LT GT
 %right UNARY
 %left  '.'
 %left  ':'
@@ -122,8 +122,8 @@ let : LET var EQ expr          {$$ = CreateLetNode($2, $4, True)}
 
 
 ########## struct ##########
-struct : STRUCT var EOL struct_block                {$4.Name = $2.Name : $$ = $4}
-       | STRUCT var '(' atvarn ')' EOL struct_block {$7.Name = $2.Name : $7.Generics.AddRange($4.List) : $$ = $7}
+struct : STRUCT var EOL struct_block              {$4.Name = $2.Name : $$ = $4}
+       | STRUCT var LT atvarn GT EOL struct_block {$7.Name = $2.Name : $7.Generics.AddRange($4.List) : $$ = $7}
 
 struct_block : struct_begin define END {$$ = Me.PopScope}
 struct_begin : BEGIN                   {Me.PushScope(New StructNode($1.LineNumber))}
@@ -145,7 +145,7 @@ unionn : type EOL        {$$ = CreateListNode($1)}
 
 
 ########## class ##########
-class : CLASS var '(' atvarn ')' EOL class_block {$$ = CreateClassNode($2, $4, $7)}
+class : CLASS var LT atvarn GT EOL class_block {$$ = CreateClassNode($2, $4, $7)}
 
 class_block : BEGIN condn END {$$ = $2}
 
@@ -257,6 +257,8 @@ str    : STR     {$$ = New StringNode($1)}
 null   : NULL    {$$ = New NullNode($1)}
 ope    : OPE     {$$ = New TokenNode($1)}
        | OR      {$$ = New TokenNode($1)}
+       | LT      {$$ = New TokenNode($1)}
+       | GT      {$$ = New TokenNode($1)}
 
 extra  : void
        | ','

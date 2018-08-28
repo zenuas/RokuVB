@@ -1,4 +1,4 @@
-struct Hoge(@T)
+struct Hoge<@T>
 	var arr: System.Collections.Generic.List(@T)
 
 sub create(x: @T1) Hoge(@T1)

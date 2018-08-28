@@ -424,7 +424,14 @@ READ_CONTINUE_:
                 End If
             Loop
 
-            If buf.Length = 1 AndAlso buf(0) = "|"c Then Return New Token(SymbolTypes.OR, "|")
+            If buf.Length = 1 Then
+
+                Select Case buf(0)
+                    Case "<"c : Return New Token(SymbolTypes.LT, "<")
+                    Case ">"c : Return New Token(SymbolTypes.GT, ">")
+                    Case "|"c : Return New Token(SymbolTypes.OR, "|")
+                End Select
+            End If
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function
 

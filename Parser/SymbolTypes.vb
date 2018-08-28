@@ -57,6 +57,9 @@ Namespace Parser
         ''' <summary>EQ</summary>
         EQ
 
+        ''' <summary>GT</summary>
+        GT
+
         ''' <summary>IF</summary>
         [IF]
 
@@ -65,6 +68,9 @@ Namespace Parser
 
         ''' <summary>LET</summary>
         [LET]
+
+        ''' <summary>LT</summary>
+        LT
 
         ''' <summary>NULL</summary>
         NULL

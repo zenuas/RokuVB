@@ -37,12 +37,12 @@ sub each(xs: [@T], block: {@T, Int})
 				_each(ys, block, index + 1)
 	_each(xs, block, 0)
 
-class List(@T, @R)
+class List<@T, @R>
 	sub car(@T) @R
 	sub cdr(@T) @X
 	sub isnull(@T) Bool
 
-struct ListIndex(@T)
+struct ListIndex<@T>
 	var index: Int
 	var list: System.Collections.Generic.List(@T)
 
