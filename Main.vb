@@ -63,7 +63,7 @@ Public Class Main
         Dim root As New Manager.SystemLibrary With {.Name = "Global"}
         Using x As New IO.StreamReader(Assembly.GetExecutingAssembly.GetManifestResourceStream("Roku.sys.rk"))
 
-            loader.LoadModule("Sys", x)
+            loader.LoadModule("#Sys", x)
         End Using
 
         For Each ns In loader.Root.Namespaces

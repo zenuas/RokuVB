@@ -89,7 +89,7 @@ Namespace Parser
 
                 Me.Root.Namespaces(ns) = Nothing
                 Dim pgm = node()
-                pgm.Uses.Add(New UseNode With {.Namespace = New VariableNode("Sys")})
+                pgm.Uses.Add(New UseNode With {.Namespace = New VariableNode("#Sys")})
                 Me.Root.Namespaces(ns) = pgm
             End If
 
