@@ -165,6 +165,10 @@ Namespace Util
                                 f($"[{i}]", x.Arguments(i))
                             Next
                             f("Return", x.Return)
+                            For i = 0 To x.Where.Count - 1
+
+                                f($"Where[{i}]", x.Where(i))
+                            Next
                             GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is BlockNode
@@ -414,6 +418,10 @@ BLOCK_NODE_:
                                 x.Arguments(i) = CType(f($"[{i}]", x.Arguments(i)), DeclareNode)
                             Next
                             x.Return = CType(f("Return", x.Return), TypeNode)
+                            For i = 0 To x.Where.Count - 1
+
+                                x.Where(i) = CType(f($"Where[{i}]", x.Where(i)), TypeBaseNode)
+                            Next
                             GoTo BLOCK_NODE_
 
                         Case TypeOf node_ Is BlockNode
