@@ -22,7 +22,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<DeclareListNode> args argn lambda_args lambda_argn
 %type<TypeNode>       nsvar
 %type<TypeBaseNode>   type typev typex atvar union
-%type<TypeListNode>   types typen type2n atvarn unionn typeor
+%type<TypeListNode>   types typen type2n atvarn unionn typeor where nsvarn
 %type<IfNode>         if ifthen elseif
 %type<SwitchNode>     switch casen case_block
 %type<ICaseNode>      case case_expr
@@ -156,13 +156,15 @@ condn : cond                                 {$$ = CreateListNode($1)}
 
 
 ########## sub ##########
-sub    : SUB fn '(' args ')' typex EOL sub_block {$$ = CreateFunctionNode($8, $2, $4, $6)}
+sub    : SUB fn where '(' args ')' typex EOL sub_block {$$ = CreateFunctionNode($9, $2, $5, $7, $3)}
 
 sub_block : sub_begin stmt END {$$ = Me.PopScope}
 sub_begin : BEGIN              {Me.PushScope(New FunctionNode($1.LineNumber))}
 
 fn     : var
        | ope            {$$ = CreateVariableNode($1.Token)}
+where  : void
+       | LT nsvarn GT   {$$ = $2}
 args   : void           {$$ = CreateListNode(Of DeclareNode)}
        | argn extra
 argn   : decla          {$$ = CreateListNode($1)}
@@ -177,6 +179,8 @@ typev  : nsvar
        | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
        | atvar
        | '[' type2n ']' {$$ = New TypeTupleNode($2)}
+nsvarn : nsvar               {$$ = CreateListNode(Of TypeBaseNode)()}
+       | nsvarn ',' nsvar    {$1.List.Add($3) : $$ = $1}
 nsvar  : varx                {$$ = New TypeNode($1)}
        | nsvar '.' varx      {$$ = New TypeNode($1, $3)}
        | nsvar '(' typen ')' {$1.Arguments = $3.List : $$ = $1}

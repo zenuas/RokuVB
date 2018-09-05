@@ -284,13 +284,15 @@ Namespace Parser
                 f As FunctionNode,
                 name As VariableNode,
                 args As ListNode(Of DeclareNode),
-                ret As TypeBaseNode
+                ret As TypeBaseNode,
+                where As ListNode(Of TypeBaseNode)
             ) As FunctionNode
 
             f.Name = name.Name
             f.Arguments = args.List
             f.Return = ret
             f.InnerScope = False
+            If where IsNot Nothing Then f.Where.AddRange(where.List)
             Return f
         End Function
 

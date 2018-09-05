@@ -222,6 +222,9 @@ Namespace Parser
         ''' <summary>nsvar</summary>
         nsvar
 
+        ''' <summary>nsvarn</summary>
+        nsvarn
+
         ''' <summary>null</summary>
         null_1
 
@@ -317,6 +320,9 @@ Namespace Parser
 
         ''' <summary>void</summary>
         void
+
+        ''' <summary>where</summary>
+        [where]
 
         ''' <summary>$ACCEPT</summary>
         _ACCEPT
