@@ -145,6 +145,17 @@ Namespace Parser
             Return CreateExpressionNode(left, "", Nothing)
         End Function
 
+        Public Shared Function CreateIfExpressionNode(
+                cond As IEvaluableNode,
+                [then] As IEvaluableNode,
+                [else] As IEvaluableNode
+            ) As IfExpressionNode
+
+            Dim expr As New IfExpressionNode With {.Condition = cond, .Then = [then], .Else = [else]}
+            expr.AppendLineNumber(cond)
+            Return expr
+        End Function
+
         Public Shared Function CreateTupleNode(
                 items As ListNode(Of IEvaluableNode)
             ) As TupleNode

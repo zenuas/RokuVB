@@ -95,14 +95,14 @@ expr : var
      | call
      | lambda
      | atvar
-     | '[' list ']'         {$2.AppendLineNumber($1) : $$ = $2}
-     | '(' expr ')'         {$$ = CreateExpressionNode($2, "()")}
-     | '(' list2n ')'       {$$ = CreateTupleNode($2)}
-     | ope expr %prec UNARY {$$ = CreateFunctionCallNode($1.Token, $2)}
-     | expr '.' fvar        {$$ = CreatePropertyNode($1, $2, $3)}
-     | expr ope expr        {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr '[' expr ']'    {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
-     | expr '?' expr ':' expr
+     | '[' list ']'           {$2.AppendLineNumber($1) : $$ = $2}
+     | '(' expr ')'           {$$ = CreateExpressionNode($2, "()")}
+     | '(' list2n ')'         {$$ = CreateTupleNode($2)}
+     | ope expr %prec UNARY   {$$ = CreateFunctionCallNode($1.Token, $2)}
+     | expr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
+     | expr ope expr          {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
+     | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
 
 call : expr '(' list ')' {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}

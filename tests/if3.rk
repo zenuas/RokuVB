@@ -1,0 +1,17 @@
+
+
+sub f(a: Int) Int
+	return(
+		a == 0 ? 1 :
+		a == 1 ? 2 :
+		a == 2 ? 3 :
+		10)
+
+#=>1
+#=>2
+#=>3
+#=>10
+print(f(0))
+print(f(1))
+print(f(2))
+print(f(3))

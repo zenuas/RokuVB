@@ -89,6 +89,7 @@
     <Compile Include="Node\CaseCastNode.vb" />
     <Compile Include="Node\CaseArrayNode.vb" />
     <Compile Include="Node\BreakNode.vb" />
+    <Compile Include="Node\IfExpressionNode.vb" />
     <Compile Include="Node\ICloneable.vb" />
     <Compile Include="Node\ClassNode.vb" />
     <Compile Include="Node\TupleNode.vb" />

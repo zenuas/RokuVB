@@ -205,6 +205,13 @@ BLOCK_NODE_:
                             f("Left", x.Left)
                             f("Right", x.Right)
 
+                        Case TypeOf node_ Is IfExpressionNode
+
+                            Dim x = CType(node_, IfExpressionNode)
+                            f("Condition", x.Condition)
+                            f("Then", x.Then)
+                            f("Else", x.Else)
+
                         Case TypeOf node_ Is PropertyNode
 
                             Dim x = CType(node_, PropertyNode)
@@ -457,6 +464,13 @@ BLOCK_NODE_:
                             Dim x = CType(node_, ExpressionNode)
                             x.Left = CType(f("Left", x.Left), IEvaluableNode)
                             x.Right = CType(f("Right", x.Right), IEvaluableNode)
+
+                        Case TypeOf node_ Is IfExpressionNode
+
+                            Dim x = CType(node_, IfExpressionNode)
+                            x.Condition = CType(f("Condition", x.Condition), IEvaluableNode)
+                            x.Then = CType(f("Then", x.Then), IEvaluableNode)
+                            x.Else = CType(f("Else", x.Else), IEvaluableNode)
 
                         Case TypeOf node_ Is PropertyNode
 
