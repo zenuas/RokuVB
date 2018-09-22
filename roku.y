@@ -51,7 +51,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  IGNORE
 
 %left  ','
-%left  '?'
+%right '?'
 %left  '(' '[' '{'
 %left  EOL
 
