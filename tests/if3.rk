@@ -1,6 +1,27 @@
 
 
 sub f(a: Int) Int
+	
+	# return(IfExpression(...))
+	# ↓ normalize
+	# var $ret = IfExpression(...)
+	# return($ret)
+	# ↓ syntax suger
+	# var $ret
+	# var $1 = (a == 0)
+	# if $1
+	#     $ret = 1
+	# else
+	#     var $2 = (a == 1)
+	#     if $2
+	#         $ret = 2
+	#     else
+	#         var $3 = (a == 2)
+	#         if $3
+	#             $ret = 3
+	#         else
+	#             $ret = 10
+	# return($ret)
 	return(
 		a == 0 ? 1 :
 		a == 1 ? 2 :

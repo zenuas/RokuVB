@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports Roku.Node
+Imports Roku.Parser.MyParser
 Imports Roku.Util
 Imports Roku.Util.TypeHelper
 
@@ -22,20 +23,30 @@ Namespace Compiler
                         Dim block = CType(child, BlockNode)
                         Dim program_pointer = 0
 
-                        Dim to_let =
-                            Function(e As IEvaluableNode)
+                        Dim to_let_linenum =
+                            Function(e As IEvaluableNode, linenum As INode)
 
                                 Dim var As New VariableNode($"$${user.VarIndex}") With {.Scope = block}
                                 block.Lets.Add(var.Name, var)
-                                var.AppendLineNumber(e)
+                                If linenum IsNot Nothing Then var.AppendLineNumber(linenum)
                                 user.VarIndex += 1
 
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
-                                let_.AppendLineNumber(e)
+                                If linenum IsNot Nothing Then let_.AppendLineNumber(linenum)
                                 block.Statements.Insert(program_pointer, let_)
                                 program_pointer += 1
                                 Coverage.Case()
                                 Return var
+                            End Function
+
+                        Dim to_let = Function(e As IEvaluableNode) to_let_linenum(e, e)
+
+                        Dim to_block =
+                            Function(var As VariableNode, e As IEvaluableNode) As BlockNode
+
+                                Dim then_block As New BlockNode(e.LineNumber.Value) With {.InnerScope = True, .Parent = block}
+                                then_block.AddStatement(CreateLetNode(var, e))
+                                Return then_block
                             End Function
 
                         Dim insert_let As Func(Of IEvaluableNode, IEvaluableNode) =
@@ -78,6 +89,16 @@ Namespace Compiler
                                     Next
                                     Coverage.Case()
                                     Return to_let(e)
+
+                                ElseIf TypeOf e Is IfExpressionNode Then
+
+                                    Dim ifexpr = CType(e, IfExpressionNode)
+                                    Dim var = to_let_linenum(Nothing, ifexpr)
+                                    Dim if_ = CreateIfNode(insert_let(ifexpr.Condition), to_block(var, ifexpr.Then), to_block(var, ifexpr.Else))
+                                    block.Statements.Insert(program_pointer, if_)
+                                    user.VarIndex += 1
+                                    Coverage.Case()
+                                    Return var
 
                                 ElseIf IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
 
@@ -135,6 +156,12 @@ Namespace Compiler
                                         tuple.Items(i) = insert_let(tuple.Items(i))
                                     Next
                                     Coverage.Case()
+
+                                ElseIf TypeOf e Is IfExpressionNode Then
+
+                                    insert_let(e)
+                                    Coverage.Case()
+                                    Return Nothing
 
                                 ElseIf TypeOf e Is VariableNode Then
 
