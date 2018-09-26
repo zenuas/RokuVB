@@ -163,6 +163,19 @@ Namespace Compiler
                                     Coverage.Case()
                                     Return Nothing
 
+                                ElseIf e IsNot Nothing AndAlso IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
+
+                                    Dim list = e.GetType.GetProperty("List").GetValue(e)
+                                    Dim count = list.GetType.GetProperty("Count")
+                                    Dim item = list.GetType.GetProperty("Item")
+                                    For i = 0 To CInt(count.GetValue(list)) - 1
+
+                                        Dim index = New Object() {i}
+                                        Dim x = CType(item.GetValue(list, index), IEvaluableNode)
+                                        item.SetValue(list, insert_let(x), index)
+                                    Next
+                                    Coverage.Case()
+
                                 ElseIf TypeOf e Is VariableNode Then
 
                                     Coverage.Case()
