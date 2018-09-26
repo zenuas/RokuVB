@@ -28,11 +28,11 @@ Namespace Compiler
 
                                 Dim var As New VariableNode($"$${user.VarIndex}") With {.Scope = block}
                                 block.Lets.Add(var.Name, var)
-                                If linenum IsNot Nothing Then var.AppendLineNumber(linenum)
+                                var.AppendLineNumber(linenum)
                                 user.VarIndex += 1
 
                                 Dim let_ As New LetNode With {.Var = var, .Expression = e}
-                                If linenum IsNot Nothing Then let_.AppendLineNumber(linenum)
+                                let_.AppendLineNumber(linenum)
                                 block.Statements.Insert(program_pointer, let_)
                                 program_pointer += 1
                                 Coverage.Case()
