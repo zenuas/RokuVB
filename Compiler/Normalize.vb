@@ -49,119 +49,56 @@ Namespace Compiler
                                 Return then_block
                             End Function
 
-                        Dim insert_let As Func(Of IEvaluableNode, IEvaluableNode) =
-                            Function(e)
+                        Dim to_flat As Func(Of Boolean, IEvaluableNode, IEvaluableNode) =
+                            Function(isnewlet, e)
 
                                 If TypeOf e Is ExpressionNode Then
 
                                     Dim expr = CType(e, ExpressionNode)
-                                    If expr.Operator.Equals("()") Then Return insert_let(expr.Left)
+                                    If expr.Operator.Equals("()") Then Return to_flat(isnewlet, expr.Left)
 
-                                    expr.Left = insert_let(expr.Left)
-                                    expr.Right = insert_let(expr.Right)
+                                    expr.Left = to_flat(True, expr.Left)
+                                    expr.Right = to_flat(True, expr.Right)
                                     Coverage.Case()
-                                    Return to_let(expr)
+                                    If isnewlet Then Return to_let(e)
 
                                 ElseIf TypeOf e Is PropertyNode Then
 
                                     Dim prop = CType(e, PropertyNode)
-                                    prop.Left = insert_let(prop.Left)
+                                    prop.Left = to_flat(True, prop.Left)
                                     Coverage.Case()
-                                    Return to_let(prop)
+                                    If isnewlet Then Return to_let(e)
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
-                                    Dim call_ = CType(e, FunctionCallNode)
-                                    call_.Expression = insert_let(call_.Expression)
-                                    For i = 0 To call_.Arguments.Length - 1
+                                    Dim func = CType(e, FunctionCallNode)
+                                    func.Expression = to_flat(True, func.Expression)
+                                    For i = 0 To func.Arguments.Length - 1
 
-                                        call_.Arguments(i) = insert_let(call_.Arguments(i))
+                                        func.Arguments(i) = to_flat(True, func.Arguments(i))
                                     Next
                                     Coverage.Case()
-                                    Return to_let(call_)
+                                    If isnewlet Then Return to_let(e)
 
                                 ElseIf TypeOf e Is TupleNode Then
 
                                     Dim tuple = CType(e, TupleNode)
                                     For i = 0 To tuple.Items.Length - 1
 
-                                        tuple.Items(i) = insert_let(tuple.Items(i))
+                                        tuple.Items(i) = to_flat(True, tuple.Items(i))
                                     Next
                                     Coverage.Case()
-                                    Return to_let(e)
+                                    If isnewlet Then Return to_let(e)
 
                                 ElseIf TypeOf e Is IfExpressionNode Then
 
                                     Dim ifexpr = CType(e, IfExpressionNode)
                                     Dim var = to_let_linenum(Nothing, ifexpr)
-                                    Dim if_ = CreateIfNode(insert_let(ifexpr.Condition), to_block(var, ifexpr.Then), to_block(var, ifexpr.Else))
+                                    Dim if_ = CreateIfNode(to_flat(True, ifexpr.Condition), to_block(var, ifexpr.Then), to_block(var, ifexpr.Else))
                                     block.Statements.Insert(program_pointer, if_)
                                     user.VarIndex += 1
                                     Coverage.Case()
                                     Return var
-
-                                ElseIf IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
-
-                                    Dim list = e.GetType.GetProperty("List").GetValue(e)
-                                    Dim count = list.GetType.GetProperty("Count")
-                                    Dim item = list.GetType.GetProperty("Item")
-                                    For i = 0 To CInt(count.GetValue(list)) - 1
-
-                                        Dim index = New Object() {i}
-                                        Dim x = CType(item.GetValue(list, index), IEvaluableNode)
-                                        item.SetValue(list, insert_let(x), index)
-                                    Next
-                                    Coverage.Case()
-                                    Return to_let(e)
-
-                                ElseIf TypeOf e Is VariableNode Then
-
-                                    Coverage.Case()
-                                End If
-
-                                Return e
-                            End Function
-
-                        Dim to_flat As Func(Of IEvaluableNode, IEvaluableNode) =
-                            Function(e)
-
-                                If TypeOf e Is ExpressionNode Then
-
-                                    Dim expr = CType(e, ExpressionNode)
-                                    expr.Left = insert_let(expr.Left)
-                                    expr.Right = insert_let(expr.Right)
-                                    'Coverage.Case()
-
-                                ElseIf TypeOf e Is PropertyNode Then
-
-                                    Dim prop = CType(e, PropertyNode)
-                                    prop.Left = insert_let(prop.Left)
-                                    Coverage.Case()
-
-                                ElseIf TypeOf e Is FunctionCallNode Then
-
-                                    Dim func = CType(e, FunctionCallNode)
-                                    func.Expression = insert_let(func.Expression)
-                                    For i = 0 To func.Arguments.Length - 1
-
-                                        func.Arguments(i) = insert_let(func.Arguments(i))
-                                    Next
-                                    Coverage.Case()
-
-                                ElseIf TypeOf e Is TupleNode Then
-
-                                    Dim tuple = CType(e, TupleNode)
-                                    For i = 0 To tuple.Items.Length - 1
-
-                                        tuple.Items(i) = insert_let(tuple.Items(i))
-                                    Next
-                                    Coverage.Case()
-
-                                ElseIf TypeOf e Is IfExpressionNode Then
-
-                                    insert_let(e)
-                                    Coverage.Case()
-                                    Return Nothing
 
                                 ElseIf e IsNot Nothing AndAlso IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
 
@@ -172,9 +109,10 @@ Namespace Compiler
 
                                         Dim index = New Object() {i}
                                         Dim x = CType(item.GetValue(list, index), IEvaluableNode)
-                                        item.SetValue(list, insert_let(x), index)
+                                        item.SetValue(list, to_flat(True, x), index)
                                     Next
                                     Coverage.Case()
+                                    If isnewlet Then Return to_let(e)
 
                                 ElseIf TypeOf e Is VariableNode Then
 
@@ -195,32 +133,32 @@ Namespace Compiler
                                     block.Owner.Coroutine = True
                                     Coverage.Case()
                                 End If
-                                to_flat(fcall)
+                                to_flat(False, fcall)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is LambdaExpressionNode Then
 
                                 Dim lambda = CType(v, LambdaExpressionNode)
-                                lambda.Expression = to_flat(lambda.Expression)
+                                lambda.Expression = to_flat(False, lambda.Expression)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is LetNode Then
 
                                 Dim let_ = CType(v, LetNode)
-                                let_.Receiver = to_flat(let_.Receiver)
-                                let_.Expression = to_flat(let_.Expression)
+                                let_.Receiver = to_flat(True, let_.Receiver)
+                                let_.Expression = to_flat(False, let_.Expression)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is IfNode Then
 
                                 Dim if_ = CType(v, IfNode)
-                                if_.Condition = insert_let(if_.Condition)
+                                if_.Condition = to_flat(True, if_.Condition)
                                 Coverage.Case()
 
                             ElseIf TypeOf v Is SwitchNode Then
 
                                 Dim switch = CType(v, SwitchNode)
-                                switch.Expression = insert_let(switch.Expression)
+                                switch.Expression = to_flat(True, switch.Expression)
                                 Coverage.Case()
 
                             End If

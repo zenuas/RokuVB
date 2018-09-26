@@ -866,7 +866,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is LetNode Then
 
                             Dim node = CType(child, LetNode)
-                            If set_type(node, Function() If(node.Expression Is Nothing, node.Declare.Type, node.Expression.Type)) Then
+                            If set_type(node, Function() If(node.Expression Is Nothing, node.Declare?.Type, node.Expression.Type)) Then
 
                                 set_type(node.Var, Function() node.Type)
                                 If node.Expression IsNot Nothing Then node.IsInstance = node.Expression.IsInstance
