@@ -44,6 +44,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  ELSE
 %left  ARROW
 %token<NumericNode> NUM
+%right '?'
 %left  OPE OR LT GT
 %right UNARY
 %left  '.'
@@ -51,7 +52,6 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  IGNORE
 
 %left  ','
-%right '?'
 %left  '(' '[' '{'
 %left  EOL
 
