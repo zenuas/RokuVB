@@ -4,7 +4,7 @@ class Hoge<@T>
 sub foo(x: Int)
 	print(x)
 
-sub hoge(x: Hoge)
+sub hoge<Hoge(@T)>(x: @T)
 	foo(x)
 
 #=>1

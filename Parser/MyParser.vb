@@ -796,7 +796,7 @@ Namespace Parser
 
                 Case -89
                     Debug.WriteLine("nsvarn : nsvar")
-                    yy_value = CreateListNode(Of TypeBaseNode)()
+                    yy_value = CreateListNode(Of TypeBaseNode)(CType(Me.GetValue(-1), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.nsvarn, 1, yy_value)
 
                 Case -90

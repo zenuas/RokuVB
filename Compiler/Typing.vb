@@ -175,7 +175,13 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeNode Then
 
                         Dim node = CType(child, TypeNode)
-                        If Not node.IsGeneric Then
+                        If node.IsTypeClass Then
+
+                            Dim base = CType(If(node.Namespace Is Nothing, ns, node.Namespace.Type), IScope)
+                            node.Type = LoadClass(base, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray)
+                            Coverage.Case()
+
+                        ElseIf Not node.IsGeneric Then
 
                             Dim base = CType(If(node.Namespace Is Nothing, ns, node.Namespace.Type), IScope)
                             Dim t As IType
@@ -198,8 +204,8 @@ Namespace Compiler
                                 node.NullAdded = True
                             End If
                             node.Type = t
+                            Coverage.Case()
                         End If
-                        Coverage.Case()
 
                     ElseIf TypeOf child Is StructNode Then
 
@@ -269,9 +275,7 @@ Namespace Compiler
 
                                 ElseIf TypeOf x Is TypeNode Then
 
-                                    Dim t = CType(x, TypeNode)
-                                    If TypeOf t.Type Is RkClass Then func.DefineGeneric(t.Name)
-                                    t.Arguments.Each(Sub(a) create_generic(a))
+                                    CType(x, TypeNode).Arguments.Each(Sub(a) create_generic(a))
 
                                 ElseIf TypeOf x Is TypeFunctionNode Then
 
@@ -285,6 +289,7 @@ Namespace Compiler
                             End Sub
 
                         node.Arguments.Each(Sub(x) create_generic(x.Type))
+                        node.Where.Each(Sub(x) create_generic(x))
                         If node.Return IsNot Nothing Then
 
                             create_generic(node.Return)
@@ -344,6 +349,7 @@ Namespace Compiler
                         Dim func = node.Function
 
                         node.Arguments.Each(Sub(x) func.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = DefineType(root, func, x.Type)}))
+                        node.Where.Each(Sub(x) func.Where.Add(CType(DefineType(root, func, x), RkClass)))
 
                         If node.Coroutine Then
 
@@ -556,7 +562,8 @@ Namespace Compiler
                     union.Types = union.Types.
                         By(Of IFunction).
                         Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
-                        Map(Function(x) CType(x, IFunction).ApplyFunction(args)).
+                        Where(Function(x) x.WhereFunction(args)).
+                        Map(Function(x) x.ApplyFunction(args)).
                         By(Of IType).
                         ToList
                     Return before <> union.Types.Count

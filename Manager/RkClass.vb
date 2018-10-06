@@ -23,13 +23,28 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            If t Is Nothing Then Return False
+            Return Me.Is({t})
+        End Function
+
+        Public Overridable Function [Is](args() As IType) As Boolean
+
+            Dim search_args =
+                Function(x As IType)
+
+                    If TypeOf x Is RkGenericEntry Then
+
+                        Return Me.Apply.By(Of RkGenericEntry).FindFirstOrNull(Function(a) a.Name.Equals(x.Name)).Fmap(Function(a) args(a.ApplyIndex))
+                    Else
+
+                        Return x
+                    End If
+                End Function
 
             For Each kv In Me.Functions
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) If(TypeOf x.Value Is RkGenericEntry, t, x.Value)).ToArray)
+                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
                     If fx Is Nothing Then Return False
                 Next
             Next
@@ -50,12 +65,27 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
 
-            Return values(0)
+            If Me.Generics.Count <> values.Length Then Throw New ArgumentException("generics count miss match")
+
+            Return Me.FixedGeneric(values.Map(Function(v, i) New NamedValue With {.Name = Me.Generics(i).Name, .Value = v}).ToArray)
         End Function
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Return values(0).Value
+            Dim apply_map As New Dictionary(Of Integer, NamedValue)
+            Me.Generics.Each(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
+            Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
+            For Each fix In Me.GetBaseTypes.Where(Function(g) g.Apply.Count = apply.Length)
+
+                If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
+            Next
+
+            Dim clone = CType(Me.CloneGeneric, RkClass)
+            clone.Apply.Clear()
+            clone.Apply.AddRange(apply)
+            clone.ClassNode = Me.ClassNode
+            Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList))
+            Return clone
         End Function
 
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
@@ -70,7 +100,15 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Throw New NotImplementedException
+            Dim x = New RkClass With {.Name = Me.Name, .Scope = Me.Scope, .Parent = Me.Parent}
+            x.Scope.AddStruct(x)
+            Return x
+        End Function
+
+        Public Overridable Function GetBaseTypes() As List(Of IStruct)
+
+            If Me.Scope.Structs.ContainsKey(Me.Name) AndAlso Me.Scope.Structs(Me.Name).Exists(Function(s) s Is Me) Then Return Me.Scope.Structs(Me.Name)
+            Return Me.Scope.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite

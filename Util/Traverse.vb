@@ -427,7 +427,7 @@ BLOCK_NODE_:
                             x.Return = CType(f("Return", x.Return), TypeNode)
                             For i = 0 To x.Where.Count - 1
 
-                                x.Where(i) = CType(f($"Where[{i}]", x.Where(i)), TypeBaseNode)
+                                x.Where(i) = CType(f($"Where[{i}]", x.Where(i)), TypeNode)
                             Next
                             GoTo BLOCK_NODE_
 

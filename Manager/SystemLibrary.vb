@@ -371,26 +371,31 @@ Namespace Manager
 
         Public Shared Function TryCurrentLoadStruct(scope As IScope, name As String, ParamArray args() As IType) As IType
 
-            For Each f In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
+            For Each t In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Apply.Count = args.Length AndAlso Not x.HasGeneric)
 
-                If f.Apply.And(Function(x, i) x Is args(i)) Then Return f
+                If t.Apply.And(Function(x, i) x Is args(i)) Then Return t
             Next
 
-            For Each f In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
+            For Each t In scope.FindCurrentStruct(name).By(Of RkStruct).Where(Function(x) x.Generics.Count = args.Length AndAlso x.HasGeneric)
 
-                Return CType(f.FixedGeneric(args), RkStruct)
+                Return CType(t.FixedGeneric(args), RkStruct)
+            Next
+
+            For Each t In scope.FindCurrentStruct(name).By(Of RkClass).Where(Function(x) x.Generics.Count = args.Length)
+
+                Return CType(t.FixedGeneric(args), RkClass)
             Next
 
             If args.Length = 0 Then
 
-                For Each f In scope.FindCurrentStruct(name).By(Of RkClass)
+                For Each t In scope.FindCurrentStruct(name).By(Of RkClass)
 
-                    Return f
+                    Return t
                 Next
 
-                For Each f In scope.FindCurrentStruct(name).By(Of RkUnionType)
+                For Each t In scope.FindCurrentStruct(name).By(Of RkUnionType)
 
-                    Return f
+                    Return t
                 Next
             End If
 
@@ -428,6 +433,56 @@ Namespace Manager
                 Return TryLoadStruct(scope.Parent, name, args)
             End If
 
+        End Function
+
+        Public Shared Function LoadClass(scope As IScope, name As String, ParamArray args() As IType) As RkClass
+
+            Dim x = TryLoadClass(scope, name, args)
+            If x IsNot Nothing Then Return x
+
+            Throw New ArgumentException($"``{name}'' was not found")
+        End Function
+
+        Public Shared Function TryCurrentLoadClass(scope As IScope, name As String, ParamArray args() As IType) As RkClass
+
+            For Each t In scope.FindCurrentStruct(name).By(Of RkClass).Where(Function(x) x.Generics.Count = args.Length)
+
+                Return t
+            Next
+
+            Return Nothing
+        End Function
+
+        Public Shared Function TryLoadClass(scope As IScope, name As String, ParamArray args() As IType) As RkClass
+
+            If scope Is Nothing Then Return Nothing
+
+            Dim x = TryCurrentLoadClass(scope, name, args)
+            If x IsNot Nothing Then Return x
+
+            If TypeOf scope Is RkNamespace Then
+
+                Dim ns = CType(scope, RkNamespace)
+                For Each path In ns.LoadPaths
+
+                    If TypeOf path Is RkClass Then
+
+                        Dim class_ = CType(path, RkClass)
+                        If class_.Name.Equals(name) Then Return class_
+                    End If
+
+                    If TypeOf path Is IScope Then
+
+                        x = TryLoadClass(CType(path, IScope), name, args)
+                        If x IsNot Nothing Then Return x
+                    End If
+                Next
+
+                Return Nothing
+            Else
+
+                Return TryLoadClass(scope.Parent, name, args)
+            End If
         End Function
 
         Public Shared Function LoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IFunction

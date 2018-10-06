@@ -179,7 +179,7 @@ typev  : nsvar
        | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
        | atvar
        | '[' type2n ']' {$$ = New TypeTupleNode($2)}
-nsvarn : nsvar               {$$ = CreateListNode(Of TypeBaseNode)()}
+nsvarn : nsvar               {$$ = CreateListNode(Of TypeBaseNode)($1)}
        | nsvarn ',' nsvar    {$1.List.Add($3) : $$ = $1}
 nsvar  : varx                {$$ = New TypeNode($1)}
        | nsvar '.' varx      {$$ = New TypeNode($1, $3)}

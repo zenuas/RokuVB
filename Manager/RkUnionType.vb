@@ -232,6 +232,11 @@ Namespace Manager
             Return CType(Me.GetDecideType, IFunction).ArgumentsToApply(args)
         End Function
 
+        Public Overridable Function WhereFunction(ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
+
+            Return CType(Me.GetDecideType, IFunction).WhereFunction(args)
+        End Function
+
         Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
 
             Return CType(Me.GetDecideType, IFunction).ApplyFunction(args)

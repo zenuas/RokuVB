@@ -303,7 +303,15 @@ Namespace Parser
             f.Arguments = args.List
             f.Return = ret
             f.InnerScope = False
-            If where IsNot Nothing Then f.Where.AddRange(where.List)
+            If where IsNot Nothing Then
+
+                where.List.By(Of TypeNode).Each(
+                    Sub(x)
+
+                        x.IsTypeClass = True
+                        f.Where.Add(x)
+                    End Sub)
+            End If
             Return f
         End Function
 

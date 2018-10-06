@@ -28,6 +28,7 @@ Namespace Node
         Public Overridable Property [Namespace] As TypeNode = Nothing
         Public Overridable Property Arguments As New List(Of TypeBaseNode)
         Public Overridable Property IsNamespace As Boolean = False
+        Public Overridable Property IsTypeClass As Boolean = False
 
     End Class
 

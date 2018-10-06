@@ -9,7 +9,6 @@ Namespace Manager
         Public Overridable Property Name As String = "" Implements IScope.Name
         Public Overridable Property Parent As IScope Implements IScope.Parent
         Public Overridable ReadOnly Property Structs As New Dictionary(Of String, List(Of IStruct)) Implements IScope.Structs
-        Public Overridable ReadOnly Property Classes As New Dictionary(Of String, List(Of RkClass)) Implements IScope.Classes
         Public Overridable ReadOnly Property Functions As New Dictionary(Of String, List(Of IFunction)) Implements IScope.Functions
         Public Overridable Property Closure As RkStruct Implements IClosure.Closure
         Public Overridable ReadOnly Property InnerScopes As New List(Of IScope) Implements IScope.InnerScopes

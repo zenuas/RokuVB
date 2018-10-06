@@ -1,0 +1,25 @@
+class Hoge<@T1, @T2>
+	sub foo(@T1)
+	sub bar(@T2)
+
+sub foo(x: Int)
+	print(x)
+
+sub bar(x: String)
+	print(x)
+
+sub hoge<Hoge(@T1, @T2)>(x: @T1, y: @T2)
+	foo(x)
+	bar(y)
+
+sub hoge<Hoge(@T2, @T1)>(x: @T1, y: @T2)
+	foo(y)
+	bar(x)
+
+#=>1
+#=>hello
+hoge(1, "hello")
+
+#=>2
+#=>world
+hoge(2, "world")

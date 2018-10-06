@@ -19,7 +19,7 @@ Namespace Node
         Public Overridable Property Type As IType Implements IHaveScopeType.Type
         Public Overridable Property Bind As New Dictionary(Of INamedFunction, Boolean) Implements INamedFunction.Bind
         Public Overridable Property Name As String Implements INamedFunction.Name
-        Public Overridable ReadOnly Property Where As New List(Of TypeBaseNode)
+        Public Overridable ReadOnly Property Where As New List(Of TypeNode)
         Public Overridable Property ImplicitArgumentsCount As UInteger? = Nothing
         Public Overridable Property ImplicitReturn As Boolean = False
         Public Overridable Property Coroutine As Boolean = False Implements INamedFunction.Coroutine

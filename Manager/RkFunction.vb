@@ -19,6 +19,7 @@ Namespace Manager
         Public Overrides Property Name As String Implements IEntry.Name
         Public Overridable ReadOnly Property Arguments As New List(Of NamedValue) Implements IFunction.Arguments
         Public Overridable Property [Return] As IType Implements IFunction.Return
+        Public Overridable ReadOnly Property Where As New List(Of RkClass)
         Public Overridable ReadOnly Property Body As New List(Of InCode0) Implements IFunction.Body
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry) Implements IFunction.Generics
         Public Overridable Property GenericBase As RkFunction = Nothing Implements IFunction.GenericBase
@@ -214,13 +215,6 @@ Namespace Manager
                                 Dim apply = CType(t, RkStruct).Apply(i)
                                 gen_to_type(x, apply)
                             End Sub)
-
-                    ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkClass Then
-
-                        ' ToDo: syntax suger (x: Hoge) == (x: @T => Hoge(@T))
-                        Dim class_ = CType(arg, RkClass)
-                        Dim t = FixedByName(p)
-                        If class_.Is(p) Then gen_to_type(New RkGenericEntry With {.ApplyIndex = 0}, t)
                     End If
                 End Sub
 
@@ -255,6 +249,14 @@ Namespace Manager
             Next
 
             Return xs
+        End Function
+
+        Public Overridable Function WhereFunction(ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
+
+            If Me.Where.Count = 0 Then Return True
+
+            Dim apply = Me.ArgumentsToApply(args)
+            Return Me.Where.And(Function(x) x.Is(x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray))
         End Function
 
         Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction

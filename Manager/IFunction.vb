@@ -17,6 +17,7 @@ Namespace Manager
         Property FunctionNode As FunctionNode
         ReadOnly Property IsAnonymous As Boolean
         Function ArgumentsToApply(ParamArray args() As IType) As IType()
+        Function WhereFunction(ParamArray args() As IType) As Boolean
         Function ApplyFunction(ParamArray args() As IType) As IFunction
         Function GetBaseFunctions() As List(Of IFunction)
         Function CreateCall(ParamArray args() As OpValue) As InCode0()
