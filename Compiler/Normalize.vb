@@ -23,7 +23,7 @@ Namespace Compiler
                         Dim block = CType(child, BlockNode)
                         Dim program_pointer = 0
 
-                        Dim to_let_linenum =
+                        Dim to_let =
                             Function(e As IEvaluableNode, linenum As INode)
 
                                 Dim var As New VariableNode($"$${user.VarIndex}") With {.Scope = block}
@@ -38,8 +38,6 @@ Namespace Compiler
                                 Coverage.Case()
                                 Return var
                             End Function
-
-                        Dim to_let = Function(e As IEvaluableNode) to_let_linenum(e, e)
 
                         Dim to_block =
                             Function(var As VariableNode, e As IEvaluableNode) As BlockNode
@@ -60,14 +58,14 @@ Namespace Compiler
                                     expr.Left = to_flat(True, expr.Left)
                                     expr.Right = to_flat(True, expr.Right)
                                     Coverage.Case()
-                                    If isnewlet Then Return to_let(e)
+                                    If isnewlet Then Return to_let(e, e)
 
                                 ElseIf TypeOf e Is PropertyNode Then
 
                                     Dim prop = CType(e, PropertyNode)
                                     prop.Left = to_flat(True, prop.Left)
                                     Coverage.Case()
-                                    If isnewlet Then Return to_let(e)
+                                    If isnewlet Then Return to_let(e, e)
 
                                 ElseIf TypeOf e Is FunctionCallNode Then
 
@@ -78,7 +76,7 @@ Namespace Compiler
                                         func.Arguments(i) = to_flat(True, func.Arguments(i))
                                     Next
                                     Coverage.Case()
-                                    If isnewlet Then Return to_let(e)
+                                    If isnewlet Then Return to_let(e, e)
 
                                 ElseIf TypeOf e Is TupleNode Then
 
@@ -88,12 +86,12 @@ Namespace Compiler
                                         tuple.Items(i) = to_flat(True, tuple.Items(i))
                                     Next
                                     Coverage.Case()
-                                    If isnewlet Then Return to_let(e)
+                                    If isnewlet Then Return to_let(e, e)
 
                                 ElseIf TypeOf e Is IfExpressionNode Then
 
                                     Dim ifexpr = CType(e, IfExpressionNode)
-                                    Dim var = to_let_linenum(Nothing, ifexpr)
+                                    Dim var = to_let(Nothing, ifexpr)
                                     Dim if_ = CreateIfNode(to_flat(True, ifexpr.Condition), to_block(var, ifexpr.Then), to_block(var, ifexpr.Else))
                                     block.Statements.Insert(program_pointer, if_)
                                     user.VarIndex += 1
@@ -112,7 +110,7 @@ Namespace Compiler
                                         item.SetValue(list, to_flat(True, x), index)
                                     Next
                                     Coverage.Case()
-                                    If isnewlet Then Return to_let(e)
+                                    If isnewlet Then Return to_let(e, e)
 
                                 ElseIf TypeOf e Is VariableNode Then
 
