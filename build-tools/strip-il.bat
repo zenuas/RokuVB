@@ -19,8 +19,19 @@ function main(args)
 		{
 			var line = in_.ReadLine();
 			
-			line = line.replace(/\/\/.*/, "");
-			if(/^\s*$/.test(line)) {}
+			line = line.replace(/\s*\/\/.*/, "");
+			
+			var islocal = /^\s+\.locals\s+init\s+/.test(line);
+			while(!in_.AtEndOfStream && /,$/.test(line))
+			{
+				var s = in_.ReadLine();
+				s = s.replace(/\/\/.*/, "");
+				if(/^\s*$/.test(line)) {continue;}
+				
+				if(islocal) {line += "\n" + s;}
+				else        {line += s.replace(/^\s+/, " ");}
+			}
+			if(islocal) {line += "\n";}
 			
 			if(!ismethod)
 			{
