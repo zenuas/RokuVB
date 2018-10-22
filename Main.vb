@@ -87,6 +87,11 @@ Public Class Main
 
             Dim pgm = ns.Value
             Dim current = root.GetNamespace(ns.Key)
+
+            For Each use In pgm.Uses
+
+                current.AddLoadPath(root.TryGetNamespace(use.GetNamespaceHierarchy))
+            Next
             Compiler.Typing.PrototypeStruct(pgm, root, current)
         Next
 
@@ -101,11 +106,6 @@ Public Class Main
 
             Dim pgm = ns.Value
             Dim current = root.GetNamespace(ns.Key)
-
-            For Each use In pgm.Uses
-
-                current.AddLoadPath(root.TryGetNamespace(use.GetNamespaceHierarchy))
-            Next
             Compiler.Typing.TypeStatic(pgm, root, current)
         Next
 

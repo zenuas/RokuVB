@@ -1,0 +1,9 @@
+
+sub hoge<List(@T, Int)>(xs: @T)
+	print(car(xs))
+
+#=>1
+hoge([1])
+
+#=>2
+hoge(ListIndex(2, [0, 1, 2, 3, 4]))

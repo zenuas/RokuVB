@@ -39,7 +39,7 @@ sub each(xs: [@T], block: {@T, Int})
 
 class List<@T, @R>
 	sub car(@T) @R
-	sub cdr(@T) @X
+	sub cdr(@T) List(@X, @R)
 	sub isnull(@T) Bool
 
 struct ListIndex<@T>
