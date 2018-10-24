@@ -288,6 +288,17 @@ Namespace Compiler
                                 End If
                             End Sub
 
+                        node.Arguments.Each(
+                            Sub(x, i)
+                                If TypeOf x.Type.Type Is RkClass Then
+
+                                    Dim class_ = CType(x.Type, TypeNode)
+                                    class_.IsTypeClass = True
+                                    class_.Arguments.Add(New TypeNode With {.Name = $"@{i + 1}", .IsGeneric = True})
+                                    node.Where.Add(class_)
+                                    x.Type = New TypeNode With {.Name = $"@{i + 1}", .IsGeneric = True}
+                                End If
+                            End Sub)
                         node.Arguments.Each(Sub(x) create_generic(x.Type))
                         node.Where.Each(Sub(x) create_generic(x))
                         If node.Return IsNot Nothing Then
