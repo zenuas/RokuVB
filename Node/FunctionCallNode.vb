@@ -30,7 +30,7 @@ Namespace Node
 
             If TypeOf Me.Function.Return Is RkGenericEntry Then
 
-                Me.Function = CType(Me.Function.FixedGeneric(New NamedValue With {.Name = Me.Function.Generics(CType(Me.Function.Return, RkGenericEntry).ApplyIndex).Name, .Value = t}), IFunction)
+                Me.Function = CType(Me.Function.FixedGeneric(New NamedValue With {.Name = Me.Function.Return.Name, .Value = t}), IFunction)
                 Me.Function.Arguments.Each(Sub(x, i) Me.Arguments(i).Type = x.Value)
                 Return True
 
