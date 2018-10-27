@@ -335,7 +335,7 @@ Namespace Parser
                 ret As TypeBaseNode
             ) As FunctionNode
 
-            Return CreateFunctionNode(name, args, ret)
+            Return CreateFunctionNode(name, args.List, ret)
         End Function
 
         Public Shared Function CreateFunctionNode(
