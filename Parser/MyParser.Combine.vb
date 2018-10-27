@@ -332,33 +332,23 @@ Namespace Parser
         Public Shared Function CreateFunctionNode(
                 name As VariableNode,
                 args As ListNode(Of DeclareNode),
-                ret As TypeBaseNode
+                ret As TypeBaseNode,
+                where As ListNode(Of TypeBaseNode)
             ) As FunctionNode
 
-            Return CreateFunctionNode(name, args.List, ret)
+            Return CreateFunctionNode(New FunctionNode(name.LineNumber.Value), name, args, ret, where)
         End Function
 
         Public Shared Function CreateFunctionNode(
                 name As VariableNode,
                 args As ListNode(Of TypeBaseNode),
-                ret As TypeBaseNode
+                ret As TypeBaseNode,
+                where As ListNode(Of TypeBaseNode)
             ) As FunctionNode
 
-            Return CreateFunctionNode(name, args.List.Map(Function(x, i) New DeclareNode(CreateVariableNode($"arg{i}", x), x)).ToList, ret)
-        End Function
-
-        Public Shared Function CreateFunctionNode(
-                name As VariableNode,
-                args As List(Of DeclareNode),
-                ret As TypeBaseNode
-            ) As FunctionNode
-
-            Dim f As New FunctionNode(name.LineNumber.Value)
-            f.Name = name.Name
-            f.Arguments = args
-            f.Return = ret
-            f.InnerScope = False
-            Return f
+            Dim xs As New ListNode(Of DeclareNode)
+            xs.List.AddRange(args.List.Map(Function(x, i) New DeclareNode(CreateVariableNode($"arg{i}", x), x)))
+            Return CreateFunctionNode(New FunctionNode(name.LineNumber.Value), name, xs, ret, where)
         End Function
 
         Public Shared Function CreateFunctionTypeNode(

@@ -149,10 +149,10 @@ class : CLASS var LT atvarn GT EOL class_block {$$ = CreateClassNode($2, $4, $7)
 
 class_block : BEGIN condn END {$$ = $2}
 
-cond  : SUB fn '(' args        ')' typex EOL {$$ = CreateFunctionNode($2, $4, $6)}
-      | SUB fn '(' typen extra ')' typex EOL {$$ = CreateFunctionNode($2, $4, $7)}
-condn : cond                                 {$$ = CreateListNode($1)}
-      | condn cond                           {$1.List.Add($2) : $$ = $1}
+cond  : SUB fn where '(' args        ')' typex EOL {$$ = CreateFunctionNode($2, $5, $7, $3)}
+      | SUB fn where '(' typen extra ')' typex EOL {$$ = CreateFunctionNode($2, $5, $8, $3)}
+condn : cond                                       {$$ = CreateListNode($1)}
+      | condn cond                                 {$1.List.Add($2) : $$ = $1}
 
 
 ########## sub ##########
