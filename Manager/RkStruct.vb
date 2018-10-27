@@ -102,6 +102,7 @@ Namespace Manager
 
             Dim clone = CType(Me.CloneGeneric, RkStruct)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
+            values.Each(Sub(x) If TypeOf x.Value Is RkGenericEntry Then CType(x.Value, RkGenericEntry).ApplyIndex = Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
             For Each v In Me.Local
 
                 clone.Local.Add(v.Key, fixed_generic(v.Value))

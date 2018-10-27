@@ -109,6 +109,7 @@ Namespace Manager
 
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(v.Value Is Nothing OrElse TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
+            values.Each(Sub(x) If TypeOf x.Value Is RkGenericEntry Then CType(x.Value, RkGenericEntry).ApplyIndex = Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
             If Me.Return IsNot Nothing Then clone.Return = apply_fix(Me.Return)
             Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
             clone.Body.AddRange(Me.Body)
@@ -268,6 +269,11 @@ Namespace Manager
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
             Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
+        End Function
+
+        Public Overridable Function HasArgumentsGeneric() As Boolean
+
+            Return Me.Arguments.Or(Function(x) x.Value Is Nothing OrElse TypeOf x.Value Is RkGenericEntry OrElse x.Value.HasGeneric)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
