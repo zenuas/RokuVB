@@ -1,19 +1,19 @@
 @prompt $$$S
 @echo off
 
-set PATH=%PATH%;%PROGRAMFILES(X86)%\MSBuild\14.0\Bin;%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools
+set PATH=%PATH%;%PROGRAMFILES(X86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin;%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools
 
 set COMPILE_RK=
 set ENABLE_DOT=0
-set ENABLE_IL=0
+set ENABLE_IL=1
 set ENABLE_RUN=1
 set ENABLE_TEST=0
 
 for %%v in (%*) do (
 	if "%%v" == "--dot" (
 		set ENABLE_DOT=1
-	) else if "%%v" == "--il" (
-		set ENABLE_IL=1
+	) else if "%%v" == "--noil" (
+		set ENABLE_IL=0
 	) else if "%%v" == "--norun" (
 		set ENABLE_RUN=0
 	) else if "%%v" == "--test" (
