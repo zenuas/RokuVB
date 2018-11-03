@@ -745,13 +745,32 @@ Namespace Compiler
                 End Function
 
             Dim apply_feedback =
-                Sub(f As IFunction, node As FunctionCallNode)
+                Sub(f As IFunction, node As FunctionCallNode, current As IScope)
 
-                    If TypeOf f Is RkNativeFunction AndAlso CType(f, RkNativeFunction).Operator = InOperator.Alloc Then
+                    If TypeOf f Is RkNativeFunction Then
 
-                        Coverage.Case()
+                        Dim native = CType(f, RkNativeFunction)
+                        If native.Operator = InOperator.Alloc Then
 
-                    ElseIf f.HasGeneric Then
+                            Coverage.Case()
+                            Return
+
+                        ElseIf native.Operator = InOperator.Return Then
+
+                            If TypeOf current Is RkFunction Then
+
+                                Dim func = CType(current, RkFunction)
+                                If TypeOf func.Return Is RkGenericEntry AndAlso func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) Is Nothing Then
+
+                                    Dim x = f.Apply(0)
+                                    func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) = x
+                                    func.Return = x
+                                End If
+                            End If
+                        End If
+                    End If
+
+                    If f.HasGeneric Then
 
                         Dim apply = f.ArgumentsToApply(node.Arguments.Map(Function(x) x.Type).ToArray)
                         Coverage.Case()
@@ -769,7 +788,7 @@ Namespace Compiler
                 Dim set_type =
                     Function(n As IEvaluableNode, f As Func(Of IType))
 
-                        If n.Type IsNot Nothing Then
+                        If n.Type IsNot Nothing AndAlso TypeOf FixedByName(n.Type) IsNot RkGenericEntry Then
 
                             If TypeOf n.Type Is RkByName Then
 
@@ -792,7 +811,9 @@ Namespace Compiler
                             End If
                         Else
 
-                            n.Type = f()
+                            Dim x = f()
+                            If x Is n.Type Then Return False
+                            n.Type = x
                             If n.Type IsNot Nothing Then
 
                                 type_fix = True
@@ -809,7 +830,7 @@ Namespace Compiler
                     Sub(parent, ref, child, current, isfirst, next_)
 
                         If Not isfirst Then Return
-                        If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasGeneric Then Return
+                        If TypeOf child Is FunctionNode AndAlso CType(child, FunctionNode).Function.HasArgumentsGeneric Then Return
 
                         If TypeOf child Is IfCastNode Then
 
@@ -851,7 +872,7 @@ Namespace Compiler
                         If TypeOf child Is VariableNode Then
 
                             Dim node = CType(child, VariableNode)
-                            If node.Type Is Nothing Then
+                            If node.Type Is Nothing OrElse TypeOf FixedByName(node.Type) Is RkGenericEntry Then
 
                                 set_type(node,
                                     Function()
@@ -1007,7 +1028,7 @@ Namespace Compiler
                                     Coverage.Case()
                                 Else
 
-                                    apply_feedback(node.Function, node)
+                                    apply_feedback(node.Function, node, current)
                                     If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                         pgm.AddFixedGenericFunction(node.Function)

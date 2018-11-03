@@ -268,7 +268,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
+            Return Me.Generics.Count > 0 AndAlso Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
         End Function
 
         Public Overridable Function HasArgumentsGeneric() As Boolean

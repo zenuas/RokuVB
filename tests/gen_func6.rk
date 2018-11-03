@@ -1,0 +1,9 @@
+sub f(a: @T) @R
+	return(a)
+
+
+#=>1
+print(f(1))
+
+#=>str
+print(f("str"))
