@@ -108,7 +108,7 @@ exit /B 0
 	set RKOUT=%RK:.rk=.exe%
 	set RKOUT=%RKOUT:tests\=tests\obj\%
 	
-	echo %RKTEST%
+	echo   %RKTEST%
 	fc %RKOUT%.testerr %RKOUT%.stderr >nul || type %RKOUT%.stderr
 	if exist %RKOUT%. (fc %RKOUT%.testout %RKOUT%.stdout >%RKOUT%.diff || type %RKOUT%.diff) || echo failed!
 	exit /B 0
