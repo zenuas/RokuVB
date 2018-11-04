@@ -1,5 +1,6 @@
 ﻿Imports System
 Imports Roku.Manager
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Util.Extensions
 
 
@@ -26,7 +27,7 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            If t Is Me.Type Then Return False
+            If t Is Me.Type OrElse TypeOf FixedByName(t) Is RkGenericEntry Then Return False
 
             If TypeOf Me.Function.Return Is RkGenericEntry Then
 

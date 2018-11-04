@@ -439,12 +439,12 @@ Namespace Compiler
                         If f.HasGeneric Then
 
                             Coverage.Case()
-                            Return f.Generics.FindFirst(Function(x) name.Equals(x.Name))
-                        Else
-
-                            Coverage.Case()
-                            Return f.Apply(f.GenericBase.Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
+                            Dim x = f.Generics.FindFirstOrNull(Function(g) name.Equals(g.Name))
+                            If x IsNot Nothing Then Return x
                         End If
+
+                        Coverage.Case()
+                        Return f.Apply(f.GenericBase.Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
 
                     ElseIf TypeOf scope Is RkStruct Then
 
