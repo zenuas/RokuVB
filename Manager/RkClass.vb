@@ -33,7 +33,7 @@ Namespace Manager
 
                     If TypeOf x Is RkGenericEntry Then
 
-                        Return Me.Apply.By(Of RkGenericEntry).FindFirstOrNull(Function(a) a.Name.Equals(x.Name)).Fmap(Function(a) args(a.ApplyIndex))
+                        Return Me.Apply.By(Of RkGenericEntry).FindFirstOrNull(Function(a) a.Name.Equals(x.Name)).Then(Function(a) args(a.ApplyIndex))
                     Else
 
                         Return x

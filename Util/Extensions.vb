@@ -10,22 +10,6 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Function Fmap(Of T As New, R)(self As T, f As Func(Of T, R)) As R
-
-            If self Is Nothing Then Return Nothing
-            Return f(self)
-        End Function
-
-        <Extension>
-        <DebuggerHidden>
-        Public Function Fmap(Of T As Structure, R)(self As T?, f As Func(Of T, R)) As R
-
-            If Not self.HasValue Then Return Nothing
-            Return f(self.Value)
-        End Function
-
-        <Extension>
-        <DebuggerHidden>
         Public Function [If](Of T)(self As Boolean, f As Func(Of T)) As T
 
             If Not self Then Return Nothing
@@ -38,6 +22,54 @@ Namespace Util
 
             If Not self.HasValue OrElse Not self.Value Then Return Nothing
             Return f()
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [If](Of T As New, R)(self As T, [then] As Func(Of T, R), [else] As Func(Of R)) As R
+
+            If self IsNot Nothing Then Return [then](self)
+            Return [else]()
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [If](Of T As Structure, R)(self As T?, [then] As Func(Of T, R), [else] As Func(Of R)) As R
+
+            If self.HasValue Then Return [then](self.Value)
+            Return [else]()
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [Then](Of T As New, R)(self As T, then_ As Func(Of T, R)) As R
+
+            If self IsNot Nothing Then Return then_(self)
+            Return Nothing
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [Then](Of T As Structure, R)(self As T?, then_ As Func(Of T, R)) As R
+
+            If Not self.HasValue Then Return then_(self.Value)
+            Return Nothing
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [Else](Of T As New)(self As T, else_ As Func(Of T)) As T
+
+            If self IsNot Nothing Then Return self
+            Return else_()
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function [Else](Of T As Structure)(self As T?, else_ As Func(Of T)) As T
+
+            If self.HasValue Then Return self.Value
+            Return else_()
         End Function
 
         <Extension>
