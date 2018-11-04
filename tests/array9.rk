@@ -1,0 +1,13 @@
+
+
+var xs = [0, 1, 2, 3, 4]
+
+#=>0
+var next = print_and_next(xs)
+
+#=>1
+var next2 = print_and_next(next)
+
+sub print_and_next(xs: [Int]) [Int]
+	print(car(xs))
+	return(cdr(xs))
