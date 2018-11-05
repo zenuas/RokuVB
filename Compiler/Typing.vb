@@ -414,12 +414,16 @@ Namespace Compiler
                         If node.ImplicitReturn Then
 
                             Dim t = CType(node.Statements(node.Statements.Count - 1), LambdaExpressionNode).Type
-                            If t Is Nothing Then
+                            If TypeOf t Is RkUnionType AndAlso CType(t, RkUnionType).Types?.Count > 0 Then
 
-                                CType(func.Return, RkUnionType).Merge(root.VoidType)
-                            Else
+                                CType(func.Return, RkUnionType).Merge({CType(root.VoidType, IType)}.Join(CType(t, RkUnionType).Types))
+
+                            ElseIf t IsNot Nothing Then
 
                                 CType(func.Return, RkUnionType).Merge({root.VoidType, t})
+                            Else
+
+                                CType(func.Return, RkUnionType).Merge(root.VoidType)
                             End If
                         Else
 
