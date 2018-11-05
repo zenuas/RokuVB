@@ -149,6 +149,13 @@ Namespace Manager
             End If
         End Sub
 
+        Public Overridable Function Unique() As Boolean
+
+            Dim count = Me.Types.Count
+            Me.Types = Me.Types.UniqueHash.ToList
+            Return Me.Types.Count <> count
+        End Function
+
         Public Overridable Function Merge(type As IType) As Boolean
 
             If TypeOf type Is RkUnionType Then

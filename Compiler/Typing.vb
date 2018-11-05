@@ -423,7 +423,7 @@ Namespace Compiler
                             End If
                         Else
 
-                            func.Return = node.Return?.Type
+                            If TypeOf func.Return Is RkGenericEntry Then func.Return = node.Return?.Type
                         End If
                     End If
 
@@ -591,6 +591,7 @@ Namespace Compiler
                         Coverage.Case()
                         Dim union = CType(expr, RkUnionType)
                         apply_function(union, f)
+                        union.Unique()
                         If Not union.HasIndefinite Then
 
                             expr = union.Types(0)
@@ -1058,6 +1059,27 @@ Namespace Compiler
                                 End If
 
                                 Debug.Assert(union.Types.Count > 0)
+
+                            Else
+
+                                If node.Function.HasGeneric Then
+
+                                    Dim f = fixed_function(node)
+
+                                    If f IsNot node.Function Then
+
+                                        node.Function = f
+                                        apply_feedback(node.Function, node, current)
+                                        If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
+
+                                            pgm.AddFixedGenericFunction(node.Function)
+                                            Coverage.Case()
+                                        End If
+
+                                        type_fix = True
+                                        Coverage.Case()
+                                    End If
+                                End If
                             End If
 
                         ElseIf TypeOf child Is StructNode Then
