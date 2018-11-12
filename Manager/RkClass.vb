@@ -13,6 +13,7 @@ Namespace Manager
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable Property GenericBase As RkClass = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property ClassNode As ClassNode = Nothing
 
@@ -28,12 +29,14 @@ Namespace Manager
 
         Public Overridable Function [Is](args() As IType) As Boolean
 
+            Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) Me.GenericBase.Else(Function() Me).Generics(i).Name)
             Dim search_args =
                 Function(x As IType)
 
                     If TypeOf x Is RkGenericEntry Then
 
-                        Return Me.Apply.By(Of RkGenericEntry).FindFirstOrNull(Function(a) a.Name.Equals(x.Name)).Then(Function(a) args(a.ApplyIndex))
+                        Dim g = CType(x, RkGenericEntry)
+                        Return named_hash.ContainsKey(g.Name).Then(Function() named_hash(g.Name))
                     Else
 
                         Return x
@@ -100,7 +103,7 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Dim x = New RkClass With {.Name = Me.Name, .Scope = Me.Scope, .Parent = Me.Parent}
+            Dim x = New RkClass With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me, .Parent = Me.Parent}
             x.Scope.AddStruct(x)
             Return x
         End Function

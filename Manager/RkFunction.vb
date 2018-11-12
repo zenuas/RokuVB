@@ -158,7 +158,7 @@ Namespace Manager
                             If argf.Return IsNot Nothing Then generic_match(argf.Return, func.Return, gen_to_type)
                         End If
 
-                    ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
+                    ElseIf p IsNot Nothing AndAlso arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
                         If TypeOf p Is RkUnionType Then p = CType(p, RkUnionType).GetDecideType
                         Dim struct = CType(arg, RkStruct)
@@ -213,8 +213,7 @@ Namespace Manager
                         struct.Generics.Each(
                             Sub(x, i)
 
-                                Dim apply = CType(t, RkStruct).Apply(i)
-                                gen_to_type(x, apply)
+                                gen_to_type(x, t.Then(Function(tx) CType(tx, RkStruct).Apply(i)))
                             End Sub)
                     End If
                 End Sub

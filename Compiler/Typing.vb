@@ -28,6 +28,11 @@ Namespace Compiler
                 If node.Arguments.Count > 0 Then
 
                     node.Arguments.Each(Sub(x) DefineType(root, t, x))
+                    If TypeOf node.Type Is RkClass Then
+
+                        Dim class_ = CType(node.Type, RkClass)
+                        If class_.Generics.Count = 0 Then Return base.Type
+                    End If
                     base.Type = base.Type.FixedGeneric(node.Arguments.Map(Function(x) x.Type).ToArray)
                 End If
 
@@ -1070,7 +1075,7 @@ Namespace Compiler
 
                                     Dim f = fixed_function(node)
 
-                                    If f IsNot node.Function Then
+                                    If f IsNot Nothing AndAlso f IsNot node.Function Then
 
                                         node.Function = f
                                         apply_feedback(node.Function, node, current)
