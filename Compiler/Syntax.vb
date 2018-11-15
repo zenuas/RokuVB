@@ -121,7 +121,7 @@ Namespace Compiler
 
                                 ElseIf TypeOf t Is TypeArrayNode Then
 
-                                    Dim list As New TypeNode(New VariableNode("List"))
+                                    Dim list As New TypeNode(New VariableNode("List")) With {.IsTypeClass = True}
                                     Dim tx As New TypeNode(New VariableNode($"@@{user.VarIndex}")) With {.IsGeneric = True}
                                     user.VarIndex += 1
                                     list.Arguments.Add(tx)
