@@ -85,6 +85,7 @@ Namespace Manager
                 For Each f In kv.Value
 
                     Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    If TypeOf fx Is RkUnionType AndAlso CType(fx, RkUnionType).HasIndefinite Then Continue For
                     If fx.GenericBase IsNot Nothing Then fx = fx.GenericBase
 
                     Dim remap = fx.Generics.Map(Function(x) x.Name).ToHash_ValueDerivation(Function(x) CType(Nothing, IType))

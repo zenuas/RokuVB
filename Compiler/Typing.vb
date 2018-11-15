@@ -390,9 +390,8 @@ Namespace Compiler
                             Dim ret = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = func, .Name = "return", .Parent = func}
                             If node.Return IsNot Nothing Then
 
-                                Dim t = DefineType(root, ret, node.Return)
-                                ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
-                                func.Return = t
+                                ret.Arguments.Add(New NamedValue With {.Name = "x", .Value = DefineType(root, ret, node.Return)})
+                                func.Return = DefineType(root, func, node.Return)
                                 Coverage.Case()
                             End If
                             func.AddFunction(ret)

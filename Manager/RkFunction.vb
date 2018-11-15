@@ -210,11 +210,11 @@ Namespace Manager
                                 Return
                             End If
                         End If
-                        struct.Generics.Each(
-                            Sub(x, i)
 
-                                gen_to_type(x, t.Then(Function(tx) CType(tx, RkStruct).Apply(i)))
-                            End Sub)
+                        If TypeOf t Is RkStruct Then
+
+                            struct.Generics.Each(Sub(x, i) gen_to_type(x, CType(t, RkStruct).Apply(i)))
+                        End If
                     End If
                 End Sub
 
