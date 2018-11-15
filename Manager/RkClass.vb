@@ -67,13 +67,13 @@ Namespace Manager
             gen.Generics.Each(Sub(x) index_hash(x.Name) = x.ApplyIndex)
             Dim isset = False
 
-            Dim search_args =
-                Function(x As IType)
+            Dim search_args As Func(Of IType, IType) =
+                Function(x)
 
                     If TypeOf x Is RkGenericEntry Then
 
                         Dim g = CType(x, RkGenericEntry)
-                        Return named_hash.ContainsKey(g.Name).Then(Function() named_hash(g.Name))
+                        Return named_hash.ContainsKey(g.Name).If(Function() search_args(named_hash(g.Name)))
                     Else
 
                         Return x
@@ -89,12 +89,22 @@ Namespace Manager
                     If fx.GenericBase IsNot Nothing Then fx = fx.GenericBase
 
                     Dim remap = fx.Generics.Map(Function(x) x.Name).ToHash_ValueDerivation(Function(x) CType(Nothing, IType))
-                    Dim compare_type =
-                        Sub(left As IType, right As IType)
+                    Dim compare_type As Action(Of IType, IType) =
+                        Sub(left, right)
 
                             If TypeOf left Is RkGenericEntry Then
 
-                                remap(left.Name) = search_args(right)
+                                Dim x = search_args(right)
+                                If x IsNot Nothing Then remap(left.Name) = x
+
+                            ElseIf TypeOf left Is RkStruct Then
+
+                                CType(left, RkStruct).Apply.Each(
+                                    Sub(x, i)
+
+                                        Dim rightx = search_args(right)
+                                        If TypeOf rightx Is RkStruct Then compare_type(x, CType(rightx, RkStruct).Apply(i))
+                                    End Sub)
                             End If
                         End Sub
 
