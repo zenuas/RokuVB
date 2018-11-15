@@ -29,7 +29,9 @@ Namespace Manager
 
         Public Overridable Function [Is](args() As IType) As Boolean
 
-            Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) Me.GenericBase.Else(Function() Me).Generics(i).Name)
+            Dim gen = Me.GenericBase.Else(Function() Me)
+            Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
+
             Dim search_args =
                 Function(x As IType)
 
@@ -53,6 +55,97 @@ Namespace Manager
             Next
 
             Return True
+        End Function
+
+        Public Overridable Function Feedback(args() As IType) As Boolean
+
+            If Not Me.Is(args) Then Return False
+
+            Dim gen = Me.GenericBase.Else(Function() Me)
+            Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
+            Dim index_hash As New Dictionary(Of String, Integer)
+            gen.Generics.Each(Sub(x) index_hash(x.Name) = x.ApplyIndex)
+            Dim isset = False
+
+            Dim search_args =
+                Function(x As IType)
+
+                    If TypeOf x Is RkGenericEntry Then
+
+                        Dim g = CType(x, RkGenericEntry)
+                        Return named_hash.ContainsKey(g.Name).Then(Function() named_hash(g.Name))
+                    Else
+
+                        Return x
+                    End If
+                End Function
+
+            For Each kv In Me.Functions
+
+                For Each f In kv.Value
+
+                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    If fx.GenericBase IsNot Nothing Then fx = fx.GenericBase
+
+                    Dim remap = fx.Generics.Map(Function(x) x.Name).ToHash_ValueDerivation(Function(x) CType(Nothing, IType))
+                    Dim compare_type =
+                        Sub(left As IType, right As IType)
+
+                            If TypeOf left Is RkGenericEntry Then
+
+                                remap(left.Name) = search_args(right)
+                            End If
+                        End Sub
+
+                    Dim fixed_type =
+                        Function(x As IType)
+
+                            If x.HasGeneric Then
+
+                                If TypeOf x Is RkStruct Then
+
+                                    Dim struct = CType(x, RkStruct)
+                                    Return struct.FixedGeneric(struct.Generics.Map(
+                                        Function(g, i)
+
+                                            Dim apply = struct.Apply(i)
+                                            Return New NamedValue With {.Name = g.Name, .Value = If(TypeOf apply Is RkGenericEntry, remap(apply.Name), apply)}
+                                        End Function).ToArray)
+                                End If
+                            End If
+
+                            Return x
+                        End Function
+
+                    Dim set_type =
+                        Sub(i As Integer, x As IType)
+
+                            Dim fixed = fixed_type(x)
+                            If args(i) Is Nothing OrElse Not fixed.HasGeneric Then
+
+                                args(i) = fixed
+                                isset = True
+                            End If
+                        End Sub
+
+                    Dim apply_type =
+                        Sub(left As IType, right As IType)
+
+                            If TypeOf right Is RkGenericEntry Then
+
+                                If index_hash.ContainsKey(right.Name) Then set_type(index_hash(right.Name), left)
+                            End If
+                        End Sub
+
+                    fx.Arguments.Each(Sub(x, i) compare_type(x.Value, f.Arguments(i).Value))
+                    compare_type(fx.Return, f.Return)
+
+                    fx.Arguments.Each(Sub(x, i) apply_type(x.Value, f.Arguments(i).Value))
+                    apply_type(fx.Return, f.Return)
+                Next
+            Next
+
+            Return isset
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric

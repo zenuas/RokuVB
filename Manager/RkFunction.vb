@@ -248,6 +248,16 @@ Namespace Manager
                     End Sub)
             Next
 
+            Me.Where.Each(
+                Sub(x)
+
+                    Dim xargs = x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, xs(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray
+                    If x.Feedback(xargs) Then
+
+                        x.Apply.Each(Sub(a, i) If TypeOf a Is RkGenericEntry Then xs(CType(a, RkGenericEntry).ApplyIndex) = xargs(i))
+                    End If
+                End Sub)
+
             Return xs
         End Function
 
