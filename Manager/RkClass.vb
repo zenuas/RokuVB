@@ -132,7 +132,7 @@ Namespace Manager
                         Sub(i As Integer, x As IType)
 
                             Dim fixed = fixed_type(x)
-                            If args(i) Is Nothing OrElse Not fixed.HasGeneric Then
+                            If args(i) Is Nothing OrElse (Not fixed.HasGeneric AndAlso Not fixed.HasIndefinite) Then
 
                                 args(i) = fixed
                                 isset = True
