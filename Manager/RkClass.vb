@@ -62,7 +62,7 @@ Namespace Manager
             If Not Me.Is(args) Then Return False
 
             Dim gen = Me.GenericBase.Else(Function() Me)
-            Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
+            Dim named_hash = args.Map(Function(x) If(TypeOf x Is RkGenericEntry, Nothing, x)).ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
             Dim index_hash As New Dictionary(Of String, Integer)
             gen.Generics.Each(Sub(x) index_hash(x.Name) = x.ApplyIndex)
             Dim isset = False
@@ -95,7 +95,7 @@ Namespace Manager
                             If TypeOf left Is RkGenericEntry Then
 
                                 Dim x = search_args(right)
-                                If x IsNot Nothing Then remap(left.Name) = x
+                                If x IsNot Nothing AndAlso Not x.HasGeneric AndAlso (TypeOf x IsNot RkUnionType OrElse Not CType(x, RkUnionType).HasEmpty) Then remap(left.Name) = x
 
                             ElseIf TypeOf left Is RkStruct Then
 
@@ -122,6 +122,10 @@ Namespace Manager
                                             Dim apply = struct.Apply(i)
                                             Return New NamedValue With {.Name = g.Name, .Value = If(TypeOf apply Is RkGenericEntry, remap(apply.Name), apply)}
                                         End Function).ToArray)
+
+                                ElseIf TypeOf x Is RkGenericEntry Then
+
+                                    Return remap(x.Name)
                                 End If
                             End If
 
@@ -132,7 +136,9 @@ Namespace Manager
                         Sub(i As Integer, x As IType)
 
                             Dim fixed = fixed_type(x)
-                            If args(i) Is Nothing OrElse (Not fixed.HasGeneric AndAlso Not fixed.HasIndefinite) Then
+                            If fixed Is Nothing OrElse args(i) Is fixed Then Return
+
+                            If args(i) Is Nothing OrElse (Not fixed.HasGeneric AndAlso (TypeOf fixed IsNot RkUnionType OrElse Not CType(fixed, RkUnionType).HasEmpty)) Then
 
                                 args(i) = fixed
                                 isset = True
