@@ -263,8 +263,12 @@ Namespace Manager
 
                                     If TypeOf a Is RkGenericEntry Then
 
-                                        xs(CType(a, RkGenericEntry).ApplyIndex) = xargs(i)
-                                        type_fix = True
+                                        Dim xs_i = CType(a, RkGenericEntry).ApplyIndex
+                                        If xs(xs_i) IsNot xargs(i) Then
+
+                                            xs(xs_i) = xargs(i)
+                                            type_fix = True
+                                        End If
                                     End If
                                 End Sub)
                         End If
