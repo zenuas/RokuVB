@@ -534,7 +534,7 @@ Namespace Manager
 
         Public Shared Function FindLoadFunction(scope As IScope, name As String, ParamArray args() As IType) As IEnumerable(Of IFunction)
 
-            Return FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse TypeOf args(i) Is RkGenericEntry OrElse arg.Value.Is(args(i))))
+            Return FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) FixedByName(args(i)).If(Function(fix) fix.Is(arg.Value), Function() True)))
         End Function
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)
