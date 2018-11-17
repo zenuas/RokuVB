@@ -7,3 +7,37 @@ show(zs[2])
 
 sub show(x: Int)
 	print(x)
+
+# Listを経由した推論の手順
+# 
+# 以下 System.Collections.Generic.List は CList と表す
+# xs: CList(_) と
+# ys: CList(Int) から
+# +<List(@1, @T), List(@2, @T), List(@3, @T)>(@1, @2) @3 を呼び出す
+# 
+# 開始時点では以下の通りとなる
+# @1=CList(_)
+# @2=CList(Int)
+# @3=_
+# @T=_
+# 
+# 2つ目のListを解決する時に List.car の定義(sub car(@T) @R) より
+# sub car(Clist(@X)) @X が導かれる
+# この時 @X=Int となるため、これを元の定義にフィードバックをかけると以下のようになる
+# @1=CList(_)
+# @2=CList(Int)
+# @3=_
+# @T=Int
+# 
+# 次に1つ目のListを解決する時に List.car の定義(sub car(@T) @R) より
+# 同じくsub car(Clist(@X)) @X が導かれる
+# 新たに @X=Int が分かったため、これを元の定義にフィードバックをかけると以下のようになる
+# @1=CList(Int)
+# @2=CList(Int)
+# @3=_
+# @T=Int
+# 
+# 以上が引数から分かる型クラスの型推論である
+# @3 の定義は引数からの型推論では分からない
+# List≠CListなので @3=CList(Int) を引数から求めることはできない
+

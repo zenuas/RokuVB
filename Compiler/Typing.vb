@@ -1087,6 +1087,9 @@ Namespace Compiler
                                         type_fix = True
                                         Coverage.Case()
                                     End If
+                                Else
+
+                                    apply_feedback(node.Function, node, current)
                                 End If
                             End If
 
