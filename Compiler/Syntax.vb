@@ -1,6 +1,8 @@
-﻿Imports Roku.Node
+﻿Imports System
+Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Parser.MyParser
+Imports Roku.Util.Extensions
 
 
 Namespace Compiler
@@ -9,6 +11,7 @@ Namespace Compiler
 
         Public Shared Sub SwitchCaseArray(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
+            Return
             Util.Traverse.NodesOnce(
                 pgm,
                 New With {.VarIndex = 0, .Scope = CType(pgm, IScopeNode)},
@@ -90,6 +93,49 @@ Namespace Compiler
                                 case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s2))
                             End If
                         End If
+                    End If
+
+                    next_(child, user)
+                End Sub)
+        End Sub
+
+        Public Shared Sub ArrayClass(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                New With {.VarIndex = 0},
+                Sub(parent, ref, child, user, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim f = CType(child, FunctionNode)
+
+                        Dim replace As Func(Of TypeBaseNode, TypeBaseNode) =
+                            Function(t As TypeBaseNode) As TypeBaseNode
+
+                                If TypeOf t Is TypeNode Then
+
+                                ElseIf TypeOf t Is TypeFunctionNode Then
+
+                                ElseIf TypeOf t Is TypeArrayNode Then
+
+                                    Dim list As New TypeNode(New VariableNode("List")) With {.IsTypeClass = True}
+                                    Dim tx As New TypeNode(New VariableNode($"@@{user.VarIndex}")) With {.IsGeneric = True}
+                                    user.VarIndex += 1
+                                    list.Arguments.Add(tx)
+                                    list.Arguments.Add(replace(CType(t, TypeArrayNode).Item))
+                                    f.Where.Add(list)
+                                    Return tx
+
+                                ElseIf TypeOf t Is TypeTupleNode Then
+                                End If
+                                Return t
+                            End Function
+
+                        f.Arguments?.Each(Sub(x) x.Type = replace(x.Type))
+                        f.Return = replace(f.Return)
                     End If
 
                     next_(child, user)

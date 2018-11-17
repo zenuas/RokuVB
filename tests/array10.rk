@@ -1,0 +1,25 @@
+# array3.rk より抜粋
+# 空配列の型推論 最小ケース
+
+var xs = []
+
+#=>0
+show(xs)
+
+sub show(xs: [Int])
+	print(xs.Count())
+
+# Listを経由した推論の手順
+# 
+# 以下 System.Collections.Generic.List は CList と表す
+# xs: CList(_) から
+# show<List(@T, Int)>(@T) を呼び出す
+# 
+# まず show<List(Clist(_), Int)>(Clist(_)) となる
+# 次に List.car の定義(sub car(@T) @R) より
+# sub car(Clist(@T)) @T が導かれる
+# 
+# sub car(Clist(@X)) @X の @X=Int が決まるため
+# sub car(Clist(Int)) Int となり List.@T=Clist(Int) となる
+# 
+# 以上の事から xs は CList(Int) と導かれる

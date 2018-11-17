@@ -8,6 +8,7 @@ set ENABLE_DOT=0
 set ENABLE_IL=1
 set ENABLE_RUN=1
 set ENABLE_TEST=0
+set ENABLE_ASYNC=1
 
 for %%v in (%*) do (
 	if "%%v" == "--dot" (
@@ -18,6 +19,8 @@ for %%v in (%*) do (
 		set ENABLE_RUN=0
 	) else if "%%v" == "--test" (
 		set ENABLE_TEST=1
+	) else if "%%v" == "--sync" (
+		set ENABLE_ASYNC=0
 	) else (
 		echo %%v | findstr ".*\.rk" 1>nul
 		if not ERRORLEVEL 1 (
@@ -41,7 +44,11 @@ mkdir tests\obj 2>NUL
 call .\make.bat RELEASE=Release
 
 for %%f in (tests\*.rk) do (
-	start /B cmd /d /c %0 %%f %*
+	if %ENABLE_ASYNC% equ 1 (
+		start /B cmd /d /c %0 %%f %*
+	) else (
+		call :COMPILE %%f
+	)
 )
 
 exit /B 0

@@ -158,7 +158,7 @@ Namespace Manager
                             If argf.Return IsNot Nothing Then generic_match(argf.Return, func.Return, gen_to_type)
                         End If
 
-                    ElseIf arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
+                    ElseIf p IsNot Nothing AndAlso arg.HasGeneric AndAlso arg.Scope Is p.Scope AndAlso arg.Name.Equals(p.Name) Then
 
                         If TypeOf p Is RkUnionType Then p = CType(p, RkUnionType).GetDecideType
                         Dim struct = CType(arg, RkStruct)
@@ -210,16 +210,15 @@ Namespace Manager
                                 Return
                             End If
                         End If
-                        struct.Generics.Each(
-                            Sub(x, i)
 
-                                Dim apply = CType(t, RkStruct).Apply(i)
-                                gen_to_type(x, apply)
-                            End Sub)
+                        If TypeOf t Is RkStruct Then
+
+                            struct.Generics.Each(Sub(x, i) gen_to_type(x, CType(t, RkStruct).Apply(i)))
+                        End If
                     End If
                 End Sub
 
-            Dim xs(Me.Generics.Count - 1) As IType
+            Dim xs = Me.Generics.Map(Function(x) Me.Apply(x.ApplyIndex)).ToArray
             If xs.Length = 0 Then Return xs
             For i = 0 To Me.Arguments.Count - 1
 
@@ -248,6 +247,35 @@ Namespace Manager
                         End If
                     End Sub)
             Next
+
+            Do While True
+
+                Dim type_fix = False
+
+                Me.Where.Each(
+                    Sub(x)
+
+                        Dim xargs = x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, xs(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray
+                        If x.Feedback(xargs) Then
+
+                            x.Apply.Each(
+                                Sub(a, i)
+
+                                    If TypeOf a Is RkGenericEntry Then
+
+                                        Dim xs_i = CType(a, RkGenericEntry).ApplyIndex
+                                        If xs(xs_i) IsNot xargs(i) Then
+
+                                            xs(xs_i) = xargs(i)
+                                            type_fix = True
+                                        End If
+                                    End If
+                                End Sub)
+                        End If
+                    End Sub)
+
+                If Not type_fix Then Exit Do
+            Loop
 
             Return xs
         End Function

@@ -26,7 +26,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Function [If](Of T As New, R)(self As T, [then] As Func(Of T, R), [else] As Func(Of R)) As R
+        Public Function [If](Of T, R)(self As T, [then] As Func(Of T, R), [else] As Func(Of R)) As R
 
             If self IsNot Nothing Then Return [then](self)
             Return [else]()
@@ -42,7 +42,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Function [Then](Of T As New, R)(self As T, then_ As Func(Of T, R)) As R
+        Public Function [Then](Of T, R)(self As T, then_ As Func(Of T, R)) As R
 
             If self IsNot Nothing Then Return then_(self)
             Return Nothing
@@ -58,7 +58,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Function [Else](Of T As New)(self As T, else_ As Func(Of T)) As T
+        Public Function [Else](Of T)(self As T, else_ As Func(Of T)) As T
 
             If self IsNot Nothing Then Return self
             Return else_()

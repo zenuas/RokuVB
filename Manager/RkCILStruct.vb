@@ -25,7 +25,7 @@ Namespace Manager
 
         Public Overrides Function CloneGeneric() As IType
 
-            Dim x = New RkCILStruct With {.Name = Me.Name, .Scope = Me.Scope, .TypeInfo = Me.TypeInfo, .GenericBase = Me}
+            Dim x = New RkCILStruct With {.Name = Me.Name, .Scope = Me.Scope, .TypeInfo = Me.TypeInfo, .GenericBase = Me, .FunctionNamespace = Me.FunctionNamespace}
             x.Scope.AddStruct(x)
             Return x
         End Function

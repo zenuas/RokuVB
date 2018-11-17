@@ -284,6 +284,11 @@ Namespace Manager
             Return Me.Types Is Nothing OrElse Me.Types.Count <> 1
         End Function
 
+        Public Overridable Function HasEmpty() As Boolean
+
+            Return Me.Types Is Nothing OrElse Me.Types.Count = 0
+        End Function
+
         Public Overridable Function Clone(conv As Func(Of INode, INode)) As Node.ICloneable Implements Node.ICloneable.Clone
 
             Dim copy = CType(Me.MemberwiseClone, RkUnionType)
