@@ -170,7 +170,7 @@ Namespace Manager
             Dim x = Me.Generics.FindFirstOrNull(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
+            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count, .Reference = Me}
             Me.Generics.Add(x)
             Me.Apply.Add(Nothing)
             Return x

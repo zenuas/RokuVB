@@ -534,7 +534,6 @@ Namespace Compiler
                         If t IsNot Nothing Then
 
                             Coverage.Case()
-                            If TypeOf t Is RkCILStruct Then byname.Scope = CType(t, RkCILStruct).FunctionNamespace
                             byname.Type = t
                             Return t
                         End If
@@ -634,9 +633,10 @@ Namespace Compiler
                                 Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
                             End If
 
-                            args.Insert(0, fixed_var(receiver.Type))
-                            If TypeOf byname.Scope Is RkCILNamespace Then r = TryLoadFunction(ns, byname.Name, args.ToArray)
-                            If r Is Nothing Then r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
+                            Dim self = FixedByName(fixed_var(receiver.Type))
+                            args.Insert(0, self)
+                            r = TryLoadFunction(ns, byname.Name, args.ToArray)
+                            If r Is Nothing AndAlso TypeOf self Is RkCILStruct Then r = TryLoadFunction(CType(self, RkCILStruct).FunctionNamespace, byname.Name, args.ToArray)
 
                             If r IsNot Nothing Then
 
@@ -695,6 +695,8 @@ Namespace Compiler
             Dim var_feedback As Func(Of IType, IType, IType) =
                 Function(from, to_)
 
+                    from = FixedByName(from)
+                    to_ = FixedByName(to_)
                     If to_ Is Nothing Then Return from
                     If from Is Nothing Then Return to_
 
@@ -734,7 +736,7 @@ Namespace Compiler
                     ElseIf TypeOf from Is IApply Then
 
                         Coverage.Case()
-                        Dim to_apply = CType(to_, IApply)
+                        Dim to_apply = CType(FixedByName(to_), IApply)
                         CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, var_feedback(x, to_apply.Apply(i))))
                     End If
 
@@ -1168,6 +1170,11 @@ Namespace Compiler
                         Coverage.Case()
                         Dim types = CType(t, RkUnionType).Types
                         t = var_normalize(root.ChoosePriorityType(types))
+
+                    ElseIf TypeOf t Is RkGenericEntry Then
+
+                        Coverage.Case()
+                        t = var_normalize(CType(t, RkGenericEntry).ToType)
 
                     ElseIf TypeOf t Is RkFunction Then
 

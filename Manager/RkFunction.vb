@@ -66,7 +66,7 @@ Namespace Manager
             Dim x = Me.Generics.Find(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
+            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count, .Reference = Me}
             Me.Generics.Add(x)
             Me.Apply.Add(Nothing)
             Return x
@@ -84,34 +84,17 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            Dim apply_map As New Dictionary(Of Integer, NamedValue)
-            Me.Generics.Each(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
-            Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
-            For Each fix In Me.GetBaseFunctions().Where(Function(g) g.Apply.Count = apply.Length)
+            Dim apply = Me.Apply.ToList
+            values.Each(Sub(kv) apply(Me.Generics.FindFirst(Function(x) x.Name.Equals(kv.Name)).ApplyIndex) = kv.Value)
+            For Each fix In Me.GetBaseFunctions().Where(Function(g) g.Apply.Count = apply.Count)
 
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
 
-            Dim apply_fix =
-                Function(c As IType)
-
-                    If Not c.HasGeneric Then
-
-                        Return c
-
-                    ElseIf TypeOf c Is IApply AndAlso CType(c, IApply).Apply.And(Function(x) x IsNot Nothing) Then
-
-                        Return c.FixedGeneric(CType(c, IApply).Apply.Map(Function(x) If(TypeOf x Is RkGenericEntry, values(CType(x, RkGenericEntry).ApplyIndex).Value, x)).ToArray)
-                    Else
-                        Return c.FixedGeneric(values)
-                    End If
-                End Function
-
             Dim clone = CType(Me.CloneGeneric, RkFunction)
-            values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(v.Value Is Nothing OrElse TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
-            values.Each(Sub(x) If TypeOf x.Value Is RkGenericEntry Then CType(x.Value, RkGenericEntry).ApplyIndex = Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
-            If Me.Return IsNot Nothing Then clone.Return = apply_fix(Me.Return)
-            Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = apply_fix(v.Value)}))
+            clone.Return = CopyType(Me, clone, Me.Return)
+            Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = CopyType(Me, clone, v.Value)}))
+            Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
             clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
@@ -296,12 +279,12 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.Generics.Count > 0 AndAlso Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
+            Return Me.Apply.Or(Function(x) x Is Nothing OrElse x.HasGeneric)
         End Function
 
         Public Overridable Function HasArgumentsGeneric() As Boolean
 
-            Return Me.Arguments.Or(Function(x) x.Value Is Nothing OrElse TypeOf x.Value Is RkGenericEntry OrElse x.Value.HasGeneric)
+            Return Me.Arguments.Or(Function(x) x.Value Is Nothing OrElse x.Value.HasGeneric)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
@@ -371,7 +354,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value.ToString))})" + If(Me.Return IsNot Nothing, $" {Me.Return.ToString}", "")
+            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) FixedByName(x.Value)?.ToString))})" + If(Me.Return IsNot Nothing, $" {FixedByName(Me.Return)?.ToString}", "")
         End Function
     End Class
 

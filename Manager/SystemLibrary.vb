@@ -598,10 +598,41 @@ Namespace Manager
             ElseIf TypeOf t Is RkByName Then
 
                 Return FixedByName(CType(t, RkByName).Type)
+
+            ElseIf TypeOf t Is RkGenericEntry Then
+
+                Return CType(t, RkGenericEntry).ToType
             Else
 
                 Return t
             End If
+        End Function
+
+        Public Shared Function CopyGenericEntry(clone As IApply, t As RkGenericEntry) As RkGenericEntry
+
+            Return New RkGenericEntry With {.Name = t.Name, .Scope = t.Scope, .ApplyIndex = t.ApplyIndex, .Reference = clone}
+        End Function
+
+        Public Shared Function CopyType(base As IApply, clone As IApply, t As IType) As IType
+
+            If TypeOf t Is RkGenericEntry Then
+
+                Return CopyGenericEntry(clone, CType(t, RkGenericEntry))
+
+            ElseIf TypeOf t Is RkStruct AndAlso t.HasGeneric Then
+
+                Dim struct = CType(t, RkStruct)
+                Dim gens As New List(Of NamedValue)
+                struct.Generics.Each(
+                    Sub(x)
+
+                        Dim apply = struct.Apply(x.ApplyIndex)
+                        If TypeOf apply Is RkGenericEntry AndAlso CType(apply, RkGenericEntry).Reference Is base Then gens.Add(New NamedValue With {.Name = x.Name, .Value = CopyGenericEntry(clone, CType(struct.Apply(x.ApplyIndex), RkGenericEntry))})
+                    End Sub)
+                Return t.FixedGeneric(gens.ToArray)
+            End If
+
+            Return t
         End Function
 
         Public Overridable Function CreateTuple(tuples() As IType) As RkStruct

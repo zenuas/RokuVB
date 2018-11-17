@@ -47,17 +47,17 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return False
+            Return Me.Type Is Nothing OrElse Me.Type.HasGeneric
         End Function
 
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
-            Return False
+            Return Me.Type IsNot Nothing AndAlso Me.Type.HasIndefinite
         End Function
 
         Public Overrides Function ToString() As String
 
-            Return Me.Name
+            Return Me.Type?.ToString
         End Function
     End Class
 
