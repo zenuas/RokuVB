@@ -452,7 +452,7 @@ Namespace Compiler
                         End If
 
                         Coverage.Case()
-                        Return f.Apply(f.GenericBase.Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
+                        Return f.Apply(CType(f.GenericBase, IFunction).Else(Function() f).Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
 
                     ElseIf TypeOf scope Is RkStruct Then
 
@@ -779,7 +779,7 @@ Namespace Compiler
                         End If
                     End If
 
-                    If f.HasGeneric Then
+                    If f.HasGeneric OrElse f.HasIndefinite Then
 
                         Dim apply = f.ArgumentsToApply(node.Arguments.Map(Function(x) x.Type).ToArray)
                         Coverage.Case()
@@ -1029,24 +1029,26 @@ Namespace Compiler
                             If node.Function Is Nothing Then
 
                                 node.Function = fixed_function(node)
-                                If node.Function Is Nothing OrElse
-                                    (TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count = 0) Then Throw New CompileErrorException(node, "function is not found")
+                                If node.Function IsNot Nothing Then
 
-                                If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count > 1 Then
+                                    If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count = 0 Then Throw New CompileErrorException(node, "function is not found")
 
-                                    Coverage.Case()
-                                Else
+                                    If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count > 1 Then
 
-                                    apply_feedback(node.Function, node, current)
-                                    If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
-
-                                        pgm.AddFixedGenericFunction(node.Function)
                                         Coverage.Case()
-                                    End If
-                                End If
+                                    Else
 
-                                type_fix = True
-                                Coverage.Case()
+                                        apply_feedback(node.Function, node, current)
+                                        If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
+
+                                            pgm.AddFixedGenericFunction(node.Function)
+                                            Coverage.Case()
+                                        End If
+                                    End If
+
+                                    type_fix = True
+                                    Coverage.Case()
+                                End If
 
                             ElseIf TypeOf node.Function Is RkUnionType Then
 

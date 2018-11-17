@@ -218,7 +218,7 @@ Namespace Manager
                     End If
                 End Sub
 
-            Dim xs(Me.Generics.Count - 1) As IType
+            Dim xs = Me.Generics.Map(Function(x) Me.Apply(x.ApplyIndex)).ToArray
             If xs.Length = 0 Then Return xs
             For i = 0 To Me.Arguments.Count - 1
 
