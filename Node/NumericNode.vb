@@ -35,7 +35,7 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} ""{Me.Numeric}"": {Me.Type?.ToString}"
+            Return $"{Me.Numeric}"
         End Function
     End Class
 

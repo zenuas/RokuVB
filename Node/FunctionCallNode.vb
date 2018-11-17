@@ -47,7 +47,7 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return $"sub {Me.Expression}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))})"
+            Return $"{Me.Expression}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))})"
         End Function
     End Class
 

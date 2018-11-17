@@ -31,6 +31,11 @@ Namespace Node
             Return Me.IsGeneric
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return Me.Name
+        End Function
+
     End Class
 
 End Namespace

@@ -20,6 +20,11 @@ Namespace Node
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
 
+        Public Overrides Function ToString() As String
+
+            Return $"""{Me.String}"""
+        End Function
+
     End Class
 
 End Namespace

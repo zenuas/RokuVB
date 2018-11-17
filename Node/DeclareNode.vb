@@ -18,6 +18,10 @@
         Public Overridable Property Name As VariableNode
         Public Overridable Property Type As TypeBaseNode
 
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.Name}: {Me.Type}"
+        End Function
     End Class
 
 End Namespace

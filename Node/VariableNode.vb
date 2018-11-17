@@ -22,7 +22,7 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} ""{Me.Name}"": {Me.Type?.ToString}"
+            Return Me.Name
         End Function
     End Class
 
