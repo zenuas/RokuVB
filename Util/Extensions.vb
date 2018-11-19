@@ -690,6 +690,18 @@ Namespace Util
             Return xf(xs.GetEnumerator)
         End Function
 
+        <Extension>
+        <DebuggerHidden>
+        Public Iterator Function Take(Of T)(self As IEnumerable(Of T), count As Integer) As IEnumerable(Of T)
+
+            Dim xs = self.GetEnumerator
+            Dim i = 0
+            Do While i < count AndAlso xs.MoveNext
+
+                Yield xs.Current
+                i += 1
+            Loop
+        End Function
     End Module
 
 End Namespace

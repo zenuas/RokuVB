@@ -1,5 +1,6 @@
 Imports System.Collections.Generic
 Imports Roku.Manager
+Imports Roku.Util.Extensions
 
 
 Namespace Node
@@ -32,6 +33,10 @@ Namespace Node
             Return fix
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return $"[{String.Join(", ", Me.List.Take(3))}{If(Me.List.Count >= 4, ", ...", "")}]"
+        End Function
     End Class
 
 End Namespace
