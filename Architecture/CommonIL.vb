@@ -111,7 +111,7 @@ Namespace Architecture
         Public Overridable Function DeclareStructs(root As SystemLibrary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
+            For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso Not x.HasIndefinite AndAlso x.StructNode IsNot Nothing AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
                 If map.ContainsKey(struct) Then Continue For
                 Dim name = CreateManglingName(struct)
@@ -180,7 +180,7 @@ Namespace Architecture
         Public Overridable Function DeclareMethods(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
             Dim map As New Dictionary(Of IFunction, MethodInfo)
-            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
+            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso Not x.HasIndefinite AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
 
                 If map.ContainsKey(f) Then Continue For
                 Dim name = CreateManglingName(f)
