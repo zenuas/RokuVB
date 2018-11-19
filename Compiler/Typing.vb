@@ -1157,7 +1157,7 @@ Namespace Compiler
             Dim var_normalize As Func(Of IType, IType) =
                 Function(t)
 
-                    If t Is Nothing Then Return t
+                    If t Is Nothing OrElse t Is root.VoidType Then Return Nothing
                     If normalized.ContainsKey(t) Then Return t
 
                     If TypeOf t Is RkByName Then
