@@ -775,21 +775,13 @@ Namespace Compiler
 
                                     Dim x = f.Apply(0)
                                     func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) = x
-                                    func.Return = x
                                 End If
                             End If
                         End If
                     End If
 
-                    If f.HasGeneric OrElse f.HasIndefinite Then
-
-                        Dim apply = f.ArgumentsToApply(node.Arguments.Map(Function(x) x.Type).ToArray)
-                        Coverage.Case()
-                    Else
-
-                        f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
-                        Coverage.Case()
-                    End If
+                    f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
+                    Coverage.Case()
                 End Sub
 
             Do While True
@@ -931,23 +923,17 @@ Namespace Compiler
                                         CType(node.Type, RkUnionType).Merge(node.Declare.Type)
                                         Coverage.Case()
                                     End If
+                                End If
 
-                                    If TypeOf node.Expression Is IFeedback AndAlso CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
-
-                                        set_type(node, Function() node.Expression.Type)
-                                        Coverage.Case()
-                                    End If
-
-                                ElseIf node.Type.HasGeneric AndAlso TypeOf node.Expression Is IFeedback Then
+                                If TypeOf node.Expression Is IFeedback Then
 
                                     If CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
 
                                         set_type(node, Function() node.Expression.Type)
+                                        set_type(node.Var, Function() node.Type)
                                         Coverage.Case()
                                     End If
-
                                 End If
-
                             End If
 
                         ElseIf TypeOf child Is ExpressionNode Then
