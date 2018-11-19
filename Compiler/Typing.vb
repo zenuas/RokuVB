@@ -1037,27 +1037,6 @@ Namespace Compiler
                                     type_fix = True
                                     Coverage.Case()
                                 End If
-
-                            ElseIf TypeOf node.Function Is RkUnionType Then
-
-                                Dim union = CType(node.Function, RkUnionType)
-                                Dim before = union.Types.Count
-                                If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
-
-                                    If apply_function(union, node) Then type_fix = True
-                                    Coverage.Case()
-                                Else
-
-                                    If before > 1 Then
-
-                                        union.Types = union.Types.Where(Function(x) union.Return.Is(CType(x, RkFunction).Return)).ToList
-                                        If before <> union.Types.Count Then type_fix = True
-                                        Coverage.Case()
-                                    End If
-                                End If
-
-                                Debug.Assert(union.Types.Count > 0)
-
                             Else
 
                                 If node.Function.HasGeneric Then
@@ -1077,9 +1056,31 @@ Namespace Compiler
                                         type_fix = True
                                         Coverage.Case()
                                     End If
-                                Else
+
+                                ElseIf Not node.Function.HasIndefinite Then
 
                                     apply_feedback(node.Function, node, current)
+                                End If
+
+                                If TypeOf node.Function Is RkUnionType Then
+
+                                    Dim union = CType(node.Function, RkUnionType)
+                                    Dim before = union.Types.Count
+                                    If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
+
+                                        If apply_function(union, node) Then type_fix = True
+                                        Coverage.Case()
+                                    Else
+
+                                        If before > 1 Then
+
+                                            union.Types = union.Types.Where(Function(x) union.Return.Is(CType(x, RkFunction).Return)).ToList
+                                            If before <> union.Types.Count Then type_fix = True
+                                            Coverage.Case()
+                                        End If
+                                    End If
+
+                                    Debug.Assert(union.Types.Count > 0)
                                 End If
                             End If
 
