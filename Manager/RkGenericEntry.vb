@@ -66,7 +66,8 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return Me.Name
+            Dim t = Me.ToType
+            Return If(t Is Nothing, Me.Name, $"{Me.Name}={t}")
         End Function
     End Class
 
