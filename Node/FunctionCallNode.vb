@@ -27,22 +27,24 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            If t Is Me.Type OrElse TypeOf FixedByName(t) Is RkGenericEntry Then Return False
+            If t Is Me.Type Then Return False
 
-            If TypeOf Me.Function.Return Is RkGenericEntry Then
+            Dim r = Me.Function.Return
+            If TypeOf r Is RkGenericEntry Then
 
-                Me.Function = CType(Me.Function.FixedGeneric(New NamedValue With {.Name = Me.Function.Return.Name, .Value = t}), IFunction)
-                Me.Function.Arguments.Each(Sub(x, i) Me.Arguments(i).Type = x.Value)
-                Return True
+                If Me.Function.HasGeneric Then
 
-            ElseIf TypeOf Me.Function.Return Is RkUnionType AndAlso CType(Me.Function.Return, RkUnionType).HasIndefinite Then
+                    Me.Function = CType(Me.Function.FixedGeneric(New NamedValue With {.Name = r.Name, .Value = t}), IFunction)
+                    Me.Function.Arguments.Each(Sub(x, i) Me.Arguments(i).Type = x.Value)
+                    Return True
+                End If
 
-                Return CType(Me.Function.Return, RkUnionType).Merge(t)
-            Else
+            ElseIf TypeOf r Is RkUnionType AndAlso CType(r, RkUnionType).HasIndefinite Then
 
-                Return False
+                Return CType(r, RkUnionType).Merge(t)
             End If
 
+            Return False
         End Function
 
         Public Overrides Function ToString() As String

@@ -929,8 +929,9 @@ Namespace Compiler
 
                                     If CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
 
-                                        set_type(node, Function() node.Expression.Type)
-                                        set_type(node.Var, Function() node.Type)
+                                        node.Type = node.Expression.Type
+                                        node.Var.Type = node.Expression.Type
+                                        type_fix = True
                                         Coverage.Case()
                                     End If
                                 End If
