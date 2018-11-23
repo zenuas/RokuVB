@@ -99,6 +99,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.FunctionNode = Me.FunctionNode
+            clone.Where.AddRange(Me.Where)
             Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList))
             Return clone
         End Function
@@ -231,6 +232,11 @@ Namespace Manager
                     End Sub)
             Next
 
+            Return Me.ApplyToWhere(xs)
+        End Function
+
+        Public Overridable Function ApplyToWhere(ParamArray apply() As IType) As IType()
+
             Do While True
 
                 Dim type_fix = False
@@ -238,7 +244,7 @@ Namespace Manager
                 Me.Where.Each(
                     Sub(x)
 
-                        Dim xargs = x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, xs(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray
+                        Dim xargs = x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray
                         If x.Feedback(xargs) Then
 
                             x.Apply.Each(
@@ -247,9 +253,9 @@ Namespace Manager
                                     If TypeOf a Is RkGenericEntry Then
 
                                         Dim xs_i = CType(a, RkGenericEntry).ApplyIndex
-                                        If xs(xs_i) IsNot xargs(i) Then
+                                        If apply(xs_i) IsNot xargs(i) Then
 
-                                            xs(xs_i) = xargs(i)
+                                            apply(xs_i) = xargs(i)
                                             type_fix = True
                                         End If
                                     End If
@@ -260,7 +266,7 @@ Namespace Manager
                 If Not type_fix Then Exit Do
             Loop
 
-            Return xs
+            Return apply
         End Function
 
         Public Overridable Function WhereFunction(ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction

@@ -774,7 +774,17 @@ Namespace Compiler
                                 If TypeOf func.Return Is RkGenericEntry AndAlso func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) Is Nothing Then
 
                                     Dim x = f.Apply(0)
-                                    func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) = x
+                                    Dim apply_index = CType(func.Return, RkGenericEntry).ApplyIndex
+                                    func.Apply(apply_index) = f.Apply(0)
+                                    Do While True
+
+                                        Dim apply = func.ApplyToWhere(func.Apply.ToArray)
+                                        If apply(apply_index) Is x Then Exit Do
+                                        func.Apply.Clear()
+                                        func.Apply.AddRange(apply)
+                                        x = apply(apply_index)
+                                    Loop
+                                    f.Apply(0) = x
                                 End If
                             End If
                         End If
