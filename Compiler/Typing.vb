@@ -790,7 +790,9 @@ Namespace Compiler
                         End If
                     End If
 
-                    f.Arguments.Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
+                    f.Arguments.
+                        Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).
+                        Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
                     Coverage.Case()
                 End Sub
 
