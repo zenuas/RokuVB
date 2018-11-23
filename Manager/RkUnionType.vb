@@ -54,7 +54,7 @@ Namespace Manager
         Public Overridable Property [Return] As IType Implements IFunction.Return
             Get
                 If Me.Types Is Nothing OrElse Me.Types.Count = 0 Then Return Nothing
-                If Me.Types.Count = 1 Then Return Me.Types(0)
+                If Me.Types.Count = 1 Then Return CType(Me.Types(0), RkFunction).Return
 
                 If Me.ReturnCache Is Nothing Then
 
