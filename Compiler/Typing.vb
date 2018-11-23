@@ -929,11 +929,12 @@ Namespace Compiler
 
                                     If CType(node.Expression, IFeedback).Feedback(node.Var.Type) Then
 
-                                        node.Type = node.Expression.Type
-                                        node.Var.Type = node.Expression.Type
                                         type_fix = True
                                         Coverage.Case()
                                     End If
+
+                                    node.Type = node.Expression.Type
+                                    node.Var.Type = node.Expression.Type
                                 End If
                             End If
 
