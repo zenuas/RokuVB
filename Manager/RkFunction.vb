@@ -6,6 +6,7 @@ Imports Roku.Node
 Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.IntermediateCode
+Imports Roku.Util
 Imports Roku.Util.Extensions
 
 
@@ -273,6 +274,7 @@ Namespace Manager
 
             If Me.Where.Count = 0 Then Return True
 
+            args = args.Map(Function(x) TypeHelper.MemberwiseClone(x)).ToArray
             Dim apply = Me.ArgumentsToApply(args)
             Return Me.Where.And(Function(x) x.Is(x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray))
         End Function

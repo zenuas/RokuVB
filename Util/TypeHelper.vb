@@ -23,9 +23,9 @@ Namespace Util
             Return p.IsGenericType AndAlso p.GetTypeInfo.GetGenericTypeDefinition Is generic
         End Function
 
-        Public Overloads Shared Function MemberwiseClone(p As Object) As Object
+        Public Overloads Shared Function MemberwiseClone(Of T)(p As T) As T
 
-            Return p.GetType.InvokeMember("MemberwiseClone", BindingFlags.Instance Or BindingFlags.NonPublic Or BindingFlags.InvokeMethod, Nothing, p, Nothing)
+            Return CType(p.GetType.InvokeMember("MemberwiseClone", BindingFlags.Instance Or BindingFlags.NonPublic Or BindingFlags.InvokeMethod, Nothing, p, Nothing), T)
         End Function
 
     End Class
