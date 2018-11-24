@@ -981,7 +981,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node = CType(child, PropertyNode)
-                            Dim r = fixed_var(node.Left.Type)
+                            Dim r = FixedByName(fixed_var(node.Left.Type))
                             If TypeOf r Is RkStruct Then
 
                                 If set_type(node,
