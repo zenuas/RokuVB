@@ -94,17 +94,11 @@ Namespace Manager
 
                             If TypeOf left Is RkGenericEntry Then
 
-                                Dim x = search_args(right)
-                                If x IsNot Nothing AndAlso Not x.HasGeneric AndAlso (TypeOf x IsNot RkUnionType OrElse Not CType(x, RkUnionType).HasEmpty) Then remap(left.Name) = x
+                                If right IsNot Nothing AndAlso Not right.HasGeneric AndAlso (TypeOf right IsNot RkUnionType OrElse Not CType(right, RkUnionType).HasEmpty) Then remap(left.Name) = right
 
                             ElseIf TypeOf left Is RkStruct Then
 
-                                CType(left, RkStruct).Apply.Each(
-                                    Sub(x, i)
-
-                                        Dim rightx = search_args(right)
-                                        If TypeOf rightx Is RkStruct Then compare_type(x, CType(rightx, RkStruct).Apply(i))
-                                    End Sub)
+                                CType(left, RkStruct).Apply.Each(Sub(x, i) If TypeOf right Is RkStruct Then compare_type(x, CType(right, RkStruct).Apply(i)))
                             End If
                         End Sub
 
@@ -154,8 +148,8 @@ Namespace Manager
                             End If
                         End Sub
 
-                    fx.Arguments.Each(Sub(x, i) compare_type(x.Value, f.Arguments(i).Value))
-                    compare_type(fx.Return, f.Return)
+                    fx.Arguments.Each(Sub(x, i) compare_type(x.Value, search_args(f.Arguments(i).Value)))
+                    compare_type(fx.Return, search_args(f.Return))
 
                     fx.Arguments.Each(Sub(x, i) apply_type(x.Value, f.Arguments(i).Value))
                     apply_type(fx.Return, f.Return)
