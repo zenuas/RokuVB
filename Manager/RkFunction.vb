@@ -150,7 +150,7 @@ Namespace Manager
                         struct.Generics.Each(
                             Sub(x, i)
 
-                                Dim apply = CType(p, RkStruct).Apply(i)
+                                Dim apply = FixedByName(CType(p, RkStruct).Apply(i))
                                 Dim v As IType
                                 If apply Is Nothing OrElse TypeOf apply Is RkGenericEntry Then
 
