@@ -771,20 +771,25 @@ Namespace Compiler
                             If TypeOf current Is RkFunction Then
 
                                 Dim func = CType(current, RkFunction)
-                                If TypeOf func.Return Is RkGenericEntry AndAlso func.Apply(CType(func.Return, RkGenericEntry).ApplyIndex) Is Nothing Then
+                                If TypeOf func.Return Is RkGenericEntry Then
 
-                                    Dim x = f.Apply(0)
                                     Dim apply_index = CType(func.Return, RkGenericEntry).ApplyIndex
-                                    func.Apply(apply_index) = f.Apply(0)
-                                    Do While True
+                                    If func.Apply(apply_index) Is Nothing Then
 
-                                        Dim apply = func.ApplyToWhere(func.Apply.ToArray)
-                                        If apply(apply_index) Is x Then Exit Do
-                                        func.Apply.Clear()
-                                        func.Apply.AddRange(apply)
-                                        x = apply(apply_index)
-                                    Loop
-                                    f.Apply(0) = x
+                                        Dim x = f.Apply(0)
+                                        func.Apply(apply_index) = f.Apply(0)
+                                        Do While True
+
+                                            Dim apply = func.ApplyToWhere(func.Apply.ToArray)
+                                            If apply(apply_index) Is x Then Exit Do
+                                            func.Apply.Clear()
+                                            func.Apply.AddRange(apply)
+                                            x = apply(apply_index)
+                                        Loop
+                                        f.Apply(0) = x
+                                    End If
+
+                                    f.Arguments(0).Value = var_feedback(f.Arguments(0).Value, func.Return)
                                 End If
                             End If
                         End If

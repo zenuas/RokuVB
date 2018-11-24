@@ -1,4 +1,5 @@
 Imports System
+Imports Roku.Util.Extensions
 
 
 Namespace Manager
@@ -32,17 +33,17 @@ Namespace Manager
 
         Public Overridable Function FixedGeneric(ParamArray values() As IType) As IType Implements IType.FixedGeneric
 
-            Throw New NotImplementedException()
+            Return values(0)
         End Function
 
         Public Overridable Function FixedGeneric(ParamArray values() As NamedValue) As IType Implements IType.FixedGeneric
 
-            Throw New NotImplementedException()
+            Return values.FindFirst(Function(x) x.Name.Equals(Me.Name)).Value
         End Function
 
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
 
-            Throw New NotImplementedException()
+            Return {value}
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
