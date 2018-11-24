@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Util.Extensions
 
 
@@ -46,7 +47,7 @@ Namespace Manager
             Dim x = Me.Generics.FindFirstOrNull(Function(a) a.Name.Equals(name))
             If x IsNot Nothing Then Return x
 
-            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count}
+            x = New RkGenericEntry With {.Name = name, .Scope = Me.Scope, .ApplyIndex = Me.Generics.Count, .Reference = Me}
             Me.Generics.Add(x)
             Me.Apply.Add(Nothing)
             Return x
@@ -64,49 +65,16 @@ Namespace Manager
 
             If Not Me.HasGeneric Then Return Me
 
-            Dim apply_map As New Dictionary(Of Integer, NamedValue)
-            Me.Generics.Each(Sub(x) apply_map(x.ApplyIndex) = values.FindFirst(Function(v) v.Name.Equals(x.Name)))
-            Dim apply = Me.Apply.Map(Function(x, i) If(apply_map.ContainsKey(i), apply_map(i).Value, x)).ToArray
-            For Each fix In Me.GetBaseTypes.Where(Function(g) g.Apply.Count = apply.Length)
+            Dim apply = Me.Apply.ToList
+            values.Each(Sub(kv) apply(Me.Generics.FindFirst(Function(x) x.Name.Equals(kv.Name)).ApplyIndex) = kv.Value)
+            For Each fix In Me.GetBaseTypes.Where(Function(g) g.Apply.Count = apply.Count)
 
                 If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
             Next
 
-            Dim search_gen_name = Function(name As String) values.FindFirst(Function(v) v.Name.Equals(name)).Value
-
-            Dim fixed_generic =
-                Function(t As IType)
-
-                    If t is nothing OrElse Not t.HasGeneric Then Return t
-
-                    If TypeOf t Is RkGenericEntry Then
-
-                        t = search_gen_name(t.Name)
-
-                    ElseIf TypeOf t Is RkStruct Then
-
-                        Dim struct = CType(t, RkStruct)
-                        Dim xs(struct.Generics.Count - 1) As IType
-                        struct.Generics.Each(
-                            Sub(x)
-
-                                Dim p = struct.Apply(x.ApplyIndex)
-                                If TypeOf p Is RkGenericEntry Then p = search_gen_name(p.Name)
-                                xs(x.ApplyIndex) = p
-                            End Sub)
-                        Return struct.FixedGeneric(xs)
-                    End If
-
-                    Return t
-                End Function
-
             Dim clone = CType(Me.CloneGeneric, RkStruct)
-            values = values.Map(Function(v) New NamedValue With {.Name = v.Name, .Value = If(TypeOf v.Value Is RkGenericEntry, clone.DefineGeneric(v.Name), v.Value)}).ToArray
-            values.Each(Sub(x) If TypeOf x.Value Is RkGenericEntry Then CType(x.Value, RkGenericEntry).ApplyIndex = Me.Generics.FindFirst(Function(g) g.Name.Equals(x.Name)).ApplyIndex)
-            For Each v In Me.Local
-
-                clone.Local.Add(v.Key, fixed_generic(v.Value))
-            Next
+            Me.Local.Each(Sub(kv) clone.Local.Add(kv.Key, CopyType(Me, clone, kv.Value)))
+            Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.StructNode = Me.StructNode
@@ -126,12 +94,7 @@ Namespace Manager
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return Me.Generics.Count > 0 OrElse Me.Apply.Or(Function(x) x Is Nothing OrElse TypeOf x Is RkGenericEntry OrElse x.HasGeneric)
-        End Function
-
-        Public Overridable Function HasGenericFixed() As Boolean
-
-            Return Me.Generics.Count > 0 AndAlso Me.Apply.And(Function(x) x IsNot Nothing AndAlso TypeOf x IsNot RkGenericEntry AndAlso Not x.HasGeneric)
+            Return Me.Apply.Or(Function(x) x Is Nothing OrElse x.HasGeneric)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric

@@ -1,7 +1,6 @@
 ﻿Imports System
 Imports Roku.Operator
 Imports Roku.IntermediateCode
-Imports Roku.Util
 
 
 Namespace Manager
@@ -54,12 +53,6 @@ Namespace Manager
             x.Scope.AddFunction(x)
             Return x
         End Function
-
-        Public Overrides Function ToString() As String
-
-            Return $"{Me.GetType.Name} '{Me.Operator}'"
-        End Function
-
     End Class
 
 End Namespace

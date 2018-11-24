@@ -518,7 +518,7 @@ Namespace Compiler
                         Dim struct = CType(node.Type, RkStruct)
                         For Each s In struct.Scope.FindCurrentStruct(struct.Name).Where(Function(x) Not x.HasGeneric).By(Of RkStruct)
 
-                            s.Initializer = CType(LoadFunction(s.Scope, "#Alloc", {CType(s, IType)}.Join(s.Apply).ToArray), RkNativeFunction)
+                            s.Initializer = CType(LoadFunction(s.Scope, "#Alloc", s), RkNativeFunction)
                             make_func(s.Initializer, node, node.Statements)
                         Next
                         Coverage.Case()

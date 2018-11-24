@@ -10,7 +10,7 @@ Namespace Manager
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overridable Property Name As String Implements IType.Name
         Public Overridable Property ApplyIndex As Integer
-        'Public Overridable Property Reference As IType = Nothing
+        Public Overridable Property Reference As IApply = Nothing
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 
@@ -19,7 +19,10 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Return True
+            If Me.Reference Is Nothing Then Return True
+            Dim self = Me.ToType
+            If self Is Nothing Then Return True
+            Return self.Is(t)
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
@@ -42,9 +45,15 @@ Namespace Manager
             Return {value}
         End Function
 
+        Public Overridable Function ToType() As IType
+
+            Return Me.Reference.Apply(Me.ApplyIndex)
+        End Function
+
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
 
-            Return True
+            Dim t = Me.ToType
+            Return t Is Nothing OrElse t.HasGeneric
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
@@ -54,12 +63,14 @@ Namespace Manager
 
         Public Overridable Function HasIndefinite() As Boolean Implements IType.HasIndefinite
 
-            Return False
+            Dim t = Me.ToType
+            Return t IsNot Nothing AndAlso t.HasIndefinite
         End Function
 
         Public Overrides Function ToString() As String
 
-            Return Me.Name
+            Dim t = Me.ToType
+            Return If(t Is Nothing, Me.Name, $"{Me.Name}={t}")
         End Function
     End Class
 

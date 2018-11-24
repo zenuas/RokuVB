@@ -27,6 +27,11 @@ Namespace Node
                 Return True
             End If
         End Function
+
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.Left}.{Me.Right}"
+        End Function
     End Class
 
 End Namespace

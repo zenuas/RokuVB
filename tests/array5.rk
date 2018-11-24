@@ -3,3 +3,18 @@ sub f() [Int]
 
 #=>0
 print(f().Count())
+
+# Listを経由した推論の手順
+# 
+# 以下 System.Collections.Generic.List は CList と表す
+# sub f<List(@1, Int)>() @1 を呼び出す
+# @1=_
+# この時呼び出し時点での型推論はここまでとなる
+# 
+# 次に関数本体内の型推論に移る、正規化すると次のとおりである
+# var $1 = CList(@X)()
+# return($1)
+# 
+# return関数の引数は@1であるため、@1の制約を確認する
+# sub car(@1=CList(@X)) Int となる
+# sub car(CList(@T)) @T であるため@X=Intとなる

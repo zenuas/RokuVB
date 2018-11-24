@@ -17,6 +17,11 @@ Namespace Manager
             End Get
         End Property
 
+        Public Overrides Function HasGeneric() As Boolean
+
+            Return Me.Receiver.Type.HasGeneric
+        End Function
+
         Public Overrides Function HasIndefinite() As Boolean
 
             Return Me.Receiver.Type.HasIndefinite

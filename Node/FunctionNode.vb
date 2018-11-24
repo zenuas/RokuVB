@@ -1,5 +1,6 @@
 ﻿Imports System.Collections.Generic
 Imports Roku.Manager
+Imports Roku.Util.Extensions
 
 
 Namespace Node
@@ -44,6 +45,10 @@ Namespace Node
             End Set
         End Property
 
+        Public Overrides Function ToString() As String
+
+            Return $"sub {Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))}){If(Me.Return Is Nothing, "", $" {Me.Return}")}"
+        End Function
     End Class
 
 End Namespace

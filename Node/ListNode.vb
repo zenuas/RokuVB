@@ -1,5 +1,7 @@
 Imports System.Collections.Generic
 Imports Roku.Manager
+Imports Roku.Manager.SystemLibrary
+Imports Roku.Util.Extensions
 
 
 Namespace Node
@@ -15,7 +17,7 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            If TypeOf t Is RkByName Then Return Me.Feedback(CType(t, RkByName).Type)
+            t = FixedByName(t)
 
             Dim apply = CType(t, IApply).Apply(0)
             Dim fix = False
@@ -32,6 +34,10 @@ Namespace Node
             Return fix
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return $"[{String.Join(", ", Me.List.Take(3))}{If(Me.List.Count >= 4, ", ...", "")}]"
+        End Function
     End Class
 
 End Namespace
