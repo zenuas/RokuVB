@@ -19,7 +19,10 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Return True
+            If Me.Reference Is Nothing Then Return True
+            Dim self = Me.ToType
+            If self Is Nothing Then Return True
+            Return self.Is(t)
         End Function
 
         Public Overridable Function DefineGeneric(name As String) As RkGenericEntry Implements IType.DefineGeneric
