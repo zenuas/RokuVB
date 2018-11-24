@@ -583,6 +583,7 @@ Namespace Compiler
                         Where(Function(x) x.WhereFunction(args)).
                         Map(Function(x) x.ApplyFunction(args)).
                         By(Of IType).
+                        UniqueList(Function(a, b) a.Is(b)).
                         ToList
                     Return before <> union.Types.Count
                 End Function
@@ -777,7 +778,7 @@ Namespace Compiler
                                     If func.Apply(apply_index) Is Nothing Then
 
                                         Dim x = f.Apply(0)
-                                        func.Apply(apply_index) = f.Apply(0)
+                                        func.Apply(apply_index) = x
                                         Do While True
 
                                             Dim apply = func.ApplyToWhere(func.Apply.ToArray)

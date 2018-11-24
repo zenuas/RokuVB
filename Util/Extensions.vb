@@ -599,37 +599,18 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Iterator Function Unique(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As IEnumerable(Of T)
+        Public Iterator Function UniqueList(Of T)(self As IEnumerable(Of T), f As Func(Of T, T, Boolean)) As IEnumerable(Of T)
 
             Dim first = True
-            Dim prev As R = Nothing
+            Dim ys As New List(Of T)
             For Each x In self
 
-                Dim m = f(x)
-                If first OrElse Not Object.Equals(prev, m) Then
+                If first OrElse Not ys.Or(Function(y) f(x, y)) Then
 
                     Yield x
-                    prev = m
+                    ys.Add(x)
                     first = False
                 End If
-            Next
-        End Function
-
-        <Extension>
-        <DebuggerHidden>
-        Public Iterator Function Unique(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, Integer, R)) As IEnumerable(Of T)
-
-            Dim i = 0
-            Dim prev As R = Nothing
-            For Each x In self
-
-                Dim m = f(x, i)
-                If i = 0 OrElse Not Object.Equals(prev, m) Then
-
-                    Yield x
-                    prev = m
-                End If
-                i += 1
             Next
         End Function
 
