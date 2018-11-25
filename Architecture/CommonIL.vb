@@ -185,7 +185,7 @@ Namespace Architecture
                 If map.ContainsKey(f) Then Continue For
                 Dim name = CreateManglingName(f)
                 Dim exists = map.Values.FindFirstOrNull(Function(t) name.Equals(t.Name))
-                map(f) = If(exists, Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, Me.RkToCILType(f.Arguments, structs)))
+                map(f) = If(exists, Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs, True).Type, Me.RkToCILType(f.Arguments, structs)))
             Next
 
             Return map
@@ -215,7 +215,7 @@ Namespace Architecture
                 Dim ctor = t.DefineDefaultConstructor(MethodAttributes.Public)
                 Dim func = t.DefineField("f", GetType(IntPtr), FieldAttributes.Public)
                 Dim fields = binds.Map(Function(x, i) t.DefineField(x.Name, Me.RkToCILType(x.Value, structs).Type, FieldAttributes.Public)).ToArray
-                Dim method = t.DefineMethod("Invoke", MethodAttributes.Public, Me.RkToCILType(f.Return, structs).Type, Me.RkToCILType(args.ToList, structs))
+                Dim method = t.DefineMethod("Invoke", MethodAttributes.Public, Me.RkToCILType(f.Return, structs, True).Type, Me.RkToCILType(args.ToList, structs))
 
                 Dim il = method.GetILGenerator
                 fields.Each(
@@ -779,9 +779,14 @@ CLASS_CAST_:
             End If
         End Sub
 
-        Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData)) As TypeData
+        Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData), Optional allow_void As Boolean = False) As TypeData
 
-            If r Is Nothing Then Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            If r Is Nothing Then
+
+                If Not allow_void Then Throw New ArgumentNullException(NameOf(r))
+                Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
+            End If
+
             If TypeOf r Is RkFunction Then Return Me.RkFunctionToCILType(CType(r, RkFunction), structs)
             If TypeOf r Is RkCILStruct Then
 
