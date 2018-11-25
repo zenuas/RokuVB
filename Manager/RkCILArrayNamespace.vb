@@ -1,5 +1,4 @@
-﻿Imports System
-Imports System.Reflection
+﻿Imports System.Reflection
 Imports Roku.Manager.SystemLibrary
 Imports Roku.Util.Extensions
 

@@ -1,5 +1,4 @@
-﻿
-Namespace Manager
+﻿Namespace Manager
 
     Public Class NamedValue
 
