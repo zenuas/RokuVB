@@ -30,6 +30,10 @@ Namespace Node
         Public Overridable Property IsNamespace As Boolean = False
         Public Overridable Property IsTypeClass As Boolean = False
 
+        Public Overrides Function ToString() As String
+
+            Return If(Me.Type Is Nothing, Me.Name, Me.Type.ToString)
+        End Function
     End Class
 
 End Namespace
