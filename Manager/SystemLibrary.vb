@@ -90,7 +90,7 @@ Namespace Manager
             Me.AddStruct(native_array)
 
             ' sub [](self: NativeArray(@T), index: Int32) @T
-            Dim native_array_index As New RkCILArrayFunction With {.Name = "[]", .Scope = Me, .Parent = Me}
+            Dim native_array_index As New RkCILReplacedFunction With {.Name = "[]", .Scope = Me, .Parent = Me}
             Dim native_array_index_t = native_array_index.DefineGeneric("@T")
             native_array_index.Return = native_array_index_t
             native_array_index.Arguments.Add(New NamedValue With {.Name = "xs", .Value = native_array.FixedGeneric(native_array_index_t)})

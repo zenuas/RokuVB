@@ -4,14 +4,14 @@ Imports Roku.Manager.SystemLibrary
 
 Namespace Manager
 
-    Public Class RkCILArrayFunction
+    Public Class RkCILReplacedFunction
         Inherits RkCILFunction
 
         Public Overridable Property ReplacedFunction As Func(Of IType(), IFunction)
 
         Public Overrides Function CloneGeneric() As IType
 
-            Dim x = New RkCILArrayFunction With {.Name = Me.Name, .Scope = Me.Scope, .MethodInfo = Me.MethodInfo, .GenericBase = Me, .ReplacedFunction = Me.ReplacedFunction}
+            Dim x = New RkCILReplacedFunction With {.Name = Me.Name, .Scope = Me.Scope, .MethodInfo = Me.MethodInfo, .GenericBase = Me, .ReplacedFunction = Me.ReplacedFunction}
             x.Scope.AddFunction(x)
             Return x
         End Function
