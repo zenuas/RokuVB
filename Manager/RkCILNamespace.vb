@@ -80,15 +80,18 @@ Namespace Manager
                     End If
                 End If
 
-                Dim get_type =
-                    Function(t As Type) As IType
+                Dim get_type As Func(Of Type, IType) =
+                    Function(t)
 
                         Dim ti = CType(t, TypeInfo)
                         If ti.IsGenericParameter Then
 
                             Return f.DefineGeneric(ti.Name)
                         Else
-                            Return Me.Root.LoadType(ti)
+
+                            Dim p = Me.Root.LoadType(ti)
+                            If Not p.HasGeneric Then Return p
+                            Return p.FixedGeneric(p.Generics.Map(Function(x) f.DefineGeneric(x.Name)).ToArray)
                         End If
                     End Function
 
