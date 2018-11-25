@@ -402,6 +402,364 @@ Namespace Compiler
                 End Sub)
         End Sub
 
+        Public Shared Function GetGemeric(name As String, scope As IScope) As IType
+
+            If TypeOf scope Is IFunction Then
+
+                Dim f = CType(scope, IFunction)
+                If f.HasGeneric Then
+
+                    Coverage.Case()
+                    Dim x = f.Generics.FindFirstOrNull(Function(g) name.Equals(g.Name))
+                    If x IsNot Nothing Then Return x
+                End If
+
+                Coverage.Case()
+                Return f.Apply(CType(f.GenericBase, IFunction).Else(Function() f).Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
+
+            ElseIf TypeOf scope Is RkStruct Then
+
+                Coverage.Case()
+                Return CType(scope, RkStruct).Generics.FindFirst(Function(x) name.Equals(x.Name))
+            End If
+            Throw New Exception("generic not found")
+        End Function
+
+        Public Shared Function FixedVar(e As IType) As IType
+
+            If TypeOf e Is RkByNameWithReceiver Then
+
+                Dim byname = CType(e, RkByNameWithReceiver)
+                Dim r = FixedVar(byname.Receiver.Type)
+
+                If TypeOf r Is RkStruct Then
+
+                    Coverage.Case()
+                    Dim struct = CType(r, RkStruct)
+                    If struct.Local.ContainsKey(byname.Name) Then
+
+                        Dim t = struct.Local(byname.Name)
+                        If t IsNot Nothing Then
+
+                            Coverage.Case()
+                            byname.Type = t
+                            Return t
+                        End If
+
+                        t = struct.GenericBase?.Local(byname.Name)
+                        If t IsNot Nothing Then
+
+                            Coverage.Case()
+                            byname.Type = t
+                            Return t
+                        End If
+                    End If
+
+                ElseIf TypeOf r Is RkTuple Then
+
+                    Coverage.Case()
+                    Dim tuple = CType(r, RkTuple)
+                    If tuple.Local.ContainsKey(byname.Name) Then
+
+                        Dim t = tuple.Local(byname.Name)
+                        If t IsNot Nothing Then
+
+                            Coverage.Case()
+                            byname.Type = t
+                            Return t
+                        End If
+                    End If
+
+                ElseIf TypeOf r Is RkNamespace Then
+
+                    Coverage.Case()
+                    Dim ns2 = CType(r, RkNamespace)
+                    Dim n = TryLoadNamespace(ns2, byname.Name)
+                    If n IsNot Nothing Then
+
+                        Coverage.Case()
+                        byname.Type = n
+                        Return n
+                    End If
+
+                    Coverage.Case()
+                    byname.Scope = ns2
+                End If
+
+            ElseIf TypeOf e Is RkByName Then
+
+                Dim byname = CType(e, RkByName)
+                If byname.Type IsNot Nothing Then Return FixedVar(byname.Type)
+
+                Coverage.Case()
+                Dim t = TryLoadStruct(byname.Scope, byname.Name)
+                If t IsNot Nothing Then
+
+                    Coverage.Case()
+                    byname.Type = t
+                    Return t
+                End If
+
+                Coverage.Case()
+                Dim fs = FindLoadFunction(byname.Scope, byname.Name).ToList
+                If fs.Count = 1 Then
+
+                    Coverage.Case()
+                    byname.Type = fs(0)
+                    Return fs(0)
+
+                ElseIf fs.Count >= 2 Then
+
+                    Coverage.Case()
+                    Dim union = New RkUnionType(fs)
+                    byname.Type = union
+                    Return union
+                End If
+
+                Coverage.Case()
+                Dim n = TryLoadNamespace(byname.Scope, byname.Name)
+                If n IsNot Nothing Then
+
+                    Coverage.Case()
+                    byname.Scope = n
+                    byname.Type = n
+                    Return n
+                End If
+
+                Coverage.Case()
+                If byname.Type IsNot Nothing Then Return byname.Type
+            End If
+
+            Coverage.Case()
+            Return e
+        End Function
+
+        Public Shared Function ApplyFunction(union As RkUnionType, f As FunctionCallNode) As Boolean
+
+            Dim before = union.Types.Count
+            Dim args = f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type))).ToArray
+            union.Types = union.Types.
+                By(Of IFunction).
+                Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
+                Where(Function(x) x.WhereFunction(args)).
+                Map(Function(x) x.ApplyFunction(args)).
+                By(Of IType).
+                UniqueList(Function(a, b) a.Is(b)).
+                ToList
+            Return before <> union.Types.Count
+        End Function
+
+        Public Shared Function FixedFunction(root As SystemLibrary, ns As RkNamespace, f As FunctionCallNode) As IFunction
+
+            Dim expr = FixedVar(f.Expression.Type)
+            Dim args = f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type))).ToList
+
+            If TypeOf expr Is RkUnionType Then
+
+                Coverage.Case()
+                Dim union = CType(expr, RkUnionType)
+                ApplyFunction(union, f)
+                union.Unique()
+                If Not union.HasIndefinite Then
+
+                    expr = union.Types(0)
+                    f.Expression.Type = expr
+                End If
+            End If
+
+            If TypeOf expr Is RkByName Then
+
+                Coverage.Case()
+                Dim byname = CType(expr, RkByName)
+                Dim t = TryLoadStruct(byname.Scope, byname.Name, args.ToArray)
+                If t IsNot Nothing Then expr = t
+            End If
+
+            If TypeOf expr Is RkByName Then
+
+                Coverage.Case()
+                Dim byname = CType(expr, RkByName)
+                Dim r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
+                If r IsNot Nothing Then Return r
+
+                If TypeOf expr Is RkByNameWithReceiver Then
+
+                    Dim receiver = CType(expr, RkByNameWithReceiver).Receiver
+
+                    If byname.Name.Equals("of") Then
+
+                        Coverage.Case()
+                        f.Expression.Type = TryLoadStruct(byname.Scope, CType(receiver, VariableNode).Name, args.ToArray)
+                        f.Arguments = New IEvaluableNode() {}
+                        Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
+                    End If
+
+                    Dim self = FixedByName(FixedVar(receiver.Type))
+                    args.Insert(0, self)
+                    r = TryLoadFunction(ns, byname.Name, args.ToArray)
+                    If r Is Nothing AndAlso TypeOf self Is RkCILStruct Then r = TryLoadFunction(CType(self, RkCILStruct).FunctionNamespace, byname.Name, args.ToArray)
+
+                    If r IsNot Nothing Then
+
+                        f.Arguments = {receiver}.Join(f.Arguments).ToArray
+                        Return r
+                    End If
+
+                End If
+
+            ElseIf TypeOf expr Is RkCILStruct Then
+
+                Coverage.Case()
+                Dim struct = CType(expr, RkCILStruct)
+                Return struct.LoadConstructor(root, args.ToArray)
+
+            ElseIf TypeOf expr Is RkCILNamespace Then
+
+                Coverage.Case()
+                Dim struct = CType(expr, RkCILNamespace).BaseType
+                Return struct.LoadConstructor(root, args.ToArray)
+
+            ElseIf TypeOf expr Is RkStruct Then
+
+                Coverage.Case()
+                Dim struct = CType(expr, RkStruct)
+                Dim r = TryLoadFunction(struct.Scope, struct.Name, args.ToArray)
+                If r IsNot Nothing Then Return r
+
+                args.Insert(0, expr)
+                Return LoadFunction(struct.Scope, "#Alloc", args.ToArray)
+
+            ElseIf TypeOf expr Is RkNamespace Then
+
+                Coverage.Case()
+                Dim nsname = CType(expr, RkNamespace)
+                Return TryLoadFunction(nsname, nsname.Name, args.ToArray)
+
+            ElseIf TypeOf expr Is RkFunction Then
+
+                Coverage.Case()
+                Dim r = CType(expr, RkFunction)
+                If Not r.HasGeneric Then Return r
+
+                Coverage.Case()
+                Return r.ApplyFunction(args.ToArray)
+
+            ElseIf TypeOf expr Is RkUnionType Then
+
+                Coverage.Case()
+                Return CType(expr, RkUnionType)
+            End If
+
+            Return Nothing
+        End Function
+
+        Public Shared Function VarFeedback(pgm As ProgramNode, root As SystemLibrary, from As IType, to_ As IType) As IType
+
+            from = FixedByName(from)
+            to_ = FixedByName(to_)
+            If to_ Is Nothing Then Return from
+            If from Is Nothing Then Return to_
+
+            If from.HasIndefinite Then
+
+                If TypeOf from Is RkUnionType Then
+
+                    CType(from, RkUnionType).Merge(to_)
+                    Coverage.Case()
+
+                ElseIf TypeOf from Is IApply Then
+
+                    Coverage.Case()
+                    Dim to_apply = CType(to_, IApply)
+                    CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, VarFeedback(pgm, root, x, to_apply.Apply(i))))
+                Else
+
+                    Debug.Fail("feedback error")
+                End If
+
+            ElseIf from.HasGeneric Then
+
+                Dim x = from.FixedGeneric(from.TypeToApply(to_))
+                If TypeOf x Is IFunction Then
+
+                    pgm.AddFixedGenericFunction(CType(x, IFunction))
+                End If
+                Coverage.Case()
+                Return x
+
+            ElseIf TypeOf from Is RkByName Then
+
+                Coverage.Case()
+                Dim byname = CType(from, RkByName)
+                byname.Type = VarFeedback(pgm, root, byname.Type, to_)
+
+            ElseIf TypeOf from Is IApply Then
+
+                Coverage.Case()
+                Dim to_apply = CType(FixedByName(to_), IApply)
+                CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, VarFeedback(pgm, root, x, to_apply.Apply(i))))
+            End If
+
+            If TypeOf from Is RkFunction AndAlso CType(from, RkFunction).Return IsNot Nothing AndAlso
+                TypeOf to_ Is RkFunction Then
+
+                Dim from_return = CType(from, RkFunction).Return
+                Dim to_return = CType(to_, RkFunction).Return
+
+                If TypeOf from_return Is RkUnionType Then
+
+                    CType(from_return, RkUnionType).Merge(If(to_return, root.VoidType))
+                End If
+            End If
+
+            Return from
+        End Function
+
+        Public Shared Sub ApplyFeedback(pgm As ProgramNode, root As SystemLibrary, f As IFunction, node As FunctionCallNode, current As IScope)
+
+            If TypeOf f Is RkNativeFunction Then
+
+                Dim native = CType(f, RkNativeFunction)
+                If native.Operator = InOperator.Alloc Then
+
+                    Coverage.Case()
+                    Return
+
+                ElseIf native.Operator = InOperator.Return Then
+
+                    If TypeOf current Is RkFunction Then
+
+                        Dim func = CType(current, RkFunction)
+                        If TypeOf func.Return Is RkGenericEntry Then
+
+                            Dim apply_index = CType(func.Return, RkGenericEntry).ApplyIndex
+                            If func.Apply(apply_index) Is Nothing Then
+
+                                Dim x = f.Apply(0)
+                                func.Apply(apply_index) = x
+                                Do While True
+
+                                    Dim apply = func.ApplyToWhere(func.Apply.ToArray)
+                                    If apply(apply_index) Is x Then Exit Do
+                                    func.Apply.Clear()
+                                    func.Apply.AddRange(apply)
+                                    x = apply(apply_index)
+                                Loop
+                                f.Apply(0) = x
+                            End If
+
+                            f.Arguments(0).Value = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
+                        End If
+                    End If
+                End If
+            End If
+
+            f.Arguments.
+                Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).
+                Each(Sub(x, i) node.Arguments(i).Type = VarFeedback(pgm, root, node.Arguments(i).Type, x.Value))
+            Coverage.Case()
+        End Sub
+
         Public Shared Sub TypeInference(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim set_func =
@@ -437,370 +795,6 @@ Namespace Compiler
 
                     Return func
                 End Function
-
-            Dim get_generic =
-                Function(name As String, scope As IScope)
-
-                    If TypeOf scope Is IFunction Then
-
-                        Dim f = CType(scope, IFunction)
-                        If f.HasGeneric Then
-
-                            Coverage.Case()
-                            Dim x = f.Generics.FindFirstOrNull(Function(g) name.Equals(g.Name))
-                            If x IsNot Nothing Then Return x
-                        End If
-
-                        Coverage.Case()
-                        Return f.Apply(CType(f.GenericBase, IFunction).Else(Function() f).Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
-
-                    ElseIf TypeOf scope Is RkStruct Then
-
-                        Coverage.Case()
-                        Return CType(scope, RkStruct).Generics.FindFirst(Function(x) name.Equals(x.Name))
-                    End If
-                    Throw New Exception("generic not found")
-                End Function
-
-            Dim fixed_var As Func(Of IType, IType) =
-                Function(e)
-
-                    If TypeOf e Is RkByNameWithReceiver Then
-
-                        Dim byname = CType(e, RkByNameWithReceiver)
-                        Dim r = fixed_var(byname.Receiver.Type)
-
-                        If TypeOf r Is RkStruct Then
-
-                            Coverage.Case()
-                            Dim struct = CType(r, RkStruct)
-                            If struct.Local.ContainsKey(byname.Name) Then
-
-                                Dim t = struct.Local(byname.Name)
-                                If t IsNot Nothing Then
-
-                                    Coverage.Case()
-                                    byname.Type = t
-                                    Return t
-                                End If
-
-                                t = struct.GenericBase?.Local(byname.Name)
-                                If t IsNot Nothing Then
-
-                                    Coverage.Case()
-                                    byname.Type = t
-                                    Return t
-                                End If
-                            End If
-
-                        ElseIf TypeOf r Is RkTuple Then
-
-                            Coverage.Case()
-                            Dim tuple = CType(r, RkTuple)
-                            If tuple.Local.ContainsKey(byname.Name) Then
-
-                                Dim t = tuple.Local(byname.Name)
-                                If t IsNot Nothing Then
-
-                                    Coverage.Case()
-                                    byname.Type = t
-                                    Return t
-                                End If
-                            End If
-
-                        ElseIf TypeOf r Is RkNamespace Then
-
-                            Coverage.Case()
-                            Dim ns2 = CType(r, RkNamespace)
-                            Dim n = TryLoadNamespace(ns2, byname.Name)
-                            If n IsNot Nothing Then
-
-                                Coverage.Case()
-                                byname.Type = n
-                                Return n
-                            End If
-
-                            Coverage.Case()
-                            byname.Scope = ns2
-                        End If
-
-                    ElseIf TypeOf e Is RkByName Then
-
-                        Dim byname = CType(e, RkByName)
-                        If byname.Type IsNot Nothing Then Return fixed_var(byname.Type)
-
-                        Coverage.Case()
-                        Dim t = TryLoadStruct(byname.Scope, byname.Name)
-                        If t IsNot Nothing Then
-
-                            Coverage.Case()
-                            byname.Type = t
-                            Return t
-                        End If
-
-                        Coverage.Case()
-                        Dim fs = FindLoadFunction(byname.Scope, byname.Name).ToList
-                        If fs.Count = 1 Then
-
-                            Coverage.Case()
-                            byname.Type = fs(0)
-                            Return fs(0)
-
-                        ElseIf fs.Count >= 2 Then
-
-                            Coverage.Case()
-                            Dim union = New RkUnionType(fs)
-                            byname.Type = union
-                            Return union
-                        End If
-
-                        Coverage.Case()
-                        Dim n = TryLoadNamespace(byname.Scope, byname.Name)
-                        If n IsNot Nothing Then
-
-                            Coverage.Case()
-                            byname.Scope = n
-                            byname.Type = n
-                            Return n
-                        End If
-
-                        Coverage.Case()
-                        If byname.Type IsNot Nothing Then Return byname.Type
-                    End If
-
-                    Coverage.Case()
-                    Return e
-                End Function
-
-            Dim apply_function =
-                Function(union As RkUnionType, f As FunctionCallNode)
-
-                    Dim before = union.Types.Count
-                    Dim args = f.Arguments.Map(Function(x) FixedByName(fixed_var(x.Type))).ToArray
-                    union.Types = union.Types.
-                        By(Of IFunction).
-                        Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
-                        Where(Function(x) x.WhereFunction(args)).
-                        Map(Function(x) x.ApplyFunction(args)).
-                        By(Of IType).
-                        UniqueList(Function(a, b) a.Is(b)).
-                        ToList
-                    Return before <> union.Types.Count
-                End Function
-
-            Dim fixed_function =
-                Function(f As FunctionCallNode) As IFunction
-
-                    Dim expr = fixed_var(f.Expression.Type)
-                    Dim args = f.Arguments.Map(Function(x) FixedByName(fixed_var(x.Type))).ToList
-
-                    If TypeOf expr Is RkUnionType Then
-
-                        Coverage.Case()
-                        Dim union = CType(expr, RkUnionType)
-                        apply_function(union, f)
-                        union.Unique()
-                        If Not union.HasIndefinite Then
-
-                            expr = union.Types(0)
-                            f.Expression.Type = expr
-                        End If
-                    End If
-
-                    If TypeOf expr Is RkByName Then
-
-                        Coverage.Case()
-                        Dim byname = CType(expr, RkByName)
-                        Dim t = TryLoadStruct(byname.Scope, byname.Name, args.ToArray)
-                        If t IsNot Nothing Then expr = t
-                    End If
-
-                    If TypeOf expr Is RkByName Then
-
-                        Coverage.Case()
-                        Dim byname = CType(expr, RkByName)
-                        Dim r = TryLoadFunction(byname.Scope, byname.Name, args.ToArray)
-                        If r IsNot Nothing Then Return r
-
-                        If TypeOf expr Is RkByNameWithReceiver Then
-
-                            Dim receiver = CType(expr, RkByNameWithReceiver).Receiver
-
-                            If byname.Name.Equals("of") Then
-
-                                Coverage.Case()
-                                f.Expression.Type = TryLoadStruct(byname.Scope, CType(receiver, VariableNode).Name, args.ToArray)
-                                f.Arguments = New IEvaluableNode() {}
-                                Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
-                            End If
-
-                            Dim self = FixedByName(fixed_var(receiver.Type))
-                            args.Insert(0, self)
-                            r = TryLoadFunction(ns, byname.Name, args.ToArray)
-                            If r Is Nothing AndAlso TypeOf self Is RkCILStruct Then r = TryLoadFunction(CType(self, RkCILStruct).FunctionNamespace, byname.Name, args.ToArray)
-
-                            If r IsNot Nothing Then
-
-                                f.Arguments = {receiver}.Join(f.Arguments).ToArray
-                                Return r
-                            End If
-
-                        End If
-
-                    ElseIf TypeOf expr Is RkCILStruct Then
-
-                        Coverage.Case()
-                        Dim struct = CType(expr, RkCILStruct)
-                        Return struct.LoadConstructor(root, args.ToArray)
-
-                    ElseIf TypeOf expr Is RkCILNamespace Then
-
-                        Coverage.Case()
-                        Dim struct = CType(expr, RkCILNamespace).BaseType
-                        Return struct.LoadConstructor(root, args.ToArray)
-
-                    ElseIf TypeOf expr Is RkStruct Then
-
-                        Coverage.Case()
-                        Dim struct = CType(expr, RkStruct)
-                        Dim r = TryLoadFunction(struct.Scope, struct.Name, args.ToArray)
-                        If r IsNot Nothing Then Return r
-
-                        args.Insert(0, expr)
-                        Return LoadFunction(struct.Scope, "#Alloc", args.ToArray)
-
-                    ElseIf TypeOf expr Is RkNamespace Then
-
-                        Coverage.Case()
-                        Dim nsname = CType(expr, RkNamespace)
-                        Return TryLoadFunction(nsname, nsname.Name, args.ToArray)
-
-                    ElseIf TypeOf expr Is RkFunction Then
-
-                        Coverage.Case()
-                        Dim r = CType(expr, RkFunction)
-                        If Not r.HasGeneric Then Return r
-
-                        Coverage.Case()
-                        Return r.ApplyFunction(args.ToArray)
-
-                    ElseIf TypeOf expr Is RkUnionType Then
-
-                        Coverage.Case()
-                        Return CType(expr, RkUnionType)
-                    End If
-
-                    Return Nothing
-                End Function
-
-            Dim var_feedback As Func(Of IType, IType, IType) =
-                Function(from, to_)
-
-                    from = FixedByName(from)
-                    to_ = FixedByName(to_)
-                    If to_ Is Nothing Then Return from
-                    If from Is Nothing Then Return to_
-
-                    If from.HasIndefinite Then
-
-                        If TypeOf from Is RkUnionType Then
-
-                            CType(from, RkUnionType).Merge(to_)
-                            Coverage.Case()
-
-                        ElseIf TypeOf from Is IApply Then
-
-                            Coverage.Case()
-                            Dim to_apply = CType(to_, IApply)
-                            CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, var_feedback(x, to_apply.Apply(i))))
-                        Else
-
-                            Debug.Fail("feedback error")
-                        End If
-
-                    ElseIf from.HasGeneric Then
-
-                        Dim x = from.FixedGeneric(from.TypeToApply(to_))
-                        If TypeOf x Is IFunction Then
-
-                            pgm.AddFixedGenericFunction(CType(x, IFunction))
-                        End If
-                        Coverage.Case()
-                        Return x
-
-                    ElseIf TypeOf from Is RkByName Then
-
-                        Coverage.Case()
-                        Dim byname = CType(from, RkByName)
-                        byname.Type = var_feedback(byname.Type, to_)
-
-                    ElseIf TypeOf from Is IApply Then
-
-                        Coverage.Case()
-                        Dim to_apply = CType(FixedByName(to_), IApply)
-                        CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, var_feedback(x, to_apply.Apply(i))))
-                    End If
-
-                    If TypeOf from Is RkFunction AndAlso CType(from, RkFunction).Return IsNot Nothing AndAlso
-                        TypeOf to_ Is RkFunction Then
-
-                        Dim from_return = CType(from, RkFunction).Return
-                        Dim to_return = CType(to_, RkFunction).Return
-
-                        If TypeOf from_return Is RkUnionType Then
-
-                            CType(from_return, RkUnionType).Merge(If(to_return, root.VoidType))
-                        End If
-                    End If
-
-                    Return from
-                End Function
-
-            Dim apply_feedback =
-                Sub(f As IFunction, node As FunctionCallNode, current As IScope)
-
-                    If TypeOf f Is RkNativeFunction Then
-
-                        Dim native = CType(f, RkNativeFunction)
-                        If native.Operator = InOperator.Alloc Then
-
-                            Coverage.Case()
-                            Return
-
-                        ElseIf native.Operator = InOperator.Return Then
-
-                            If TypeOf current Is RkFunction Then
-
-                                Dim func = CType(current, RkFunction)
-                                If TypeOf func.Return Is RkGenericEntry Then
-
-                                    Dim apply_index = CType(func.Return, RkGenericEntry).ApplyIndex
-                                    If func.Apply(apply_index) Is Nothing Then
-
-                                        Dim x = f.Apply(0)
-                                        func.Apply(apply_index) = x
-                                        Do While True
-
-                                            Dim apply = func.ApplyToWhere(func.Apply.ToArray)
-                                            If apply(apply_index) Is x Then Exit Do
-                                            func.Apply.Clear()
-                                            func.Apply.AddRange(apply)
-                                            x = apply(apply_index)
-                                        Loop
-                                        f.Apply(0) = x
-                                    End If
-
-                                    f.Arguments(0).Value = var_feedback(f.Arguments(0).Value, func.Return)
-                                End If
-                            End If
-                        End If
-                    End If
-
-                    f.Arguments.
-                        Where(Function(x) TypeOf x.Value IsNot RkStruct OrElse Not CType(x.Value, RkStruct).ClosureEnvironment).
-                        Each(Sub(x, i) node.Arguments(i).Type = var_feedback(node.Arguments(i).Type, x.Value))
-                    Coverage.Case()
-                End Sub
 
             Do While True
 
@@ -911,7 +905,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node = CType(child, TypeNode)
-                            If node.IsGeneric Then set_type(node, Function() get_generic(node.Name, current))
+                            If node.IsGeneric Then set_type(node, Function() GetGemeric(node.Name, current))
                             If node.Nullable AndAlso Not node.NullAdded Then
 
                                 Dim t = node.Type
@@ -981,7 +975,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is PropertyNode Then
 
                             Dim node = CType(child, PropertyNode)
-                            Dim r = FixedByName(fixed_var(node.Left.Type))
+                            Dim r = FixedByName(FixedVar(node.Left.Type))
                             If TypeOf r Is RkStruct Then
 
                                 If set_type(node,
@@ -1036,7 +1030,7 @@ Namespace Compiler
                             Dim node = CType(child, FunctionCallNode)
                             If node.Function Is Nothing Then
 
-                                node.Function = fixed_function(node)
+                                node.Function = FixedFunction(root, ns, node)
                                 If node.Function IsNot Nothing Then
 
                                     If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count = 0 Then Throw New CompileErrorException(node, "function is not found")
@@ -1046,7 +1040,7 @@ Namespace Compiler
                                         Coverage.Case()
                                     Else
 
-                                        apply_feedback(node.Function, node, current)
+                                        ApplyFeedback(pgm, root, node.Function, node, current)
                                         If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                             pgm.AddFixedGenericFunction(node.Function)
@@ -1061,12 +1055,12 @@ Namespace Compiler
 
                                 If node.Function.HasGeneric Then
 
-                                    Dim f = fixed_function(node)
+                                    Dim f = FixedFunction(root, ns, node)
 
                                     If f IsNot Nothing AndAlso f IsNot node.Function Then
 
                                         node.Function = f
-                                        apply_feedback(node.Function, node, current)
+                                        ApplyFeedback(pgm, root, node.Function, node, current)
                                         If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                             pgm.AddFixedGenericFunction(node.Function)
@@ -1079,7 +1073,7 @@ Namespace Compiler
 
                                 ElseIf Not node.Function.HasIndefinite Then
 
-                                    apply_feedback(node.Function, node, current)
+                                    ApplyFeedback(pgm, root, node.Function, node, current)
                                 End If
 
                                 If TypeOf node.Function Is RkUnionType Then
@@ -1088,7 +1082,7 @@ Namespace Compiler
                                     Dim before = union.Types.Count
                                     If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
 
-                                        If apply_function(union, node) Then type_fix = True
+                                        If ApplyFunction(union, node) Then type_fix = True
                                         Coverage.Case()
                                     Else
 
@@ -1150,7 +1144,7 @@ Namespace Compiler
                                         Dim item = list.GetType.GetProperty("Item")
                                         Dim item0 = CType(item.GetValue(list, New Object() {0}), IEvaluableNode)
                                         CType(child, IEvaluableNode).IsInstance = item0.IsInstance
-                                        Return LoadStruct(root, "Array", fixed_var(item0.Type))
+                                        Return LoadStruct(root, "Array", FixedVar(item0.Type))
                                     End If
 
                                 End Function)
@@ -1159,6 +1153,9 @@ Namespace Compiler
 
                 If Not type_fix Then Exit Do
             Loop
+        End Sub
+
+        Public Shared Sub Normalize(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim normalized As New Dictionary(Of IType, Boolean)
             Dim var_normalize As Func(Of IType, IType) =
@@ -1253,7 +1250,7 @@ Namespace Compiler
                                 let_.AppendLineNumber(lambda)
                                 ret.AppendLineNumber(lambda)
                                 fcall.AppendLineNumber(lambda)
-                                fcall.Function = fixed_function(fcall)
+                                fcall.Function = FixedFunction(root, ns, fcall)
                                 block.Statements(block.Statements.Count - 1) = let_
                                 block.Statements.Add(fcall)
                             End If

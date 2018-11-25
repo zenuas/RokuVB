@@ -113,6 +113,7 @@ Public Class Main
         For Each ns In loader.Root.Namespaces
 
             Compiler.Typing.TypeInference(ns.Value, root, root.GetNamespace(ns.Key))
+            Compiler.Typing.Normalize(ns.Value, root, root.GetNamespace(ns.Key))
             Compiler.Typing.AnonymouseTypeAllocation(ns.Value, root, root.GetNamespace(ns.Key))
         Next
         If opt.TypeResult IsNot Nothing Then TypeResult(opt.TypeResult, loader.Root)
