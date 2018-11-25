@@ -781,6 +781,7 @@ CLASS_CAST_:
 
         Public Overridable Function RkToCILType(r As IType, structs As Dictionary(Of RkStruct, TypeData), Optional allow_void As Boolean = False) As TypeData
 
+            r = FixedByName(r)
             If r Is Nothing Then
 
                 If Not allow_void Then Throw New ArgumentNullException(NameOf(r))
@@ -799,7 +800,6 @@ CLASS_CAST_:
                     Return New TypeData With {.Type = s.TypeInfo, .Constructor = s.TypeInfo.GetConstructor(New Type() {})}
                 End If
             End If
-            If TypeOf r Is RkGenericEntry Then Return New TypeData With {.Type = GetType(System.Object), .Constructor = Nothing}
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function
