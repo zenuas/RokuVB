@@ -534,12 +534,6 @@ Namespace Compiler
                         If Not func.HasGeneric Then make_func(func, node, node.Statements)
                         Coverage.Case()
 
-                    ElseIf TypeOf child Is FunctionCallNode Then
-
-                        Dim node = CType(child, FunctionCallNode)
-                        If node.Function?.FunctionNode IsNot Nothing Then make_func(node.Function, node.Function.FunctionNode, node.Function.FunctionNode.Statements)
-                        Coverage.Case()
-
                     End If
                     next_(child, current)
                 End Sub)
