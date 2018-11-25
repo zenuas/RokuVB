@@ -402,6 +402,39 @@ Namespace Compiler
                 End Sub)
         End Sub
 
+        Public Shared Function FunctionFeedback(root As SystemLibrary, node As FunctionNode) As RkFunction
+
+            Dim func = node.Function
+            If Not func.HasGeneric Then
+
+                For Each arg In node.Arguments
+
+                    func.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
+                Next
+
+                If node.ImplicitReturn Then
+
+                    Dim t = CType(node.Statements(node.Statements.Count - 1), LambdaExpressionNode).Type
+                    If TypeOf t Is RkUnionType AndAlso CType(t, RkUnionType).Types?.Count > 0 Then
+
+                        CType(func.Return, RkUnionType).Merge({CType(root.VoidType, IType)}.Join(CType(t, RkUnionType).Types))
+
+                    ElseIf t IsNot Nothing Then
+
+                        CType(func.Return, RkUnionType).Merge({root.VoidType, t})
+                    Else
+
+                        CType(func.Return, RkUnionType).Merge(root.VoidType)
+                    End If
+                Else
+
+                    If TypeOf func.Return Is RkGenericEntry Then func.Return = node.Return?.Type
+                End If
+            End If
+
+            Return func
+        End Function
+
         Public Shared Function GetGemeric(name As String, scope As IScope) As IType
 
             If TypeOf scope Is IFunction Then
@@ -762,40 +795,6 @@ Namespace Compiler
 
         Public Shared Sub TypeInference(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
-            Dim set_func =
-                Function(node As FunctionNode) As RkFunction
-
-                    Dim func = node.Function
-                    If Not func.HasGeneric Then
-
-                        For Each arg In node.Arguments
-
-                            func.Arguments.FindFirst(Function(x) x.Name.Equals(arg.Name.Name)).Value = arg.Type.Type
-                        Next
-
-                        If node.ImplicitReturn Then
-
-                            Dim t = CType(node.Statements(node.Statements.Count - 1), LambdaExpressionNode).Type
-                            If TypeOf t Is RkUnionType AndAlso CType(t, RkUnionType).Types?.Count > 0 Then
-
-                                CType(func.Return, RkUnionType).Merge({CType(root.VoidType, IType)}.Join(CType(t, RkUnionType).Types))
-
-                            ElseIf t IsNot Nothing Then
-
-                                CType(func.Return, RkUnionType).Merge({root.VoidType, t})
-                            Else
-
-                                CType(func.Return, RkUnionType).Merge(root.VoidType)
-                            End If
-                        Else
-
-                            If TypeOf func.Return Is RkGenericEntry Then func.Return = node.Return?.Type
-                        End If
-                    End If
-
-                    Return func
-                End Function
-
             Do While True
 
                 Dim type_fix = False
@@ -1022,7 +1021,7 @@ Namespace Compiler
 
                         ElseIf TypeOf child Is FunctionNode Then
 
-                            set_func(CType(child, FunctionNode))
+                            FunctionFeedback(root, CType(child, FunctionNode))
                             Coverage.Case()
 
                         ElseIf TypeOf child Is FunctionCallNode Then
