@@ -17,6 +17,12 @@ Namespace Manager
             End Get
         End Property
 
+        Public Overridable ReadOnly Property Generics As List(Of RkGenericEntry) Implements IApply.Generics
+            Get
+                Return CType(Me.Receiver.Type, IApply).Generics
+            End Get
+        End Property
+
         Public Overrides Function HasGeneric() As Boolean
 
             Return Me.Receiver.Type.HasGeneric

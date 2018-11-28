@@ -93,12 +93,12 @@ Namespace Manager
             Next
 
             Dim clone = CType(Me.CloneGeneric, RkFunction)
-            clone.Return = CopyType(Me, clone, Me.Return)
-            Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = CopyType(Me, clone, v.Value)}))
             Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
-            clone.Body.AddRange(Me.Body)
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
+            clone.Return = CopyType(Me, clone, Me.Return)
+            Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = CopyType(Me, clone, v.Value)}))
+            clone.Body.AddRange(Me.Body)
             clone.FunctionNode = Me.FunctionNode
             clone.Where.AddRange(Me.Where)
             Me.Functions.Each(Sub(x) clone.Functions.Add(x.Key, Me.Functions(x.Key).ToList))
@@ -362,7 +362,8 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) FixedByName(x.Value)?.ToString))})" + If(Me.Return IsNot Nothing, $" {FixedByName(Me.Return)?.ToString}", "")
+            If String.IsNullOrEmpty(Me.Name) Then Return $"{{{String.Join(", ", Me.Arguments.Map(Function(x) x.Value)) + If(Me.Return IsNot Nothing, $" => {Me.Return}", "")}}}"
+            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value))})" + If(Me.Return IsNot Nothing, $" {Me.Return}", "")
         End Function
     End Class
 

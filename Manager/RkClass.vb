@@ -12,7 +12,7 @@ Namespace Manager
 
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
-        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry) Implements IApply.Generics
         Public Overridable Property GenericBase As RkClass = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property ClassNode As ClassNode = Nothing

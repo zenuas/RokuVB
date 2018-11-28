@@ -14,6 +14,7 @@ Namespace Manager
         Public Overrides Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
+        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry) Implements IApply.Generics
 
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue

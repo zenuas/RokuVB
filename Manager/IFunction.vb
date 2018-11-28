@@ -12,7 +12,6 @@ Namespace Manager
         ReadOnly Property Arguments As List(Of NamedValue)
         Property [Return] As IType
         ReadOnly Property Body As List(Of InCode0)
-        ReadOnly Property Generics As List(Of RkGenericEntry)
         Property GenericBase As RkFunction
         Property FunctionNode As FunctionNode
         ReadOnly Property IsAnonymous As Boolean

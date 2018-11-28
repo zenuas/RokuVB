@@ -70,7 +70,7 @@ Namespace Manager
         Public Overrides Function ToString() As String
 
             Dim t = Me.ToType
-            Return If(t Is Nothing, Me.Name, $"{Me.Name}={t}")
+            Return If(t Is Nothing, Me.Name, t.ToString)
         End Function
     End Class
 

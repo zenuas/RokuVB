@@ -14,7 +14,7 @@ Namespace Manager
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
         Public Overridable ReadOnly Property Local As New Dictionary(Of String, IType)
-        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry)
+        Public Overridable ReadOnly Property Generics As New List(Of RkGenericEntry) Implements IApply.Generics
         Public Overridable Property GenericBase As RkStruct = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property StructNode As StructNode = Nothing
@@ -73,10 +73,10 @@ Namespace Manager
             Next
 
             Dim clone = CType(Me.CloneGeneric, RkStruct)
-            Me.Local.Each(Sub(kv) clone.Local.Add(kv.Key, CopyType(Me, clone, kv.Value)))
             Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
             clone.Apply.Clear()
             clone.Apply.AddRange(apply)
+            Me.Local.Each(Sub(kv) clone.Local.Add(kv.Key, CopyType(Me, clone, kv.Value)))
             clone.StructNode = Me.StructNode
             If Me.Initializer IsNot Nothing Then clone.Initializer = CType(Me.Initializer.FixedGeneric(values), RkNativeFunction)
             Return clone
