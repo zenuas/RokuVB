@@ -284,6 +284,10 @@ Namespace Compiler
 
                                 ElseIf TypeOf x Is TypeFunctionNode Then
 
+                                    Dim f = CType(x, TypeFunctionNode)
+                                    f.Arguments.Each(Sub(a) create_generic(a))
+                                    If f.Return IsNot Nothing Then create_generic(f.Return)
+
                                 ElseIf TypeOf x Is TypeArrayNode Then
 
                                     create_generic(CType(x, TypeArrayNode).Item)
