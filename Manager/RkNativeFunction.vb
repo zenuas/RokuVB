@@ -27,7 +27,8 @@ Namespace Manager
                     Return New InCode0() {}
 
                 Case Else
-                    Throw New NotSupportedException
+                    Dim x As New InCode With {.Operator = Me.Operator, .Left = If(args.Length > 0, args(0), Nothing), .Right = If(args.Length > 1, args(1), Nothing)}
+                    Return New InCode0() {x}
 
             End Select
         End Function
