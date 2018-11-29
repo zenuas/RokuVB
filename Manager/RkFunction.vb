@@ -94,7 +94,6 @@ Namespace Manager
 
             Dim clone = CType(Me.CloneGeneric, RkFunction)
             Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
-            clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             clone.Return = CopyType(Me, clone, Me.Return)
             Me.Arguments.Each(Sub(v, i) clone.Arguments.Add(New NamedValue With {.Name = v.Name, .Value = CopyType(Me, clone, v.Value)}))
@@ -298,9 +297,33 @@ Namespace Manager
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
             Dim x = New RkFunction With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me, .Parent = Me.Parent}
+            Me.CopyGeneric(x)
             x.Scope.AddFunction(x)
             Return x
         End Function
+
+        Public Overridable Sub CopyGeneric(clone As RkFunction, Optional perfect_copy As Boolean = False)
+
+            clone.Name = Me.Name
+            clone.Scope = Me.Scope
+            clone.GenericBase = Me
+            clone.Parent = Me.Parent
+            clone.Return = Me.Return
+            clone.FunctionNode = Me.FunctionNode
+
+            If Not perfect_copy Then Return
+
+            clone.Generics.Clear()
+            clone.Generics.AddRange(Me.Generics)
+            clone.Apply.Clear()
+            clone.Apply.AddRange(Me.Apply)
+            clone.Arguments.Clear()
+            clone.Arguments.AddRange(Me.Arguments)
+            clone.Where.Clear()
+            clone.Where.AddRange(Me.Where)
+            clone.Body.Clear()
+            clone.Body.AddRange(Me.Body)
+        End Sub
 
         Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions
 

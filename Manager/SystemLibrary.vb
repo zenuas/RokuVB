@@ -613,25 +613,77 @@ Namespace Manager
             Return New RkGenericEntry With {.Name = t.Name, .Scope = t.Scope, .ApplyIndex = t.ApplyIndex, .Reference = clone}
         End Function
 
-        Public Shared Function CopyType(base As IApply, clone As IApply, t As IType) As IType
+        Public Shared Function RelatedGeneric(t As IType) As Boolean
 
-            If t Is Nothing OrElse Not t.HasGeneric Then
+            If t Is Nothing Then Return False
+            If t.HasGeneric Then Return True
+
+            If TypeOf t Is RkFunction Then
+
+                Dim func = CType(t, RkFunction)
+                Return RelatedGeneric(func.Return) OrElse func.Arguments.Or(Function(x) RelatedGeneric(x.Value))
+            End If
+
+            Return False
+        End Function
+
+        Public Shared Function CopyType(base As IApply, dest As IApply, t As IType) As IType
+
+            If t Is Nothing OrElse Not RelatedGeneric(t) Then
 
                 Return t
 
             ElseIf TypeOf t Is RkGenericEntry Then
 
-                Return CopyGenericEntry(clone, CType(t, RkGenericEntry))
+                Return CopyGenericEntry(dest, CType(t, RkGenericEntry))
             Else
 
-                Dim gens As New List(Of NamedValue)
-                If TypeOf t Is IApply Then
+                Dim clones As New Dictionary(Of IApply, IApply)
+                clones.Add(base, dest)
 
-                    CType(t, IApply).Generics.
-                        Where(Function(x) TypeOf x.Reference.Apply(x.ApplyIndex) Is RkGenericEntry).
-                        Each(Sub(x) gens.Add(New NamedValue With {.Name = x.Name, .Value = CopyGenericEntry(clone, x)}))
-                End If
-                Return t.FixedGeneric(gens.ToArray)
+                Dim deep_copy As Func(Of IType, IType) =
+                    Function(value)
+
+                        If TypeOf value Is RkGenericEntry Then
+
+                            Dim g = CType(value, RkGenericEntry)
+                            'If g.Reference Is base Then Return CopyGenericEntry(dest, g)
+                            If clones.ContainsKey(g.Reference) Then Return CopyGenericEntry(clones(g.Reference), g)
+                            Return value
+                        End If
+
+                        Dim clone = value.CloneGeneric()
+                        If TypeOf value Is IApply Then clones.Add(CType(value, IApply), CType(clone, IApply))
+
+                        If TypeOf clone Is RkStruct Then
+
+                            Dim struct = CType(clone, RkStruct)
+                            Dim s = CType(value, RkStruct)
+                            s.CopyGeneric(struct, True)
+                            struct.Apply.Done(Function(x) deep_copy(x))
+                            struct.Local.Clear()
+                            s.Local.Each(Sub(kv) struct.Local.Add(kv.Key, deep_copy(kv.Value)))
+                            Return struct
+
+                        ElseIf TypeOf clone Is RkFunction Then
+
+                            Dim func = CType(clone, RkFunction)
+                            CType(value, RkFunction).CopyGeneric(func, True)
+                            func.Arguments.Each(Sub(x) x.Value = deep_copy(x.Value))
+                            If func.Return IsNot Nothing Then func.Return = deep_copy(func.Return)
+                            Return func
+
+                        ElseIf TypeOf clone Is RkTuple Then
+
+                            Dim tuple = CType(clone, RkTuple)
+                            Throw New Exception("no test")
+                            Return tuple
+                        End If
+
+                        Return clone
+                    End Function
+
+                Return deep_copy(t)
             End If
         End Function
 

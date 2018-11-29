@@ -38,11 +38,19 @@ Namespace Compiler
 
             ElseIf TypeOf base Is TypeFunctionNode Then
 
+                Dim node = CType(base, TypeFunctionNode)
+                Dim func = CType(node.Type, RkFunction)
+                node.Arguments.Each(Sub(x, i) func.Arguments(i).Value = DefineType(root, t, x))
+                If node.Return IsNot Nothing Then func.Return = DefineType(root, t, node.Return)
+
             ElseIf TypeOf base Is TypeArrayNode Then
 
                 If base.Type Is Nothing Then base.Type = LoadStruct(root, "Array", DefineType(root, t, CType(base, TypeArrayNode).Item))
 
             ElseIf TypeOf base Is TypeTupleNode Then
+
+                Dim node = CType(base, TypeTupleNode)
+                node.Items.List.Each(Sub(x, i) DefineType(root, t, x))
             End If
 
             Return base.Type
@@ -145,8 +153,7 @@ Namespace Compiler
 
                         Dim node = CType(child, TypeFunctionNode)
                         Dim func As New RkFunction With {.Scope = ns}
-                        node.Arguments.Each(Sub(x) func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = DefineType(root, func, x)}))
-                        func.Return = DefineType(root, func, node.Return)
+                        node.Arguments.Each(Sub(x) func.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = Nothing}))
                         node.Type = func
                         Coverage.Case()
 
@@ -271,32 +278,6 @@ Namespace Compiler
                         Dim node = CType(child, FunctionNode)
                         Dim func = CType(node.Type, RkFunction)
 
-                        Dim create_generic As Action(Of TypeBaseNode) =
-                            Sub(x)
-
-                                If x.IsGeneric Then
-
-                                    func.DefineGeneric(x.Name)
-
-                                ElseIf TypeOf x Is TypeNode Then
-
-                                    CType(x, TypeNode).Arguments.Each(Sub(a) create_generic(a))
-
-                                ElseIf TypeOf x Is TypeFunctionNode Then
-
-                                    Dim f = CType(x, TypeFunctionNode)
-                                    f.Arguments.Each(Sub(a) create_generic(a))
-                                    If f.Return IsNot Nothing Then create_generic(f.Return)
-
-                                ElseIf TypeOf x Is TypeArrayNode Then
-
-                                    create_generic(CType(x, TypeArrayNode).Item)
-
-                                ElseIf TypeOf x Is TypeTupleNode Then
-
-                                End If
-                            End Sub
-
                         node.Arguments.Each(
                             Sub(x, i)
                                 If TypeOf x.Type.Type Is RkClass Then
@@ -308,11 +289,12 @@ Namespace Compiler
                                     x.Type = New TypeNode With {.Name = $"@{i + 1}", .IsGeneric = True}
                                 End If
                             End Sub)
-                        node.Arguments.Each(Sub(x) create_generic(x.Type))
-                        node.Where.Each(Sub(x) create_generic(x))
+
+                        node.Arguments.Each(Sub(x) func.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = DefineType(root, func, x.Type)}))
+                        node.Where.Each(Sub(x) func.Where.Add(CType(DefineType(root, func, x), RkClass)))
                         If node.Return IsNot Nothing Then
 
-                            create_generic(node.Return)
+                            func.Return = DefineType(root, func, node.Return)
 
                         ElseIf node.ImplicitReturn Then
 
@@ -367,9 +349,6 @@ Namespace Compiler
 
                         Dim node = CType(child, FunctionNode)
                         Dim func = node.Function
-
-                        node.Arguments.Each(Sub(x) func.Arguments.Add(New NamedValue With {.Name = x.Name.Name, .Value = DefineType(root, func, x.Type)}))
-                        node.Where.Each(Sub(x) func.Where.Add(CType(DefineType(root, func, x), RkClass)))
 
                         If node.Coroutine Then
 

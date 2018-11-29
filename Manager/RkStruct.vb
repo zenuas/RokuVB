@@ -74,10 +74,8 @@ Namespace Manager
 
             Dim clone = CType(Me.CloneGeneric, RkStruct)
             Me.Generics.Each(Sub(g) clone.Generics.Add(CopyGenericEntry(clone, g)))
-            clone.Apply.Clear()
             clone.Apply.AddRange(apply)
             Me.Local.Each(Sub(kv) clone.Local.Add(kv.Key, CopyType(Me, clone, kv.Value)))
-            clone.StructNode = Me.StructNode
             If Me.Initializer IsNot Nothing Then clone.Initializer = CType(Me.Initializer.FixedGeneric(values), RkNativeFunction)
             Return clone
         End Function
@@ -100,9 +98,30 @@ Namespace Manager
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
             Dim x = New RkStruct With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me, .Parent = Me.Parent}
+            Me.CopyGeneric(x)
             x.Scope.AddStruct(x)
             Return x
         End Function
+
+        Public Overridable Sub CopyGeneric(clone As RkStruct, Optional perfect_copy As Boolean = False)
+
+            clone.Name = Me.Name
+            clone.Scope = Me.Scope
+            clone.GenericBase = Me
+            clone.Parent = Me.Parent
+            clone.StructNode = Me.StructNode
+            clone.Initializer = Me.Initializer
+            clone.ClosureEnvironment = Me.ClosureEnvironment
+
+            If Not perfect_copy Then Return
+
+            clone.Generics.Clear()
+            clone.Generics.AddRange(Me.Generics)
+            clone.Apply.Clear()
+            clone.Apply.AddRange(Me.Apply)
+            clone.Local.Clear()
+            Me.Local.Each(Sub(kv) clone.Local.Add(kv.Key, kv.Value))
+        End Sub
 
         Public Overridable Function GetBaseTypes() As List(Of IStruct)
 

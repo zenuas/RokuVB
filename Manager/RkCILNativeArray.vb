@@ -11,6 +11,7 @@
         Public Overrides Function CloneGeneric() As IType
 
             Dim x = New RkCILNativeArray With {.Name = Me.Name, .Scope = Me.Scope, .GenericBase = Me}
+            Me.CopyGeneric(x)
             x.Scope.AddStruct(x)
             Return x
         End Function

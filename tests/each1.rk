@@ -2,3 +2,34 @@
 #=>2
 #=>3
 [1, 2, 3].each(=> print($1))
+
+# eachの実装
+# 
+# eachの定義が sub each([@T], {@T}) である
+# これは sub each<List(@X, @T)>(@X, {@T}) に展開される
+# 第二引数は TypeFunctionNode になる
+# 
+# each.Arguments[1] には直接 @T がでてこずその先の Arguments[0] に入っている
+# これは原理上、何段も奥にする事が出来てしまう
+# each.Generics = [@X, @T]
+# each.Arguments[0] = TypeNode(@X)
+# each.Arguments[1] = TypeFunctionNode(Arguments[0] = @T)
+# 
+# 間違えやすいのが名前だけで解決してしまう事
+# each の @T=Int の場合、@T を全てIntにしてしまうと支障が出る
+# なぜなら List の定義が List<@T, @R> であり、List の @T はIntではない
+# 
+# 次の例を考える
+# 単純に @T=Hoge となるのは無名関数とタプルだけである
+# struct Foo<@A, @T>
+# sub Bar(@B, @T)
+# class Baz(@C, @T)
+# 
+# sub f<Baz(@T, Int)>(a: Foo(@T, Int), b: Bar(@T, String), c: {@T}, d: [@T, String]) [Int, @T]
+# 
+# var p = f(Foo(Long, Int)(), Bar(Short, String)(), {x: Hoge => ...}, [Hoge(), "str"])
+# ↓
+# sub f<Baz(@T=Hoge, Int)>(a: Foo(@A=@T=Hoge, @T=Int), b: Bar(@B=@T=Hoge, @T=String), c: {@T=Hoge}, d: [@T=Hoge, String]) [Int, @T=Hoge]
+# 
+# 次のように関数や構造体の中身に無名関数やタプルを置く事も考えられる
+# sub f2(a: Foo(Bar({@T}, String), Int), b: @T)
