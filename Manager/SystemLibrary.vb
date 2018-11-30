@@ -644,6 +644,7 @@ Namespace Manager
                 Dim deep_copy As Func(Of IType, IType) =
                     Function(value)
 
+                        If value Is Nothing Then Return Nothing
                         If TypeOf value Is RkGenericEntry Then
 
                             Dim g = CType(value, RkGenericEntry)
