@@ -273,7 +273,7 @@ Namespace Manager
 
             If Me.Where.Count = 0 Then Return True
 
-            args = args.Map(Function(x) TypeHelper.MemberwiseClone(x)).ToArray
+            args = args.Map(Function(x) If(x Is Nothing, Nothing, TypeHelper.MemberwiseClone(x))).ToArray
             Dim apply = Me.ArgumentsToApply(args)
             Return Me.Where.And(Function(x) x.Is(x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray))
         End Function

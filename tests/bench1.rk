@@ -17,7 +17,7 @@ sub make_tree(start: Int, end: Int) Tree?
 	else
 		return(Tree(make_tree(start, pivot - 1), pivot, make_tree(pivot + 1, end)))
 
-sub get_list(tree: Tree?) [Int]
+sub get_list(tree: Tree?) System.Collections.Generic.List(Int)
 	if x: Tree = tree
 		return(get_list(x.left) + [x.value] + get_list(x.right))
 	else

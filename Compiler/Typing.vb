@@ -33,7 +33,7 @@ Namespace Compiler
                         Dim class_ = CType(node.Type, RkClass)
                         If class_.Generics.Count = 0 Then Return base.Type
                     End If
-                    base.Type = base.Type.FixedGeneric(node.Arguments.Map(Function(x) x.Type).ToArray)
+                    If base.Type.HasGeneric Then base.Type = base.Type.FixedGeneric(node.Arguments.Map(Function(x) x.Type).ToArray)
                 End If
 
             ElseIf TypeOf base Is TypeFunctionNode Then
