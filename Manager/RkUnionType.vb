@@ -207,7 +207,9 @@ Namespace Manager
 
             If TypeOf t Is RkUnionType Then
 
-                Return CType(t, RkUnionType).Types.Or(Function(x) Me.Is(x))
+                Dim union = CType(t, RkUnionType)
+                If union.Types Is Nothing Then Return True
+                Return union.Types.Or(Function(x) Me.Is(x))
             Else
 
                 Return Me.Types.Or(Function(x) x.Is(t))
