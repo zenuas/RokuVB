@@ -7,7 +7,7 @@ Namespace Manager
 
     Public Class RkTuple
         Inherits RkScope
-        Implements IStruct, IAddLet
+        Implements IStruct
 
         Public Overridable Property Super As IType
         Public Overridable Property Scope As IScope Implements IType.Scope
@@ -67,7 +67,7 @@ Namespace Manager
             Throw New NotImplementedException
         End Function
 
-        Public Overridable Sub AddLet(name As String, t As IType) Implements IAddLet.AddLet
+        Public Overridable Sub AddLet(name As String, t As IType)
 
             Me.Local.Add(name, t)
         End Sub

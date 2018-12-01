@@ -9,7 +9,7 @@ Namespace Manager
 
     Public Class RkStruct
         Inherits RkScope
-        Implements IStruct, IAddLet
+        Implements IStruct
 
         Public Overridable Property Scope As IScope Implements IType.Scope
         Public Overrides Property Name As String Implements IType.Name
@@ -129,7 +129,7 @@ Namespace Manager
             Return Me.Scope.Structs.FindFirst(Function(x) x.Value.Exists(Function(s) s Is Me)).Value
         End Function
 
-        Public Overridable Sub AddLet(name As String, t As IType) Implements IAddLet.AddLet
+        Public Overridable Sub AddLet(name As String, t As IType)
 
             Me.Local.Add(name, t)
         End Sub

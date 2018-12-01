@@ -116,7 +116,6 @@
       <SubType>Designer</SubType>
     </None>
     <Compile Include="Architecture\TypeData.vb" />
-    <Compile Include="Manager\IAddNamespace.vb" />
     <Compile Include="IntermediateCode\IReturnBind.vb" />
     <Compile Include="Operator\OpArray.vb" />
     <Compile Include="Manager\RkByNameWithReceiver.vb" />
@@ -138,7 +137,6 @@
     <Compile Include="Compiler\Normalize.vb" />
     <Compile Include="Compiler\Typing.vb" />
     <Compile Include="Compiler\Translater.vb" />
-    <Compile Include="Manager\IAddLet.vb" />
     <Compile Include="Manager\NamedValue.vb" />
     <Compile Include="Manager\RkByName.vb" />
     <Compile Include="IntermediateCode\InLambdaCall.vb" />

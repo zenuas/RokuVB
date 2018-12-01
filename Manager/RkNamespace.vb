@@ -8,7 +8,7 @@ Namespace Manager
 
     Public Class RkNamespace
         Inherits RkScope
-        Implements IType, IAddNamespace
+        Implements IType
 
 
         Public Overrides Property Name As String Implements IEntry.Name
@@ -32,7 +32,7 @@ Namespace Manager
             Return MyBase.FindCurrentFunction(name).Where(Function(x) Not x.HasIndefinite)
         End Function
 
-        Public Overridable Sub AddNamespace(x As RkNamespace) Implements IAddNamespace.AddNamespace
+        Public Overridable Sub AddNamespace(x As RkNamespace)
 
             Me.Namespaces.Add(x.Name, x)
         End Sub
