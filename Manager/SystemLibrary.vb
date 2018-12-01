@@ -579,7 +579,8 @@ Namespace Manager
 
             t = FixedByName(t)
             If TypeOf t IsNot RkCILStruct Then Return False
-            Return Me.Structs("Array")(0) Is CType(t, RkCILStruct).GenericBase
+            Dim get_base_root As Func(Of RkStruct, RkStruct) = Function(x) If(x.GenericBase Is Nothing, x, get_base_root(x.GenericBase))
+            Return Me.Structs("Array")(0) Is get_base_root(CType(t, RkCILStruct))
         End Function
 
         Public Overridable Function GetArrayType(t As IType) As IType
