@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports Roku.IntermediateCode
 Imports Roku.Node
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.Util.Extensions
 
@@ -175,7 +176,9 @@ Namespace Manager
             If Me.Types Is Nothing Then
 
                 Diagnostics.Debug.Assert(types.ToList.Count > 0, "types is empty")
-                Me.Types = types.UniqueHash.ToList
+                Dim xs = types.Where(Function(x) FixedByName(x) IsNot Nothing).UniqueHash.ToList
+                If xs.Count = 0 Then Return False
+                Me.Types = xs
                 Return True
 
             ElseIf Me.Types.Count > 0 Then
@@ -258,7 +261,7 @@ Namespace Manager
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
 
-            Return Me.GetDecideType.CloneGeneric
+            Return CType(Me.MemberwiseClone, RkUnionType)
         End Function
 
         Public Overridable Function GetBaseFunctions() As List(Of IFunction) Implements IFunction.GetBaseFunctions

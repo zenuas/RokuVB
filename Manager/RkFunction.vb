@@ -132,13 +132,14 @@ Namespace Manager
                         CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_add))
                         gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value))))
 
-                    ElseIf arg.HasGeneric AndAlso TypeOf arg Is RkFunction Then
+                    ElseIf TypeOf arg Is RkFunction Then
 
                         If TypeOf p Is RkFunction Then
 
                             Dim func = CType(p, RkFunction)
                             Dim argf = CType(arg, RkFunction)
                             argf.Generics.Each(Sub(x) If func.Apply.Count > x.ApplyIndex Then gen_to_type(x, func.Apply(x.ApplyIndex)))
+                            argf.Arguments.Take(func.Arguments.Count).Each(Sub(x, i) generic_match(x.Value, func.Arguments(i).Value, gen_to_type))
                             If argf.Return IsNot Nothing Then generic_match(argf.Return, func.Return, gen_to_type)
                         End If
 
