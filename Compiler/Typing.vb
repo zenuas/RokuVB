@@ -1137,6 +1137,57 @@ Namespace Compiler
             Loop
         End Sub
 
+        Public Shared Sub LambdaExpressionConvert(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                0,
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is BlockNode Then
+
+                        Dim block = CType(child, BlockNode)
+                        If block.Statements.Count > 0 AndAlso TypeOf block.Statements(block.Statements.Count - 1) Is LambdaExpressionNode Then
+
+                            Dim func = CType(block.Owner, FunctionNode)
+                            Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
+                            Dim ret_type = FixedByName(func?.Function?.Return)
+                            If ret_type Is Nothing OrElse ret_type Is root.VoidType OrElse lambda.Type Is Nothing Then
+
+                                If ret_type Is root.VoidType Then func.Function.Return = Nothing
+                                If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
+                                block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
+                            Else
+
+                                If func.ImplicitReturn Then
+
+                                    Dim retf = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = func.Function, .Name = "return", .Parent = func.Function}
+                                    retf.Arguments.Add(New NamedValue With {.Name = "x", .Value = ret_type})
+                                    func.Function.AddFunction(retf)
+                                End If
+
+                                Dim v As New VariableNode("$ret") With {.Type = lambda.Type}
+                                Dim let_ As New LetNode With {.Var = v, .Type = lambda.Type, .Expression = lambda.Expression}
+                                Dim ret As New VariableNode("return") With {.Type = New RkByName With {.Scope = block.Owner.Function, .Name = "return"}}
+                                Dim fcall As New FunctionCallNode With {.Expression = ret, .Arguments = New IEvaluableNode() {v}}
+                                v.AppendLineNumber(lambda)
+                                let_.AppendLineNumber(lambda)
+                                ret.AppendLineNumber(lambda)
+                                fcall.AppendLineNumber(lambda)
+                                fcall.Function = FixedFunction(root, ns, fcall)
+                                block.Statements(block.Statements.Count - 1) = let_
+                                block.Statements.Add(fcall)
+                            End If
+                            Coverage.Case()
+                        End If
+                    End If
+
+                    next_(child, current + 1)
+                End Sub)
+        End Sub
+
         Public Shared Sub Normalize(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Dim normalized As New Dictionary(Of IType, Boolean)
@@ -1201,44 +1252,6 @@ Namespace Compiler
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If Not isfirst Then Return
-
-                    If TypeOf child Is BlockNode Then
-
-                        Dim block = CType(child, BlockNode)
-                        If block.Statements.Count > 0 AndAlso TypeOf block.Statements(block.Statements.Count - 1) Is LambdaExpressionNode Then
-
-                            Dim func = CType(block.Owner, FunctionNode)
-                            Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
-                            Dim ret_type = var_normalize(func?.Function?.Return)
-                            If ret_type Is Nothing OrElse ret_type Is root.VoidType OrElse lambda.Type Is Nothing Then
-
-                                If ret_type Is root.VoidType Then func.Function.Return = Nothing
-                                If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")
-                                block.Statements(block.Statements.Count - 1) = CType(lambda.Expression, IStatementNode)
-                            Else
-
-                                If func.ImplicitReturn Then
-
-                                    Dim retf = New RkNativeFunction With {.Operator = InOperator.Return, .Scope = func.Function, .Name = "return", .Parent = func.Function}
-                                    retf.Arguments.Add(New NamedValue With {.Name = "x", .Value = ret_type})
-                                    func.Function.AddFunction(retf)
-                                End If
-
-                                Dim v As New VariableNode("$ret") With {.Type = lambda.Type}
-                                Dim let_ As New LetNode With {.Var = v, .Type = lambda.Type, .Expression = lambda.Expression}
-                                Dim ret As New VariableNode("return") With {.Type = New RkByName With {.Scope = block.Owner.Function, .Name = "return"}}
-                                Dim fcall As New FunctionCallNode With {.Expression = ret, .Arguments = New IEvaluableNode() {v}}
-                                v.AppendLineNumber(lambda)
-                                let_.AppendLineNumber(lambda)
-                                ret.AppendLineNumber(lambda)
-                                fcall.AppendLineNumber(lambda)
-                                fcall.Function = FixedFunction(root, ns, fcall)
-                                block.Statements(block.Statements.Count - 1) = let_
-                                block.Statements.Add(fcall)
-                            End If
-                            Coverage.Case()
-                        End If
-                    End If
 
                     next_(child, current + 1)
 
