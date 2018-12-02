@@ -387,7 +387,7 @@ Namespace Manager
         Public Overrides Function ToString() As String
 
             If String.IsNullOrEmpty(Me.Name) Then Return $"{{{String.Join(", ", Me.Arguments.Map(Function(x) x.Value)) + If(Me.Return IsNot Nothing, $" => {Me.Return}", "")}}}"
-            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.Value))})" + If(Me.Return IsNot Nothing, $" {Me.Return}", "")
+            Return $"{Me.Name}({String.Join(", ", Me.Arguments.Map(Function(x) TypeToString(x.Value)))})" + If(Me.Return IsNot Nothing, $" {TypeToString(Me.Return)}", "")
         End Function
     End Class
 

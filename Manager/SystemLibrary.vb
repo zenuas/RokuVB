@@ -609,6 +609,13 @@ Namespace Manager
             End If
         End Function
 
+        Public Shared Function TypeToString(t As IType) As String
+
+            t = FixedByName(t)
+            If t Is Nothing Then Return "_"
+            Return t.ToString
+        End Function
+
         Public Shared Function CopyGenericEntry(clone As IApply, t As RkGenericEntry) As RkGenericEntry
 
             Return New RkGenericEntry With {.Name = t.Name, .Scope = t.Scope, .ApplyIndex = t.ApplyIndex, .Reference = clone}
