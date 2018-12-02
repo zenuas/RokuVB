@@ -443,7 +443,11 @@ Namespace Compiler
 
         Public Shared Function FixedVar(e As IType) As IType
 
-            If TypeOf e Is RkByNameWithReceiver Then
+            If TypeOf e Is RkGenericEntry Then
+
+                Return FixedVar(CType(e, RkGenericEntry).ToType)
+
+            ElseIf TypeOf e Is RkByNameWithReceiver Then
 
                 Dim byname = CType(e, RkByNameWithReceiver)
                 Dim r = FixedVar(byname.Receiver.Type)
