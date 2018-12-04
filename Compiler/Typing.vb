@@ -1158,7 +1158,8 @@ Namespace Compiler
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
                             Dim ret_type = FixedByName(func?.Function?.Return)
-                            If ret_type Is Nothing OrElse ret_type Is root.VoidType OrElse lambda.Type Is Nothing Then
+                            If TypeOf ret_type Is RkUnionType Then ret_type = root.ChoosePriorityType(CType(ret_type, RkUnionType).Types)
+                            If ret_type Is Nothing OrElse lambda.Type Is Nothing OrElse ret_type.Is(root.VoidType) Then
 
                                 If ret_type Is root.VoidType Then func.Function.Return = Nothing
                                 If TypeOf lambda.Expression IsNot IStatementNode Then Throw New Exception("lambda isnot statement")

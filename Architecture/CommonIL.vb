@@ -784,7 +784,7 @@ CLASS_CAST_:
             r = FixedByName(r)
             If r Is Nothing Then
 
-                If Not allow_void Then Throw New ArgumentNullException(NameOf(r))
+                If Not allow_void Then Return New TypeData With {.Type = GetType(System.Object), .Constructor = Nothing}
                 Return New TypeData With {.Type = GetType(System.Void), .Constructor = Nothing}
             End If
 
