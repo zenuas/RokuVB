@@ -1,0 +1,13 @@
+sub f() [Int]
+	return([])
+
+
+#=>0
+print(f().Count())
+
+# sub f() [Int] は
+# sub f<List(@R, Int)>() @R のシンタックスシュガーである
+# @R は定義上型が分からないためreturn関数から CList.of(Int) を
+# 持ってくる必要がある
+# しかしreturn関数は空配列を指定しているため
+# @Rの定義から CList.of(Int) の空配列であると推論する必要がある
