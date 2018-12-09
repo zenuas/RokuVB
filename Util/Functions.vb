@@ -6,16 +6,6 @@ Namespace Util
 
     Public Class Functions
 
-        Public Shared Function T(Of A)([then] As A, [else] As A) As A
-
-            Return [then]
-        End Function
-
-        Public Shared Function F(Of A)([then] As A, [else] As A) As A
-
-            Return [else]
-        End Function
-
         Public Shared Function Cons(Of T)(ParamArray xs() As T) As T()
 
             Return xs

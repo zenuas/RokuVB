@@ -3,6 +3,7 @@ Imports System.IO
 Imports System.Collections.Generic
 Imports System.Reflection
 Imports Roku.Node
+Imports Roku.Util.Functions
 
 
 Namespace Parser
@@ -65,16 +66,14 @@ Namespace Parser
                     Dim fname = Me.GetFileName(name)
                     Using reader As New StreamReader(fname)
 
-                        Dim pgm = Me.Parse(reader)
-                        pgm.FileName = fname
-                        Return pgm
+                        Return Tee(Me.Parse(reader), Sub(x) x.FileName = fname)
                     End Using
                 End Function)
         End Sub
 
         Public Overridable Sub LoadModule(ns As String, reader As TextReader)
 
-            Me.AddNode(ns, Function() Me.Parse(reader))
+            Me.AddNode(ns, Function() Tee(Me.Parse(reader), Sub(x) x.FileName = ns))
         End Sub
 
         Public Overridable Function Parse(reader As TextReader) As ProgramNode
