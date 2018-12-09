@@ -16,6 +16,7 @@ Namespace Node
             Me.InnerScope = False
         End Sub
 
+        Public Overridable Property FileName As String = ""
         Public Overridable ReadOnly Property Uses As New List(Of UseNode)
         Public Overridable ReadOnly Property FixedGenericFunction As New Dictionary(Of IFunction, FunctionNode)
 

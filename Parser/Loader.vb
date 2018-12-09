@@ -63,9 +63,12 @@ Namespace Parser
             Me.AddNode(Me.FileNameToNamespace(name),
                 Function()
 
-                    Using reader As New StreamReader(Me.GetFileName(name))
+                    Dim fname = Me.GetFileName(name)
+                    Using reader As New StreamReader(fname)
 
-                        Return Me.Parse(reader)
+                        Dim pgm = Me.Parse(reader)
+                        pgm.FileName = fname
+                        Return pgm
                     End Using
                 End Function)
         End Sub
