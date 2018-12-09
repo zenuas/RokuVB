@@ -356,7 +356,7 @@ Namespace Compiler
                             func.AddFunction(ret)
 
                             Dim yield = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = func, .Name = "yield", .Parent = func}
-                            Dim t = DefineType(root, yield, CType(node.Return, TypeArrayNode).Item)
+                            Dim t = node.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is node.Return).Arguments(1).Type
                             yield.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
                             func.AddFunction(yield)
 
