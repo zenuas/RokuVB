@@ -17,6 +17,10 @@
             Return Me.Item.HasGeneric
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return $"[{Me.Item}]"
+        End Function
     End Class
 
 End Namespace
