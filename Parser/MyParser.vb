@@ -356,817 +356,817 @@ Namespace Parser
 
             Select Case yy_no
                 Case -1
-                    Debug.WriteLine("$ACCEPT : start $END")
+                    Me.TraceAction("$ACCEPT : start $END")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes._ACCEPT, 2, yy_value)
 
                 Case -2
-                    Debug.WriteLine("start :")
+                    Me.TraceAction("start :")
                     yy_value = New ProgramNode
                     yy_token = Me.DoAction(SymbolTypes.start, 0, yy_value)
 
                 Case -3
-                    Debug.WriteLine("start : program_begin uses stmt END")
+                    Me.TraceAction("start : program_begin uses stmt END")
                     yy_value = Me.PopScope
                     yy_token = Me.DoAction(SymbolTypes.start, 4, yy_value)
 
                 Case -4
-                    Debug.WriteLine("program_begin : BEGIN")
+                    Me.TraceAction("program_begin : BEGIN")
                     Me.PushScope(New ProgramNode)
                     yy_token = Me.DoAction(SymbolTypes.program_begin, 1, yy_value)
 
                 Case -5
-                    Debug.WriteLine("uses : void")
+                    Me.TraceAction("uses : void")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.uses, 1, yy_value)
 
                 Case -6
-                    Debug.WriteLine("uses : uses use EOL")
+                    Me.TraceAction("uses : uses use EOL")
                     AddUse(Me, CType(Me.GetValue(-2), UseNode))
                     yy_token = Me.DoAction(SymbolTypes.uses, 3, yy_value)
 
                 Case -7
-                    Debug.WriteLine("use : USE namespace")
+                    Me.TraceAction("use : USE namespace")
                     yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}, CType(Me.GetToken(-2), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 2, yy_value)
 
                 Case -8
-                    Debug.WriteLine("use : USE var EQ namespace")
+                    Me.TraceAction("use : USE var EQ namespace")
                     yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 4, yy_value)
 
                 Case -9
-                    Debug.WriteLine("namespace : varx")
+                    Me.TraceAction("namespace : varx")
                     yy_value = CType(Me.GetValue(-1), VariableNode)
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 1, yy_value)
 
                 Case -10
-                    Debug.WriteLine("namespace : namespace '.' varx")
+                    Me.TraceAction("namespace : namespace '.' varx")
                     yy_value = CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), ".", CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 3, yy_value)
 
                 Case -11
-                    Debug.WriteLine("stmt : void")
+                    Me.TraceAction("stmt : void")
                     yy_value = Me.CurrentScope
                     yy_token = Me.DoAction(SymbolTypes.stmt, 1, yy_value)
 
                 Case -12
-                    Debug.WriteLine("stmt : stmt line")
+                    Me.TraceAction("stmt : stmt line")
                     CType(Me.GetValue(-2), BlockNode).AddStatement(CType(Me.GetValue(-1), IStatementNode)) : yy_value = CType(Me.GetValue(-2), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.stmt, 2, yy_value)
 
                 Case -13
-                    Debug.WriteLine("line : call EOL")
+                    Me.TraceAction("line : call EOL")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.line, 2, yy_value)
 
                 Case -14
-                    Debug.WriteLine("line : let EOL")
+                    Me.TraceAction("line : let EOL")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.line, 2, yy_value)
 
                 Case -15
-                    Debug.WriteLine("line : sub")
+                    Me.TraceAction("line : sub")
                     CType(Me.CurrentScope, IAddFunction).AddFunction(CType(Me.GetValue(-1), FunctionNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -16
-                    Debug.WriteLine("line : if")
+                    Me.TraceAction("line : if")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -17
-                    Debug.WriteLine("line : switch")
+                    Me.TraceAction("line : switch")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -18
-                    Debug.WriteLine("line : block")
+                    Me.TraceAction("line : block")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -19
-                    Debug.WriteLine("line : struct")
+                    Me.TraceAction("line : struct")
                     Me.CurrentScope.Lets.Add(CType(Me.GetValue(-1), StructNode).Name, CType(Me.GetValue(-1), StructNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -20
-                    Debug.WriteLine("line : union")
+                    Me.TraceAction("line : union")
                     Me.CurrentScope.Lets.Add(CType(Me.GetValue(-1), TypeBaseNode).Name, CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -21
-                    Debug.WriteLine("line : class")
+                    Me.TraceAction("line : class")
                     Me.CurrentScope.Lets.Add(CType(Me.GetValue(-1), ClassNode).Name, CType(Me.GetValue(-1), ClassNode))
                     yy_token = Me.DoAction(SymbolTypes.line, 1, yy_value)
 
                 Case -22
-                    Debug.WriteLine("block : begin stmt END")
+                    Me.TraceAction("block : begin stmt END")
                     yy_value = Me.PopScope
                     yy_token = Me.DoAction(SymbolTypes.block, 3, yy_value)
 
                 Case -23
-                    Debug.WriteLine("begin : BEGIN")
+                    Me.TraceAction("begin : BEGIN")
                     Me.PushScope(New BlockNode(CType(Me.GetToken(-1), Token).LineNumber))
                     yy_token = Me.DoAction(SymbolTypes.begin_1, 1, yy_value)
 
                 Case -24
-                    Debug.WriteLine("expr : var")
+                    Me.TraceAction("expr : var")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -25
-                    Debug.WriteLine("expr : str")
+                    Me.TraceAction("expr : str")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -26
-                    Debug.WriteLine("expr : num")
+                    Me.TraceAction("expr : num")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -27
-                    Debug.WriteLine("expr : call")
+                    Me.TraceAction("expr : call")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -28
-                    Debug.WriteLine("expr : lambda")
+                    Me.TraceAction("expr : lambda")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -29
-                    Debug.WriteLine("expr : atvar")
+                    Me.TraceAction("expr : atvar")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -30
-                    Debug.WriteLine("expr : '[' list ']'")
+                    Me.TraceAction("expr : '[' list ']'")
                     CType(Me.GetValue(-2), IEvaluableListNode).AppendLineNumber(CType(Me.GetToken(-3), Token)) : yy_value = CType(Me.GetValue(-2), IEvaluableListNode)
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -31
-                    Debug.WriteLine("expr : '(' expr ')'")
+                    Me.TraceAction("expr : '(' expr ')'")
                     yy_value = CreateExpressionNode(CType(Me.GetValue(-2), IEvaluableNode), "()")
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -32
-                    Debug.WriteLine("expr : '(' list2n ')'")
+                    Me.TraceAction("expr : '(' list2n ')'")
                     yy_value = CreateTupleNode(CType(Me.GetValue(-2), IEvaluableListNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -33
-                    Debug.WriteLine("expr : ope expr")
+                    Me.TraceAction("expr : ope expr")
                     yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 2, yy_value)
 
                 Case -34
-                    Debug.WriteLine("expr : expr '.' fvar")
+                    Me.TraceAction("expr : expr '.' fvar")
                     yy_value = CreatePropertyNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetToken(-2), Token), CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -35
-                    Debug.WriteLine("expr : expr ope expr")
+                    Me.TraceAction("expr : expr ope expr")
                     yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -36
-                    Debug.WriteLine("expr : expr '[' expr ']'")
+                    Me.TraceAction("expr : expr '[' expr ']'")
                     yy_value = CreateFunctionCallNode(CreateVariableNode("[]", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 4, yy_value)
 
                 Case -37
-                    Debug.WriteLine("expr : expr '?' expr ':' expr")
+                    Me.TraceAction("expr : expr '?' expr ':' expr")
                     yy_value = CreateIfExpressionNode(CType(Me.GetValue(-5), IEvaluableNode), CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 5, yy_value)
 
                 Case -38
-                    Debug.WriteLine("expr : null")
+                    Me.TraceAction("expr : null")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.expr, 1, yy_value)
 
                 Case -39
-                    Debug.WriteLine("call : expr '(' list ')'")
+                    Me.TraceAction("call : expr '(' list ')'")
                     yy_value = CreateFunctionCallNode(CType(Me.GetValue(-4), IEvaluableNode), CType(Me.GetValue(-2), IEvaluableListNode).List.ToArray)
                     yy_token = Me.DoAction(SymbolTypes.[call], 4, yy_value)
 
                 Case -40
-                    Debug.WriteLine("list : void")
-                    yy_value = CreateListNode(Of IEvaluableNode)
+                    Me.TraceAction("list : void")
+                    yy_value = CreateListNode(Of IEvaluableNode)()
                     yy_token = Me.DoAction(SymbolTypes.list, 1, yy_value)
 
                 Case -41
-                    Debug.WriteLine("list : listn extra")
+                    Me.TraceAction("list : listn extra")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.list, 2, yy_value)
 
                 Case -42
-                    Debug.WriteLine("listn : expr")
+                    Me.TraceAction("listn : expr")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.listn, 1, yy_value)
 
                 Case -43
-                    Debug.WriteLine("listn : list2n")
+                    Me.TraceAction("listn : list2n")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.listn, 1, yy_value)
 
                 Case -44
-                    Debug.WriteLine("list2n : expr ',' expr")
+                    Me.TraceAction("list2n : expr ',' expr")
                     yy_value = CreateListNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.list2n, 3, yy_value)
 
                 Case -45
-                    Debug.WriteLine("list2n : list2n ',' expr")
+                    Me.TraceAction("list2n : list2n ',' expr")
                     CType(Me.GetValue(-3), IEvaluableListNode).List.Add(CType(Me.GetValue(-1), IEvaluableNode)) : yy_value = CType(Me.GetValue(-3), IEvaluableListNode)
                     yy_token = Me.DoAction(SymbolTypes.list2n, 3, yy_value)
 
                 Case -46
-                    Debug.WriteLine("let : LET var EQ expr")
+                    Me.TraceAction("let : LET var EQ expr")
                     yy_value = CreateLetNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 4, yy_value)
 
                 Case -47
-                    Debug.WriteLine("let : LET var ':' type EQ expr")
+                    Me.TraceAction("let : LET var ':' type EQ expr")
                     yy_value = CreateLetNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), IEvaluableNode), True)
                     yy_token = Me.DoAction(SymbolTypes.let_1, 6, yy_value)
 
                 Case -48
-                    Debug.WriteLine("let : expr '.' varx EQ expr")
+                    Me.TraceAction("let : expr '.' varx EQ expr")
                     yy_value = CreateLetNode(CreatePropertyNode(CType(Me.GetValue(-5), IEvaluableNode), CType(Me.GetToken(-4), Token), CType(Me.GetValue(-3), VariableNode)), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.let_1, 5, yy_value)
 
                 Case -49
-                    Debug.WriteLine("struct : STRUCT var EOL struct_block")
+                    Me.TraceAction("struct : STRUCT var EOL struct_block")
                     CType(Me.GetValue(-1), StructNode).Name = CType(Me.GetValue(-3), VariableNode).Name : yy_value = CType(Me.GetValue(-1), StructNode)
                     yy_token = Me.DoAction(SymbolTypes.struct_1, 4, yy_value)
 
                 Case -50
-                    Debug.WriteLine("struct : STRUCT var LT atvarn GT EOL struct_block")
+                    Me.TraceAction("struct : STRUCT var LT atvarn GT EOL struct_block")
                     CType(Me.GetValue(-1), StructNode).Name = CType(Me.GetValue(-6), VariableNode).Name : CType(Me.GetValue(-1), StructNode).Generics.AddRange(CType(Me.GetValue(-4), TypeListNode).List) : yy_value = CType(Me.GetValue(-1), StructNode)
                     yy_token = Me.DoAction(SymbolTypes.struct_1, 7, yy_value)
 
                 Case -51
-                    Debug.WriteLine("struct_block : struct_begin define END")
+                    Me.TraceAction("struct_block : struct_begin define END")
                     yy_value = Me.PopScope
                     yy_token = Me.DoAction(SymbolTypes.struct_block, 3, yy_value)
 
                 Case -52
-                    Debug.WriteLine("struct_begin : BEGIN")
+                    Me.TraceAction("struct_begin : BEGIN")
                     Me.PushScope(New StructNode(CType(Me.GetToken(-1), Token).LineNumber))
                     yy_token = Me.DoAction(SymbolTypes.struct_begin, 1, yy_value)
 
                 Case -53
-                    Debug.WriteLine("define : void")
+                    Me.TraceAction("define : void")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.define, 1, yy_value)
 
                 Case -54
-                    Debug.WriteLine("define : define LET var ':' type EOL")
+                    Me.TraceAction("define : define LET var ':' type EOL")
                     Me.CurrentScope.AddLet(CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), TypeBaseNode)))
                     yy_token = Me.DoAction(SymbolTypes.define, 6, yy_value)
 
                 Case -55
-                    Debug.WriteLine("define : define LET var EQ expr EOL")
+                    Me.TraceAction("define : define LET var EQ expr EOL")
                     Me.CurrentScope.AddLet(CreateLetNode(CType(Me.GetValue(-4), VariableNode), CType(Me.GetValue(-2), IEvaluableNode)))
                     yy_token = Me.DoAction(SymbolTypes.define, 6, yy_value)
 
                 Case -56
-                    Debug.WriteLine("define : define sub")
+                    Me.TraceAction("define : define sub")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.define, 2, yy_value)
 
                 Case -57
-                    Debug.WriteLine("atvarn : atvar")
+                    Me.TraceAction("atvarn : atvar")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.atvarn, 1, yy_value)
 
                 Case -58
-                    Debug.WriteLine("atvarn : atvarn ',' atvar")
+                    Me.TraceAction("atvarn : atvarn ',' atvar")
                     CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeBaseNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.atvarn, 3, yy_value)
 
                 Case -59
-                    Debug.WriteLine("union : UNION var EOL BEGIN unionn END")
+                    Me.TraceAction("union : UNION var EOL BEGIN unionn END")
                     yy_value = New UnionNode(CType(Me.GetValue(-5), VariableNode), CType(Me.GetValue(-2), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.union_1, 6, yy_value)
 
                 Case -60
-                    Debug.WriteLine("unionn : type EOL")
+                    Me.TraceAction("unionn : type EOL")
                     yy_value = CreateListNode(CType(Me.GetValue(-2), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.unionn, 2, yy_value)
 
                 Case -61
-                    Debug.WriteLine("unionn : unionn type EOL")
+                    Me.TraceAction("unionn : unionn type EOL")
                     CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-2), TypeBaseNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.unionn, 3, yy_value)
 
                 Case -62
-                    Debug.WriteLine("class : CLASS var LT atvarn GT EOL class_block")
+                    Me.TraceAction("class : CLASS var LT atvarn GT EOL class_block")
                     yy_value = CreateClassNode(CType(Me.GetValue(-6), VariableNode), CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-1), FunctionListNode))
                     yy_token = Me.DoAction(SymbolTypes.class_1, 7, yy_value)
 
                 Case -63
-                    Debug.WriteLine("class_block : BEGIN condn END")
+                    Me.TraceAction("class_block : BEGIN condn END")
                     yy_value = CType(Me.GetValue(-2), FunctionListNode)
                     yy_token = Me.DoAction(SymbolTypes.class_block, 3, yy_value)
 
                 Case -64
-                    Debug.WriteLine("cond : SUB fn where '(' args ')' typex EOL")
+                    Me.TraceAction("cond : SUB fn where '(' args ')' typex EOL")
                     yy_value = CreateFunctionNode(CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-4), DeclareListNode), CType(Me.GetValue(-2), TypeBaseNode), CType(Me.GetValue(-6), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.cond, 8, yy_value)
 
                 Case -65
-                    Debug.WriteLine("cond : SUB fn where '(' typen extra ')' typex EOL")
+                    Me.TraceAction("cond : SUB fn where '(' typen extra ')' typex EOL")
                     yy_value = CreateFunctionNode(CType(Me.GetValue(-8), VariableNode), CType(Me.GetValue(-5), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode), CType(Me.GetValue(-7), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.cond, 9, yy_value)
 
                 Case -66
-                    Debug.WriteLine("condn : cond")
+                    Me.TraceAction("condn : cond")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), FunctionNode))
                     yy_token = Me.DoAction(SymbolTypes.condn, 1, yy_value)
 
                 Case -67
-                    Debug.WriteLine("condn : condn cond")
+                    Me.TraceAction("condn : condn cond")
                     CType(Me.GetValue(-2), FunctionListNode).List.Add(CType(Me.GetValue(-1), FunctionNode)) : yy_value = CType(Me.GetValue(-2), FunctionListNode)
                     yy_token = Me.DoAction(SymbolTypes.condn, 2, yy_value)
 
                 Case -68
-                    Debug.WriteLine("sub : SUB fn where '(' args ')' typex EOL sub_block")
+                    Me.TraceAction("sub : SUB fn where '(' args ')' typex EOL sub_block")
                     yy_value = CreateFunctionNode(CType(Me.GetValue(-1), FunctionNode), CType(Me.GetValue(-8), VariableNode), CType(Me.GetValue(-5), DeclareListNode), CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-7), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.sub_1, 9, yy_value)
 
                 Case -69
-                    Debug.WriteLine("sub_block : sub_begin stmt END")
+                    Me.TraceAction("sub_block : sub_begin stmt END")
                     yy_value = Me.PopScope
                     yy_token = Me.DoAction(SymbolTypes.sub_block, 3, yy_value)
 
                 Case -70
-                    Debug.WriteLine("sub_begin : BEGIN")
+                    Me.TraceAction("sub_begin : BEGIN")
                     Me.PushScope(New FunctionNode(CType(Me.GetToken(-1), Token).LineNumber))
                     yy_token = Me.DoAction(SymbolTypes.sub_begin, 1, yy_value)
 
                 Case -71
-                    Debug.WriteLine("fn : var")
+                    Me.TraceAction("fn : var")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.fn, 1, yy_value)
 
                 Case -72
-                    Debug.WriteLine("fn : ope")
+                    Me.TraceAction("fn : ope")
                     yy_value = CreateVariableNode(CType(Me.GetValue(-1), TokenNode).Token)
                     yy_token = Me.DoAction(SymbolTypes.fn, 1, yy_value)
 
                 Case -73
-                    Debug.WriteLine("where : void")
+                    Me.TraceAction("where : void")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.[where], 1, yy_value)
 
                 Case -74
-                    Debug.WriteLine("where : LT nsvarn GT")
+                    Me.TraceAction("where : LT nsvarn GT")
                     yy_value = CType(Me.GetValue(-2), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.[where], 3, yy_value)
 
                 Case -75
-                    Debug.WriteLine("args : void")
-                    yy_value = CreateListNode(Of DeclareNode)
+                    Me.TraceAction("args : void")
+                    yy_value = CreateListNode(Of DeclareNode)()
                     yy_token = Me.DoAction(SymbolTypes.args, 1, yy_value)
 
                 Case -76
-                    Debug.WriteLine("args : argn extra")
+                    Me.TraceAction("args : argn extra")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.args, 2, yy_value)
 
                 Case -77
-                    Debug.WriteLine("argn : decla")
+                    Me.TraceAction("argn : decla")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), DeclareNode))
                     yy_token = Me.DoAction(SymbolTypes.argn, 1, yy_value)
 
                 Case -78
-                    Debug.WriteLine("argn : argn ',' decla")
+                    Me.TraceAction("argn : argn ',' decla")
                     CType(Me.GetValue(-3), DeclareListNode).List.Add(CType(Me.GetValue(-1), DeclareNode)) : yy_value = CType(Me.GetValue(-3), DeclareListNode)
                     yy_token = Me.DoAction(SymbolTypes.argn, 3, yy_value)
 
                 Case -79
-                    Debug.WriteLine("decla : var ':' type")
+                    Me.TraceAction("decla : var ':' type")
                     yy_value = New DeclareNode(CType(Me.GetValue(-3), VariableNode), CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.decla, 3, yy_value)
 
                 Case -80
-                    Debug.WriteLine("type : typev")
+                    Me.TraceAction("type : typev")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.type, 1, yy_value)
 
                 Case -81
-                    Debug.WriteLine("type : typev '?'")
+                    Me.TraceAction("type : typev '?'")
                     yy_value = CType(Me.GetValue(-2), TypeBaseNode) : CType(Me.GetValue(-2), TypeBaseNode).Nullable = True
                     yy_token = Me.DoAction(SymbolTypes.type, 2, yy_value)
 
                 Case -82
-                    Debug.WriteLine("type : '{' types '}'")
+                    Me.TraceAction("type : '{' types '}'")
                     yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-2), TypeListNode), Nothing, CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 3, yy_value)
 
                 Case -83
-                    Debug.WriteLine("type : '{' types ARROW type '}'")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode),      CType(Me.GetToken(-5), Token))
+                    Me.TraceAction("type : '{' types ARROW type '}'")
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode), CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -84
-                    Debug.WriteLine("typev : nsvar")
+                    Me.TraceAction("typev : nsvar")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.typev, 1, yy_value)
 
                 Case -85
-                    Debug.WriteLine("typev : '[' type ']'")
+                    Me.TraceAction("typev : '[' type ']'")
                     yy_value = New TypeArrayNode(CType(Me.GetValue(-2), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.typev, 3, yy_value)
 
                 Case -86
-                    Debug.WriteLine("typev : '[' typeor ']'")
+                    Me.TraceAction("typev : '[' typeor ']'")
                     CType(Me.GetValue(-2), TypeListNode).AppendLineNumber(CType(Me.GetToken(-3), Token)) : yy_value = New UnionNode(CType(Me.GetValue(-2), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.typev, 3, yy_value)
 
                 Case -87
-                    Debug.WriteLine("typev : atvar")
+                    Me.TraceAction("typev : atvar")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.typev, 1, yy_value)
 
                 Case -88
-                    Debug.WriteLine("typev : '[' type2n ']'")
+                    Me.TraceAction("typev : '[' type2n ']'")
                     yy_value = New TypeTupleNode(CType(Me.GetValue(-2), TypeListNode))
                     yy_token = Me.DoAction(SymbolTypes.typev, 3, yy_value)
 
                 Case -89
-                    Debug.WriteLine("nsvarn : nsvar")
+                    Me.TraceAction("nsvarn : nsvar")
                     yy_value = CreateListNode(Of TypeBaseNode)(CType(Me.GetValue(-1), TypeNode))
                     yy_token = Me.DoAction(SymbolTypes.nsvarn, 1, yy_value)
 
                 Case -90
-                    Debug.WriteLine("nsvarn : nsvarn ',' nsvar")
+                    Me.TraceAction("nsvarn : nsvarn ',' nsvar")
                     CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.nsvarn, 3, yy_value)
 
                 Case -91
-                    Debug.WriteLine("nsvar : varx")
+                    Me.TraceAction("nsvar : varx")
                     yy_value = New TypeNode(CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.nsvar, 1, yy_value)
 
                 Case -92
-                    Debug.WriteLine("nsvar : nsvar '.' varx")
+                    Me.TraceAction("nsvar : nsvar '.' varx")
                     yy_value = New TypeNode(CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.nsvar, 3, yy_value)
 
                 Case -93
-                    Debug.WriteLine("nsvar : nsvar '(' typen ')'")
+                    Me.TraceAction("nsvar : nsvar '(' typen ')'")
                     CType(Me.GetValue(-4), TypeNode).Arguments = CType(Me.GetValue(-2), TypeListNode).List : yy_value = CType(Me.GetValue(-4), TypeNode)
                     yy_token = Me.DoAction(SymbolTypes.nsvar, 4, yy_value)
 
                 Case -94
-                    Debug.WriteLine("typex : void")
+                    Me.TraceAction("typex : void")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.typex, 1, yy_value)
 
                 Case -95
-                    Debug.WriteLine("typex : type")
+                    Me.TraceAction("typex : type")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.typex, 1, yy_value)
 
                 Case -96
-                    Debug.WriteLine("types : void")
+                    Me.TraceAction("types : void")
                     yy_value = CreateListNode(Of TypeBaseNode)()
                     yy_token = Me.DoAction(SymbolTypes.types, 1, yy_value)
 
                 Case -97
-                    Debug.WriteLine("types : typen extra")
+                    Me.TraceAction("types : typen extra")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.types, 2, yy_value)
 
                 Case -98
-                    Debug.WriteLine("typen : type")
+                    Me.TraceAction("typen : type")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.typen, 1, yy_value)
 
                 Case -99
-                    Debug.WriteLine("typen : typen ',' type")
+                    Me.TraceAction("typen : typen ',' type")
                     CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeBaseNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.typen, 3, yy_value)
 
                 Case -100
-                    Debug.WriteLine("type2n : type ',' typen")
+                    Me.TraceAction("type2n : type ',' typen")
                     CType(Me.GetValue(-1), TypeListNode).List.Insert(0, CType(Me.GetValue(-3), TypeBaseNode)) : yy_value = CType(Me.GetValue(-1), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.type2n, 3, yy_value)
 
                 Case -101
-                    Debug.WriteLine("typeor : type OR type")
+                    Me.TraceAction("typeor : type OR type")
                     yy_value = CreateListNode(CType(Me.GetValue(-3), TypeBaseNode), CType(Me.GetValue(-1), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.typeor, 3, yy_value)
 
                 Case -102
-                    Debug.WriteLine("typeor : typeor OR type")
+                    Me.TraceAction("typeor : typeor OR type")
                     CType(Me.GetValue(-3), TypeListNode).List.Add(CType(Me.GetValue(-1), TypeBaseNode)) : yy_value = CType(Me.GetValue(-3), TypeListNode)
                     yy_token = Me.DoAction(SymbolTypes.typeor, 3, yy_value)
 
                 Case -103
-                    Debug.WriteLine("lambda : '{' lambda_args ARROW lambda_func '}'")
+                    Me.TraceAction("lambda : '{' lambda_args ARROW lambda_func '}'")
                     yy_value = CreateImplicitLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-4), DeclareListNode), Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 5, yy_value)
 
                 Case -104
-                    Debug.WriteLine("lambda : '{' '(' lambda_args ')' typex ARROW lambda_func '}'")
+                    Me.TraceAction("lambda : '{' '(' lambda_args ')' typex ARROW lambda_func '}'")
                     yy_value = CreateLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-2), FunctionNode), CType(Me.GetValue(-6), DeclareListNode), CType(Me.GetValue(-4), TypeBaseNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda, 8, yy_value)
 
                 Case -105
-                    Debug.WriteLine("lambda : ARROW lambda_func")
+                    Me.TraceAction("lambda : ARROW lambda_func")
                     yy_value = CreateImplicitLambdaFunction(Me.CurrentScope, CType(Me.GetValue(-1), FunctionNode), Nothing, Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda, 2, yy_value)
 
                 Case -106
-                    Debug.WriteLine("lambda_func : expr")
+                    Me.TraceAction("lambda_func : expr")
                     yy_value = ToLambdaExpression(Me.CurrentScope, CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda_func, 1, yy_value)
 
                 Case -107
-                    Debug.WriteLine("lambda_func : EOL sub_block")
+                    Me.TraceAction("lambda_func : EOL sub_block")
                     yy_value = CType(Me.GetValue(-1), FunctionNode)
                     yy_token = Me.DoAction(SymbolTypes.lambda_func, 2, yy_value)
 
                 Case -108
-                    Debug.WriteLine("lambda_arg : var")
+                    Me.TraceAction("lambda_arg : var")
                     yy_value = New DeclareNode(CType(Me.GetValue(-1), VariableNode), Nothing)
                     yy_token = Me.DoAction(SymbolTypes.lambda_arg, 1, yy_value)
 
                 Case -109
-                    Debug.WriteLine("lambda_arg : decla")
+                    Me.TraceAction("lambda_arg : decla")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.lambda_arg, 1, yy_value)
 
                 Case -110
-                    Debug.WriteLine("lambda_args : void")
+                    Me.TraceAction("lambda_args : void")
                     yy_value = CreateListNode(Of DeclareNode)()
                     yy_token = Me.DoAction(SymbolTypes.lambda_args, 1, yy_value)
 
                 Case -111
-                    Debug.WriteLine("lambda_args : lambda_argn extra")
+                    Me.TraceAction("lambda_args : lambda_argn extra")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.lambda_args, 2, yy_value)
 
                 Case -112
-                    Debug.WriteLine("lambda_argn : lambda_arg")
+                    Me.TraceAction("lambda_argn : lambda_arg")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), DeclareNode))
                     yy_token = Me.DoAction(SymbolTypes.lambda_argn, 1, yy_value)
 
                 Case -113
-                    Debug.WriteLine("lambda_argn : lambda_argn ',' lambda_arg")
+                    Me.TraceAction("lambda_argn : lambda_argn ',' lambda_arg")
                     CType(Me.GetValue(-3), DeclareListNode).List.Add(CType(Me.GetValue(-1), DeclareNode)) : yy_value = CType(Me.GetValue(-3), DeclareListNode)
                     yy_token = Me.DoAction(SymbolTypes.lambda_argn, 3, yy_value)
 
                 Case -114
-                    Debug.WriteLine("if : ifthen")
+                    Me.TraceAction("if : ifthen")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.if_1, 1, yy_value)
 
                 Case -115
-                    Debug.WriteLine("if : elseif")
+                    Me.TraceAction("if : elseif")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.if_1, 1, yy_value)
 
                 Case -116
-                    Debug.WriteLine("if : ifthen ELSE EOL block")
+                    Me.TraceAction("if : ifthen ELSE EOL block")
                     yy_value = AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -117
-                    Debug.WriteLine("if : elseif ELSE EOL block")
+                    Me.TraceAction("if : elseif ELSE EOL block")
                     yy_value = AddElse(CType(Me.GetValue(-4), IfNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.if_1, 4, yy_value)
 
                 Case -118
-                    Debug.WriteLine("ifthen : IF expr EOL block")
+                    Me.TraceAction("ifthen : IF expr EOL block")
                     yy_value = CreateIfNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.ifthen, 4, yy_value)
 
                 Case -119
-                    Debug.WriteLine("ifthen : IF var ':' type EQ expr EOL block")
+                    Me.TraceAction("ifthen : IF var ':' type EQ expr EOL block")
                     yy_value = CreateIfCastNode(CType(Me.GetValue(-7), VariableNode), CType(Me.GetValue(-5), TypeBaseNode), CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), BlockNode))
                     yy_token = Me.DoAction(SymbolTypes.ifthen, 8, yy_value)
 
                 Case -120
-                    Debug.WriteLine("elseif : ifthen ELSE ifthen")
+                    Me.TraceAction("elseif : ifthen ELSE ifthen")
                     yy_value = AddElse(CType(Me.GetValue(-3), IfNode), ToBlock(Me.CurrentScope, CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -121
-                    Debug.WriteLine("elseif : elseif ELSE ifthen")
+                    Me.TraceAction("elseif : elseif ELSE ifthen")
                     yy_value = AddElse(CType(Me.GetValue(-3), IfNode), ToBlock(Me.CurrentScope, CType(Me.GetValue(-1), IfNode)))
                     yy_token = Me.DoAction(SymbolTypes.[elseif], 3, yy_value)
 
                 Case -122
-                    Debug.WriteLine("switch : SWITCH expr EOL case_block")
+                    Me.TraceAction("switch : SWITCH expr EOL case_block")
                     yy_value = CType(Me.GetValue(-1), SwitchNode) : CType(Me.GetValue(-1), SwitchNode).Expression = CType(Me.GetValue(-3), IEvaluableNode) : CType(Me.GetValue(-1), SwitchNode).AppendLineNumber(CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.switch_1, 4, yy_value)
 
                 Case -123
-                    Debug.WriteLine("case_block : BEGIN casen END")
+                    Me.TraceAction("case_block : BEGIN casen END")
                     yy_value = CType(Me.GetValue(-2), SwitchNode)
                     yy_token = Me.DoAction(SymbolTypes.case_block, 3, yy_value)
 
                 Case -124
-                    Debug.WriteLine("casen : case")
+                    Me.TraceAction("casen : case")
                     yy_value = CreateSwitchNode(CType(Me.GetValue(-1), ICaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 1, yy_value)
 
                 Case -125
-                    Debug.WriteLine("casen : casen case")
+                    Me.TraceAction("casen : casen case")
                     yy_value = CType(Me.GetValue(-2), SwitchNode) : CType(Me.GetValue(-2), SwitchNode).Case.Add(CType(Me.GetValue(-1), ICaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 2, yy_value)
 
                 Case -126
-                    Debug.WriteLine("case : case_expr ARROW EOL")
+                    Me.TraceAction("case : case_expr ARROW EOL")
                     yy_value = CType(Me.GetValue(-3), ICaseNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 3, yy_value)
 
                 Case -127
-                    Debug.WriteLine("case : case_expr ARROW EOL block")
+                    Me.TraceAction("case : case_expr ARROW EOL block")
                     yy_value = CType(Me.GetValue(-4), ICaseNode) : CType(Me.GetValue(-4), ICaseNode).Then = CType(Me.GetValue(-1), BlockNode)
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -128
-                    Debug.WriteLine("case : case_expr ARROW expr EOL")
+                    Me.TraceAction("case : case_expr ARROW expr EOL")
                     yy_value = CType(Me.GetValue(-4), ICaseNode) : CType(Me.GetValue(-4), ICaseNode).Then = ToLambdaExpressionBlock(Me.CurrentScope, CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.[case], 4, yy_value)
 
                 Case -129
-                    Debug.WriteLine("case_expr : var")
+                    Me.TraceAction("case_expr : var")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 1, yy_value)
 
                 Case -130
-                    Debug.WriteLine("case_expr : num")
+                    Me.TraceAction("case_expr : num")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 1, yy_value)
 
                 Case -131
-                    Debug.WriteLine("case_expr : str")
+                    Me.TraceAction("case_expr : str")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 1, yy_value)
 
                 Case -132
-                    Debug.WriteLine("case_expr : var ':' type")
+                    Me.TraceAction("case_expr : var ':' type")
                     yy_value = CreateCaseCastNode(CType(Me.GetValue(-1), TypeBaseNode), CType(Me.GetValue(-3), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -133
-                    Debug.WriteLine("case_expr : '[' array_pattern ']'")
+                    Me.TraceAction("case_expr : '[' array_pattern ']'")
                     yy_value = CreateCaseArrayNode(CType(Me.GetValue(-2), VariableListNode), CType(Me.GetToken(-3), Token))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -134
-                    Debug.WriteLine("case_expr : '(' tupple_pattern ')'")
-                    
+                    Me.TraceAction("case_expr : '(' tupple_pattern ')'")
+
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 3, yy_value)
 
                 Case -135
-                    Debug.WriteLine("array_pattern : patterns")
+                    Me.TraceAction("array_pattern : patterns")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.array_pattern, 1, yy_value)
 
                 Case -136
-                    Debug.WriteLine("tupple_pattern : patterns")
+                    Me.TraceAction("tupple_pattern : patterns")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.tupple_pattern, 1, yy_value)
 
                 Case -137
-                    Debug.WriteLine("patterns : void")
+                    Me.TraceAction("patterns : void")
                     yy_value = CreateListNode(Of VariableNode)()
                     yy_token = Me.DoAction(SymbolTypes.patterns, 1, yy_value)
 
                 Case -138
-                    Debug.WriteLine("patterns : patternn extra")
+                    Me.TraceAction("patterns : patternn extra")
                     yy_value = Me.DefaultAction(2)
                     yy_token = Me.DoAction(SymbolTypes.patterns, 2, yy_value)
 
                 Case -139
-                    Debug.WriteLine("patternn : pattern")
+                    Me.TraceAction("patternn : pattern")
                     yy_value = CreateListNode(CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.patternn, 1, yy_value)
 
                 Case -140
-                    Debug.WriteLine("patternn : patternn ',' pattern")
+                    Me.TraceAction("patternn : patternn ',' pattern")
                     CType(Me.GetValue(-3), VariableListNode).List.Add(CType(Me.GetValue(-1), VariableNode)) : yy_value = CType(Me.GetValue(-3), VariableListNode)
                     yy_token = Me.DoAction(SymbolTypes.patternn, 3, yy_value)
 
                 Case -141
-                    Debug.WriteLine("pattern : var")
+                    Me.TraceAction("pattern : var")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.pattern, 1, yy_value)
 
                 Case -142
-                    Debug.WriteLine("var : VAR")
+                    Me.TraceAction("var : VAR")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.var_1, 1, yy_value)
 
                 Case -143
-                    Debug.WriteLine("var : '(' ope ')'")
+                    Me.TraceAction("var : '(' ope ')'")
                     yy_value = CreateVariableNode(CType(Me.GetValue(-2), TokenNode).Token)
                     yy_token = Me.DoAction(SymbolTypes.var_1, 3, yy_value)
 
                 Case -144
-                    Debug.WriteLine("varx : var")
+                    Me.TraceAction("varx : var")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -145
-                    Debug.WriteLine("varx : SUB")
+                    Me.TraceAction("varx : SUB")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -146
-                    Debug.WriteLine("varx : IF")
+                    Me.TraceAction("varx : IF")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -147
-                    Debug.WriteLine("varx : ELSE")
+                    Me.TraceAction("varx : ELSE")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -148
-                    Debug.WriteLine("varx : LET")
+                    Me.TraceAction("varx : LET")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -149
-                    Debug.WriteLine("varx : USE")
+                    Me.TraceAction("varx : USE")
                     yy_value = CreateVariableNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.varx, 1, yy_value)
 
                 Case -150
-                    Debug.WriteLine("fvar : varx")
+                    Me.TraceAction("fvar : varx")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.fvar, 1, yy_value)
 
                 Case -151
-                    Debug.WriteLine("fvar : NUM")
+                    Me.TraceAction("fvar : NUM")
                     yy_value = CreateVariableNode(CType(Me.GetValue(-1), NumericNode).Format, CType(Me.GetValue(-1), NumericNode))
                     yy_token = Me.DoAction(SymbolTypes.fvar, 1, yy_value)
 
                 Case -152
-                    Debug.WriteLine("atvar : ATVAR")
+                    Me.TraceAction("atvar : ATVAR")
                     yy_value = New TypeNode(CreateVariableNode(CType(Me.GetToken(-1), Token))) With {.IsGeneric = True}
                     yy_token = Me.DoAction(SymbolTypes.atvar_1, 1, yy_value)
 
                 Case -153
-                    Debug.WriteLine("num : NUM")
+                    Me.TraceAction("num : NUM")
                     yy_value = CType(Me.GetValue(-1), NumericNode)
                     yy_token = Me.DoAction(SymbolTypes.num_1, 1, yy_value)
 
                 Case -154
-                    Debug.WriteLine("str : STR")
+                    Me.TraceAction("str : STR")
                     yy_value = New StringNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.str_1, 1, yy_value)
 
                 Case -155
-                    Debug.WriteLine("str : str STR")
+                    Me.TraceAction("str : str STR")
                     CType(Me.GetValue(-2), StringNode).String.Append(CType(Me.GetToken(-1), Token).Name) : yy_value = CType(Me.GetValue(-2), StringNode)
                     yy_token = Me.DoAction(SymbolTypes.str_1, 2, yy_value)
 
                 Case -156
-                    Debug.WriteLine("null : NULL")
+                    Me.TraceAction("null : NULL")
                     yy_value = New NullNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.null_1, 1, yy_value)
 
                 Case -157
-                    Debug.WriteLine("ope : OPE")
+                    Me.TraceAction("ope : OPE")
                     yy_value = New TokenNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.ope_1, 1, yy_value)
 
                 Case -158
-                    Debug.WriteLine("ope : OR")
+                    Me.TraceAction("ope : OR")
                     yy_value = New TokenNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.ope_1, 1, yy_value)
 
                 Case -159
-                    Debug.WriteLine("ope : LT")
+                    Me.TraceAction("ope : LT")
                     yy_value = New TokenNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.ope_1, 1, yy_value)
 
                 Case -160
-                    Debug.WriteLine("ope : GT")
+                    Me.TraceAction("ope : GT")
                     yy_value = New TokenNode(CType(Me.GetToken(-1), Token))
                     yy_token = Me.DoAction(SymbolTypes.ope_1, 1, yy_value)
 
                 Case -161
-                    Debug.WriteLine("extra : void")
+                    Me.TraceAction("extra : void")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.extra, 1, yy_value)
 
                 Case -162
-                    Debug.WriteLine("extra : ','")
+                    Me.TraceAction("extra : ','")
                     yy_value = Me.DefaultAction(1)
                     yy_token = Me.DoAction(SymbolTypes.extra, 1, yy_value)
 
                 Case -163
-                    Debug.WriteLine("void :")
+                    Me.TraceAction("void :")
                     yy_value = Nothing
                     yy_token = Me.DoAction(SymbolTypes.void, 0, yy_value)
 
@@ -1191,6 +1191,12 @@ Namespace Parser
             Debug.Fail("syntax error")
             Dim t = lex.PeekToken
             Throw New SyntaxErrorException(t.LineNumber, t.LineColumn, "syntax error")
+        End Sub
+
+        <Conditional("TRACE")>
+        Public Overridable Sub TraceAction(s As String)
+
+            Debug.WriteLine(s)
         End Sub
     End Class
 
