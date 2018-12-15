@@ -19,8 +19,8 @@ Namespace Architecture
         Public Overridable Sub Assemble(root As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
 
             Dim name As New AssemblyName(entrypoint.Name)
-            Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-            Me.Module = asm.DefineDynamicModule(entrypoint.Name, System.IO.Path.GetRandomFileName, True)
+            Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, IO.Path.GetDirectoryName(path))
+            Me.Module = asm.DefineDynamicModule(entrypoint.Name, IO.Path.GetFileName(path), True)
 
             Dim structs = Me.DeclareStructs(root)
             Dim functions = Me.DeclareMethods(root, structs)
@@ -35,19 +35,7 @@ Namespace Architecture
                 If ctor IsNot Nothing Then asm.SetEntryPoint(functions(ctor), subsystem)
             End If
             Me.Module.CreateGlobalFunctions()
-
-            Dim temp = System.IO.Path.GetFileName(Me.Module.FullyQualifiedName)
-            Dim pdb = System.IO.Path.GetFileNameWithoutExtension(temp) + ".pdb"
-            Try
-                asm.Save(temp)
-                System.IO.File.Copy(temp, path, True)
-                System.IO.File.Copy(temp, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(path), System.IO.Path.GetFileNameWithoutExtension(path) + ".pdb"), True)
-
-            Finally
-                System.IO.File.Delete(temp)
-                System.IO.File.Delete(pdb)
-
-            End Try
+            asm.Save(IO.Path.GetFileName(path))
         End Sub
 
         Public Overridable Function ConvertValidName(s As String) As String
@@ -185,10 +173,17 @@ Namespace Architecture
                 If map.ContainsKey(f) Then Continue For
                 Dim name = CreateManglingName(f)
                 Dim exists = map.Values.FindFirstOrNull(Function(t) name.Equals(t.Name))
-                map(f) = If(exists, Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs, True).Type, Me.RkToCILType(f.Arguments, structs)))
+                map(f) = If(exists, Me.DeclareMethod(root, structs, f))
             Next
 
             Return map
+        End Function
+
+        Public Overridable Function DeclareMethod(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData), f As IFunction) As MethodBuilder
+
+            Dim builder = Me.Module.DefineGlobalMethod($"{CurrentNamespace(f.Scope).Name}.{f.CreateManglingName}", MethodAttributes.Static Or MethodAttributes.Public, Me.RkToCILType(f.Return, structs, True).Type, Me.RkToCILType(f.Arguments, structs))
+            f.Arguments.Each(Sub(x, i) builder.DefineParameter(i + 1, ParameterAttributes.HasDefault, x.Name))
+            Return builder
         End Function
 
         Public Overridable Sub Emit_WriteLine(il As ILGenerator, Optional t As Type = Nothing)
@@ -532,6 +527,8 @@ Namespace Architecture
             Dim labels = stmts.Where(Function(x) TypeOf x Is InLabel).ToHash_ValueDerivation(Function(x) il.DefineLabel)
 
             For Each stmt In stmts
+
+                il.MarkSequencePoint(Me.Module.DefineDocument("dummy", Guid.Empty, Guid.Empty, Guid.Empty), 1, 0, 1, 0)
 
                 If TypeOf stmt Is IReturnBind Then
 
