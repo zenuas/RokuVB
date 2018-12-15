@@ -361,10 +361,17 @@ Namespace Compiler
 
                         body.Add(New InGoto With {.Label = endif_})
                         Dim else_ = make_stmts(node.Else.Statements)
-                        if_.Else = New InLabel
-                        else_.Insert(0, if_.Else)
-                        body.AddRange(else_)
-                        Coverage.Case()
+                        If else_.Count = 1 AndAlso TypeOf else_(0) Is InGoto Then
+
+                            if_.Else = CType(else_(0), InGoto).Label
+                            Coverage.Case()
+                        Else
+
+                            if_.Else = New InLabel
+                            else_.Insert(0, if_.Else)
+                            body.AddRange(else_)
+                            Coverage.Case()
+                        End If
                     Else
 
                         if_.Else = endif_
