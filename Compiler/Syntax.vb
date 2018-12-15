@@ -11,7 +11,6 @@ Namespace Compiler
 
         Public Shared Sub SwitchCaseArray(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
-            Return
             Util.Traverse.NodesOnce(
                 pgm,
                 New With {.VarIndex = 0, .Scope = CType(pgm, IScopeNode)},

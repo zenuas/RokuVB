@@ -842,30 +842,6 @@ Namespace Compiler
 
                             Dim node = CType(child, CaseCastNode)
                             set_type(node.Var, Function() node.Declare.Type)
-
-                        ElseIf TypeOf child Is CaseArrayNode Then
-
-                            Dim switch = CType(parent, SwitchNode)
-                            Dim case_ = CType(child, CaseArrayNode)
-
-                            Dim xs = switch.Expression.Type
-                            If root.IsArray(xs) Then
-
-                                Dim x = root.GetArrayType(xs)
-                                If x IsNot Nothing Then
-
-                                    If case_.Pattern.Count = 1 Then
-
-                                        set_type(case_.Pattern(0), Function() x)
-                                        Coverage.Case()
-
-                                    ElseIf case_.Pattern.Count > 1 Then
-
-                                        case_.Pattern.Each(Sub(p, i) set_type(p, Function() If(i < case_.Pattern.Count - 1, x, xs)))
-                                        Coverage.Case()
-                                    End If
-                                End If
-                            End If
                         End If
 
                         next_(child, If(TypeOf child Is IHaveScopeType, CType(CType(child, IHaveScopeType).Type, IScope), current))

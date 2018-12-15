@@ -284,6 +284,7 @@ Namespace Compiler
                 End Function
             Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
             Dim make_switch As Func(Of SwitchNode, List(Of InCode0)) = Nothing
+            Dim break_point As New Stack(Of InLabel)
             Dim make_stmts As Func(Of List(Of IStatementNode), List(Of InCode0)) =
                 Function(stmts)
 
@@ -313,6 +314,11 @@ Namespace Compiler
                             If node.Function.IsAnonymous Then args.Insert(0, to_value(node.Expression))
                             body.AddRange(node.Function.CreateCall(args.ToArray))
                             Coverage.Case()
+
+                        ElseIf TypeOf stmt Is BreakNode Then
+
+                            body.Add(New InGoto With {.Label = break_point.Peek})
+                            Coverage.Case()
                         End If
                     Next
                     Return body
@@ -321,7 +327,7 @@ Namespace Compiler
                 Function(node)
 
                     Dim if_ = New InIf
-                    Dim then_ = make_stmts(node.Then.Statements)
+                    Dim then_ = If(node.Then Is Nothing, New List(Of InCode0), make_stmts(node.Then.Statements))
                     Dim body As New List(Of InCode0)
 
                     If TypeOf node Is IfCastNode Then
@@ -394,6 +400,7 @@ Namespace Compiler
 
                         Dim case_ = switch.Case(i)
                         Dim next_ = case_labels(i)
+                        break_point.Push(next_)
 
                         If TypeOf case_ Is CaseCastNode Then
 
@@ -416,62 +423,12 @@ Namespace Compiler
 
                         ElseIf TypeOf case_ Is CaseArrayNode Then
 
-                            get_count()
                             Dim case_array = CType(case_, CaseArrayNode)
-                            Select Case case_array.Pattern.Count
-                                Case 0
-                                    ' $$ = switch.Expression.Count == 0
-                                    ' if $$
-                                    '     case_.Then.Statements
-                                    '     goto last_label
-                                    ' else ...
-                                    body.AddRange(eq().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = func}))
-                                    Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
-                                    body.Add(if_)
-                                    If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
-                                    body.Add(New InGoto With {.Label = last_label})
-
-                                Case 1
-                                    ' $$ = switch.Expression.Count == 1
-                                    ' if $$
-                                    '     x = switch.Expression[0]
-                                    '     case_.Then.Statements
-                                    '     goto last_label
-                                    ' else ...
-                                    body.AddRange(eq().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = 1, .Type = int_, .Scope = func}))
-                                    Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
-                                    body.Add(if_)
-                                    index().CreateCallReturn(to_value(case_array.Pattern(0)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = 0, .Type = int_, .Scope = func})
-                                    If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
-                                    body.Add(New InGoto With {.Label = last_label})
-
-                                Case Else
-                                    ' $$ = switch.Expression.Count >= n
-                                    ' if $$
-                                    '     x  = switch.Expression[0]
-                                    '     xs = switch.Expression[n...]
-                                    '     case_.Then.Statements
-                                    '     goto last_label
-                                    ' else ...
-                                    body.AddRange(gte().CreateCallReturn(eq_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = func}))
-                                    Dim if_ As New InIf With {.Condition = eq_r, .Else = next_}
-                                    body.Add(if_)
-                                    For j = 0 To case_array.Pattern.Count - 2
-
-                                        body.AddRange(index().CreateCallReturn(to_value(case_array.Pattern(j)), to_value(switch.Expression), New OpNumeric32 With {.Numeric = CUInt(j), .Type = int_, .Scope = func}))
-                                    Next
-                                    body.AddRange(minus().CreateCallReturn(minus_r, count_r, New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = func}))
-                                    body.AddRange(
-                                        get_range().CreateCallReturn(
-                                            to_value(case_array.Pattern(case_array.Pattern.Count - 1)),
-                                            to_value(switch.Expression),
-                                            New OpNumeric32 With {.Numeric = CUInt(case_array.Pattern.Count - 1), .Type = int_, .Scope = func},
-                                            minus_r))
-                                    If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
-                                    body.Add(New InGoto With {.Label = last_label})
-
-                            End Select
+                            body.AddRange(make_stmts(case_array.Statements))
+                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                            body.Add(New InGoto With {.Label = last_label})
                         End If
+                        break_point.Pop()
                         body.Add(next_)
                     Next
 
