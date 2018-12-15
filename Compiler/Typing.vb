@@ -1017,20 +1017,14 @@ Namespace Compiler
 
                                     Dim f = FixedFunction(root, ns, node)
 
-                                    If f IsNot Nothing AndAlso f IsNot node.Function AndAlso Not f.Is(node.Function) Then
+                                    If f IsNot Nothing AndAlso f IsNot node.Function Then
 
                                         node.Function = f
-                                        If TypeOf node.Function Is RkUnionType AndAlso CType(node.Function, RkUnionType).Types.Count > 1 Then
+                                        ApplyFeedback(pgm, root, node.Function, node, current)
+                                        If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
+                                            pgm.AddFixedGenericFunction(node.Function)
                                             Coverage.Case()
-                                        Else
-
-                                            ApplyFeedback(pgm, root, node.Function, node, current)
-                                            If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
-
-                                                pgm.AddFixedGenericFunction(node.Function)
-                                                Coverage.Case()
-                                            End If
                                         End If
 
                                         type_fix = True
