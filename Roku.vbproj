@@ -110,7 +110,6 @@
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\INamedFunction.vb" />
     <Compile Include="Node\NullNode.vb" />
-    <Compile Include="Util\Reference.vb" />
     <Compile Include="Util\TypeHelper.vb" />
     <None Include="App.config">
       <SubType>Designer</SubType>
