@@ -9,3 +9,43 @@ var xs = co()
 #=>two
 #=>three
 xs.each(=> print($1))
+
+# コルーチンの変換
+# 
+# 関数coは次の通り変換する
+# struct co
+#     var state = 0
+#     var next = 0 # 0...未実行、-1...終端、1以上...実行済み
+#     var value: String
+# sub car(self: co) String
+#     if self.next >= 1 then return(self.value)
+#     if self.state == 1 then goto state1_
+#     if self.state == 2 then goto state2_
+#     if self.state == 3 then goto state3_
+#     if self.state == -1 then goto end_
+#     # yield("one")
+#     self.next = 1
+#     self.value = "one"
+#     return(self.value)
+#     state1_:
+#     # yield("two")
+#     self.next = 2
+#     self.value = "one"
+#     return(self.value)
+#     state2_:
+#     # yield("three")
+#     self.next = 3
+#     self.value = "one"
+#     return(self.value)
+#     state3_:
+#     end_:
+#     self.next = -1
+#     #return()
+# sub cdr(self: co) [String]
+#     self.car()
+#     var xs = co()
+#     xs.state = self.next
+#     return(xs)
+# sub isnull(self: co) Bool
+#     self.car()
+#     return(self.next == -1)
