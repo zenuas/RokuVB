@@ -15,6 +15,10 @@ Namespace IntermediateCode
         'Public Overridable Property [Then] As InLabel
         Public Overridable Property [Else] As InLabel
 
+        Public Overrides Function ToString() As String
+
+            Return $"if {Me.Condition} else goto {Me.Else}"
+        End Function
     End Class
 
 End Namespace

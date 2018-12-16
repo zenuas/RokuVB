@@ -10,6 +10,10 @@ Namespace IntermediateCode
 
         Public Overridable Property Label As InLabel
 
+        Public Overrides Function ToString() As String
+
+            Return $"goto {Me.Label}"
+        End Function
     End Class
 
 End Namespace

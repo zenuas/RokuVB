@@ -10,7 +10,7 @@ Namespace [Operator]
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} {Me.Numeric}"
+            Return $"{Me.Numeric}"
         End Function
 
     End Class

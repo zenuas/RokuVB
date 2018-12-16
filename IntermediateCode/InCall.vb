@@ -1,6 +1,7 @@
 Imports System.Collections.Generic
 Imports Roku.Manager
 Imports Roku.Operator
+Imports Roku.Util.Extensions
 
 
 Namespace IntermediateCode
@@ -18,6 +19,15 @@ Namespace IntermediateCode
         Public Overridable Property [Return] As OpValue Implements IReturnBind.Return
         Public Overridable Property [Function] As RkFunction
 
+        Public Overrides Function ToString() As String
+
+            If Me.Return Is Nothing Then
+
+                Return $"{Me.Return} = {Me.Function.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))})"
+            Else
+                Return $"{Me.Function.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))})"
+            End If
+        End Function
     End Class
 
 End Namespace

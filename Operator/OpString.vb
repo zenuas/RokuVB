@@ -7,7 +7,7 @@ Namespace [Operator]
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.GetType.Name} ""{Me.String}"""
+            Return $"""{Me.String}"""
         End Function
 
     End Class

@@ -11,7 +11,7 @@ Namespace [Operator]
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}: {Me.Type}"
+            Return $"{Me.Name}"
         End Function
     End Class
 
