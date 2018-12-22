@@ -1,4 +1,4 @@
-use sub_mod
+use sub_mod1
 
 struct A
 	var a: Int
