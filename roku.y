@@ -237,6 +237,7 @@ case_expr  : cexpr                  {$$ = CreateCaseValueNode(ToBlock(Me.Current
 cexpr : var
       | str
       | num
+      | cexpr '(' list ')'      {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
       | '(' expr ')'            {$$ = CreateExpressionNode($2, "()")}
       | ope expr %prec UNARY    {$$ = CreateFunctionCallNode($1.Token, $2)}
       | cexpr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}

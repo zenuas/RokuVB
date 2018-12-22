@@ -1,0 +1,26 @@
+
+sub print_and_return(n: Int) Int
+	print(n)
+	return(n)
+
+sub show(x: Int)
+	switch x
+		print_and_return(1) => print("one")
+		print_and_return(2) => print("two")
+		print_and_return(3) => print("three")
+
+
+#=>1
+#=>one
+show(1)
+
+#=>1
+#=>2
+#=>two
+show(2)
+
+#=>1
+#=>2
+#=>3
+#=>three
+show(3)
