@@ -28,7 +28,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<ICaseNode>      case case_expr
 %type<StructNode>     struct struct_block
 %type<ClassNode>      class
-%type<IEvaluableNode> expr
+%type<IEvaluableNode> expr cexpr
 %type<IEvaluableNode> call
 %type<IEvaluableListNode> list listn list2n
 %type<VariableListNode>   patternn array_pattern
@@ -44,6 +44,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  ELSE
 %left  ARROW
 %token<NumericNode> NUM
+%left  EQ
 %right '?'
 %left  OPE OR LT GT
 %right UNARY
@@ -228,12 +229,21 @@ casen      : case                      {$$ = CreateSwitchNode($1)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
            | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = ToLambdaExpressionBlock(Me.CurrentScope, $3)}
-case_expr  : var
-           | num
-           | str
+case_expr  : cexpr                  {$$ = CreateCaseValueNode($1)}
            | var ':' type           {$$ = CreateCaseCastNode($3, $1)}
            | '[' array_pattern ']'  {$$ = CreateCaseArrayNode($2, $1)}
-           | '(' tupple_pattern ')' {}
+#           | '(' tupple_pattern ')' {}
+
+cexpr : var
+      | str
+      | num
+      | '(' expr ')'            {$$ = CreateExpressionNode($2, "()")}
+      | ope expr %prec UNARY    {$$ = CreateFunctionCallNode($1.Token, $2)}
+      | cexpr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
+      | cexpr ope expr          {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+      | cexpr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
+      | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
+      | null
 
 array_pattern  : patterns
 tupple_pattern : patterns

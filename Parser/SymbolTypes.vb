@@ -147,6 +147,9 @@ Namespace Parser
         ''' <summary>casen</summary>
         casen
 
+        ''' <summary>cexpr</summary>
+        cexpr
+
         ''' <summary>class</summary>
         class_1
 

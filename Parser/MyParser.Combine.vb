@@ -104,7 +104,9 @@ Namespace Parser
 
             Dim expr = CreateVariableNode(ope)
             expr.AppendLineNumber(args(0))
-            Return CreateFunctionCallNode(expr, args)
+            Dim fcall = CreateFunctionCallNode(expr, args)
+            If args.Length = 1 Then fcall.UnaryOperator = True
+            Return fcall
         End Function
 
         Public Shared Function CreatePropertyNode(
@@ -256,6 +258,13 @@ Namespace Parser
             switch.Case.Add([case])
             switch.AppendLineNumber([case])
             Return switch
+        End Function
+
+        Public Shared Function CreateCaseValueNode(expr As IEvaluableNode) As CaseValueNode
+
+            Dim [case] As New CaseValueNode With {.Expression = expr}
+            [case].AppendLineNumber(expr)
+            Return [case]
         End Function
 
         Public Shared Function CreateCaseCastNode(
