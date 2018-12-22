@@ -260,10 +260,10 @@ Namespace Parser
             Return switch
         End Function
 
-        Public Shared Function CreateCaseValueNode(expr As IEvaluableNode) As CaseValueNode
+        Public Shared Function CreateCaseValueNode(block As BlockNode) As CaseValueNode
 
-            Dim [case] As New CaseValueNode With {.Expression = expr}
-            [case].AppendLineNumber(expr)
+            Dim [case] As New CaseValueNode With {.Value = block}
+            [case].AppendLineNumber(block)
             Return [case]
         End Function
 
@@ -430,6 +430,11 @@ Namespace Parser
             block.Statements.Add(stmt)
             block.Parent = scope
             Return block
+        End Function
+
+        Public Shared Function ToBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
+
+            Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr), IStatementNode))
         End Function
 
     End Class

@@ -566,7 +566,7 @@ Namespace Parser
 
                 Case -40
                     Me.TraceAction("list : void")
-                    yy_value = CreateListNode(Of IEvaluableNode)()
+                    yy_value = CreateListNode(Of IEvaluableNode)
                     yy_token = Me.DoAction(SymbolTypes.list, 1, yy_value)
 
                 Case -41
@@ -741,7 +741,7 @@ Namespace Parser
 
                 Case -75
                     Me.TraceAction("args : void")
-                    yy_value = CreateListNode(Of DeclareNode)()
+                    yy_value = CreateListNode(Of DeclareNode)
                     yy_token = Me.DoAction(SymbolTypes.args, 1, yy_value)
 
                 Case -76
@@ -781,7 +781,7 @@ Namespace Parser
 
                 Case -83
                     Me.TraceAction("type : '{' types ARROW type '}'")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode), CType(Me.GetToken(-5), Token))
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode),      CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -84
@@ -1011,7 +1011,7 @@ Namespace Parser
 
                 Case -129
                     Me.TraceAction("case_expr : cexpr")
-                    yy_value = CreateCaseValueNode(CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateCaseValueNode(ToBlock(Me.CurrentScope, CType(Me.GetValue(-1), IEvaluableNode)))
                     yy_token = Me.DoAction(SymbolTypes.case_expr, 1, yy_value)
 
                 Case -130

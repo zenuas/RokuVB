@@ -409,7 +409,14 @@ Namespace Compiler
                         Dim next_ = case_labels(i)
                         break_point.Push(next_)
 
-                        If TypeOf case_ Is CaseCastNode Then
+                        If TypeOf case_ Is CaseValueNode Then
+
+                            Dim case_value = CType(case_, CaseValueNode)
+                            body.AddRange(make_stmts(case_value.Value.Statements))
+                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                            body.Add(New InGoto With {.Label = last_label})
+
+                        ElseIf TypeOf case_ Is CaseCastNode Then
 
                             Dim case_cast = CType(case_, CaseCastNode)
                             body.Add(New InCode With {

@@ -4,7 +4,7 @@
         Inherits BaseNode
         Implements ICaseNode
 
-        Public Overridable Property Expression As IEvaluableNode = Nothing
+        Public Overridable Property Value As BlockNode = Nothing
         Public Overridable Property [Then] As BlockNode Implements ICaseNode.Then
 
     End Class

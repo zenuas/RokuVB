@@ -9,7 +9,7 @@ Namespace Compiler
 
     Public Class Syntax
 
-        Public Shared Sub SwitchCaseArray(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+        Public Shared Sub SwitchCaseConvert(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
                 pgm,
@@ -25,6 +25,18 @@ Namespace Compiler
                         next_(child, user)
                         user.Scope = old
                         Return
+
+                    ElseIf TypeOf child Is CaseValueNode Then
+
+                        Dim switch = CType(parent, SwitchNode)
+                        Dim case_value = CType(child, CaseValueNode)
+
+                        Dim last = CType(case_value.Value.Statements(case_value.Value.Statements.Count - 1), LetNode)
+                        ' $case1 = $ret == switch.Expression
+                        ' if $case1 else break
+                        Dim s1 = CreateVariableNode($"$case{user.VarIndex}", case_value)
+                        case_value.Value.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("==", case_value), CreateVariableNode("$ret", case_value), switch.Expression)))
+                        case_value.Value.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
 
                     ElseIf TypeOf child Is CaseArrayNode Then
 

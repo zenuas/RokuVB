@@ -244,6 +244,12 @@ BLOCK_NODE_:
                                 f($"[{i}]", x.Case(i))
                             Next
 
+                        Case TypeOf node_ Is CaseValueNode
+
+                            Dim x = CType(node_, CaseValueNode)
+                            f("Statements", x.Value)
+                            f("Then", x.Then)
+
                         Case TypeOf node_ Is CaseCastNode
 
                             Dim x = CType(node_, CaseCastNode)

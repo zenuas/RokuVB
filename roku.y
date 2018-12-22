@@ -229,7 +229,7 @@ casen      : case                      {$$ = CreateSwitchNode($1)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
            | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = ToLambdaExpressionBlock(Me.CurrentScope, $3)}
-case_expr  : cexpr                  {$$ = CreateCaseValueNode($1)}
+case_expr  : cexpr                  {$$ = CreateCaseValueNode(ToBlock(Me.CurrentScope, $1))}
            | var ':' type           {$$ = CreateCaseCastNode($3, $1)}
            | '[' array_pattern ']'  {$$ = CreateCaseArrayNode($2, $1)}
 #           | '(' tupple_pattern ')' {}

@@ -74,7 +74,7 @@ Public Class Main
             Compiler.NameResolver.ResolveName(pgm)
             Compiler.Normalize.Normalization(pgm)
             Compiler.Closure.Capture(pgm)
-            Compiler.Syntax.SwitchCaseArray(pgm, root, current)
+            Compiler.Syntax.SwitchCaseConvert(pgm, root, current)
             Compiler.Syntax.ArrayClass(pgm, root, current)
             Compiler.Typing.Prototype(pgm, root, current)
         Next
