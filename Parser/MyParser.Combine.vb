@@ -1,5 +1,4 @@
-﻿Imports System.Collections.Generic
-Imports Roku.Node
+﻿Imports Roku.Node
 Imports Roku.Util.Extensions
 
 
