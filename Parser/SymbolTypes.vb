@@ -33,6 +33,9 @@ Namespace Parser
         ''' <summary>'}'</summary>
         __x7D
 
+        ''' <summary>AND2</summary>
+        AND2
+
         ''' <summary>ARROW</summary>
         ARROW
 
@@ -84,6 +87,9 @@ Namespace Parser
         ''' <summary>OR</summary>
         [OR]
 
+        ''' <summary>OR2</summary>
+        OR2
+
         ''' <summary>STR</summary>
         STR
 
@@ -110,6 +116,9 @@ Namespace Parser
 
         ''' <summary>$END</summary>
         _END
+
+        ''' <summary>and</summary>
+        [and]
 
         ''' <summary>argn</summary>
         argn
@@ -222,6 +231,9 @@ Namespace Parser
         ''' <summary>namespace</summary>
         [namespace]
 
+        ''' <summary>nope</summary>
+        nope
+
         ''' <summary>nsvar</summary>
         nsvar
 
@@ -236,6 +248,9 @@ Namespace Parser
 
         ''' <summary>ope</summary>
         ope_1
+
+        ''' <summary>or</summary>
+        or_1
 
         ''' <summary>pattern</summary>
         pattern

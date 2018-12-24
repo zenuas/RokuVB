@@ -37,7 +37,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<StringNode>     str
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
-%type<TokenNode>      ope
+%type<TokenNode>      ope nope
 
 %left  VAR ATVAR STR NULL IF LET SUB
 %left  USE
@@ -46,7 +46,9 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %token<NumericNode> NUM
 %left  EQ
 %right '?'
-%left  OPE OR LT GT
+%left  OPE OR LT GT AND2 OR2
+%left<TokenNode> or
+%left<TokenNode> and
 %right UNARY
 %left  '.'
 %left  ':'
@@ -101,7 +103,9 @@ expr : var
      | '(' list2n ')'         {$$ = CreateTupleNode($2)}
      | ope expr %prec UNARY   {$$ = CreateFunctionCallNode($1.Token, $2)}
      | expr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
-     | expr ope expr          {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr and  expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr or   expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
      | expr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
@@ -241,7 +245,9 @@ cexpr : var
       | '(' expr ')'            {$$ = CreateExpressionNode($2, "()")}
       | ope expr %prec UNARY    {$$ = CreateFunctionCallNode($1.Token, $2)}
       | cexpr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
-      | cexpr ope expr          {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+      | cexpr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+      | cexpr and  expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+      | cexpr or   expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
       | cexpr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
       | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
       | null
@@ -270,10 +276,15 @@ num    : NUM     {$$ = $1}
 str    : STR     {$$ = New StringNode($1)}
        | str STR {$1.String.Append($2.Name) : $$ = $1}
 null   : NULL    {$$ = New NullNode($1)}
-ope    : OPE     {$$ = New TokenNode($1)}
+ope    : nope
+       | and
+       | or
+nope   : OPE     {$$ = New TokenNode($1)}
        | OR      {$$ = New TokenNode($1)}
        | LT      {$$ = New TokenNode($1)}
        | GT      {$$ = New TokenNode($1)}
+and    : AND2    {$$ = New TokenNode($1)}
+or     : OR2     {$$ = New TokenNode($1)}
 
 extra  : void
        | ','

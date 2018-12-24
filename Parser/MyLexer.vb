@@ -26,6 +26,7 @@ Namespace Parser
             Me.ReservedChar("]"c) = SymbolTypes.__x5D
             Me.ReservedChar("{"c) = SymbolTypes.__x7B
             Me.ReservedChar("}"c) = SymbolTypes.__x7D
+            Me.ReservedWord("AND2") = SymbolTypes.AND2
             Me.ReservedWord("ARROW") = SymbolTypes.ARROW
             Me.ReservedWord("ATVAR") = SymbolTypes.ATVAR
             Me.ReservedWord("BEGIN") = SymbolTypes.BEGIN
@@ -43,6 +44,7 @@ Namespace Parser
             Me.ReservedWord("NUM") = SymbolTypes.NUM
             Me.ReservedWord("OPE") = SymbolTypes.OPE
             Me.ReservedWord("OR") = SymbolTypes.[OR]
+            Me.ReservedWord("OR2") = SymbolTypes.OR2
             Me.ReservedWord("STR") = SymbolTypes.STR
             Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]

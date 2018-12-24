@@ -431,6 +431,13 @@ READ_CONTINUE_:
                     Case ">"c : Return New Token(SymbolTypes.GT, ">")
                     Case "|"c : Return New Token(SymbolTypes.OR, "|")
                 End Select
+
+            ElseIf buf.Length = 2 AndAlso buf(0) = buf(1) Then
+
+                Select Case buf(0)
+                    Case "&"c : Return New Token(SymbolTypes.AND2, "&&")
+                    Case "|"c : Return New Token(SymbolTypes.OR2, "||")
+                End Select
             End If
             Return New Token(SymbolTypes.OPE, buf.ToString)
         End Function

@@ -1,0 +1,19 @@
+
+
+sub f(a: Int) Bool
+	print(a)
+	return(false)
+
+
+# if ||(&&(f(1), f(2)), &&(f(3), f(4)))
+#=>1
+#=>3
+if f(1) && f(2) || f(3) && f(4)
+	print("dummy")
+
+# if ||(f(1), ||(&&(f(2), f(3)), f(4)))
+#=>1
+#=>2
+#=>4
+if f(1) || f(2) && f(3) || f(4)
+	print("dummy")

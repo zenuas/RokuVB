@@ -9,6 +9,17 @@ Namespace Compiler
 
     Public Class Normalize
 
+        Public Shared Sub AndOrNormalization(pgm As ProgramNode)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                New With {.VarIndex = 0},
+                Sub(parent, ref, child, user, isfirst, next_)
+
+                    If Not isfirst Then Return
+                End Sub)
+        End Sub
+
         Public Shared Sub Normalization(pgm As ProgramNode)
 
             Util.Traverse.NodesOnce(
