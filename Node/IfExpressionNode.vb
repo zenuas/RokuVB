@@ -16,7 +16,16 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Condition} ? {Me.Then} : {Me.Else}"
+            If Me.Then Is Nothing Then
+
+                Return $"{Me.Condition} || {Me.Else}"
+
+            ElseIf Me.Else Is Nothing Then
+
+                Return $"{Me.Condition} && {Me.Then}"
+            Else
+                Return $"{Me.Condition} ? {Me.Then} : {Me.Else}"
+            End If
         End Function
     End Class
 
