@@ -37,21 +37,23 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<StringNode>     str
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
-%type<TokenNode>      ope nope
 
 %left  VAR ATVAR STR NULL IF LET SUB
 %left  USE
 %left  ELSE
 %left  ARROW
+%left  ':'
 %token<NumericNode> NUM
 %left  EQ
-%right '?'
-%left  OPE OR LT GT AND2 OR2
+%left  '?'
+%left<TokenNode> ope nope
+%left  OPE OR LT GT
 %left<TokenNode> or
+%left  OR2
+%left  AND2
 %left<TokenNode> and
 %right UNARY
 %left  '.'
-%left  ':'
 %left  IGNORE
 
 %left  ','
