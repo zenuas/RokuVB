@@ -106,6 +106,7 @@ Namespace Compiler
                                     Dim var = to_let(Nothing, ifexpr)
                                     Dim if_ = CreateIfNode(to_flat(True, ifexpr.Condition), to_block(var, ifexpr.Then), to_block(var, ifexpr.Else))
                                     block.Statements.Insert(program_pointer, if_)
+                                    program_pointer += 1
                                     user.VarIndex += 1
                                     Coverage.Case()
                                     Return var
