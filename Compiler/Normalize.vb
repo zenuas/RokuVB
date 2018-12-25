@@ -53,6 +53,7 @@ Namespace Compiler
                         Dim to_block =
                             Function(var As VariableNode, e As IEvaluableNode) As BlockNode
 
+                                If e Is Nothing Then Return Nothing
                                 Dim then_block As New BlockNode(e.LineNumber.Value) With {.InnerScope = True, .Parent = block}
                                 then_block.AddStatement(CreateLetNode(var, e))
                                 Return then_block

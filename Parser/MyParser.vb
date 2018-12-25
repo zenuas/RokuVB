@@ -562,12 +562,12 @@ Namespace Parser
 
                 Case -36
                     Me.TraceAction("expr : expr and expr")
-                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode), Nothing)
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -37
                     Me.TraceAction("expr : expr or expr")
-                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), Nothing, CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -38

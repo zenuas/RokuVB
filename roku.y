@@ -106,8 +106,8 @@ expr : var
      | ope expr %prec UNARY   {$$ = CreateFunctionCallNode($1.Token, $2)}
      | expr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
      | expr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr and  expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr or   expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+     | expr and  expr         {$$ = CreateIfExpressionNode($1, $3, Nothing)}
+     | expr or   expr         {$$ = CreateIfExpressionNode($1, Nothing, $3)}
      | expr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
