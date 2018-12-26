@@ -1,11 +1,13 @@
 Namespace [Operator]
 
-    Public Class OpNull
+    Public Class OpBool
         Inherits OpValue
+
+        Public Overridable Property Value As Boolean
 
         Public Overrides Function ToString() As String
 
-            Return "null"
+            Return If(Me.Value, "true", "false")
         End Function
 
     End Class

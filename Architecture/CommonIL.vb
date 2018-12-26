@@ -270,6 +270,10 @@ Namespace Architecture
 
                         il.Emit(OpCodes.Ldnull)
 
+                    ElseIf TypeOf v Is OpBool Then
+
+                        il.Emit(If(CType(v, OpBool).Value, OpCodes.Ldc_I4_1, OpCodes.Ldc_I4_0))
+
                     Else
 
                         Debug.Fail("miss load value")
@@ -388,7 +392,8 @@ Namespace Architecture
 
                         ElseIf TypeOf v Is OpNumeric32 OrElse
                             TypeOf v Is OpString OrElse
-                            TypeOf v Is OpNull Then
+                            TypeOf v Is OpNull OrElse
+                            TypeOf v Is OpBool Then
 
                             gen_il_loadc(il, v)
 
@@ -434,7 +439,8 @@ Namespace Architecture
 
                         ElseIf TypeOf v Is OpNumeric32 OrElse
                             TypeOf v Is OpString OrElse
-                            TypeOf v Is OpNull Then
+                            TypeOf v Is OpNull OrElse
+                            TypeOf v Is OpBool Then
 
                             gen_il_loadc(il, v)
 

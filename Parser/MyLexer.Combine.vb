@@ -21,6 +21,8 @@ Namespace Parser
             Me.ReservedWord("switch") = SymbolTypes.SWITCH
             Me.ReservedWord("use") = SymbolTypes.USE
             Me.ReservedWord("null") = SymbolTypes.NULL
+            Me.ReservedWord("true") = SymbolTypes.TRUE
+            Me.ReservedWord("false") = SymbolTypes.FALSE
         End Sub
 
 #Region "reader"

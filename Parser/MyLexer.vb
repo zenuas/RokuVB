@@ -35,6 +35,7 @@ Namespace Parser
             Me.ReservedWord("END") = SymbolTypes.[END]
             Me.ReservedWord("EOL") = SymbolTypes.EOL
             Me.ReservedWord("EQ") = SymbolTypes.EQ
+            Me.ReservedWord("FALSE") = SymbolTypes.[FALSE]
             Me.ReservedWord("GT") = SymbolTypes.GT
             Me.ReservedWord("IF") = SymbolTypes.[IF]
             Me.ReservedWord("IGNORE") = SymbolTypes.IGNORE
@@ -49,6 +50,7 @@ Namespace Parser
             Me.ReservedWord("STRUCT") = SymbolTypes.STRUCT
             Me.ReservedWord("SUB") = SymbolTypes.[SUB]
             Me.ReservedWord("SWITCH") = SymbolTypes.SWITCH
+            Me.ReservedWord("TRUE") = SymbolTypes.[TRUE]
             Me.ReservedWord("UNARY") = SymbolTypes.UNARY
             Me.ReservedWord("UNION") = SymbolTypes.UNION
             Me.ReservedWord("USE") = SymbolTypes.USE

@@ -60,6 +60,9 @@ Namespace Parser
         ''' <summary>EQ</summary>
         EQ
 
+        ''' <summary>FALSE</summary>
+        [FALSE]
+
         ''' <summary>GT</summary>
         GT
 
@@ -102,6 +105,9 @@ Namespace Parser
         ''' <summary>SWITCH</summary>
         SWITCH
 
+        ''' <summary>TRUE</summary>
+        [TRUE]
+
         ''' <summary>UNARY</summary>
         UNARY
 
@@ -140,6 +146,9 @@ Namespace Parser
 
         ''' <summary>block</summary>
         block
+
+        ''' <summary>bool</summary>
+        bool
 
         ''' <summary>call</summary>
         [call]

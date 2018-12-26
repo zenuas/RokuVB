@@ -318,6 +318,7 @@ BLOCK_NODE_:
                              TypeOf node_ Is NumericNode,
                              TypeOf node_ Is StringNode,
                              TypeOf node_ Is NullNode,
+                             TypeOf node_ Is BoolNode,
                              TypeOf node_ Is BreakNode
 
                             ' nothing

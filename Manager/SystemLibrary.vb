@@ -26,8 +26,8 @@ Namespace Manager
             Me.AddStruct(Me.VoidType, "Void")
 
             ' struct Bool : Boolean
-            Dim bool = Me.LoadType(GetType(Boolean).GetTypeInfo)
-            Me.AddStruct(bool, "Bool")
+            Me.BoolType = Me.LoadType(GetType(Boolean).GetTypeInfo)
+            Me.AddStruct(Me.BoolType, "Bool")
 
             Dim add_native_operator_function =
                 Function(t As IType, name As String, op As InOperator) As RkNativeFunction
@@ -43,7 +43,7 @@ Namespace Manager
                 Function(t As IType, name As String, op As InOperator) As RkNativeFunction
 
                     Dim f As New RkNativeFunction With {.Name = name, .Operator = op, .Scope = Me, .Parent = Me}
-                    f.Return = bool
+                    f.Return = Me.BoolType
                     f.Arguments.Add(New NamedValue With {.Name = "left", .Value = t})
                     f.Arguments.Add(New NamedValue With {.Name = "right", .Value = t})
                     Me.AddFunction(f)
@@ -147,6 +147,7 @@ Namespace Manager
 
         Public Overridable Property VoidType() As RkStruct
         Public Overridable Property NullType() As RkStruct
+        Public Overridable Property BoolType() As RkStruct
 
         Private Property NumericTypes_ As IType() = Nothing
         Public Overridable Function NumericTypes() As IType()

@@ -38,7 +38,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
 
-%left  VAR ATVAR STR NULL IF LET SUB
+%left  VAR ATVAR STR NULL TRUE FALSE IF LET SUB
 %left  USE
 %left  ELSE
 %left  ARROW
@@ -111,6 +111,7 @@ expr : var
      | expr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
+     | bool
 
 call : expr '(' list ')' {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
 
@@ -253,6 +254,7 @@ cexpr : var
       | cexpr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
       | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
       | null
+      | bool
 
 array_pattern  : patterns
 tupple_pattern : patterns
@@ -278,6 +280,8 @@ num    : NUM     {$$ = $1}
 str    : STR     {$$ = New StringNode($1)}
        | str STR {$1.String.Append($2.Name) : $$ = $1}
 null   : NULL    {$$ = New NullNode($1)}
+bool   : TRUE    {$$ = New BoolNode($1, True)}
+       | FALSE   {$$ = New BoolNode($1, False)}
 ope    : nope
        | and
        | or

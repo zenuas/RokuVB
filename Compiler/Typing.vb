@@ -335,6 +335,12 @@ Namespace Compiler
                         node.Type = root.NullType
                         Coverage.Case()
 
+                    ElseIf TypeOf child Is BoolNode Then
+
+                        Dim node = CType(child, BoolNode)
+                        node.Type = root.BoolType
+                        Coverage.Case()
+
                     ElseIf TypeOf child Is DeclareNode Then
 
                         Dim node = CType(child, DeclareNode)

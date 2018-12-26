@@ -93,6 +93,7 @@
     <Compile Include="Node\IfExpressionNode.vb" />
     <Compile Include="Node\ICloneable.vb" />
     <Compile Include="Node\ClassNode.vb" />
+    <Compile Include="Node\BoolNode.vb" />
     <Compile Include="Node\TupleNode.vb" />
     <Compile Include="Node\IfCastNode.vb" />
     <Compile Include="Node\IHaveScopeType.vb" />
@@ -111,6 +112,7 @@
     <Compile Include="Operator\OpNull.vb" />
     <Compile Include="Node\INamedFunction.vb" />
     <Compile Include="Node\NullNode.vb" />
+    <Compile Include="Operator\OpBool.vb" />
     <Compile Include="Util\TypeHelper.vb" />
     <None Include="App.config">
       <SubType>Designer</SubType>

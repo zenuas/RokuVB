@@ -153,6 +153,7 @@ Namespace Compiler
                     If TypeOf x Is NumericNode Then Return New OpNumeric32 With {.Numeric = CType(x, NumericNode).Numeric, .Type = t, .Scope = func}
                     If TypeOf x Is StructNode Then Return New OpValue With {.Name = CType(x, StructNode).Name, .Type = t, .Scope = func}
                     If TypeOf x Is NullNode Then Return New OpNull With {.Type = t, .Scope = func}
+                    If TypeOf x Is BoolNode Then Return New OpBool With {.Value = CType(x, BoolNode).Value, .Type = t, .Scope = func}
                     Return New OpValue With {.Type = t, .Scope = func}
                 End Function
 
@@ -220,7 +221,8 @@ Namespace Compiler
                             TypeOf stmt Is NumericNode OrElse
                             TypeOf stmt Is StringNode OrElse
                             TypeOf stmt Is FunctionNode OrElse
-                            TypeOf stmt Is NullNode Then
+                            TypeOf stmt Is NullNode OrElse
+                            TypeOf stmt Is BoolNode Then
 
                         Coverage.Case()
                         Return {New InCode With {.Operator = InOperator.Bind, .Return = ret, .Left = to_value(stmt)}}
