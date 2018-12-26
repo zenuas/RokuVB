@@ -106,8 +106,8 @@ expr : var
      | ope expr %prec UNARY   {$$ = CreateFunctionCallNode($1.Token, $2)}
      | expr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
      | expr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-     | expr and  expr         {$$ = CreateIfExpressionNode($1, $3, Nothing)}
-     | expr or   expr         {$$ = CreateIfExpressionNode($1, Nothing, $3)}
+     | expr and  expr         {$$ = CreateIfExpressionNode($1, $3, New BoolNode($2.Token, False))}
+     | expr or   expr         {$$ = CreateIfExpressionNode($1, New BoolNode($2.Token, True), $3)}
      | expr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
@@ -249,8 +249,8 @@ cexpr : var
       | ope expr %prec UNARY    {$$ = CreateFunctionCallNode($1.Token, $2)}
       | cexpr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
       | cexpr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-      | cexpr and  expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
-      | cexpr or   expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}
+      | cexpr and  expr         {$$ = CreateIfExpressionNode($1, $3, New BoolNode($2.Token, False))}
+      | cexpr or   expr         {$$ = CreateIfExpressionNode($1, New BoolNode($2.Token, True), $3)}
       | cexpr '[' expr ']'      {$$ = CreateFunctionCallNode(CreateVariableNode("[]", $2), $1, $3)}
       | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
       | null

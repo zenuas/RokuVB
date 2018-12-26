@@ -566,12 +566,12 @@ Namespace Parser
 
                 Case -36
                     Me.TraceAction("expr : expr and expr")
-                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode), Nothing)
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode), New BoolNode(CType(Me.GetValue(-2), TokenNode).Token, False))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -37
                     Me.TraceAction("expr : expr or expr")
-                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), Nothing, CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), New BoolNode(CType(Me.GetValue(-2), TokenNode).Token, True), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -38
@@ -601,7 +601,7 @@ Namespace Parser
 
                 Case -43
                     Me.TraceAction("list : void")
-                    yy_value = CreateListNode(Of IEvaluableNode)
+                    yy_value = CreateListNode(Of IEvaluableNode)()
                     yy_token = Me.DoAction(SymbolTypes.list, 1, yy_value)
 
                 Case -44
@@ -776,7 +776,7 @@ Namespace Parser
 
                 Case -78
                     Me.TraceAction("args : void")
-                    yy_value = CreateListNode(Of DeclareNode)
+                    yy_value = CreateListNode(Of DeclareNode)()
                     yy_token = Me.DoAction(SymbolTypes.args, 1, yy_value)
 
                 Case -79
@@ -816,7 +816,7 @@ Namespace Parser
 
                 Case -86
                     Me.TraceAction("type : '{' types ARROW type '}'")
-                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode),      CType(Me.GetToken(-5), Token))
+                    yy_value = CreateFunctionTypeNode(CType(Me.GetValue(-4), TypeListNode), CType(Me.GetValue(-2), TypeBaseNode), CType(Me.GetToken(-5), Token))
                     yy_token = Me.DoAction(SymbolTypes.type, 5, yy_value)
 
                 Case -87
@@ -1101,12 +1101,12 @@ Namespace Parser
 
                 Case -143
                     Me.TraceAction("cexpr : cexpr and expr")
-                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode), New BoolNode(CType(Me.GetValue(-2), TokenNode).Token, False))
                     yy_token = Me.DoAction(SymbolTypes.cexpr, 3, yy_value)
 
                 Case -144
                     Me.TraceAction("cexpr : cexpr or expr")
-                    yy_value = CreateFunctionCallNode(CType(Me.GetValue(-2), TokenNode).Token, CType(Me.GetValue(-3), IEvaluableNode), CType(Me.GetValue(-1), IEvaluableNode))
+                    yy_value = CreateIfExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), New BoolNode(CType(Me.GetValue(-2), TokenNode).Token, True), CType(Me.GetValue(-1), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.cexpr, 3, yy_value)
 
                 Case -145
