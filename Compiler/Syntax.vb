@@ -9,6 +9,50 @@ Namespace Compiler
 
     Public Class Syntax
 
+        Public Shared Sub TupleDeconstruction(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                New With {.VarIndex = 0, .Scope = CType(pgm, IScopeNode)},
+                Sub(parent, ref, child, user, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is BlockNode Then
+
+                        Dim block = CType(child, BlockNode)
+                        Dim program_pointer = 0
+
+                        Do While program_pointer < block.Statements.Count
+
+                            Dim v = block.Statements(program_pointer)
+                            If TypeOf v Is LetNode Then
+
+                                Dim let_ = CType(v, LetNode)
+                                If let_.TupleAssignment Then
+
+                                    Dim tuples = CType(let_.Receiver, ListNode(Of LetNode))
+                                    let_.Var = CreateVariableNode($"$tuple{user.VarIndex}", let_)
+                                    let_.Receiver = Nothing
+                                    For i = 0 To tuples.List.Count - 1
+
+                                        Dim tuple = tuples.List(i)
+                                        If tuple.IsIgnore Then Continue For
+                                        tuple.Expression = CreatePropertyNode(let_.Var, Nothing, CreateVariableNode($"{i + 1}", let_.Var))
+                                        tuple.Expression.AppendLineNumber(let_.Var)
+                                        block.Statements.Insert(program_pointer + 1, tuple)
+                                        program_pointer += 1
+                                    Next
+                                End If
+                            End If
+                            program_pointer += 1
+                        Loop
+                    End If
+
+                    next_(child, user)
+                End Sub)
+        End Sub
+
         Public Shared Sub SwitchCaseConvert(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(

@@ -87,7 +87,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is LetNode Then
 
                         Dim node = CType(child, LetNode)
-                        If node.Receiver Is Nothing Then
+                        If node.Receiver Is Nothing AndAlso Not node.IsIgnore Then
 
                             node.Var.Scope = current
                             If TypeOf current IsNot StructNode Then current.Lets.Add(node.Var.Name, node.Var)

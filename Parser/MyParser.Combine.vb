@@ -86,6 +86,25 @@ Namespace Parser
             Return let_
         End Function
 
+        Public Shared Function CreateLetNode(
+                vars As ListNode(Of LetNode),
+                expr As IEvaluableNode
+            ) As LetNode
+
+            Dim let_ As New LetNode With {.Receiver = vars, .Expression = expr, .TupleAssignment = True}
+            If vars.List.Count > 0 Then let_.AppendLineNumber(vars.List(0))
+            Return let_
+        End Function
+
+        Public Shared Function CreateIgnoreLetNode(
+                ignore As Token
+            ) As LetNode
+
+            Dim let_ As New LetNode With {.Var = CreateVariableNode("_", ignore), .IsIgnore = True}
+            let_.AppendLineNumber(ignore)
+            Return let_
+        End Function
+
         Public Shared Function CreateFunctionCallNode(
                 expr As IEvaluableNode,
                 ParamArray args() As IEvaluableNode
@@ -115,7 +134,7 @@ Namespace Parser
             ) As PropertyNode
 
             Dim prop As New PropertyNode With {.Left = left, .Right = right}
-            prop.AppendLineNumber(dot)
+            If dot IsNot Nothing Then prop.AppendLineNumber(dot)
             Return prop
         End Function
 

@@ -303,6 +303,12 @@ Namespace Parser
         ''' <summary>switch</summary>
         switch_1
 
+        ''' <summary>tuplevar</summary>
+        tuplevar
+
+        ''' <summary>tuplevar2n</summary>
+        tuplevar2n
+
         ''' <summary>tupple_pattern</summary>
         tupple_pattern
 

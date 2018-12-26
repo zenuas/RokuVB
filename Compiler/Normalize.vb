@@ -156,7 +156,7 @@ Namespace Compiler
                             ElseIf TypeOf v Is LetNode Then
 
                                 Dim let_ = CType(v, LetNode)
-                                let_.Receiver = to_flat(True, let_.Receiver)
+                                If Not let_.TupleAssignment Then let_.Receiver = to_flat(True, let_.Receiver)
                                 let_.Expression = to_flat(False, let_.Expression)
                                 Coverage.Case()
 

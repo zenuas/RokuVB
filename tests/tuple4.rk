@@ -1,0 +1,18 @@
+
+#=>1
+#=>str
+#=>3
+var x, y, z = (1, "str", 3)
+print(x)
+print(y)
+print(z)
+
+#=>1
+#=>3
+var a, _, b = (1, "str", 3)
+print(a)
+print(b)
+
+#=>3
+var _, _, c = (1, "str", 3)
+print(c)

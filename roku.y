@@ -2,6 +2,7 @@
 %{
 Imports Roku.Node
 Imports DeclareListNode = Roku.Node.ListNode(Of Roku.Node.DeclareNode)
+Imports LetListNode = Roku.Node.ListNode(Of Roku.Node.LetNode)
 Imports TypeListNode = Roku.Node.ListNode(Of Roku.Node.TypeBaseNode)
 Imports VariableListNode = Roku.Node.ListNode(Of Roku.Node.VariableNode)
 Imports IEvaluableListNode = Roku.Node.ListNode(Of Roku.Node.IEvaluableNode)
@@ -15,7 +16,8 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 
 %type<BlockNode>      block stmt
 %type<IStatementNode> line
-%type<LetNode>        let
+%type<LetNode>        let tuplevar
+%type<LetListNode>    tuplevar2n
 %type<FunctionNode>   sub sub_block lambda_func cond
 %type<FunctionListNode> condn class_block
 %type<DeclareNode>    decla lambda_arg
@@ -38,7 +40,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<UseNode>        use
 %type<IEvaluableNode> namespace
 
-%left  VAR ATVAR STR NULL TRUE FALSE IF LET SUB
+%left  VAR ATVAR STR NULL TRUE FALSE IF LET SUB IGNORE
 %left  USE
 %left  ELSE
 %left  ARROW
@@ -54,7 +56,6 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left<TokenNode> and
 %right UNARY
 %left  '.'
-%left  IGNORE
 
 %left  ','
 %left  '(' '[' '{'
@@ -127,7 +128,13 @@ let : LET var EQ expr          {$$ = CreateLetNode($2, $4, True)}
     | LET var ':' type EQ expr {$$ = CreateLetNode($2, $4, $6, True)}
 #    | var EQ expr              {$$ = CreateLetNode($1, $3)}
     | expr '.' varx EQ expr    {$$ = CreateLetNode(CreatePropertyNode($1, $2, $3), $5)}
+    | LET tuplevar2n EQ expr   {$$ = CreateLetNode($2, $4)}
 
+tuplevar2n : tuplevar   ',' tuplevar {$$ = CreateListNode($1, $3)}
+           | tuplevar2n ',' tuplevar {$1.List.Add($3) : $$ = $1}
+tuplevar   : var                     {$$ = CreateLetNode($1, Nothing, Nothing, True)}
+           | var ':' type            {$$ = CreateLetNode($1, $3, True)}
+           | IGNORE                  {$$ = CreateIgnoreLetNode($1)}
 
 ########## struct ##########
 struct : STRUCT var EOL struct_block              {$4.Name = $2.Name : $$ = $4}

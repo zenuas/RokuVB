@@ -14,6 +14,8 @@ Namespace Node
         Public Overridable Property Expression As IEvaluableNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
+        Public Overridable Property TupleAssignment As Boolean = False
+        Public Overridable Property IsIgnore As Boolean = False
 
         Public Overrides Function ToString() As String
 
