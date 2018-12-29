@@ -1,4 +1,5 @@
 ﻿Imports System
+Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
 Imports Roku.Parser.MyParser
@@ -89,63 +90,95 @@ Namespace Compiler
 
                         If case_array.Pattern.Count = 0 Then
 
-                            ' $s1 = isnull(switch.Expression)
-                            ' if $s1 else break
+                            ' $s1 = switch.Expression.isnull
+                            ' $s2 = $s1()
+                            ' if $s2 else break
                             Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
-                            case_array.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
-                        Else
-
-                            ' $s1 = isnull(switch.Expression)
-                            ' if $s1 then break
-                            Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
-                            user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), switch.Expression)))
-                            case_array.Statements.Add(CreateIfNode(s1, ToBlock(user.Scope, New BreakNode)))
-
-                            ' case_array.Pattern[0] = car(switch.Expression)
-                            case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(CreateVariableNode("car", case_array), switch.Expression)))
-
-                            ' $s2 = cdr(switch.Expression)
                             Dim s2 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(CreateVariableNode("cdr", case_array), switch.Expression)))
+                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array))))
+                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1)))
+                            case_array.Statements.Add(CreateIfNode(s2, Nothing, ToBlock(user.Scope, New BreakNode)))
+                        Else
+
+                            ' $s1 = switch.Expression.isnull
+                            ' $s2 = $s1()
+                            ' if $s2 then break
+                            Dim s1 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            Dim s2 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array))))
+                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1)))
+                            case_array.Statements.Add(CreateIfNode(s2, ToBlock(user.Scope, New BreakNode)))
+
+                            ' $s3 = switch.Expression.car
+                            ' case_array.Pattern[0] = $s3()
+                            Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s3, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("car", case_array))))
+                            case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(s3)))
+
+                            ' $s4 = switch.Expression.cdr
+                            ' $s5 = $s4()
+                            Dim s4 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            Dim s5 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                            user.VarIndex += 1
+                            case_array.Statements.Add(CreateLetNode(s4, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("cdr", case_array))))
+                            case_array.Statements.Add(CreateLetNode(s5, CreateFunctionCallNode(s4)))
 
                             If case_array.Pattern.Count = 1 Then
 
-                                ' $s3 = isnull($s2)
-                                Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                ' $s6 = $s5.isnull
+                                ' $s7 = $s6()
+                                Dim s6 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                 user.VarIndex += 1
-                                case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
+                                Dim s7 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                user.VarIndex += 1
+                                case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array))))
+                                case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6)))
 
-                                ' if $s3 else break
-                                case_array.Statements.Add(CreateIfNode(s3, Nothing, ToBlock(user.Scope, New BreakNode)))
+                                ' if $s7 else break
+                                case_array.Statements.Add(CreateIfNode(s7, Nothing, ToBlock(user.Scope, New BreakNode)))
                             Else
 
                                 For i = 1 To case_array.Pattern.Count - 2
 
-                                    ' $s3 = isnull($s2)
-                                    Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    ' $s6 = $s5.isnull
+                                    ' $s7 = $s6()
+                                    Dim s6 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                     user.VarIndex += 1
-                                    case_array.Statements.Add(CreateLetNode(s3, CreateFunctionCallNode(CreateVariableNode("isnull", case_array), s2)))
-
-                                    ' if $s3 then break
-                                    case_array.Statements.Add(CreateIfNode(s3, ToBlock(user.Scope, New BreakNode)))
-
-                                    ' case_array.Pattern[i] = car($s2)
-                                    case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(CreateVariableNode("car", case_array), s2)))
-
-                                    ' $s4 = cdr($s2)
-                                    Dim s4 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    Dim s7 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                     user.VarIndex += 1
-                                    case_array.Statements.Add(CreateLetNode(s4, CreateFunctionCallNode(CreateVariableNode("cdr", case_array), s2)))
+                                    case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array))))
+                                    case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6)))
 
-                                    s2 = s4
+                                    ' if $s7 then break
+                                    case_array.Statements.Add(CreateIfNode(s7, ToBlock(user.Scope, New BreakNode)))
+
+                                    ' $s8 = $s5.car
+                                    ' case_array.Pattern[i] = $s7()
+                                    Dim s8 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    user.VarIndex += 1
+                                    case_array.Statements.Add(CreateLetNode(s8, CreatePropertyNode(s5, Nothing, CreateVariableNode("car", case_array))))
+                                    case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(s8)))
+
+                                    ' $s9 = $s5.cdr
+                                    ' $s10 = $s9()
+                                    Dim s9 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    user.VarIndex += 1
+                                    Dim s10 = CreateVariableNode($"$s{user.VarIndex}", case_array)
+                                    user.VarIndex += 1
+                                    case_array.Statements.Add(CreateLetNode(s9, CreatePropertyNode(s5, Nothing, CreateVariableNode("cdr", case_array))))
+                                    case_array.Statements.Add(CreateLetNode(s10, CreateFunctionCallNode(s9)))
+
+                                    s5 = s10
                                 Next
 
                                 ' case_array.Pattern[N] = next
-                                case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s2))
+                                case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s5))
                             End If
                         End If
                     End If
@@ -206,6 +239,47 @@ Namespace Compiler
 
                     If Not isfirst Then Return
 
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim func = CType(child, FunctionNode)
+                        If func.Coroutine Then
+
+                            Dim p = func.Parent
+                            Dim self = New TypeNode(CreateVariableNode(func.Name, func))
+                            Dim t = func.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is func.Return).Arguments(1)
+                            Dim scope = CType(p, IAddFunction)
+
+                            ' struct "func.Name"
+                            '     var state = 0
+                            '     var next  = 0
+                            '     var value: "t"
+                            Dim co = New StructNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p}
+                            co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", func), New NumericNode("0", 0)))
+                            co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", func), New NumericNode("0", 0)))
+                            co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", func), t))
+                            p.Lets.Add(co.Name, co)
+
+                            ' sub co() [t] -> sub cdr(self: co) [t]
+                            Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Arguments = New List(Of DeclareNode)}
+                            cdr.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
+                            cdr.Where.Add(func.Where(0))
+                            cdr.Return = func.Return
+                            scope.AddFunction(cdr)
+
+                            ' sub co() [t] -> sub car(self: co) t
+                            func.Name = "car"
+                            func.Arguments.Clear()
+                            func.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
+                            func.Where.Clear()
+                            func.Return = t
+
+                            ' sub co() [t] -> sub isnull(self: co) Bool
+                            Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Arguments = New List(Of DeclareNode)}
+                            isnull.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
+                            isnull.Return = New TypeNode(CreateVariableNode("Bool", func))
+                            scope.AddFunction(isnull)
+                        End If
+                    End If
                     next_(child, user)
                 End Sub)
         End Sub

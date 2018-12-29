@@ -77,6 +77,7 @@ Public Class Main
             Compiler.Syntax.TupleDeconstruction(pgm, root, current)
             Compiler.Syntax.SwitchCaseConvert(pgm, root, current)
             Compiler.Syntax.ArrayClass(pgm, root, current)
+            Compiler.Syntax.Coroutine(pgm, root, current)
             Compiler.Typing.Prototype(pgm, root, current)
         Next
 

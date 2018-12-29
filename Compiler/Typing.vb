@@ -362,16 +362,18 @@ Namespace Compiler
                             func.AddFunction(ret)
 
                             Dim yield = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = func, .Name = "yield", .Parent = func}
-                            Dim t = node.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is node.Return).Arguments(1).Type
+                            'Dim t = node.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is node.Return).Arguments(1).Type
+                            Dim t = node.Return.Type
                             yield.Arguments.Add(New NamedValue With {.Name = "x", .Value = t})
                             func.AddFunction(yield)
 
-                            Dim yield2 = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = func, .Name = "yield", .Parent = func}
-                            Dim ts = DefineType(root, yield2, node.Return)
-                            yield2.Arguments.Add(New NamedValue With {.Name = "xs", .Value = ts})
-                            func.AddFunction(yield2)
+                            'Dim yield2 = New RkNativeFunction With {.Operator = InOperator.Yield, .Scope = func, .Name = "yield", .Parent = func}
+                            'Dim ts = DefineType(root, yield2, node.Return)
+                            'yield2.Arguments.Add(New NamedValue With {.Name = "xs", .Value = ts})
+                            'func.AddFunction(yield2)
 
-                            func.Return = ts
+                            'func.Return = ts
+                            func.Return = t
                             Coverage.Case()
 
                         ElseIf Not node.ImplicitReturn Then
