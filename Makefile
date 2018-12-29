@@ -46,7 +46,7 @@ test: clean $(OUT)
 tests: $(OUT) $(RKTEST)
 
 $(RKTEST): $(subst tests\,tests\obj\,$@).exe.stdout
-	@echo $@
+	@echo   $@
 	@fc $(patsubst %.stdout,,$<).testerr $(patsubst %.stdout,,$<).stderr >nul || type $(patsubst %.stdout,,$<).stderr
 	@if exist $(patsubst %.stdout,,$<). (fc $(patsubst %.stdout,,$<).testout $(patsubst %.stdout,,$<).stdout >$(patsubst %.stdout,,$<).diff || type $(patsubst %.stdout,,$<).diff) || echo failed!
 
