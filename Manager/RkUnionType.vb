@@ -239,19 +239,14 @@ Namespace Manager
             Return Me.GetDecideType.TypeToApply(value)
         End Function
 
-        Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
+        Public Overridable Function WhereFunction(target As IScope, ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
 
-            Return CType(Me.GetDecideType, IFunction).ArgumentsToApply(args)
+            Return CType(Me.GetDecideType, IFunction).WhereFunction(target, args)
         End Function
 
-        Public Overridable Function WhereFunction(ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
+        Public Overridable Function ApplyFunction(scope As IScope, ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
 
-            Return CType(Me.GetDecideType, IFunction).WhereFunction(args)
-        End Function
-
-        Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
-
-            Return CType(Me.GetDecideType, IFunction).ApplyFunction(args)
+            Return CType(Me.GetDecideType, IFunction).ApplyFunction(scope, args)
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric

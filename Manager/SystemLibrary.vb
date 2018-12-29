@@ -504,10 +504,10 @@ Namespace Manager
 
             ElseIf fs.Count = 1 Then
 
-                Return fs(0).ApplyFunction(args)
+                Return fs(0).ApplyFunction(scope, args)
             Else
 
-                fs.Done(Function(x) x.ApplyFunction(args))
+                fs.Done(Function(x) x.ApplyFunction(scope, args))
                 Dim unique As New List(Of IFunction)
                 For Each f In fs
 

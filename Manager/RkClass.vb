@@ -24,10 +24,12 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Return Me.Is({t})
+            Throw New NotSupportedException
         End Function
 
-        Public Overridable Function [Is](args() As IType) As Boolean
+        Public Overridable Function [Is](target As IScope, args() As IType) As Boolean
+
+            If target Is Nothing Then Throw New ArgumentNullException(NameOf(target))
 
             Dim gen = Me.GenericBase.Else(Function() Me)
             Dim named_hash = args.ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
@@ -49,7 +51,7 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    Dim fx = SystemLibrary.TryLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
                     If fx Is Nothing Then Return False
                 Next
             Next
@@ -57,9 +59,9 @@ Namespace Manager
             Return True
         End Function
 
-        Public Overridable Function Feedback(args() As IType) As Boolean
+        Public Overridable Function Feedback(target As IScope, args() As IType) As Boolean
 
-            If Not Me.Is(args) Then Return False
+            If Not Me.Is(target, args) Then Return False
 
             Dim gen = Me.GenericBase.Else(Function() Me)
             Dim named_hash = args.Map(Function(x) If(TypeOf x Is RkGenericEntry, Nothing, x)).ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
@@ -84,7 +86,7 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(Me.Scope, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    Dim fx = SystemLibrary.TryLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
                     If TypeOf fx Is RkUnionType AndAlso CType(fx, RkUnionType).HasIndefinite Then Continue For
                     If fx.GenericBase IsNot Nothing Then fx = fx.GenericBase
 

@@ -562,15 +562,15 @@ Namespace Compiler
             Return e
         End Function
 
-        Public Shared Function ApplyFunction(union As RkUnionType, f As FunctionCallNode) As Boolean
+        Public Shared Function ApplyFunction(target As IScope, union As RkUnionType, f As FunctionCallNode) As Boolean
 
             Dim before = union.Types.Count
             Dim args = f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type))).ToArray
             union.Types = union.Types.
                 By(Of IFunction).
                 Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
-                Where(Function(x) x.WhereFunction(args)).
-                Map(Function(x) x.ApplyFunction(args)).
+                Where(Function(x) x.WhereFunction(target, args)).
+                Map(Function(x) x.ApplyFunction(target, args)).
                 By(Of IType).
                 UniqueList(Function(a, b) a.Is(b)).
                 ToList
@@ -586,8 +586,9 @@ Namespace Compiler
 
                 Coverage.Case()
                 Dim union = CType(expr, RkUnionType)
-                ApplyFunction(union, f)
+                ApplyFunction(ns, union, f)
                 union.Unique()
+                If union.Types.IsNull Then Throw New Exception("function not found")
                 If Not union.HasIndefinite Then
 
                     expr = union.Types(0)
@@ -670,7 +671,7 @@ Namespace Compiler
                 If Not r.HasGeneric Then Return r
 
                 Coverage.Case()
-                Return r.ApplyFunction(args.ToArray)
+                Return r.ApplyFunction(ns, args.ToArray)
 
             ElseIf TypeOf expr Is RkUnionType Then
 
@@ -743,7 +744,7 @@ Namespace Compiler
             Return from
         End Function
 
-        Public Shared Sub ApplyFeedback(pgm As ProgramNode, root As SystemLibrary, f As IFunction, node As FunctionCallNode, current As IScope)
+        Public Shared Sub ApplyFeedback(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace, f As IFunction, node As FunctionCallNode, current As IScope)
 
             If TypeOf f Is RkNativeFunction Then
 
@@ -767,7 +768,7 @@ Namespace Compiler
                                 func.Apply(apply_index) = x
                                 Do While True
 
-                                    Dim apply = func.ApplyToWhere(func.Apply.ToArray)
+                                    Dim apply = func.ApplyToWhere(ns, func.Apply.ToArray)
                                     If apply(apply_index) Is x Then Exit Do
                                     func.Apply.Clear()
                                     func.Apply.AddRange(apply)
@@ -1008,7 +1009,7 @@ Namespace Compiler
                                         Coverage.Case()
                                     Else
 
-                                        ApplyFeedback(pgm, root, node.Function, node, current)
+                                        ApplyFeedback(pgm, root, ns, node.Function, node, current)
                                         If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                             pgm.AddFixedGenericFunction(node.Function)
@@ -1028,7 +1029,7 @@ Namespace Compiler
                                     If f IsNot Nothing AndAlso f IsNot node.Function Then
 
                                         node.Function = f
-                                        ApplyFeedback(pgm, root, node.Function, node, current)
+                                        ApplyFeedback(pgm, root, ns, node.Function, node, current)
                                         If node.Function.GenericBase?.FunctionNode IsNot Nothing Then
 
                                             pgm.AddFixedGenericFunction(node.Function)
@@ -1041,7 +1042,7 @@ Namespace Compiler
 
                                 ElseIf Not node.Function.HasIndefinite Then
 
-                                    ApplyFeedback(pgm, root, node.Function, node, current)
+                                    ApplyFeedback(pgm, root, ns, node.Function, node, current)
                                 End If
 
                                 If TypeOf node.Function Is RkUnionType Then
@@ -1050,7 +1051,7 @@ Namespace Compiler
                                     Dim before = union.Types.Count
                                     If union.Return Is Nothing OrElse (TypeOf union.Return Is RkUnionType AndAlso CType(union.Return, RkUnionType).Types.Count = 0) Then
 
-                                        If ApplyFunction(union, node) Then type_fix = True
+                                        If ApplyFunction(ns, union, node) Then type_fix = True
                                         Coverage.Case()
                                     Else
 

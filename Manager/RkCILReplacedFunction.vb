@@ -17,9 +17,9 @@ Namespace Manager
             Return x
         End Function
 
-        Public Overrides Function ApplyFunction(ParamArray args() As IType) As IFunction
+        Public Overrides Function ApplyFunction(target As IScope, ParamArray args() As IType) As IFunction
 
-            Dim t = MyBase.ApplyFunction(args)
+            Dim t = MyBase.ApplyFunction(target, args)
             If t.HasGeneric Then Return t
 
             Dim self = FixedByName(args(0))

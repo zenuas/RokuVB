@@ -107,10 +107,11 @@ Namespace Manager
         Public Overridable Function TypeToApply(value As IType) As IType() Implements IType.TypeToApply
 
             If TypeOf value IsNot IFunction Then Throw New ArgumentException("generics parameter miss match")
-            Return Me.ArgumentsToApply(CType(value, IFunction).Arguments.Map(Function(x) x.Value).ToArray)
+            Dim f = CType(value, IFunction)
+            Return Me.ArgumentsToApply(f.Scope, f.Arguments.Map(Function(x) x.Value).ToArray)
         End Function
 
-        Public Overridable Function ArgumentsToApply(ParamArray args() As IType) As IType() Implements IFunction.ArgumentsToApply
+        Public Overridable Function ArgumentsToApply(target As IScope, ParamArray args() As IType) As IType()
 
             Dim generic_match As Action(Of IType, IType, Action(Of RkGenericEntry, IType)) =
                 Sub(arg, p, gen_to_type)
@@ -233,10 +234,10 @@ Namespace Manager
                     End Sub)
             Next
 
-            Return Me.ApplyToWhere(xs)
+            Return Me.ApplyToWhere(target, xs)
         End Function
 
-        Public Overridable Function ApplyToWhere(ParamArray apply() As IType) As IType()
+        Public Overridable Function ApplyToWhere(target As IScope, ParamArray apply() As IType) As IType()
 
             Do While True
 
@@ -246,7 +247,7 @@ Namespace Manager
                     Sub(x)
 
                         Dim xargs = x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray
-                        If x.Feedback(xargs) Then
+                        If x.Feedback(target, xargs) Then
 
                             x.Apply.Each(
                                 Sub(a, i)
@@ -270,19 +271,19 @@ Namespace Manager
             Return apply
         End Function
 
-        Public Overridable Function WhereFunction(ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
+        Public Overridable Function WhereFunction(target As IScope, ParamArray args() As IType) As Boolean Implements IFunction.WhereFunction
 
             If Me.Where.Count = 0 Then Return True
 
             args = args.Map(Function(x) If(x Is Nothing, Nothing, TypeHelper.MemberwiseClone(x))).ToArray
-            Dim apply = Me.ArgumentsToApply(args)
-            Return Me.Where.And(Function(x) x.Is(x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray))
+            Dim apply = Me.ArgumentsToApply(target, args)
+            Return Me.Where.And(Function(x) x.Is(target, x.Apply.Map(Function(a) If(TypeOf a Is RkGenericEntry, apply(CType(a, RkGenericEntry).ApplyIndex), a)).ToArray))
         End Function
 
-        Public Overridable Function ApplyFunction(ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
+        Public Overridable Function ApplyFunction(target As IScope, ParamArray args() As IType) As IFunction Implements IFunction.ApplyFunction
 
             If Not Me.HasGeneric Then Return Me
-            Return CType(Me.FixedGeneric(Me.ArgumentsToApply(args)), RkFunction)
+            Return CType(Me.FixedGeneric(Me.ArgumentsToApply(target, args)), RkFunction)
         End Function
 
         Public Overridable Function HasGeneric() As Boolean Implements IType.HasGeneric
