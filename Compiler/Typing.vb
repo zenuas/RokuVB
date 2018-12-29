@@ -426,7 +426,7 @@ Namespace Compiler
             Return func
         End Function
 
-        Public Shared Function GetGemeric(name As String, scope As IScope) As IType
+        Public Shared Function GetGeneric(name As String, scope As IScope) As IType
 
             If TypeOf scope Is IFunction Then
 
@@ -876,7 +876,7 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node = CType(child, TypeNode)
-                            If node.IsGeneric Then set_type(node, Function() GetGemeric(node.Name, current))
+                            If node.IsGeneric Then set_type(node, Function() GetGeneric(node.Name, current))
                             If node.Nullable AndAlso Not node.NullAdded Then
 
                                 Dim t = node.Type
