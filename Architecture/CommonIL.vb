@@ -38,11 +38,6 @@ Namespace Architecture
             asm.Save(IO.Path.GetFileName(path))
         End Sub
 
-        Public Overridable Function ConvertValidName(s As String) As String
-
-            Return If(System.Text.RegularExpressions.Regex.IsMatch(s, "^_*[a-zA-Z]+[_0-9a-zA-Z]*$"), s, $"###{s}")
-        End Function
-
         Public Overridable Iterator Function FindAllStructs(root As SystemLibrary) As IEnumerable(Of RkStruct)
 
             For Each s In root.AllNamespace.Map(Function(x) x.Structs.Values.Flatten).Flatten.By(Of RkStruct)
@@ -834,11 +829,6 @@ CLASS_CAST_:
         Public Overridable Function RkToCILType(r As List(Of NamedValue), structs As Dictionary(Of RkStruct, TypeData)) As System.Type()
 
             Return r.Map(Function(x) Me.RkToCILType(x.Value, structs).Type).ToArray
-        End Function
-
-        Public Overridable Function RkToCILType(r As List(Of OpValue), structs As Dictionary(Of RkStruct, TypeData)) As System.Type()
-
-            Return r.Map(Function(x) Me.RkToCILType(x.Type, structs).Type).ToArray
         End Function
 
         Public Overridable Function RkToCILFunction(f As RkFunction, functions As Dictionary(Of IFunction, MethodInfo), structs As Dictionary(Of RkStruct, TypeData)) As MethodInfo
