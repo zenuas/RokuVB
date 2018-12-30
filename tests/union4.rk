@@ -1,0 +1,43 @@
+
+sub f(x: Int) [Int | String]
+	if x == 1
+		return("String")
+	else
+		return(x)
+
+sub show(x: [Int | String])
+	
+	if i: Int = x
+		
+		print(i)
+		
+	else if s: String = x
+		
+		print(s)
+
+#=>0
+#=>String
+#=>2
+show(f(0))
+show(f(1))
+show(f(2))
+
+# 
+# 共有型を戻り値にする場合の解決
+# 
+# 共有型を戻り値にする次の3ケースが考えられる
+# ①戻り値だけ違う関数がある
+#   sub hoge() Int
+#   sub hoge() String
+#   この時戻り値は[Int | String]として扱い、後の文脈でどちらかだけを使う
+#   あいまいなままだとどちらの関数を呼んでよいのか分からないのでエラー
+# ②一つの関数が異なる型を返す
+#   sub hoge() [Int | String]
+#   この時戻り値は[Int | String]として扱い、後で型判定して使う
+# ③上記①と②の複合
+#   sub hoge() [Int | String]
+#   sub hoge() Long
+#   この時戻り値は[Int | String | Long]として扱い、後の文脈でどちらかだけを使う
+#   あいまいなままだとどちらの関数を呼んでよいのか分からないのでエラー
+# 
+# 本テストケースは②である
