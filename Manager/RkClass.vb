@@ -51,8 +51,8 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
-                    If fx Is Nothing Then Return False
+                    Dim fx = SystemLibrary.FindLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    If fx.IsNull Then Return False
                 Next
             Next
 
