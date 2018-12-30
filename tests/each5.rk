@@ -1,0 +1,20 @@
+
+struct Any
+	var i: Int
+
+#=>a0
+#=>a1
+#=>a2
+var xs = Any()
+xs.each({a: String => print(a)})
+
+sub car(self: Any) String
+	return("a" + self.i.ToString())
+
+sub cdr(self: Any) [@T]
+	var next = Any()
+	next.i = self.i + 1
+	return(next)
+
+sub isnull(self: Any) Bool
+	return(self.i == 3)

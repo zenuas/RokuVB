@@ -51,8 +51,8 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.FindLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
-                    If fx.IsNull Then Return False
+                    Dim xs = SystemLibrary.FindLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
+                    If xs.IsNull Then Return False
                 Next
             Next
 
@@ -86,8 +86,9 @@ Namespace Manager
 
                 For Each f In kv.Value
 
-                    Dim fx = SystemLibrary.TryLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray)
-                    If TypeOf fx Is RkUnionType AndAlso CType(fx, RkUnionType).HasIndefinite Then Continue For
+                    Dim xs = SystemLibrary.FindLoadFunction(target, kv.Key, f.Arguments.Map(Function(x) search_args(x.Value)).ToArray).ToArray
+                    If xs.Length <> 1 Then Continue For
+                    Dim fx = xs(0)
                     If fx.GenericBase IsNot Nothing Then fx = fx.GenericBase
 
                     Dim remap = fx.Generics.Map(Function(x) x.Name).ToHash_ValueDerivation(Function(x) CType(Nothing, IType))
