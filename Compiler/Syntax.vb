@@ -2,6 +2,7 @@
 Imports System.Collections.Generic
 Imports Roku.Node
 Imports Roku.Manager
+Imports Roku.Parser
 Imports Roku.Parser.MyParser
 Imports Roku.Util.Extensions
 
@@ -245,7 +246,7 @@ Namespace Compiler
                         If func.Coroutine Then
 
                             Dim p = func.Parent
-                            Dim self = New TypeNode(CreateVariableNode(func.Name, func))
+                            Dim self_type = New TypeNode(CreateVariableNode(func.Name, func))
                             Dim t = func.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is func.Return).Arguments(1)
                             Dim scope = CType(p, IAddFunction)
 
@@ -261,23 +262,58 @@ Namespace Compiler
 
                             ' sub co() [t] -> sub cdr(self: co) [t]
                             Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Arguments = New List(Of DeclareNode)}
-                            cdr.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
+                            cdr.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self_type))
                             cdr.Where.Add(func.Where(0))
                             cdr.Return = func.Return
                             scope.AddFunction(cdr)
 
                             ' sub co() [t] -> sub car(self: co) t
+                            '     
                             func.Name = "car"
                             func.Arguments.Clear()
-                            func.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
+                            func.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self_type))
                             func.Where.Clear()
                             func.Return = t
 
-                            ' sub co() [t] -> sub isnull(self: co) Bool
-                            Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Arguments = New List(Of DeclareNode)}
-                            isnull.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self))
-                            isnull.Return = New TypeNode(CreateVariableNode("Bool", func))
-                            scope.AddFunction(isnull)
+                            ' sub isnull(self: co) Bool
+                            '     var next = self.next
+                            '     var unexec = (next == 0)
+                            '     if unexec then
+                            '         var car = self.car
+                            '         car()
+                            '         next = self.next
+                            '     var m1 = -1
+                            '     var isend = (next == m1)
+                            '     return(isend)
+                            Do
+                                Dim self = CreateVariableNode("self", func)
+                                Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Arguments = New List(Of DeclareNode)}
+                                isnull.Arguments.Add(New DeclareNode(self, self_type))
+                                isnull.Return = New TypeNode(CreateVariableNode("Bool", func))
+                                Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = isnull}
+
+                                Dim next_var = CreateVariableNode("next", func)
+                                Dim unexec_var = CreateVariableNode("unexec", func)
+                                Dim car_var = CreateVariableNode("car", func)
+                                Dim m1_var = CreateVariableNode("m1", func)
+                                Dim isend_var = CreateVariableNode("isend", func)
+
+                                isnull.Statements.AddRange({
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
+                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
+                                        CreateIfNode(unexec_var, then_block),
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
+                                        CreateLetNode(isend_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True),
+                                        CreateFunctionCallNode(CreateVariableNode("return", func), isend_var)
+                                    })
+                                then_block.Statements.AddRange({
+                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", func)), True),
+                                        CreateFunctionCallNode(car_var),
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True)
+                                    })
+                                scope.AddFunction(isnull)
+
+                            Loop While False
                         End If
                     End If
                     next_(child, user)
