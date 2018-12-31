@@ -235,10 +235,71 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 pgm,
-                0,
+                New With {.Function = CType(Nothing, FunctionNode), .GotoCount = 0},
                 Sub(parent, ref, child, user, isfirst, next_)
 
                     If Not isfirst Then Return
+
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim func = CType(child, FunctionNode)
+                        If func.Coroutine Then
+
+                            user = New With {.Function = func, .GotoCount = 0}
+                            next_(child, user)
+                        End If
+                    End If
+
+                    If user.Function?.Coroutine AndAlso TypeOf child Is BlockNode Then
+
+                        Dim block = CType(child, BlockNode)
+                        Dim program_pointer = 0
+                        Dim self = CreateVariableNode("#self", block)
+                        block.Lets.Add(self.Name, self)
+
+                        Do While program_pointer < block.Statements.Count
+
+                            Dim v = block.Statements(program_pointer)
+
+                            If TypeOf v Is FunctionCallNode Then
+
+                                Dim fcall = CType(v, FunctionCallNode)
+                                If TypeOf fcall.Expression Is VariableNode Then
+
+                                    Dim var = CType(fcall.Expression, VariableNode)
+                                    If var.Name.Equals("yield") Then
+
+                                        ' yield(x) =>
+                                        '   self.next = N
+                                        '   self.value = x
+                                        '   return(x)
+                                        '   stateN_:
+                                        user.GotoCount += 1
+                                        block.Statements.RemoveAt(program_pointer)
+                                        block.Statements.InsertRange(program_pointer, {
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", v)), New NumericNode(user.GotoCount.ToString, CUInt(user.GotoCount))),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("value", v)), fcall.Arguments(0)),
+                                                CreateFunctionCallNode(CreateVariableNode("return", v), fcall.Arguments(0)),
+                                                New LabelNode With {.Label = user.GotoCount}
+                                            })
+                                        program_pointer += 4
+                                        Continue Do
+
+                                    ElseIf var.Name.Equals("return") Then
+
+                                        ' return() =>
+                                        '   end_:
+                                        '   m1 = -1
+                                        '   self.next = m1
+                                        '   return()
+                                        user.GotoCount += 1
+                                    End If
+                                End If
+                            End If
+
+                            program_pointer += 1
+                        Loop
+                    End If
 
                     If TypeOf child Is FunctionNode Then
 
@@ -268,7 +329,7 @@ Namespace Compiler
                             '         car()
                             '         next = self.next
                             '     var xs = co()
-                            '     xs.next = next
+                            '     xs.state = next
                             '     return(xs)
                             Do
                                 Dim self = CreateVariableNode("self", func)
@@ -288,7 +349,7 @@ Namespace Compiler
                                         CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
                                         CreateIfNode(unexec_var, then_block),
                                         CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, func))),
-                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("next", func)), next_var),
+                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", func)), next_var),
                                         CreateFunctionCallNode(CreateVariableNode("return", func), xs_var)
                                     })
                                 then_block.Statements.AddRange({
@@ -299,14 +360,6 @@ Namespace Compiler
                                 scope.AddFunction(cdr)
 
                             Loop While False
-
-                            ' sub co() [t] -> sub car(self: co) t
-                            '     
-                            func.Name = "car"
-                            func.Arguments.Clear()
-                            func.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self_type))
-                            func.Where.Clear()
-                            func.Return = t
 
                             ' sub isnull(self: co) Bool
                             '     var next = self.next
@@ -347,6 +400,74 @@ Namespace Compiler
                                 scope.AddFunction(isnull)
 
                             Loop While False
+
+                            ' sub car(self: co) t
+                            '     var next = self.next
+                            '     var flag = (next >= 1)
+                            '     if flag then
+                            '         var value = self.value
+                            '         return(value)
+                            '     var m1 = -1
+                            '     flag = (next == m1)
+                            '     if flag then goto end_
+                            '     var state = self.state
+                            '     flag = (state == N)
+                            '     if flag then goto stateN_
+                            '     ...
+                            '     m1 = -1
+                            '     self.next = m1
+                            '     end_:
+                            Do
+                                Dim self = CType(func.Lets("#self"), VariableNode)
+                                func.Name = "car"
+                                func.Arguments.Clear()
+                                func.Arguments.Add(New DeclareNode(self, self_type))
+                                func.Where.Clear()
+                                func.Return = t
+                                Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = func}
+                                Dim create_goto =
+                                    Function(label As Integer)
+
+                                        Dim block = New BlockNode(func.LineNumber.Value) With {.Parent = func}
+                                        block.Statements.Add(New GotoNode With {.Label = label})
+                                        Return block
+                                    End Function
+
+                                Dim next_var = CreateVariableNode("next", func)
+                                Dim flag_var = CreateVariableNode("flag", func)
+                                Dim value_var = CreateVariableNode("value", func)
+                                Dim m1_var = CreateVariableNode("m1", func)
+                                Dim state_var = CreateVariableNode("state", func)
+
+                                Dim stmts As New List(Of IStatementNode) From {
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
+                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = ">="}, next_var, New NumericNode("1", 1)), True),
+                                        CreateIfNode(flag_var, then_block),
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
+                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True),
+                                        CreateIfNode(flag_var, create_goto(0)),
+                                        CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True)
+                                    }
+                                For i = 1 To user.GotoCount
+
+                                    stmts.AddRange({
+                                            CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, state_var, New NumericNode(i.ToString, CUInt(i))), True),
+                                            CreateIfNode(flag_var, create_goto(i))
+                                        })
+                                Next
+                                func.Statements.InsertRange(0, stmts)
+                                func.Statements.AddRange({
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
+                                        CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), m1_var),
+                                        New LabelNode With {.Label = 0}
+                                    })
+                                then_block.Statements.AddRange({
+                                        CreateLetNode(value_var, CreatePropertyNode(self, Nothing, CreateVariableNode("value", func)), True),
+                                        CreateFunctionCallNode(CreateVariableNode("return", func), value_var)
+                                    })
+                            Loop While False
+
+                            Return
                         End If
                     End If
                     next_(child, user)

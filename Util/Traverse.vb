@@ -319,7 +319,9 @@ BLOCK_NODE_:
                              TypeOf node_ Is StringNode,
                              TypeOf node_ Is NullNode,
                              TypeOf node_ Is BoolNode,
-                             TypeOf node_ Is BreakNode
+                             TypeOf node_ Is BreakNode,
+                             TypeOf node_ Is GotoNode,
+                             TypeOf node_ Is LabelNode
 
                             ' nothing
 

@@ -287,6 +287,14 @@ Namespace Compiler
             Dim make_if As Func(Of IfNode, List(Of InCode0)) = Nothing
             Dim make_switch As Func(Of SwitchNode, List(Of InCode0)) = Nothing
             Dim break_point As New Stack(Of InLabel)
+            Dim goto_label As New Dictionary(Of Integer, InLabel)
+            Dim make_label =
+                Function(label As Integer)
+
+                    If goto_label.ContainsKey(label) Then Return goto_label(label)
+                    goto_label.Add(label, New InLabel)
+                    Return goto_label(label)
+                End Function
             Dim make_stmts As Func(Of List(Of IStatementNode), List(Of InCode0)) =
                 Function(stmts)
 
@@ -320,6 +328,18 @@ Namespace Compiler
                         ElseIf TypeOf stmt Is BreakNode Then
 
                             body.Add(New InGoto With {.Label = break_point.Peek})
+                            Coverage.Case()
+
+                        ElseIf TypeOf stmt Is GotoNode Then
+
+                            Dim node = CType(stmt, GotoNode)
+                            body.Add(New InGoto With {.Label = make_label(node.Label)})
+                            Coverage.Case()
+
+                        ElseIf TypeOf stmt Is LabelNode Then
+
+                            Dim node = CType(stmt, LabelNode)
+                            body.Add(make_label(node.Label))
                             Coverage.Case()
                         End If
                     Next

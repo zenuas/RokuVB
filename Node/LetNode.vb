@@ -19,7 +19,7 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return $"var {Me.Var}{If(Me.Declare Is Nothing, "", $": {Me.Declare}")} = {Me.Expression}"
+            Return $"var {If(Me.Receiver Is Nothing, "", $"{Me.Receiver}.")}{Me.Var}{If(Me.Declare Is Nothing, "", $": {Me.Declare}")} = {Me.Expression}"
         End Function
     End Class
 

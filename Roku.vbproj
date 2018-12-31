@@ -86,6 +86,8 @@
     <Compile Include="Manager\RkClass.vb" />
     <Compile Include="Manager\RkTuple.vb" />
     <Compile Include="Manager\RkUnionType.vb" />
+    <Compile Include="Node\LabelNode.vb" />
+    <Compile Include="Node\GotoNode.vb" />
     <Compile Include="Node\CaseValueNode.vb" />
     <Compile Include="Node\CaseCastNode.vb" />
     <Compile Include="Node\CaseArrayNode.vb" />
