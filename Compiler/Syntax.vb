@@ -260,12 +260,45 @@ Namespace Compiler
                             co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", func), t))
                             p.Lets.Add(co.Name, co)
 
-                            ' sub co() [t] -> sub cdr(self: co) [t]
-                            Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Arguments = New List(Of DeclareNode)}
-                            cdr.Arguments.Add(New DeclareNode(CreateVariableNode("#self", func), self_type))
-                            cdr.Where.Add(func.Where(0))
-                            cdr.Return = func.Return
-                            scope.AddFunction(cdr)
+                            ' sub cdr(self: co) [t]
+                            '     var next = self.next
+                            '     var unexec = (next == 0)
+                            '     if unexec then
+                            '         var car = self.car
+                            '         car()
+                            '         next = self.next
+                            '     var xs = co()
+                            '     xs.next = next
+                            '     return(xs)
+                            Do
+                                Dim self = CreateVariableNode("self", func)
+                                Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Arguments = New List(Of DeclareNode)}
+                                cdr.Arguments.Add(New DeclareNode(self, self_type))
+                                cdr.Where.Add(func.Where(0))
+                                cdr.Return = func.Return
+                                Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = cdr}
+
+                                Dim next_var = CreateVariableNode("next", func)
+                                Dim unexec_var = CreateVariableNode("unexec", func)
+                                Dim car_var = CreateVariableNode("car", func)
+                                Dim xs_var = CreateVariableNode("xs", func)
+
+                                cdr.Statements.AddRange({
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
+                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
+                                        CreateIfNode(unexec_var, then_block),
+                                        CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, func))),
+                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("next", func)), next_var),
+                                        CreateFunctionCallNode(CreateVariableNode("return", func), xs_var)
+                                    })
+                                then_block.Statements.AddRange({
+                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", func)), True),
+                                        CreateFunctionCallNode(car_var),
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True)
+                                    })
+                                scope.AddFunction(cdr)
+
+                            Loop While False
 
                             ' sub co() [t] -> sub car(self: co) t
                             '     
