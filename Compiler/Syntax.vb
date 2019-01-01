@@ -81,7 +81,7 @@ Namespace Compiler
                         ' $case1 = $ret == switch.Expression
                         ' if $case1 else break
                         Dim s1 = CreateVariableNode($"$case{user.VarIndex}", case_value)
-                        case_value.Value.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("==", case_value), CreateVariableNode("$ret", case_value), switch.Expression)))
+                        case_value.Value.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("==", case_value), CreateVariableNode("$ret", case_value), switch.Expression), True, False))
                         case_value.Value.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
 
                     ElseIf TypeOf child Is CaseArrayNode Then
@@ -98,8 +98,8 @@ Namespace Compiler
                             user.VarIndex += 1
                             Dim s2 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array))))
-                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1)))
+                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array)), True, False))
+                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1), True, False))
                             case_array.Statements.Add(CreateIfNode(s2, Nothing, ToBlock(user.Scope, New BreakNode)))
                         Else
 
@@ -110,16 +110,16 @@ Namespace Compiler
                             user.VarIndex += 1
                             Dim s2 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array))))
-                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1)))
+                            case_array.Statements.Add(CreateLetNode(s1, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("isnull", case_array)), True, False))
+                            case_array.Statements.Add(CreateLetNode(s2, CreateFunctionCallNode(s1), True, False))
                             case_array.Statements.Add(CreateIfNode(s2, ToBlock(user.Scope, New BreakNode)))
 
                             ' $s3 = switch.Expression.car
                             ' case_array.Pattern[0] = $s3()
                             Dim s3 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s3, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("car", case_array))))
-                            case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(s3)))
+                            case_array.Statements.Add(CreateLetNode(s3, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("car", case_array)), True, False))
+                            case_array.Statements.Add(CreateLetNode(case_array.Pattern(0), CreateFunctionCallNode(s3), True, False))
 
                             ' $s4 = switch.Expression.cdr
                             ' $s5 = $s4()
@@ -127,8 +127,8 @@ Namespace Compiler
                             user.VarIndex += 1
                             Dim s5 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                             user.VarIndex += 1
-                            case_array.Statements.Add(CreateLetNode(s4, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("cdr", case_array))))
-                            case_array.Statements.Add(CreateLetNode(s5, CreateFunctionCallNode(s4)))
+                            case_array.Statements.Add(CreateLetNode(s4, CreatePropertyNode(switch.Expression, Nothing, CreateVariableNode("cdr", case_array)), True, False))
+                            case_array.Statements.Add(CreateLetNode(s5, CreateFunctionCallNode(s4), True, False))
 
                             If case_array.Pattern.Count = 1 Then
 
@@ -138,8 +138,8 @@ Namespace Compiler
                                 user.VarIndex += 1
                                 Dim s7 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                 user.VarIndex += 1
-                                case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array))))
-                                case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6)))
+                                case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array)), True, False))
+                                case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6), True, False))
 
                                 ' if $s7 else break
                                 case_array.Statements.Add(CreateIfNode(s7, Nothing, ToBlock(user.Scope, New BreakNode)))
@@ -153,8 +153,8 @@ Namespace Compiler
                                     user.VarIndex += 1
                                     Dim s7 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                     user.VarIndex += 1
-                                    case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array))))
-                                    case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6)))
+                                    case_array.Statements.Add(CreateLetNode(s6, CreatePropertyNode(s5, Nothing, CreateVariableNode("isnull", case_array)), True, False))
+                                    case_array.Statements.Add(CreateLetNode(s7, CreateFunctionCallNode(s6), True, False))
 
                                     ' if $s7 then break
                                     case_array.Statements.Add(CreateIfNode(s7, ToBlock(user.Scope, New BreakNode)))
@@ -163,8 +163,8 @@ Namespace Compiler
                                     ' case_array.Pattern[i] = $s7()
                                     Dim s8 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                     user.VarIndex += 1
-                                    case_array.Statements.Add(CreateLetNode(s8, CreatePropertyNode(s5, Nothing, CreateVariableNode("car", case_array))))
-                                    case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(s8)))
+                                    case_array.Statements.Add(CreateLetNode(s8, CreatePropertyNode(s5, Nothing, CreateVariableNode("car", case_array)), True, False))
+                                    case_array.Statements.Add(CreateLetNode(case_array.Pattern(i), CreateFunctionCallNode(s8), True, False))
 
                                     ' $s9 = $s5.cdr
                                     ' $s10 = $s9()
@@ -172,14 +172,14 @@ Namespace Compiler
                                     user.VarIndex += 1
                                     Dim s10 = CreateVariableNode($"$s{user.VarIndex}", case_array)
                                     user.VarIndex += 1
-                                    case_array.Statements.Add(CreateLetNode(s9, CreatePropertyNode(s5, Nothing, CreateVariableNode("cdr", case_array))))
-                                    case_array.Statements.Add(CreateLetNode(s10, CreateFunctionCallNode(s9)))
+                                    case_array.Statements.Add(CreateLetNode(s9, CreatePropertyNode(s5, Nothing, CreateVariableNode("cdr", case_array)), True, False))
+                                    case_array.Statements.Add(CreateLetNode(s10, CreateFunctionCallNode(s9), True, False))
 
                                     s5 = s10
                                 Next
 
                                 ' case_array.Pattern[N] = next
-                                case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s5))
+                                case_array.Statements.Add(CreateLetNode(case_array.Pattern(case_array.Pattern.Count - 1), s5, True, False))
                             End If
                         End If
                     End If

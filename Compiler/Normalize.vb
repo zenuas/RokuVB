@@ -44,7 +44,7 @@ Namespace Compiler
 
                                 If e Is Nothing Then Return Nothing
                                 Dim then_block As New BlockNode(e.LineNumber.Value) With {.InnerScope = True, .Parent = block}
-                                then_block.AddStatement(CreateLetNode(var, e))
+                                then_block.AddStatement(CreateLetNode(var, e, True, False))
                                 Return then_block
                             End Function
 

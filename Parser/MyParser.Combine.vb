@@ -453,7 +453,7 @@ Namespace Parser
 
         Public Shared Function ToBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
 
-            Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr), IStatementNode))
+            Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr, False, False), IStatementNode))
         End Function
 
     End Class
