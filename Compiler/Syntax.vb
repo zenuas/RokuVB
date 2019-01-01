@@ -231,6 +231,14 @@ Namespace Compiler
                 End Sub)
         End Sub
 
+        Public Shared Function CreateLocalVariable(name As String, scope As IScopeNode) As VariableNode
+
+            Dim x = CreateVariableNode(name, scope)
+            x.Scope = scope
+            scope.Lets.Add(name, x)
+            Return x
+        End Function
+
         Public Shared Sub Coroutine(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
 
             Util.Traverse.NodesOnce(
@@ -254,8 +262,7 @@ Namespace Compiler
 
                         Dim block = CType(child, BlockNode)
                         Dim program_pointer = 0
-                        Dim self = CreateVariableNode("#self", block)
-                        block.Lets.Add(self.Name, self)
+                        Dim self = CreateLocalVariable("#self", block)
 
                         Do While program_pointer < block.Statements.Count
 
@@ -319,10 +326,10 @@ Namespace Compiler
                             '     var value: "t"
                             '     var args...
                             Dim co = New StructNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p}
-                            co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", func), New NumericNode("0", 0)))
-                            co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", func), New NumericNode("0", 0)))
-                            co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", func), t))
-                            local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, func), create_type(x.Item2))))
+                            co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", co), New NumericNode("0", 0)))
+                            co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", co), New NumericNode("0", 0)))
+                            co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", co), t))
+                            local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, co), create_type(x.Item2))))
                             p.Lets.Add(co.Name, co)
 
                             ' sub "func.Name"(args...) "func.Name"
@@ -331,14 +338,14 @@ Namespace Compiler
                             '     return(self)
                             If func.Arguments.Count > 0 Then
 
-                                Dim self = CreateVariableNode("self", func)
                                 Dim co2 = New FunctionNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p, .Arguments = New List(Of DeclareNode)}
-                                func.Arguments.Each(Sub(x) co2.Arguments.Add(New DeclareNode(CreateVariableNode(x.Name.Name, func), New TypeNode(CreateVariableNode(x.Type.Name, func)))))
+                                Dim self = CreateLocalVariable("self", co2)
+                                func.Arguments.Each(Sub(x) co2.Arguments.Add(New DeclareNode(CreateVariableNode(x.Name.Name, co2), New TypeNode(CreateVariableNode(x.Type.Name, co2)))))
                                 co2.Return = self_type
 
-                                co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(CreateVariableNode(func.Name, func)), True))
-                                co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, func)), x.Name)))
-                                co2.Statements.Add(CreateFunctionCallNode(CreateVariableNode("return", func), self))
+                                co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(CreateVariableNode(func.Name, co2)), True, False))
+                                co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, co2)), x.Name)))
+                                co2.Statements.Add(CreateFunctionCallNode(CreateVariableNode("return", co2), self))
                                 scope.AddFunction(co2)
                             End If
 
@@ -352,35 +359,37 @@ Namespace Compiler
                             '     var xs = co()
                             '     xs.state = next
                             '     xs.args = self.args
+                            '     xs.local_var = self.local_var # mark-only
                             '     return(xs)
                             Do
-                                Dim self = CreateVariableNode("self", func)
                                 Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Parent = p, .Arguments = New List(Of DeclareNode)}
+                                Dim self = CreateLocalVariable("self", cdr)
                                 cdr.Arguments.Add(New DeclareNode(self, self_type))
                                 cdr.Where.Add(func.Where(0))
                                 cdr.Return = func.Return
-                                Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = cdr}
+                                Dim then_block = New BlockNode(cdr.LineNumber.Value) With {.Parent = cdr}
 
-                                Dim next_var = CreateVariableNode("next", func)
-                                Dim unexec_var = CreateVariableNode("unexec", func)
-                                Dim car_var = CreateVariableNode("car", func)
-                                Dim xs_var = CreateVariableNode("xs", func)
+                                Dim next_var = CreateLocalVariable("next", cdr)
+                                Dim unexec_var = CreateLocalVariable("unexec", cdr)
+                                Dim car_var = CreateLocalVariable("car", cdr)
+                                Dim xs_var = CreateLocalVariable("xs", cdr)
 
                                 cdr.Statements.AddRange({
-                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
-                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", cdr)), True, False),
+                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True, False),
                                         CreateIfNode(unexec_var, then_block),
-                                        CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, func))),
-                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", func)), next_var)
+                                        CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, cdr)), True, False),
+                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", cdr)), next_var)
                                     })
                                 then_block.Statements.AddRange({
-                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", func)), True),
+                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", cdr)), True, False),
                                         CreateFunctionCallNode(car_var),
-                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True)
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", cdr)), True, False)
                                     })
-                                local_vars.Each(Sub(x) cdr.Statements.Add(CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode(x.Item1, func)), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
+                                local_vars.Each(Sub(x) cdr.Statements.Add(CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode(x.Item1, cdr)), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
                                 cdr.Statements.AddRange({
-                                        CreateFunctionCallNode(CreateVariableNode("return", func), xs_var)
+                                        New LabelNode With {.Label = -1},
+                                        CreateFunctionCallNode(CreateVariableNode("return", cdr), xs_var)
                                     })
                                 scope.AddFunction(cdr)
 
@@ -397,30 +406,30 @@ Namespace Compiler
                             '     var isend = (next == m1)
                             '     return(isend)
                             Do
-                                Dim self = CreateVariableNode("self", func)
                                 Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Parent = p, .Arguments = New List(Of DeclareNode)}
+                                Dim self = CreateLocalVariable("self", isnull)
                                 isnull.Arguments.Add(New DeclareNode(self, self_type))
-                                isnull.Return = New TypeNode(CreateVariableNode("Bool", func))
-                                Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = isnull}
+                                isnull.Return = New TypeNode(CreateVariableNode("Bool", isnull))
+                                Dim then_block = New BlockNode(isnull.LineNumber.Value) With {.Parent = isnull}
 
-                                Dim next_var = CreateVariableNode("next", func)
-                                Dim unexec_var = CreateVariableNode("unexec", func)
-                                Dim car_var = CreateVariableNode("car", func)
-                                Dim m1_var = CreateVariableNode("m1", func)
-                                Dim isend_var = CreateVariableNode("isend", func)
+                                Dim next_var = CreateLocalVariable("next", isnull)
+                                Dim unexec_var = CreateLocalVariable("unexec", isnull)
+                                Dim car_var = CreateLocalVariable("car", isnull)
+                                Dim m1_var = CreateLocalVariable("m1", isnull)
+                                Dim isend_var = CreateLocalVariable("isend", isnull)
 
                                 isnull.Statements.AddRange({
-                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
-                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", isnull)), True, False),
+                                        CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True, False),
                                         CreateIfNode(unexec_var, then_block),
-                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
-                                        CreateLetNode(isend_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True),
-                                        CreateFunctionCallNode(CreateVariableNode("return", func), isend_var)
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True, False),
+                                        CreateLetNode(isend_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True, False),
+                                        CreateFunctionCallNode(CreateVariableNode("return", isnull), isend_var)
                                     })
                                 then_block.Statements.AddRange({
-                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", func)), True),
+                                        CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", isnull)), True, False),
                                         CreateFunctionCallNode(car_var),
-                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True)
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", isnull)), True, False)
                                     })
                                 scope.AddFunction(isnull)
 
@@ -436,6 +445,7 @@ Namespace Compiler
                             '     flag = (next == m1)
                             '     if flag then goto end_
                             '     var args = self.args
+                            '     var local_var = self.local_var # mark-only
                             '     var state = self.state
                             '     flag = (state == N)
                             '     if flag then goto stateN_
@@ -459,41 +469,157 @@ Namespace Compiler
                                         Return block
                                     End Function
 
-                                Dim next_var = CreateVariableNode("next", func)
-                                Dim flag_var = CreateVariableNode("flag", func)
-                                Dim value_var = CreateVariableNode("value", func)
-                                Dim m1_var = CreateVariableNode("m1", func)
-                                Dim state_var = CreateVariableNode("state", func)
+                                Dim next_var = CreateLocalVariable("#next", func)
+                                Dim flag_var = CreateLocalVariable("#flag", func)
+                                Dim value_var = CreateLocalVariable("#value", func)
+                                Dim m1_var = CreateLocalVariable("#m1", func)
+                                Dim state_var = CreateLocalVariable("#state", func)
 
                                 Dim stmts As New List(Of IStatementNode) From {
-                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True),
-                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = ">="}, next_var, New NumericNode("1", 1)), True),
+                                        CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True, False),
+                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = ">="}, next_var, New NumericNode("1", 1)), True, False),
                                         CreateIfNode(flag_var, then_block),
-                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
-                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True),
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True, False),
+                                        CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True, False),
                                         CreateIfNode(flag_var, create_goto(0))
                                     }
-                                local_vars.Each(Sub(x) stmts.Add(CreateLetNode(CreateVariableNode(x.Item1, func), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
+                                local_vars.Each(Sub(x) stmts.Add(CreateLetNode(CreateVariableNode(x.Item1, func), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)), True, False)))
                                 stmts.AddRange({
-                                        CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True)
+                                        New LabelNode With {.Label = -1},
+                                        CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True, False)
                                     })
                                 For i = 1 To user.GotoCount
 
                                     stmts.AddRange({
-                                            CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, state_var, New NumericNode(i.ToString, CUInt(i))), True),
+                                            CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, state_var, New NumericNode(i.ToString, CUInt(i))), True, False),
                                             CreateIfNode(flag_var, create_goto(i))
                                         })
                                 Next
                                 func.Statements.InsertRange(0, stmts)
                                 func.Statements.AddRange({
-                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
+                                        CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True, False),
                                         CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), m1_var),
                                         New LabelNode With {.Label = 0}
                                     })
                                 then_block.Statements.AddRange({
-                                        CreateLetNode(value_var, CreatePropertyNode(self, Nothing, CreateVariableNode("value", func)), True),
+                                        CreateLetNode(value_var, CreatePropertyNode(self, Nothing, CreateVariableNode("value", func)), True, False),
                                         CreateFunctionCallNode(CreateVariableNode("return", func), value_var)
                                     })
+                            Loop While False
+
+                            Return
+                        End If
+                    End If
+                    next_(child, user)
+                End Sub)
+        End Sub
+
+        Public Shared Sub CoroutineLocalCapture(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                New With {.Function = CType(Nothing, FunctionNode), .LocalVars = CType(Nothing, Dictionary(Of String, IType))},
+                Sub(parent, ref, child, user, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim func = CType(child, FunctionNode)
+                        If func.Coroutine Then
+
+                            user = New With {.Function = func, .LocalVars = New Dictionary(Of String, IType)}
+                            next_(child, user)
+                        End If
+                    End If
+
+                    If user.Function?.Coroutine AndAlso TypeOf child Is BlockNode Then
+
+                        ' sub car(self: co) t
+                        '     var local_var = ... =>
+                        '       self.local_var = ...
+                        Dim block = CType(child, BlockNode)
+                        Dim self = user.Function.Arguments(0).Name
+                        Dim program_pointer = 0
+
+                        Do While program_pointer < block.Statements.Count
+
+                            Dim v = block.Statements(program_pointer)
+
+                            If TypeOf v Is LetNode Then
+
+                                Dim let_ = CType(v, LetNode)
+                                If let_.UserDefinition AndAlso let_.Receiver Is Nothing Then
+
+                                    let_.Receiver = self
+                                    user.LocalVars.Add(let_.Var.Name, let_.Type)
+                                End If
+                            End If
+
+                            program_pointer += 1
+                        Loop
+                    End If
+
+                    If TypeOf child Is FunctionNode Then
+
+                        Dim func = CType(child, FunctionNode)
+
+                        If func.Coroutine Then
+
+                            Dim p = func.Parent
+                            Dim scope = CType(p, IAddFunction)
+
+                            ' struct "func.Name"
+                            '     var local_var...
+                            Dim co = CType(func.Arguments(0).Type.Type, RkStruct)
+                            user.LocalVars.Each(Sub(kv) co.Local.Add(kv.Key, kv.Value))
+
+                            ' sub cdr(self: co) [t]
+                            '     mark =>
+                            '       xs.local_var = self.local_var
+                            Do
+                                Dim cdr = scope.Functions.FindFirst(Function(x) x.Name.Equals("cdr") AndAlso x.Arguments.Count = 1 AndAlso x.Arguments(0).Type.Type.Is(func.Arguments(0).Type.Type))
+                                Dim self = cdr.Arguments(0).Name
+                                Dim xs_var = CType(cdr.Lets("xs"), VariableNode)
+                                Dim index = cdr.Statements.IndexOf(Function(x) TypeOf x Is LabelNode AndAlso CType(x, LabelNode).Label = -1)
+
+                                cdr.Statements.RemoveAt(index)
+                                user.LocalVars.Each(
+                                    Sub(kv)
+
+                                        Dim left = CreatePropertyNode(xs_var, Nothing, CreateVariableNode(kv.Key, cdr))
+                                        Dim right = CreatePropertyNode(self, Nothing, CreateVariableNode(kv.Key, cdr))
+                                        left.Right.Type = kv.Value
+                                        left.Type = kv.Value
+                                        right.Right.Type = kv.Value
+                                        right.Type = kv.Value
+                                        Dim let_ = CreateLetNode(left, right)
+                                        let_.Type = kv.Value
+                                        cdr.Statements.Insert(index, let_)
+                                    End Sub)
+
+                            Loop While False
+
+                            ' sub car(self: co) t
+                            '     mark =>
+                            '       var local_var = self.local_var
+                            Do
+                                Dim self = func.Arguments(0).Name
+                                Dim index = func.Statements.IndexOf(Function(x) TypeOf x Is LabelNode AndAlso CType(x, LabelNode).Label = -1)
+
+                                func.Statements.RemoveAt(index)
+                                user.LocalVars.Each(
+                                    Sub(kv)
+
+                                        Dim left = CType(func.Lets(kv.Key), VariableNode)
+                                        Dim right = CreatePropertyNode(self, Nothing, CreateVariableNode(kv.Key, func))
+                                        right.Right.Type = kv.Value
+                                        right.Type = kv.Value
+                                        Dim let_ = CreateLetNode(left, right)
+                                        let_.Type = kv.Value
+                                        func.Statements.Insert(index, let_)
+                                    End Sub)
+
                             Loop While False
 
                             Return

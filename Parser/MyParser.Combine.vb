@@ -42,11 +42,12 @@ Namespace Parser
         Public Shared Function CreateLetNode(
                 var As VariableNode,
                 expr As IEvaluableNode,
-                Optional local_var As Boolean = False
+                Optional local_var As Boolean = False,
+                Optional user_definition As Boolean = True
             ) As LetNode
 
             var.LocalVariable = local_var
-            Dim let_ As New LetNode With {.Var = var, .Expression = expr}
+            Dim let_ As New LetNode With {.Var = var, .Expression = expr, .UserDefinition = user_definition}
             let_.AppendLineNumber(var)
             Return let_
         End Function
