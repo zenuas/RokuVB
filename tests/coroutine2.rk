@@ -1,0 +1,13 @@
+sub co(arg: String) [String]
+	yield("one")
+	yield("two")
+	yield("three")
+	yield(arg)
+
+var xs = co("four")
+
+#=>one
+#=>two
+#=>three
+#=>four
+xs.each(=> print($1))

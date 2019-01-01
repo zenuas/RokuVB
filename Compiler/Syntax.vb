@@ -310,16 +310,37 @@ Namespace Compiler
                             Dim self_type = New TypeNode(CreateVariableNode(func.Name, func))
                             Dim t = func.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is func.Return).Arguments(1)
                             Dim scope = CType(p, IAddFunction)
+                            Dim create_type = Function(x As TypeBaseNode) x ' ToDo: dummy
+                            Dim local_vars = func.Arguments.Map(Function(x) Tuple.Create(x.Name.Name, x.Type)).ToList
 
                             ' struct "func.Name"
                             '     var state = 0
                             '     var next  = 0
                             '     var value: "t"
+                            '     var args...
                             Dim co = New StructNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p}
                             co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", func), New NumericNode("0", 0)))
                             co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", func), New NumericNode("0", 0)))
                             co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", func), t))
+                            local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, func), create_type(x.Item2))))
                             p.Lets.Add(co.Name, co)
+
+                            ' sub "func.Name"(args...) "func.Name"
+                            '     var self = "func.Name"()
+                            '     self.args = args
+                            '     return(self)
+                            If func.Arguments.Count > 0 Then
+
+                                Dim self = CreateVariableNode("self", func)
+                                Dim co2 = New FunctionNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p, .Arguments = New List(Of DeclareNode)}
+                                func.Arguments.Each(Sub(x) co2.Arguments.Add(New DeclareNode(CreateVariableNode(x.Name.Name, func), New TypeNode(CreateVariableNode(x.Type.Name, func)))))
+                                co2.Return = self_type
+
+                                co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(CreateVariableNode(func.Name, func)), True))
+                                co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, func)), x.Name)))
+                                co2.Statements.Add(CreateFunctionCallNode(CreateVariableNode("return", func), self))
+                                scope.AddFunction(co2)
+                            End If
 
                             ' sub cdr(self: co) [t]
                             '     var next = self.next
@@ -330,10 +351,11 @@ Namespace Compiler
                             '         next = self.next
                             '     var xs = co()
                             '     xs.state = next
+                            '     xs.args = self.args
                             '     return(xs)
                             Do
                                 Dim self = CreateVariableNode("self", func)
-                                Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Arguments = New List(Of DeclareNode)}
+                                Dim cdr = New FunctionNode(func.LineNumber.Value) With {.Name = "cdr", .Parent = p, .Arguments = New List(Of DeclareNode)}
                                 cdr.Arguments.Add(New DeclareNode(self, self_type))
                                 cdr.Where.Add(func.Where(0))
                                 cdr.Return = func.Return
@@ -349,13 +371,16 @@ Namespace Compiler
                                         CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True),
                                         CreateIfNode(unexec_var, then_block),
                                         CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, func))),
-                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", func)), next_var),
-                                        CreateFunctionCallNode(CreateVariableNode("return", func), xs_var)
+                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", func)), next_var)
                                     })
                                 then_block.Statements.AddRange({
                                         CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", func)), True),
                                         CreateFunctionCallNode(car_var),
                                         CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), True)
+                                    })
+                                local_vars.Each(Sub(x) cdr.Statements.Add(CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode(x.Item1, func)), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
+                                cdr.Statements.AddRange({
+                                        CreateFunctionCallNode(CreateVariableNode("return", func), xs_var)
                                     })
                                 scope.AddFunction(cdr)
 
@@ -373,7 +398,7 @@ Namespace Compiler
                             '     return(isend)
                             Do
                                 Dim self = CreateVariableNode("self", func)
-                                Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Arguments = New List(Of DeclareNode)}
+                                Dim isnull = New FunctionNode(func.LineNumber.Value) With {.Name = "isnull", .Parent = p, .Arguments = New List(Of DeclareNode)}
                                 isnull.Arguments.Add(New DeclareNode(self, self_type))
                                 isnull.Return = New TypeNode(CreateVariableNode("Bool", func))
                                 Dim then_block = New BlockNode(func.LineNumber.Value) With {.Parent = isnull}
@@ -410,6 +435,7 @@ Namespace Compiler
                             '     var m1 = -1
                             '     flag = (next == m1)
                             '     if flag then goto end_
+                            '     var args = self.args
                             '     var state = self.state
                             '     flag = (state == N)
                             '     if flag then goto stateN_
@@ -445,9 +471,12 @@ Namespace Compiler
                                         CreateIfNode(flag_var, then_block),
                                         CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True),
                                         CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True),
-                                        CreateIfNode(flag_var, create_goto(0)),
-                                        CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True)
+                                        CreateIfNode(flag_var, create_goto(0))
                                     }
+                                local_vars.Each(Sub(x) stmts.Add(CreateLetNode(CreateVariableNode(x.Item1, func), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
+                                stmts.AddRange({
+                                        CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True)
+                                    })
                                 For i = 1 To user.GotoCount
 
                                     stmts.AddRange({
