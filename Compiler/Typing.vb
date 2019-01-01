@@ -664,8 +664,8 @@ Namespace Compiler
 
         Public Shared Function VarFeedback(pgm As ProgramNode, root As SystemLibrary, from As IType, to_ As IType) As IType
 
-            from = FixedByName(from)
-            to_ = FixedByName(to_)
+            from = FixedByName(from, True)
+            to_ = FixedByName(to_, True)
             If to_ Is Nothing Then Return from
             If from Is Nothing Then Return to_
 

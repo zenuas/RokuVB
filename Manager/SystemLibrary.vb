@@ -599,7 +599,7 @@ Namespace Manager
             Return CType(t, RkCILStruct).Apply(0)
         End Function
 
-        Public Shared Function FixedByName(t As IType) As IType
+        Public Shared Function FixedByName(t As IType, Optional deep As Boolean = False) As IType
 
             If TypeOf t Is RkByNameWithReceiver Then
 
@@ -611,7 +611,8 @@ Namespace Manager
 
             ElseIf TypeOf t Is RkGenericEntry Then
 
-                Return FixedByName(CType(t, RkGenericEntry).ToType)
+                Dim x = CType(t, RkGenericEntry).ToType
+                Return If(deep, FixedByName(x), x)
 
             ElseIf TypeOf t Is RkUnionType Then
 
