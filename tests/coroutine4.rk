@@ -1,0 +1,22 @@
+sub co(flag: Int) [String]
+	yield("one")
+	var local_var = flag == 0 ? "four" : flag.ToString()
+	yield("two")
+	yield("three")
+	yield(local_var)
+
+var xs = co(0)
+
+#=>one
+#=>two
+#=>three
+#=>four
+xs.each(=> print($1))
+
+var xs2 = co(4)
+
+#=>one
+#=>two
+#=>three
+#=>4
+xs2.each(=> print($1))
