@@ -483,7 +483,7 @@ Namespace Compiler
                                         CreateLetNode(flag_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, m1_var), True, False),
                                         CreateIfNode(flag_var, create_goto(0))
                                     }
-                                local_vars.Each(Sub(x) stmts.Add(CreateLetNode(CreateVariableNode(x.Item1, func), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)), True, False)))
+                                local_vars.Each(Sub(x) stmts.Add(CreateLetNode(CType(func.Lets(x.Item1), VariableNode), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)), True, False)))
                                 stmts.AddRange({
                                         New LabelNode With {.Label = -1},
                                         CreateLetNode(state_var, CreatePropertyNode(self, Nothing, CreateVariableNode("state", func)), True, False)
