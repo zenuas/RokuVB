@@ -1,0 +1,10 @@
+
+#=>16
+var a: Int = 0x10
+print(a.ToString())
+
+# 数値型のメソッドが呼べない問題
+# 
+# 数値型は[Int | Long | Short | Byte]型である
+# メソッドを呼ぶためにはRkCILStruct型である必要があるが
+# RkUnionTypeを一つまで絞り込むと中身の型を判定しないといけない

@@ -611,7 +611,13 @@ Namespace Manager
 
             ElseIf TypeOf t Is RkGenericEntry Then
 
-                Return CType(t, RkGenericEntry).ToType
+                Return FixedByName(CType(t, RkGenericEntry).ToType)
+
+            ElseIf TypeOf t Is RkUnionType Then
+
+                Dim union = CType(t, RkUnionType)
+                If union.Types?.Count = 1 Then Return FixedByName(union.Types(0))
+                Return union
             Else
 
                 Return t
