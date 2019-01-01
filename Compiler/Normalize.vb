@@ -31,7 +31,7 @@ Namespace Compiler
                                 var.AppendLineNumber(linenum)
                                 user.VarIndex += 1
 
-                                Dim let_ As New LetNode With {.Var = var, .Expression = e}
+                                Dim let_ As New LetNode With {.Var = var, .Expression = e, .CreatedNormalize = True}
                                 let_.AppendLineNumber(linenum)
                                 block.Statements.Insert(program_pointer, let_)
                                 program_pointer += 1
