@@ -54,10 +54,11 @@ Namespace Parser
 
         Public Shared Function CreateLetNode(
                 prop As PropertyNode,
-                expr As IEvaluableNode
+                expr As IEvaluableNode,
+                Optional user_definition As Boolean = True
             ) As LetNode
 
-            Dim let_ As New LetNode With {.Receiver = prop.Left, .Var = prop.Right, .Expression = expr}
+            Dim let_ As New LetNode With {.Receiver = prop.Left, .Var = prop.Right, .Expression = expr, .UserDefinition = user_definition}
             let_.AppendLineNumber(prop)
             Return let_
         End Function

@@ -233,6 +233,7 @@ Namespace Compiler
 
         Public Shared Function CreateLocalVariable(name As String, scope As IScopeNode) As VariableNode
 
+            If scope.Lets.ContainsKey(name) Then Return CType(scope.Lets(name), VariableNode)
             Dim x = CreateVariableNode(name, scope)
             x.Scope = scope
             scope.Lets.Add(name, x)
@@ -262,7 +263,7 @@ Namespace Compiler
 
                         Dim block = CType(child, BlockNode)
                         Dim program_pointer = 0
-                        Dim self = CreateLocalVariable("#self", block)
+                        Dim self = CreateLocalVariable("#self", CType(block.Owner, IScopeNode))
 
                         Do While program_pointer < block.Statements.Count
 
@@ -284,8 +285,8 @@ Namespace Compiler
                                         user.GotoCount += 1
                                         block.Statements.RemoveAt(program_pointer)
                                         block.Statements.InsertRange(program_pointer, {
-                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", v)), New NumericNode(user.GotoCount.ToString, CUInt(user.GotoCount))),
-                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("value", v)), fcall.Arguments(0)),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", v)), New NumericNode(user.GotoCount.ToString, CUInt(user.GotoCount)), False),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("value", v)), fcall.Arguments(0), False),
                                                 CreateFunctionCallNode(CreateVariableNode("return", v), fcall.Arguments(0)),
                                                 New LabelNode With {.Label = user.GotoCount}
                                             })
@@ -344,7 +345,7 @@ Namespace Compiler
                                 co2.Return = self_type
 
                                 co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(CreateVariableNode(func.Name, co2)), True, False))
-                                co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, co2)), x.Name)))
+                                co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, co2)), x.Name, False)))
                                 co2.Statements.Add(CreateFunctionCallNode(CreateVariableNode("return", co2), self))
                                 scope.AddFunction(co2)
                             End If
@@ -379,14 +380,14 @@ Namespace Compiler
                                         CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True, False),
                                         CreateIfNode(unexec_var, then_block),
                                         CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, cdr)), True, False),
-                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", cdr)), next_var)
+                                        CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", cdr)), next_var, False)
                                     })
                                 then_block.Statements.AddRange({
                                         CreateLetNode(car_var, CreatePropertyNode(self, Nothing, CreateVariableNode("car", cdr)), True, False),
                                         CreateFunctionCallNode(car_var),
                                         CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", cdr)), True, False)
                                     })
-                                local_vars.Each(Sub(x) cdr.Statements.Add(CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode(x.Item1, cdr)), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)))))
+                                local_vars.Each(Sub(x) cdr.Statements.Add(CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode(x.Item1, cdr)), CreatePropertyNode(self, Nothing, CreateVariableNode(x.Item1, func)), False)))
                                 cdr.Statements.AddRange({
                                         New LabelNode With {.Label = -1},
                                         CreateFunctionCallNode(CreateVariableNode("return", cdr), xs_var)
@@ -498,7 +499,7 @@ Namespace Compiler
                                 func.Statements.InsertRange(0, stmts)
                                 func.Statements.AddRange({
                                         CreateLetNode(m1_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "-"}, New NumericNode("1", 1)), True, False),
-                                        CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), m1_var),
+                                        CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", func)), m1_var, False),
                                         New LabelNode With {.Label = 0}
                                     })
                                 then_block.Statements.AddRange({
@@ -518,7 +519,7 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 pgm,
-                New With {.Function = CType(Nothing, FunctionNode), .LocalVars = CType(Nothing, Dictionary(Of String, IType))},
+                New With {.Function = CType(Nothing, FunctionNode), .LocalVars = CType(Nothing, Dictionary(Of String, LetNode))},
                 Sub(parent, ref, child, user, isfirst, next_)
 
                     If Not isfirst Then Return
@@ -528,7 +529,7 @@ Namespace Compiler
                         Dim func = CType(child, FunctionNode)
                         If func.Coroutine Then
 
-                            user = New With {.Function = func, .LocalVars = New Dictionary(Of String, IType)}
+                            user = New With {.Function = func, .LocalVars = New Dictionary(Of String, LetNode)}
                             next_(child, user)
                         End If
                     End If
@@ -551,8 +552,9 @@ Namespace Compiler
                                 Dim let_ = CType(v, LetNode)
                                 If let_.UserDefinition AndAlso let_.Receiver Is Nothing Then
 
+                                    let_.Var.UniqueName = $"{let_.Var.Name}:{let_.Var.Scope.LineNumber}"
                                     let_.Receiver = self
-                                    user.LocalVars.Add(let_.Var.Name, let_.Type)
+                                    user.LocalVars.Add(let_.Var.UniqueName, let_)
                                 End If
                             End If
 
@@ -572,7 +574,7 @@ Namespace Compiler
                             ' struct "func.Name"
                             '     var local_var...
                             Dim co = CType(func.Arguments(0).Type.Type, RkStruct)
-                            user.LocalVars.Each(Sub(kv) co.Local.Add(kv.Key, kv.Value))
+                            user.LocalVars.Each(Sub(kv) co.Local.Add(kv.Key, kv.Value.Type))
 
                             ' sub cdr(self: co) [t]
                             '     mark =>
@@ -587,14 +589,15 @@ Namespace Compiler
                                 user.LocalVars.Each(
                                     Sub(kv)
 
+                                        Dim t = kv.Value.Type
                                         Dim left = CreatePropertyNode(xs_var, Nothing, CreateVariableNode(kv.Key, cdr))
                                         Dim right = CreatePropertyNode(self, Nothing, CreateVariableNode(kv.Key, cdr))
-                                        left.Right.Type = kv.Value
-                                        left.Type = kv.Value
-                                        right.Right.Type = kv.Value
-                                        right.Type = kv.Value
-                                        Dim let_ = CreateLetNode(left, right)
-                                        let_.Type = kv.Value
+                                        left.Right.Type = t
+                                        left.Type = t
+                                        right.Right.Type = t
+                                        right.Type = t
+                                        Dim let_ = CreateLetNode(left, right, False)
+                                        let_.Type = t
                                         cdr.Statements.Insert(index, let_)
                                     End Sub)
 
@@ -611,12 +614,13 @@ Namespace Compiler
                                 user.LocalVars.Each(
                                     Sub(kv)
 
-                                        Dim left = CType(func.Lets(kv.Key), VariableNode)
+                                        Dim t = kv.Value.Type
+                                        Dim left = kv.Value.Var
                                         Dim right = CreatePropertyNode(self, Nothing, CreateVariableNode(kv.Key, func))
-                                        right.Right.Type = kv.Value
-                                        right.Type = kv.Value
+                                        right.Right.Type = t
+                                        right.Type = t
                                         Dim let_ = CreateLetNode(left, right)
-                                        let_.Type = kv.Value
+                                        let_.Type = t
                                         func.Statements.Insert(index, let_)
                                     End Sub)
 

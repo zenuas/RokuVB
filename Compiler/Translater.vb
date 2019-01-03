@@ -278,7 +278,7 @@ Namespace Compiler
                         Coverage.Case()
                     Else
 
-                        ret = New OpProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.Name, .Type = let_.Var.Type, .Scope = func}
+                        ret = New OpProperty With {.Receiver = to_value(let_.Receiver), .Name = let_.Var.UniqueName, .Type = let_.Var.Type, .Scope = func}
                         Coverage.Case()
                     End If
 

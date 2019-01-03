@@ -1,16 +1,16 @@
 sub co(flag: Int) [String]
-	var one = 1
+	var one: Int = 1
 	yield("one")
 	if flag == 0
 		
 		# ifスコープ外の変数(one)と同名変数定義
-		var one = 3
+		var one: Int = 3
 		yield("two")
 		yield(one.ToString())
 	else
 		
 		# ifスコープ外の変数(one)とifスコープ内の変数(two)と関数引数(flag)の参照
-		var two = 2
+		var two: Int = 2
 		yield("three")
 		yield((one + two + flag).ToString())
 

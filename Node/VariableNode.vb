@@ -11,9 +11,11 @@ Namespace Node
         Public Sub New(s As String)
 
             Me.Name = s
+            Me.UniqueName = s
         End Sub
 
         Public Overridable Property Name As String
+        Public Overridable Property UniqueName As String
         Public Overridable Property Scope As IScopeNode
         Public Overridable Property Type As IType Implements IEvaluableNode.Type
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
