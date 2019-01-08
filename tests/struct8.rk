@@ -1,0 +1,9 @@
+
+sub create(x: @T) struct Hoge<Int, @T>
+	return(Hoge(1, x))
+
+#=>1
+#=>hello
+var h = create("hello")
+print(h.1)
+print(h.2)

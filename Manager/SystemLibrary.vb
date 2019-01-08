@@ -712,22 +712,26 @@ Namespace Manager
             End If
         End Function
 
-        Public Overridable Function CreateTuple(tuples() As IType) As RkStruct
+        Public Overridable Function CreateTuple(name As String, tuples() As IType) As RkStruct
 
-            Dim name = $"({String.Join(", ", tuples.Map(Function(x) x.ToString))})"
             Dim same_type = Me.TupleCache.FindFirstOrNull(Function(x) x.Value.Name.Equals(name)).Value
             If same_type IsNot Nothing Then
 
                 Return same_type
             Else
 
-                Dim t As New RkStruct With {.Name = name, .Parent = Me}
+                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me}
                 'Dim alloc = LoadFunction(Me, "#Alloc", t)
                 tuples.Each(Sub(x, i) t.AddLet((i + 1).ToString, x))
                 Me.TupleCache(t) = t
                 Me.AddStruct(t)
                 Return t
             End If
+        End Function
+
+        Public Overridable Function CreateTuple(tuples() As IType) As RkStruct
+
+            Return Me.CreateTuple($"({String.Join(", ", tuples.Map(Function(x) x.ToString))})", tuples)
         End Function
 
         Public Overridable Function CreateTuple(tuple As RkTuple) As RkStruct
@@ -742,7 +746,7 @@ Namespace Manager
                 Return same_type
             Else
 
-                Dim t As New RkStruct With {.Name = name, .Parent = Me}
+                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me}
                 'Dim alloc = LoadFunction(Me, "#Alloc", t)
                 tuple.Local.Each(Sub(x) t.AddLet(x.Key, x.Value))
                 Me.TupleCache(tuple) = t

@@ -190,10 +190,12 @@ type   : typev
        | '{' types '}'            {$$ = CreateFunctionTypeNode($2, Nothing, $1)}
        | '{' types ARROW type '}' {$$ = CreateFunctionTypeNode($2, $4,      $1)}
 typev  : nsvar
-       | '[' type ']'   {$$ = New TypeArrayNode($2)}
-       | '[' typeor ']' {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
+       | '[' type ']'            {$$ = New TypeArrayNode($2)}
+       | '[' typeor ']'          {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
        | atvar
-       | '[' type2n ']' {$$ = New TypeTupleNode($2)}
+       | '[' type2n ']'          {$$ = New TypeTupleNode($2)}
+       | STRUCT varx             {$$ = New TypeTupleNode($2)}
+       | STRUCT varx LT typen GT {$$ = New TypeTupleNode($2, $4)}
 nsvarn : nsvar               {$$ = CreateListNode(Of TypeBaseNode)($1)}
        | nsvarn ',' nsvar    {$1.List.Add($3) : $$ = $1}
 nsvar  : varx                {$$ = New TypeNode($1)}

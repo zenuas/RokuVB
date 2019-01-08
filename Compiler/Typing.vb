@@ -166,7 +166,15 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeTupleNode Then
 
                         Dim node = CType(child, TypeTupleNode)
-                        If Not node.HasGeneric Then node.Type = root.CreateTuple(node.Items.List.Map(Function(x) x.Type).ToArray)
+                        If Not node.HasGeneric Then
+
+                            If String.IsNullOrEmpty(node.Name) Then
+
+                                node.Type = root.CreateTuple(node.Items.List.Map(Function(x) x.Type).ToArray)
+                            Else
+                                node.Type = root.CreateTuple(node.Name, node.Items.List.Map(Function(x) x.Type).ToArray)
+                            End If
+                        End If
                         Coverage.Case()
 
                     ElseIf TypeOf child Is UnionNode Then
@@ -266,6 +274,21 @@ Namespace Compiler
                         Else
 
                             'struct.Initializer = CType(root.LoadFunction("#Alloc", struct), RkNativeFunction)
+                            Coverage.Case()
+                        End If
+
+                    ElseIf TypeOf child Is TypeTupleNode Then
+
+                        Dim node = CType(child, TypeTupleNode)
+                        Dim tuple = CType(node.Type, RkStruct)
+
+                        If Not String.IsNullOrEmpty(node.Name) Then
+
+                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = tuple.Scope, .Parent = tuple.Scope}
+                            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = tuple})
+                            node.Items.List.Each(Sub(x, i) alloc.Arguments.Add(New NamedValue With {.Name = (i + 1).ToString, .Value = x.Type}))
+                            alloc.Return = tuple
+                            alloc.Scope.AddFunction(alloc)
                             Coverage.Case()
                         End If
 

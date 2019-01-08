@@ -13,6 +13,21 @@ Namespace Node
             Me.AppendLineNumber(items)
         End Sub
 
+        Public Sub New(name As VariableNode)
+
+            Me.Name = name.Name
+            Me.Items = New ListNode(Of TypeBaseNode)
+            Me.Items.AppendLineNumber(name)
+            Me.AppendLineNumber(name)
+        End Sub
+
+        Public Sub New(name As VariableNode, items As ListNode(Of TypeBaseNode))
+
+            Me.Name = name.Name
+            Me.Items = items
+            Me.AppendLineNumber(name)
+        End Sub
+
         Public Overridable Property Items As ListNode(Of TypeBaseNode)
 
         Public Overrides Function HasGeneric() As Boolean

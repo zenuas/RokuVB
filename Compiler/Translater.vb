@@ -213,7 +213,12 @@ Namespace Compiler
 
                         ElseIf TypeOf node.Function Is RkNativeFunction AndAlso CType(node.Function, RkNativeFunction).Operator = InOperator.Alloc Then
 
-                            args.Insert(0, New OpValue With {.Type = node.Type, .Scope = func})
+                            args.Insert(0, New OpValue With {.Name = node.Type.Name, .Type = node.Type, .Scope = func})
+                            Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
+                            If args.Count = 1 OrElse CType(node.Type, RkStruct).Generics.Count > 0 Then Return xs
+                            Dim stmts = xs.ToList
+                            node.Function.Arguments.Cdr.Each(Sub(x, i) stmts.Add(New InCode With {.Operator = InOperator.Bind, .Return = New OpProperty With {.Name = x.Name, .Receiver = ret, .Type = x.Value, .Scope = func}, .Left = args(i + 1)}))
+                            Return stmts.ToArray
                         End If
                         Return node.Function.CreateCallReturn(ret, args.ToArray)
 
