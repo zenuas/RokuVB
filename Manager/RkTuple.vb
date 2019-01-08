@@ -91,7 +91,7 @@ Namespace Manager
 
         Public Overrides Function ToString() As String
 
-            Return $"{Me.Name}{If(Me.Apply.IsNull, "", $"{"(" + String.Join(", ", Me.Apply.Map(Function(x) If(x Is Nothing, "_", x.ToString))) + ")"}")}"
+            Return $"{Me.Name}{"(" + String.Join(", ", Me.Local.Map(Function(x) x.Value)) + ")"}"
         End Function
 
     End Class
