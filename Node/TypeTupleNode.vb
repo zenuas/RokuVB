@@ -35,6 +35,11 @@ Namespace Node
             Return Me.Items.List.Or(Function(x) x.HasGeneric)
         End Function
 
+        Public Overrides Function ToString() As String
+
+            Return $"{Me.Name}{"(" + String.Join(", ", Me.Items.List.Map(Function(x) x.ToString)) + ")"}"
+        End Function
+
     End Class
 
 End Namespace

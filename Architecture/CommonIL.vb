@@ -102,7 +102,10 @@ Namespace Architecture
                 map(struct) = If(exists, New TypeData With {.Type = Me.Module.DefineType(name)})
             Next
 
-            root.TupleCache.Values.SortToList.Unique.Each(Sub(x) map.Add(x, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.CreateManglingName}")}))
+            root.TupleCache.Values.
+                Where(Function(x) Not x.HasGeneric).
+                UniqueHash.
+                Each(Sub(x) map.Add(x, New TypeData With {.Type = Me.Module.DefineType($"##Tuple.{x.CreateManglingName}")}))
 
             For Each v In map
 

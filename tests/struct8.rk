@@ -7,3 +7,11 @@ sub create(x: @T) struct Hoge<Int, @T>
 var h = create("hello")
 print(h.1)
 print(h.2)
+
+# 
+# 名前付きタプルの総称型有りの場合
+# 
+# struct Hoge<Int, @T> は以下の関数を定義する
+# 
+# sub Hoge(t1: Int, t2: @T) [Int, @T]
+#     return((t1, t2))

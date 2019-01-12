@@ -731,7 +731,7 @@ Namespace Manager
 
         Public Overridable Function CreateTuple(tuples() As IType) As RkStruct
 
-            Return Me.CreateTuple($"({String.Join(", ", tuples.Map(Function(x) x.ToString))})", tuples)
+            Return Me.CreateTuple($"({String.Join(", ", tuples.Map(Function(x) x?.ToString))})", tuples)
         End Function
 
         Public Overridable Function CreateTuple(tuple As RkTuple) As RkStruct

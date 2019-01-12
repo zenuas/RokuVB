@@ -51,6 +51,7 @@ Namespace Compiler
 
                 Dim node = CType(base, TypeTupleNode)
                 node.Items.List.Each(Sub(x, i) DefineType(root, t, x))
+                If base.Type.HasGeneric Then base.Type = base.Type.FixedGeneric(node.Items.List.Where(Function(x) x.HasGeneric).Map(Function(x) x.Type).ToArray)
             End If
 
             Return base.Type
@@ -166,15 +167,11 @@ Namespace Compiler
                     ElseIf TypeOf child Is TypeTupleNode Then
 
                         Dim node = CType(child, TypeTupleNode)
-                        If Not node.HasGeneric Then
+                        Dim items = node.Items.List.Map(Function(x) x.Type).ToArray
+                        Dim tuple = If(String.IsNullOrEmpty(node.Name), root.CreateTuple(items), root.CreateTuple(node.Name, items))
 
-                            If String.IsNullOrEmpty(node.Name) Then
-
-                                node.Type = root.CreateTuple(node.Items.List.Map(Function(x) x.Type).ToArray)
-                            Else
-                                node.Type = root.CreateTuple(node.Name, node.Items.List.Map(Function(x) x.Type).ToArray)
-                            End If
-                        End If
+                        node.Items.List.Each(Sub(x, i) If x.IsGeneric Then tuple.Local((i + 1).ToString) = tuple.DefineGeneric(x.Name))
+                        node.Type = tuple
                         Coverage.Case()
 
                     ElseIf TypeOf child Is UnionNode Then
