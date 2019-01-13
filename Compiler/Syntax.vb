@@ -619,7 +619,7 @@ Namespace Compiler
                                         Dim right = CreatePropertyNode(self, Nothing, CreateVariableNode(kv.Key, func))
                                         right.Right.Type = t
                                         right.Type = t
-                                        Dim let_ = CreateLetNode(left, right)
+                                        Dim let_ = CreateLetNode(left, right, True, False)
                                         let_.Type = t
                                         func.Statements.Insert(index, let_)
                                     End Sub)
