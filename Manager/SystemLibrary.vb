@@ -720,7 +720,7 @@ Namespace Manager
                 Return same_type
             Else
 
-                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me}
+                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me, .IsTuple = True}
                 'Dim alloc = LoadFunction(Me, "#Alloc", t)
                 tuples.Each(Sub(x, i) t.AddLet((i + 1).ToString, x))
                 Me.TupleCache(t) = t
@@ -746,7 +746,7 @@ Namespace Manager
                 Return same_type
             Else
 
-                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me}
+                Dim t As New RkStruct With {.Name = name, .Scope = Me, .Parent = Me, .IsTuple = True}
                 'Dim alloc = LoadFunction(Me, "#Alloc", t)
                 tuple.Local.Each(Sub(x) t.AddLet(x.Key, x.Value))
                 Me.TupleCache(tuple) = t

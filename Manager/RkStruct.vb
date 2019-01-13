@@ -18,6 +18,7 @@ Namespace Manager
         Public Overridable Property GenericBase As RkStruct = Nothing
         Public Overridable ReadOnly Property Apply As New List(Of IType) Implements IApply.Apply
         Public Overridable Property StructNode As StructNode = Nothing
+        Public Overridable Property IsTuple As Boolean = False
         Public Overridable Property Initializer As RkNativeFunction = Nothing
         Public Overridable Property ClosureEnvironment As Boolean = False
 
@@ -110,6 +111,7 @@ Namespace Manager
             clone.GenericBase = Me
             clone.Parent = Me.Parent
             clone.StructNode = Me.StructNode
+            clone.IsTuple = Me.IsTuple
             clone.Initializer = Me.Initializer
             clone.ClosureEnvironment = Me.ClosureEnvironment
 
