@@ -119,6 +119,7 @@ Namespace IntermediateCode
         Gte
 
         [Alloc]
+        Constructor
         [Call]
         [If]
         [Goto]

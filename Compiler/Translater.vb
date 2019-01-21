@@ -211,14 +211,26 @@ Namespace Compiler
 
                             args.Insert(0, to_value(node.Expression))
 
-                        ElseIf TypeOf node.Function Is RkNativeFunction AndAlso CType(node.Function, RkNativeFunction).Operator = InOperator.Alloc Then
+                        ElseIf TypeOf node.Function Is RkNativeFunction Then
 
-                            args.Insert(0, New OpValue With {.Name = node.Type.Name, .Type = node.Type, .Scope = func})
-                            Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
-                            If args.Count = 1 OrElse CType(node.Type, RkStruct).Generics.Count > 0 Then Return xs
-                            Dim stmts = xs.ToList
-                            node.Function.Arguments.Cdr.Each(Sub(x, i) stmts.Add(New InCode With {.Operator = InOperator.Bind, .Return = New OpProperty With {.Name = x.Name, .Receiver = ret, .Type = x.Value, .Scope = func}, .Left = args(i + 1)}))
-                            Return stmts.ToArray
+                            Dim f = CType(node.Function, RkNativeFunction)
+                            Select Case f.Operator
+                                Case InOperator.Constructor
+
+                                    Dim stmts As New List(Of InCode0)
+                                    stmts.Add(New InCode With {.Operator = InOperator.Alloc, .Return = ret, .Left = New OpValue With {.Name = ret.Type.Name, .Type = ret.Type, .Scope = func}})
+                                    node.Function.Arguments.Each(Sub(x, i) stmts.Add(New InCode With {.Operator = InOperator.Bind, .Return = New OpProperty With {.Name = x.Name, .Receiver = ret, .Type = x.Value, .Scope = func}, .Left = args(i)}))
+                                    Return stmts.ToArray
+
+                                Case InOperator.Alloc
+
+                                    args.Insert(0, New OpValue With {.Name = node.Type.Name, .Type = node.Type, .Scope = func})
+                                    Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
+                                    If args.Count = 1 OrElse CType(node.Type, RkStruct).Generics.Count > 0 Then Return xs
+                                    Dim stmts = xs.ToList
+                                    node.Function.Arguments.Cdr.Each(Sub(x, i) stmts.Add(New InCode With {.Operator = InOperator.Bind, .Return = New OpProperty With {.Name = x.Name, .Receiver = ret, .Type = x.Value, .Scope = func}, .Left = args(i + 1)}))
+                                    Return stmts.ToArray
+                            End Select
                         End If
                         Return node.Function.CreateCallReturn(ret, args.ToArray)
 

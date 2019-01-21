@@ -281,12 +281,32 @@ Namespace Compiler
 
                         If Not String.IsNullOrEmpty(node.Name) Then
 
-                            Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = tuple.Scope, .Parent = tuple.Scope}
-                            alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = tuple})
-                            node.Items.List.Each(Sub(x, i) alloc.Arguments.Add(New NamedValue With {.Name = (i + 1).ToString, .Value = x.Type}))
-                            alloc.Return = tuple
-                            alloc.Scope.AddFunction(alloc)
-                            Coverage.Case()
+                            If node.HasGeneric Then
+
+                                Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = tuple.Scope, .Parent = tuple.Scope}
+                                Dim gens = node.Items.List.Where(Function(x) x.IsGeneric).Map(Function(x) alloc.DefineGeneric(x.Name)).ToArray
+                                Dim self = If(gens.Length > 0, tuple.FixedGeneric(gens), tuple)
+                                alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = self})
+                                gens.Each(Sub(x, i) alloc.Arguments.Add(New NamedValue With {.Name = (i + 1).ToString, .Value = x}))
+                                alloc.Return = self
+                                alloc.Scope.AddFunction(alloc)
+
+                                Dim alloc2 = New RkNativeFunction With {.Name = node.Name, .Operator = InOperator.Constructor, .Scope = tuple.Scope, .Parent = tuple.Scope}
+                                Dim gens2 = node.Items.List.Where(Function(x) x.IsGeneric).Map(Function(x) alloc2.DefineGeneric(x.Name)).ToArray
+                                Dim self2 = If(gens2.Length > 0, tuple.FixedGeneric(gens2), tuple)
+                                node.Items.List.Each(Sub(x, i) alloc2.Arguments.Add(New NamedValue With {.Name = (i + 1).ToString, .Value = x.Type}))
+                                alloc2.Return = self2
+                                alloc2.Scope.AddFunction(alloc2)
+                                Coverage.Case()
+                            Else
+
+                                Dim alloc = New RkNativeFunction With {.Name = "#Alloc", .Operator = InOperator.Alloc, .Scope = tuple.Scope, .Parent = tuple.Scope}
+                                alloc.Arguments.Add(New NamedValue With {.Name = "x", .Value = tuple})
+                                node.Items.List.Each(Sub(x, i) alloc.Arguments.Add(New NamedValue With {.Name = (i + 1).ToString, .Value = x.Type}))
+                                alloc.Return = tuple
+                                alloc.Scope.AddFunction(alloc)
+                                Coverage.Case()
+                            End If
                         End If
 
                     ElseIf TypeOf child Is ProgramNode Then
