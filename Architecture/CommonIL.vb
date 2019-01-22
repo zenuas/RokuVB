@@ -660,7 +660,16 @@ Namespace Architecture
                         End If
 
                     Case InOperator.Return
-                        If TypeOf stmt Is InCode Then gen_il_load(il, CType(stmt, InCode).Left, False)
+                        If TypeOf stmt Is InCode Then
+
+                            Dim left = CType(stmt, InCode).Left
+                            gen_il_load(il, left, False)
+                            If Me.RkToCILType(left.Type, structs).Type.IsValueType AndAlso
+                                Not Me.RkToCILType(fn.Return, structs).Type.IsValueType Then
+
+                                il.Emit(OpCodes.Box, Me.RkToCILType(left.Type, structs).Type)
+                            End If
+                        End If
                         il.Emit(OpCodes.Ret)
 
                     Case InOperator.Alloc
