@@ -15,6 +15,7 @@ Namespace Manager
         Public Overridable Property UnionName As String = Nothing
         Public Overridable Property Types As List(Of IType)
         Public Overridable Property ReturnCache As RkUnionType
+        Public Overridable Property Dynamic As Boolean = True
 
         Public Sub New()
 
@@ -61,7 +62,7 @@ Namespace Manager
 
                     Dim xs = Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).ToList
                     If xs.Count = 0 Then Return Nothing
-                    Me.ReturnCache = New RkUnionType(xs.Map(Function(x) x.Return))
+                    Me.ReturnCache = New RkUnionType(xs.Map(Function(x) x.Return)) With {.Dynamic = False}
                 End If
                 Return Me.ReturnCache
             End Get

@@ -25,6 +25,10 @@ Namespace Manager
             Me.VoidType = Me.LoadType(GetType(Void).GetTypeInfo)
             Me.AddStruct(Me.VoidType, "Void")
 
+            ' struct Object : Object
+            Me.ObjectType = Me.LoadType(GetType(Object).GetTypeInfo)
+            Me.AddStruct(Me.ObjectType, "Object")
+
             ' struct Bool : Boolean
             Me.BoolType = Me.LoadType(GetType(Boolean).GetTypeInfo)
             Me.AddStruct(Me.BoolType, "Bool")
@@ -146,6 +150,7 @@ Namespace Manager
         End Sub
 
         Public Overridable Property VoidType() As RkStruct
+        Public Overridable Property ObjectType() As RkStruct
         Public Overridable Property NullType() As RkStruct
         Public Overridable Property BoolType() As RkStruct
 
@@ -523,7 +528,7 @@ Namespace Manager
                     If Not same Then unique.Add(f)
                 Next
                 If unique.Count = 1 Then Return unique(0)
-                Dim union As New RkUnionType(unique)
+                Dim union As New RkUnionType(unique) With {.Dynamic = False}
                 If union.Types.Count = 1 Then Return CType(union.Types(0), IFunction)
                 Return union
             End If

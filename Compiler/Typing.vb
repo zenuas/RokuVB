@@ -338,7 +338,7 @@ Namespace Compiler
 
                         ElseIf node.ImplicitReturn Then
 
-                            func.Return = New RkUnionType
+                            func.Return = New RkUnionType With {.Dynamic = False}
                         End If
                         Coverage.Case()
                     End If
@@ -360,7 +360,7 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node = CType(child, NumericNode)
-                        node.Type = New RkUnionType(root.NumericTypes)
+                        node.Type = New RkUnionType(root.NumericTypes) With {.Dynamic = False}
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
@@ -559,7 +559,7 @@ Namespace Compiler
                 ElseIf fs.Count >= 2 Then
 
                     Coverage.Case()
-                    Dim union = New RkUnionType(fs)
+                    Dim union = New RkUnionType(fs) With {.Dynamic = False}
                     byname.Type = union
                     Return union
                 End If
@@ -1126,7 +1126,7 @@ Namespace Compiler
                                     If CInt(count.GetValue(list)) = 0 Then
 
                                         Coverage.Case()
-                                        Return LoadStruct(root, "Array", New RkUnionType)
+                                        Return LoadStruct(root, "Array", New RkUnionType With {.Dynamic = False})
                                     Else
 
                                         Coverage.Case()
@@ -1213,8 +1213,8 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkUnionType Then
 
                         Coverage.Case()
-                        Dim types = CType(t, RkUnionType).Types
-                        t = var_normalize(root.ChoosePriorityType(types))
+                        Dim union = CType(t, RkUnionType)
+                        t = If(union.Types.Count > 1 AndAlso union.Dynamic, root.ObjectType, var_normalize(root.ChoosePriorityType(union.Types)))
 
                     ElseIf TypeOf t Is RkGenericEntry Then
 
