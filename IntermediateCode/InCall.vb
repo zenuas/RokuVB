@@ -21,7 +21,7 @@ Namespace IntermediateCode
 
         Public Overrides Function ToString() As String
 
-            If Me.Return Is Nothing Then
+            If Me.Return IsNot Nothing Then
 
                 Return $"{Me.Return} = {Me.Function.Name}({String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))})"
             Else
