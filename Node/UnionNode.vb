@@ -1,4 +1,5 @@
-﻿Imports Roku.Util.Extensions
+﻿Imports System.Collections.Generic
+Imports Roku.Util.Extensions
 
 
 Namespace Node
@@ -21,6 +22,7 @@ Namespace Node
         End Sub
 
         Public Overridable ReadOnly Property Union As ListNode(Of TypeBaseNode)
+        Public Overridable ReadOnly Property Generics As New List(Of TypeBaseNode)
 
         Public Overrides Function HasGeneric() As Boolean
 

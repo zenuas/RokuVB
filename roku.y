@@ -137,7 +137,7 @@ tuplevar   : var                     {$$ = CreateLetNode($1, Nothing, Nothing, T
            | IGNORE                  {$$ = CreateIgnoreLetNode($1)}
 
 ########## struct ##########
-struct : STRUCT var EOL struct_block              {$4.Name = $2.Name : $$ = $4}
+struct : STRUCT var              EOL struct_block {$4.Name = $2.Name : $$ = $4}
        | STRUCT var LT atvarn GT EOL struct_block {$7.Name = $2.Name : $7.Generics.AddRange($4.List) : $$ = $7}
 
 struct_block : struct_begin define END {$$ = Me.PopScope}
@@ -153,7 +153,8 @@ atvarn : atvar                         {$$ = CreateListNode($1)}
 
 
 ########## union ##########
-union  : UNION var EOL BEGIN unionn END {$$ = New UnionNode($2, $5)}
+union  : UNION var              EOL BEGIN unionn END {$$ = New UnionNode($2, $5)}
+       | UNION var LT atvarn GT EOL BEGIN unionn END {Dim x As New UnionNode($2, $8) : x.Generics.AddRange($4.List) : $$ = x}
 
 unionn : type EOL        {$$ = CreateListNode($1)}
        | unionn type EOL {$1.List.Add($2) : $$ = $1}

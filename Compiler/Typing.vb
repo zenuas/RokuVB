@@ -177,7 +177,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node = CType(child, UnionNode)
-                        If Not node.IsGeneric Then
+                        If Not node.HasGeneric Then
 
                             Dim t = CType(node.Type, RkUnionType)
                             t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))

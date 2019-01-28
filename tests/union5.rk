@@ -1,0 +1,24 @@
+
+union Maybe<@T>
+	struct Just<@T>
+	struct Nothing
+
+sub half(n: Int) Maybe(Int)
+	if mod(n, 2) == 1
+		return(Nothing())
+	else
+		return(Just(n / 2))
+
+sub mod(n: Int, div: Int) Int
+	return(n - ((n / div) * div))
+
+sub show(x: Maybe(Int))
+	if n: Just(Int) = x
+		print(n.1)
+	else
+		print("err")
+
+
+show(half(8))
+show(half(10))
+show(half(11))
