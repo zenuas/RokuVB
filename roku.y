@@ -281,9 +281,14 @@ var    : VAR         {$$ = CreateVariableNode($1)}
        | '(' ope ')' {$$ = CreateVariableNode($2.Token)}
 varx   : var
        | SUB     {$$ = CreateVariableNode($1)}
+       | LET     {$$ = CreateVariableNode($1)}
+       | STRUCT  {$$ = CreateVariableNode($1)}
+       | UNION   {$$ = CreateVariableNode($1)}
+       | CLASS   {$$ = CreateVariableNode($1)}
        | IF      {$$ = CreateVariableNode($1)}
        | ELSE    {$$ = CreateVariableNode($1)}
-       | LET     {$$ = CreateVariableNode($1)}
+       | THEN    {$$ = CreateVariableNode($1)}
+       | SWITCH  {$$ = CreateVariableNode($1)}
        | USE     {$$ = CreateVariableNode($1)}
 fvar   : varx
        | NUM     {$$ = CreateVariableNode($1.Format, $1)}
