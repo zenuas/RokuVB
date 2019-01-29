@@ -18,6 +18,7 @@ Namespace Parser
             Me.ReservedWord("class") = SymbolTypes.CLASS
             Me.ReservedWord("if") = SymbolTypes.IF
             Me.ReservedWord("else") = SymbolTypes.ELSE
+            Me.ReservedWord("then") = SymbolTypes.THEN
             Me.ReservedWord("switch") = SymbolTypes.SWITCH
             Me.ReservedWord("use") = SymbolTypes.USE
             Me.ReservedWord("null") = SymbolTypes.NULL

@@ -105,6 +105,9 @@ Namespace Parser
         ''' <summary>SWITCH</summary>
         SWITCH
 
+        ''' <summary>THEN</summary>
+        [THEN]
+
         ''' <summary>TRUE</summary>
         [TRUE]
 
@@ -242,6 +245,9 @@ Namespace Parser
 
         ''' <summary>nope</summary>
         nope
+
+        ''' <summary>NOTEOL</summary>
+        NOTEOL
 
         ''' <summary>nsvar</summary>
         nsvar

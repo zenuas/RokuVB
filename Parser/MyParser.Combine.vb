@@ -457,6 +457,11 @@ Namespace Parser
             Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr, False, False), IStatementNode))
         End Function
 
+        Public Shared Sub SyntaxError(t As Token, Optional message As String = "syntax error")
+
+            Throw New SyntaxErrorException(t.LineNumber, t.LineColumn, message)
+        End Sub
+
     End Class
 
 End Namespace

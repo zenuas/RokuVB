@@ -232,6 +232,8 @@ if     : ifthen
        | elseif
        | ifthen ELSE EOL block {$$ = AddElse($1, $4)}
        | elseif ELSE EOL block {$$ = AddElse($1, $4)}
+       | IF expr                 THEN NOTEOL expr EOL {$$ = CreateIfNode($2, ToBlock(Me.CurrentScope, $5))}
+       | IF var ':' type EQ expr THEN NOTEOL expr EOL {$$ = CreateIfCastNode($2, $4, $6, ToBlock(Me.CurrentScope, $9))}
 ifthen : IF expr EOL block                 {$$ = CreateIfNode($2, $4)}
        | IF var ':' type EQ expr EOL block {$$ = CreateIfCastNode($2, $4, $6, $8)}
 elseif : ifthen ELSE ifthen    {$$ = AddElse($1, ToBlock(Me.CurrentScope, $3))}
@@ -304,6 +306,9 @@ or     : OR2     {$$ = New TokenNode($1)}
 
 extra  : void
        | ','
+
+NOTEOL : EOL     {SyntaxError($1, "not eol")}
+       | void
 
 void   : {$$ = Nothing}
 

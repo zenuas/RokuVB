@@ -1,0 +1,16 @@
+
+
+sub f(a: Int) Int
+	if a == 0 then return(1)
+	if a == 1 then return(2)
+	if a == 2 then return(3)
+	return(10)
+
+#=>1
+#=>2
+#=>3
+#=>10
+print(f(0))
+print(f(1))
+print(f(2))
+print(f(3))
