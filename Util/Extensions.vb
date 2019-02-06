@@ -74,6 +74,13 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Function [In](Of T As IEquatable(Of T))(x As T, ParamArray xs() As T) As Boolean
+
+            Return Not xs.Where(Function(a) x.Equals(a)).IsNull
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Function Car(Of T)(self As IEnumerable(Of T)) As T
 
             Dim e = self.GetEnumerator

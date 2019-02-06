@@ -1,0 +1,41 @@
+sub co() [String]
+	yields(["one", "two", "three"])
+
+var xs = co()
+
+#=>one
+#=>two
+#=>three
+xs.each(=> print($1))
+
+# コルーチンの変換
+# 
+# 関数coは次の通り変換する
+# struct co
+#     var state = 0
+#     var next = 0 # 0...未実行、-1...終端、1以上...実行済み
+#     var value: String
+#     var values: [String]
+# sub car(self: co) String
+#     if self.next >= 1 then return(self.value)
+#     if self.state == 1 then goto state1_
+#     if self.state == -1 then goto end_
+#     # yield("one")
+#     self.next = 1
+#     self.values = ["one", "two", "three"]
+#     state1_:
+#     if ! isnull(self.values)
+#         self.value = car(self.values)
+#         self.values = cdr(self.values)
+#         return(self.value)
+#     end_:
+#     self.next = -1
+#     #return()
+# sub cdr(self: co) [String]
+#     self.car()
+#     var xs = co()
+#     xs.state = self.next
+#     return(xs)
+# sub isnull(self: co) Bool
+#     self.car()
+#     return(self.next == -1)

@@ -128,7 +128,7 @@ Namespace Compiler
                             If TypeOf v Is FunctionCallNode Then
 
                                 Dim fcall = CType(v, FunctionCallNode)
-                                If TypeOf fcall.Expression Is VariableNode AndAlso CType(fcall.Expression, VariableNode).Name.Equals("yield") Then
+                                If TypeOf fcall.Expression Is VariableNode AndAlso CType(fcall.Expression, VariableNode).Name.In("yield", "yields") Then
 
                                     block.Owner.Coroutine = True
                                     Coverage.Case()

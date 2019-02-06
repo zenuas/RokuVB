@@ -293,6 +293,45 @@ Namespace Compiler
                                         program_pointer += 4
                                         Continue Do
 
+                                    ElseIf var.Name.Equals("yields") Then
+
+                                        ' yields(xs) =>
+                                        '   self.next = N
+                                        '   self.values = xs
+                                        '   stateN_:
+                                        '   var x0 = self.values
+                                        '   var x1 = isnull(x0)
+                                        '   var x2 = ! x1
+                                        '   if x2
+                                        '       var x3 = car(x0)
+                                        '       self.value = x3
+                                        '       self.values = cdr(x0)
+                                        '       return(x3)
+                                        Dim then_block = New BlockNode(block.LineNumber.Value) With {.Parent = block}
+                                        Dim x0 = CreateLocalVariable($"#x{program_pointer + 0}", block)
+                                        Dim x1 = CreateLocalVariable($"#x{program_pointer + 1}", block)
+                                        Dim x2 = CreateLocalVariable($"#x{program_pointer + 2}", block)
+                                        Dim x3 = CreateLocalVariable($"#x{program_pointer + 3}", then_block)
+
+                                        user.GotoCount += 1
+                                        block.Statements.RemoveAt(program_pointer)
+                                        block.Statements.InsertRange(program_pointer, {
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("next", v)), New NumericNode(user.GotoCount.ToString, CUInt(user.GotoCount)), False),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("values", v)), fcall.Arguments(0), False),
+                                                New LabelNode With {.Label = user.GotoCount},
+                                                CreateLetNode(x0, CreatePropertyNode(self, Nothing, CreateVariableNode("values", v)), True, False),
+                                                CreateLetNode(x1, CreateFunctionCallNode(CreateVariableNode("isnull", v), x0)),
+                                                CreateLetNode(x2, CreateFunctionCallNode(CreateVariableNode("!", v), x1)),
+                                                CreateIfNode(x2, then_block)
+                                            })
+                                        then_block.Statements.AddRange({
+                                                CreateLetNode(x3, CreateFunctionCallNode(CreateVariableNode("car", v), x0)),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("value", v)), x3, False),
+                                                CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode("values", v)), CreateFunctionCallNode(CreateVariableNode("cdr", v), x0), False),
+                                                CreateFunctionCallNode(CreateVariableNode("return", v), x3)
+                                            })
+                                        program_pointer += 7
+
                                     ElseIf var.Name.Equals("return") Then
 
                                         ' return() =>
@@ -325,11 +364,13 @@ Namespace Compiler
                             '     var state = 0
                             '     var next  = 0
                             '     var value: "t"
+                            '     var values: "return"
                             '     var args...
                             Dim co = New StructNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p}
                             co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", co), New NumericNode("0", 0)))
                             co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", co), New NumericNode("0", 0)))
                             co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", co), t))
+                            'co.Lets.Add("values", CreateLetNode(CreateVariableNode("values", co), func.Return))
                             local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, co), create_type(x.Item2))))
                             p.Lets.Add(co.Name, co)
 
