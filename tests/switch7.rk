@@ -2,10 +2,12 @@
 sub show(x: Int?)
 	switch x
 		null => print("null")
-		0 => print("zero")
-		1 => print(1)
-		< 10 => print(x + 1)
-		else => print(x + 2)
+		n: Int =>
+			switch n
+				0 => print("zero")
+				1 => print(1)
+				< 10 => print(n + 1)
+				else => print(n + 2)
 
 
 #=>null

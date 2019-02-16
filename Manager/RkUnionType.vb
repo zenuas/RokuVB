@@ -182,7 +182,7 @@ Namespace Manager
                 Me.Types = xs
                 Return True
 
-            ElseIf Me.Types.Count > 0 Then
+            ElseIf Me.Types.Count > 0 AndAlso Not Me.Dynamic Then
 
                 Dim before = Me.Types.Count
                 Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList
