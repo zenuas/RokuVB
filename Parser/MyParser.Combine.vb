@@ -285,7 +285,7 @@ Namespace Parser
             If TypeOf [case] Is CaseValueNode Then
 
                 Dim expr = CType(CType([case], CaseValueNode).Value.Statements(0), LetNode).Expression
-                If TypeOf expr Is FunctionCallNode Then
+                If TypeOf expr Is FunctionCallNode AndAlso CType(expr, FunctionCallNode).UnaryOperator Then
 
                     CType(expr, FunctionCallNode).OwnerSwitchNode = switch
                 End If

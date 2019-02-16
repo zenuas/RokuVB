@@ -78,11 +78,18 @@ Namespace Compiler
                         Dim case_value = CType(child, CaseValueNode)
 
                         Dim last = CType(case_value.Value.Statements(case_value.Value.Statements.Count - 1), LetNode)
-                        ' $case1 = $ret == switch.Expression
-                        ' if $case1 else break
-                        Dim s1 = CreateVariableNode($"$case{user.VarIndex}", case_value)
-                        case_value.Value.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("==", case_value), CreateVariableNode("$ret", case_value), switch.Expression), True, False))
-                        case_value.Value.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
+                        If TypeOf last.Expression Is FunctionCallNode AndAlso CType(last.Expression, FunctionCallNode).OwnerSwitchNode IsNot Nothing Then
+
+                            ' if $ret else break
+                            case_value.Value.Statements.Add(CreateIfNode(CreateVariableNode("$ret", case_value), Nothing, ToBlock(user.Scope, New BreakNode)))
+                        Else
+
+                            ' $case1 = $ret == switch.Expression
+                            ' if $case1 else break
+                            Dim s1 = CreateVariableNode($"$case{user.VarIndex}", case_value)
+                            case_value.Value.Statements.Add(CreateLetNode(s1, CreateFunctionCallNode(CreateVariableNode("==", case_value), CreateVariableNode("$ret", case_value), switch.Expression), True, False))
+                            case_value.Value.Statements.Add(CreateIfNode(s1, Nothing, ToBlock(user.Scope, New BreakNode)))
+                        End If
 
                     ElseIf TypeOf child Is CaseArrayNode Then
 
