@@ -1128,7 +1128,7 @@ Namespace Parser
 
                 Case -139
                     Me.TraceAction("casen : casen case")
-                    yy_value = CType(Me.GetValue(-2), SwitchNode) : CType(Me.GetValue(-2), SwitchNode).Case.Add(CType(Me.GetValue(-1), ICaseNode))
+                    yy_value = CType(Me.GetValue(-2), SwitchNode) : AddSwitchCase(CType(Me.GetValue(-2), SwitchNode), CType(Me.GetValue(-1), ICaseNode))
                     yy_token = Me.DoAction(SymbolTypes.casen, 2, yy_value)
 
                 Case -140

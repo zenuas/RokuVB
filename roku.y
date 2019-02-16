@@ -244,7 +244,7 @@ elseif : ifthen ELSE ifthen    {$$ = AddElse($1, ToBlock(Me.CurrentScope, $3))}
 switch     : SWITCH expr EOL case_block {$$ = $4 : $4.Expression = $2 : $4.AppendLineNumber($1)}
 case_block : BEGIN casen END           {$$ = $2}
 casen      : case                      {$$ = CreateSwitchNode($1)}
-           | casen case                {$$ = $1 : $1.Case.Add($2)}
+           | casen case                {$$ = $1 : AddSwitchCase($1, $2)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
            | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = ToLambdaExpressionBlock(Me.CurrentScope, $3)}

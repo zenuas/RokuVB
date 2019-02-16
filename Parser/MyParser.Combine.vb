@@ -275,10 +275,24 @@ Namespace Parser
         Public Shared Function CreateSwitchNode([case] As ICaseNode) As SwitchNode
 
             Dim switch As New SwitchNode
-            switch.Case.Add([case])
+            AddSwitchCase(switch, [case])
             switch.AppendLineNumber([case])
             Return switch
         End Function
+
+        Public Shared Sub AddSwitchCase(switch As SwitchNode, [case] As ICaseNode)
+
+            If TypeOf [case] Is CaseValueNode Then
+
+                Dim expr = CType(CType([case], CaseValueNode).Value.Statements(0), LetNode).Expression
+                If TypeOf expr Is FunctionCallNode Then
+
+                    CType(expr, FunctionCallNode).OwnerSwitchNode = switch
+                End If
+            End If
+
+            switch.Case.Add([case])
+        End Sub
 
         Public Shared Function CreateCaseValueNode(block As BlockNode) As CaseValueNode
 

@@ -584,9 +584,7 @@ Namespace Compiler
 
         Public Shared Function ApplyFunction(target As IScope, union As RkUnionType, f As FunctionCallNode) As Boolean
 
-            Dim before = union.Types.Count
-            Dim args = f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type))).ToArray
-            union.Types = union.Types.
+            Dim choice = Function(types As List(Of IType), args As IType()) types.
                 By(Of IFunction).
                 Where(Function(x) x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) args(i) Is Nothing OrElse arg.Value.Is(args(i)))).
                 Where(Function(x) x.WhereFunction(target, args)).
@@ -594,7 +592,17 @@ Namespace Compiler
                 By(Of IType).
                 UniqueList(Function(a, b) a.Is(b)).
                 ToList
-            Return before <> union.Types.Count
+
+            Dim before = union.Types
+            union.Types = choice(union.Types, f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type))).ToArray)
+
+            If union.Types.Count = 0 AndAlso f.OwnerSwitchNode IsNot Nothing Then
+
+                union.Types = choice(before, {f.OwnerSwitchNode.Expression.Type}.Join(f.Arguments.Map(Function(x) FixedByName(FixedVar(x.Type)))).ToArray)
+                If union.Types.Count > 0 Then f.Arguments = {f.OwnerSwitchNode.Expression}.Join(f.Arguments).ToArray
+            End If
+
+            Return before.Count <> union.Types.Count
         End Function
 
         Public Shared Function FixedFunction(root As SystemLibrary, ns As RkNamespace, f As FunctionCallNode) As IFunction

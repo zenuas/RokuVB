@@ -1,0 +1,16 @@
+
+sub show(x: Int)
+	switch x
+		< 0 => print("negative")
+		0   => print("zero")
+		> 0 => print("positive")
+
+
+#=>positive
+show(1)
+
+#=>zero
+show(0)
+
+#=>negative
+show(-2)

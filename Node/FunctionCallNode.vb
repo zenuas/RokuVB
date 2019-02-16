@@ -24,6 +24,7 @@ Namespace Node
         Public Overridable Property IsInstance As Boolean = True Implements IEvaluableNode.IsInstance
         Public Overridable Property [Function] As IFunction
         Public Overridable Property UnaryOperator As Boolean = False
+        Public Overridable Property OwnerSwitchNode As SwitchNode = Nothing
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
