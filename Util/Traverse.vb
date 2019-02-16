@@ -270,6 +270,11 @@ BLOCK_NODE_:
                             Next
                             f("Then", x.Then)
 
+                        Case TypeOf node_ Is CaseElseNode
+
+                            Dim x = CType(node_, CaseElseNode)
+                            f("Then", x.Then)
+
                         Case TypeOf node_ Is LambdaExpressionNode
 
                             Dim x = CType(node_, LambdaExpressionNode)

@@ -252,6 +252,7 @@ case_expr  : cexpr                  {$$ = CreateCaseValueNode(ToBlock(Me.Current
            | var ':' type           {$$ = CreateCaseCastNode($3, $1)}
            | '[' array_pattern ']'  {$$ = CreateCaseArrayNode($2, $1)}
 #           | '(' tupple_pattern ')' {}
+           | ELSE                   {$$ = AppendLineNumber(New CaseElseNode, $1)}
 
 cexpr : var
       | str

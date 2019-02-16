@@ -480,6 +480,12 @@ Namespace Compiler
                             body.AddRange(make_stmts(case_array.Statements))
                             If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
                             body.Add(New InGoto With {.Label = last_label})
+
+                        ElseIf TypeOf case_ Is CaseElseNode Then
+
+                            Dim case_else = CType(case_, CaseElseNode)
+                            If case_.Then IsNot Nothing Then body.AddRange(make_stmts(case_.Then.Statements))
+                            body.Add(New InGoto With {.Label = last_label})
                         End If
                         break_point.Pop()
                         body.Add(next_)

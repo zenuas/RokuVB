@@ -1,0 +1,27 @@
+
+sub show(x: Int?)
+	switch x
+		null => print("null")
+		0 => print("zero")
+		1 => print(1)
+		< 10 => print(x + 1)
+		else => print(x + 2)
+
+
+#=>null
+show(null)
+
+#=>zero
+show(0)
+
+#=>1
+show(1)
+
+#=>3
+show(2)
+
+#=>10
+show(9)
+
+#=>12
+show(10)
