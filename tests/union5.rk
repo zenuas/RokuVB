@@ -3,7 +3,7 @@ union Maybe<@T>
 	struct Just<@T>
 	struct Nothing
 
-sub half(n: Int) Maybe(Int)
+sub half(n: Int) Maybe<Int>
 	if mod(n, 2) == 1
 		return(Nothing())
 	else
@@ -12,8 +12,8 @@ sub half(n: Int) Maybe(Int)
 sub mod(n: Int, div: Int) Int
 	return(n - ((n / div) * div))
 
-sub show(x: Maybe(Int))
-	if n: Just(Int) = x
+sub show(x: Maybe<Int>)
+	if n: Just<Int> = x
 		print(n.1)
 	else
 		print("err")

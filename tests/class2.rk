@@ -12,10 +12,10 @@ sub bar(x: String)
 	print("bar")
 	print(x)
 
-sub hoge<Hoge(@T)>(x: @T)
+sub hoge<Hoge<@T>>(x: @T)
 	foo(x)
 
-sub hoge<Hoge2(@T)>(x: @T)
+sub hoge<Hoge2<@T>>(x: @T)
 	bar(x)
 
 #=>foo

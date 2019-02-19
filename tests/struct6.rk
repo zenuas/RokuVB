@@ -1,7 +1,7 @@
 struct Hoge<@T>
-	var arr: System.Collections.Generic.List(@T)
+	var arr: System.Collections.Generic.List<@T>
 
-sub create(x: @T1) Hoge(@T1)
+sub create(x: @T1) Hoge<@T1>
 	var a = Hoge(@T1)()
 	a.arr = [x]
 	return(a)

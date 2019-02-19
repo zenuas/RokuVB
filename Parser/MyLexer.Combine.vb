@@ -97,6 +97,30 @@ READ_CONTINUE_:
             Return first
         End Function
 
+        Public Overrides Function PeekToken() As IToken(Of INode)
+
+            Dim t = MyBase.PeekToken
+            If t.InputToken = SymbolTypes.OPE AndAlso Not Me.Parser.IsAccept(t) AndAlso CType(t, Token).Name.StartsWith(">") Then
+
+                Dim ope = CType(t, Token)
+                Dim gt As New Token(SymbolTypes.GT, ">") With {
+                        .Indent = ope.Indent,
+                        .LineNumber = ope.LineNumber,
+                        .LineColumn = ope.LineColumn
+                    }
+                Me.StoreToken = gt
+
+                ope.LineColumn += 1
+                ope.Name = ope.Name.Substring(1)
+                If ope.Name.Equals(">") Then ope.Type = SymbolTypes.GT
+                Me.TokenStack.Insert(0, ope)
+
+                t = gt
+            End If
+            Return t
+
+        End Function
+
         Public Overridable Function ReaderNext() As IToken(Of INode)
 
             If Me.EndOfStream() Then Return Me.CreateEndOfToken

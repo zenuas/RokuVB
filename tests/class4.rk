@@ -1,5 +1,5 @@
 
-sub hoge<List(@T, Int)>(xs: @T)
+sub hoge<List<@T, Int>>(xs: @T)
 	print(car(xs))
 
 #=>1

@@ -8,6 +8,6 @@ var next = print_and_next(xs)
 #=>1
 var next2 = print_and_next(next)
 
-sub print_and_next<List(@T, Int), List(@R, Int)>(xs: @T) @R
+sub print_and_next<List<@T, Int>, List<@R, Int>>(xs: @T) @R
 	print(car(xs))
 	return(cdr(xs))

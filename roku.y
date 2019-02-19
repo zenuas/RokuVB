@@ -197,11 +197,11 @@ typev  : nsvar
        | '[' type2n ']'          {$$ = New TypeTupleNode($2)}
        | STRUCT varx             {$$ = New TypeTupleNode($2)}
        | STRUCT varx LT typen GT {$$ = New TypeTupleNode($2, $4)}
-nsvarn : nsvar               {$$ = CreateListNode(Of TypeBaseNode)($1)}
-       | nsvarn ',' nsvar    {$1.List.Add($3) : $$ = $1}
-nsvar  : varx                {$$ = New TypeNode($1)}
-       | nsvar '.' varx      {$$ = New TypeNode($1, $3)}
-       | nsvar '(' typen ')' {$1.Arguments = $3.List : $$ = $1}
+nsvarn : nsvar             {$$ = CreateListNode(Of TypeBaseNode)($1)}
+       | nsvarn ',' nsvar  {$1.List.Add($3) : $$ = $1}
+nsvar  : varx              {$$ = New TypeNode($1)}
+       | nsvar '.' varx    {$$ = New TypeNode($1, $3)}
+       | nsvar LT typen GT {$1.Arguments = $3.List : $$ = $1}
 typex  : void
        | type
 types  : void           {$$ = CreateListNode(Of TypeBaseNode)()}
