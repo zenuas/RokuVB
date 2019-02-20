@@ -74,6 +74,7 @@ Namespace Manager
                     Dim num_minus = add_native_operator_function(x, "-", InOperator.Minus)
                     Dim num_mul = add_native_operator_function(x, "*", InOperator.Mul)
                     Dim num_div = add_native_operator_function(x, "/", InOperator.Div)
+                    Dim num_mod = add_native_operator_function(x, "%", InOperator.Mod)
                     Dim num_eq = add_native_comparison_function(x, "==", InOperator.Equal)
                     Dim num_gt = add_native_comparison_function(x, ">", InOperator.Gt)
                     Dim num_gte = add_native_comparison_function(x, ">=", InOperator.Gte)

@@ -4,13 +4,10 @@ union Maybe<@T>
 	struct Nothing
 
 sub half(n: Int) Maybe<Int>
-	if mod(n, 2) == 1
+	if (n % 2) == 1
 		return(Nothing())
 	else
 		return(Just(n / 2))
-
-sub mod(n: Int, div: Int) Int
-	return(n - ((n / div) * div))
 
 sub show(x: Maybe<Int>)
 	if n: Just<Int> = x

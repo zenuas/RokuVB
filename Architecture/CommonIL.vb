@@ -546,6 +546,7 @@ Namespace Architecture
                     Case InOperator.Minus : gen_il_3op(OpCodes.Sub, CType(stmt, InCode))
                     Case InOperator.Mul : gen_il_3op(OpCodes.Mul, CType(stmt, InCode))
                     Case InOperator.Div : gen_il_3op(OpCodes.Div, CType(stmt, InCode))
+                    Case InOperator.Mod : gen_il_3op(OpCodes.[Rem], CType(stmt, InCode))
                     Case InOperator.Equal : gen_il_3op(OpCodes.Ceq, CType(stmt, InCode))
                     Case InOperator.Lt : gen_il_3op(OpCodes.Clt, CType(stmt, InCode))
                     Case InOperator.Lte : gen_il_3op_not(OpCodes.Cgt, CType(stmt, InCode))
