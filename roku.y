@@ -22,7 +22,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<FunctionListNode> condn class_block
 %type<DeclareNode>    decla lambda_arg
 %type<DeclareListNode> args argn lambda_args lambda_argn
-%type<TypeNode>       nsvar
+%type<TypeNode>       nsvar namespace
 %type<TypeBaseNode>   type typev typex atvar union
 %type<TypeListNode>   types typen type2n atvarn unionn typeor where nsvarn
 %type<IfNode>         if ifthen elseif
@@ -38,7 +38,6 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %type<NumericNode>    num
 %type<StringNode>     str
 %type<UseNode>        use
-%type<IEvaluableNode> namespace
 
 %left  VAR ATVAR STR NULL TRUE FALSE IF LET SUB IGNORE
 %left  USE
@@ -72,8 +71,8 @@ uses  : void
 use   : USE namespace          {$$ = AppendLineNumber(New UseNode With {.Namespace = $2}, $1)}
       | USE var EQ namespace   {$$ = AppendLineNumber(New UseNode With {.Namespace = $4, .Alias = $2.Name}, $1)}
 
-namespace : varx               {$$ = $1}
-          | namespace '.' varx {$$ = CreateExpressionNode($1, ".", $3)}
+namespace : varx               {$$ = New TypeNode($1)}
+          | namespace '.' varx {$$ = New TypeNode($1, $3)}
 
 
 ########## statement ##########

@@ -475,22 +475,22 @@ Namespace Parser
 
                 Case -7
                     Me.TraceAction("use : USE namespace")
-                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode)}, CType(Me.GetToken(-2), Token))
+                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), TypeNode)}, CType(Me.GetToken(-2), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 2, yy_value)
 
                 Case -8
                     Me.TraceAction("use : USE var EQ namespace")
-                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), IEvaluableNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
+                    yy_value = AppendLineNumber(New UseNode With {.Namespace = CType(Me.GetValue(-1), TypeNode), .Alias = CType(Me.GetValue(-3), VariableNode).Name}, CType(Me.GetToken(-4), Token))
                     yy_token = Me.DoAction(SymbolTypes.use_1, 4, yy_value)
 
                 Case -9
                     Me.TraceAction("namespace : varx")
-                    yy_value = CType(Me.GetValue(-1), VariableNode)
+                    yy_value = New TypeNode(CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 1, yy_value)
 
                 Case -10
                     Me.TraceAction("namespace : namespace '.' varx")
-                    yy_value = CreateExpressionNode(CType(Me.GetValue(-3), IEvaluableNode), ".", CType(Me.GetValue(-1), VariableNode))
+                    yy_value = New TypeNode(CType(Me.GetValue(-3), TypeNode), CType(Me.GetValue(-1), VariableNode))
                     yy_token = Me.DoAction(SymbolTypes.[namespace], 3, yy_value)
 
                 Case -11

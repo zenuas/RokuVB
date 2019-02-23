@@ -10,7 +10,7 @@ Namespace Node
 
 
         Public Overridable Property [Alias] As String = ""
-        Public Overridable Property [Namespace] As IEvaluableNode
+        Public Overridable Property [Namespace] As TypeNode
         Public Overridable Property [Module] As String
 
         Public Overridable Function GetNamespace() As String
@@ -20,11 +20,10 @@ Namespace Node
 
         Public Overridable Function GetNamespaceHierarchy() As String()
 
-            Dim name_combine As Func(Of IEvaluableNode, IEnumerable(Of String)) =
+            Dim name_combine As Func(Of TypeNode, IEnumerable(Of String)) =
                 Function(x)
-                    If TypeOf x Is VariableNode Then Return {CType(x, VariableNode).Name}
-                    Dim expr = CType(x, ExpressionNode)
-                    Return name_combine(expr.Left).Join(name_combine(expr.Right))
+                    If x.Namespace Is Nothing Then Return {x.Name}
+                    Return name_combine(x.Namespace).Join({x.Name})
                 End Function
 
             Return name_combine(Me.Namespace).ToArray

@@ -159,14 +159,6 @@ Namespace Parser
             Return CreateExpressionNode(left, ope, Nothing)
         End Function
 
-        Public Shared Function CreateExpressionNode(
-                left As IEvaluableNode
-            ) As ExpressionNode
-
-            If TypeOf left Is ExpressionNode Then Return CType(left, ExpressionNode)
-            Return CreateExpressionNode(left, "", Nothing)
-        End Function
-
         Public Shared Function CreateIfExpressionNode(
                 cond As IEvaluableNode,
                 [then] As IEvaluableNode,
