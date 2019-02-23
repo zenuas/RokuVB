@@ -642,15 +642,6 @@ Namespace Compiler
                 If TypeOf expr Is RkByNameWithReceiver Then
 
                     Dim receiver = CType(expr, RkByNameWithReceiver).Receiver
-
-                    If byname.Name.Equals("of") Then
-
-                        Coverage.Case()
-                        f.Expression.Type = TryLoadStruct(byname.Scope, CType(receiver, VariableNode).Name, args.ToArray)
-                        f.Arguments = New IEvaluableNode() {}
-                        Return CType(root.Functions("#Type")(0).FixedGeneric(f.Expression.Type), RkFunction)
-                    End If
-
                     Dim self = FixedByName(FixedVar(receiver.Type))
                     args.Insert(0, self)
                     r = TryLoadFunction(ns, byname.Name, args.ToArray)
