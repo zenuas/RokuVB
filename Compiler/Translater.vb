@@ -190,12 +190,6 @@ Namespace Compiler
                         Coverage.Case()
                         Return {New InCode With {.Operator = InOperator.Bind, .Return = ret}}
 
-                    ElseIf TypeOf stmt Is ExpressionNode Then
-
-                        Coverage.Case()
-                        Dim node = CType(stmt, ExpressionNode)
-                        Return If(node.Right Is Nothing, node.Function.CreateCallReturn(ret, to_value(node.Left)), node.Function.CreateCallReturn(ret, to_value(node.Left), to_value(node.Right)))
-
                     ElseIf TypeOf stmt Is PropertyNode Then
 
                         Coverage.Case()

@@ -176,7 +176,6 @@
     <Compile Include="Node\BaseNode.vb" />
     <Compile Include="Node\BlockNode.vb" />
     <Compile Include="Node\DeclareNode.vb" />
-    <Compile Include="Node\ExpressionNode.vb" />
     <Compile Include="Node\FunctionCallNode.vb" />
     <Compile Include="Node\FunctionNode.vb" />
     <Compile Include="Node\IEvaluableNode.vb" />

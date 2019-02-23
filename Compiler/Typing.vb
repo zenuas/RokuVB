@@ -940,17 +940,6 @@ Namespace Compiler
                                 End If
                             End If
 
-                        ElseIf TypeOf child Is ExpressionNode Then
-
-                            Dim node = CType(child, ExpressionNode)
-                            set_type(node,
-                                Function()
-
-                                    If node.Function Is Nothing Then node.Function = LoadFunction(current, node.Operator, node.Left.Type, node.Right.Type)
-                                    Coverage.Case()
-                                    Return node.Function.Return
-                                End Function)
-
                         ElseIf TypeOf child Is TupleNode Then
 
                             Dim node = CType(child, TupleNode)

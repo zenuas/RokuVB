@@ -140,25 +140,6 @@ Namespace Parser
             Return prop
         End Function
 
-        Public Shared Function CreateExpressionNode(
-                left As IEvaluableNode,
-                ope As String,
-                right As IEvaluableNode
-            ) As ExpressionNode
-
-            Dim expr As New ExpressionNode With {.Left = left, .Operator = ope, .Right = right}
-            expr.AppendLineNumber(left)
-            Return expr
-        End Function
-
-        Public Shared Function CreateExpressionNode(
-                left As IEvaluableNode,
-                ope As String
-            ) As ExpressionNode
-
-            Return CreateExpressionNode(left, ope, Nothing)
-        End Function
-
         Public Shared Function CreateIfExpressionNode(
                 cond As IEvaluableNode,
                 [then] As IEvaluableNode,

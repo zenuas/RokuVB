@@ -595,7 +595,7 @@ Namespace Parser
 
                 Case -31
                     Me.TraceAction("expr : '(' expr ')'")
-                    yy_value = CreateExpressionNode(CType(Me.GetValue(-2), IEvaluableNode), "()")
+                    yy_value = CreateFunctionCallNode(CreateVariableNode("#Bind", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.expr, 3, yy_value)
 
                 Case -32
@@ -1200,7 +1200,7 @@ Namespace Parser
 
                 Case -152
                     Me.TraceAction("cexpr : '(' expr ')'")
-                    yy_value = CreateExpressionNode(CType(Me.GetValue(-2), IEvaluableNode), "()")
+                    yy_value = CreateFunctionCallNode(CreateVariableNode("#Bind", CType(Me.GetToken(-3), Token)), CType(Me.GetValue(-2), IEvaluableNode))
                     yy_token = Me.DoAction(SymbolTypes.cexpr, 3, yy_value)
 
                 Case -153

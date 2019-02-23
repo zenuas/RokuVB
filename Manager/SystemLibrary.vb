@@ -139,6 +139,13 @@ Namespace Manager
             alloc.Return = alloc_t
             Me.AddFunction(alloc)
 
+            ' sub #Bind(x: @T) @T
+            Dim bind As New RkNativeFunction With {.Name = "#Bind", .Operator = InOperator.Bind, .Scope = Me, .Parent = Me}
+            Dim bind_t = bind.DefineGeneric("@T")
+            bind.Arguments.Add(New NamedValue With {.Name = "x", .Value = bind_t})
+            bind.Return = bind_t
+            Me.AddFunction(bind)
+
             ' sub #Type() @T
             Dim type As New RkNativeFunction With {.Name = "#Type", .Operator = InOperator.Nop, .Scope = Me, .Parent = Me}
             Dim type_t = type.DefineGeneric("@T")

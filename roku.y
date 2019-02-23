@@ -101,7 +101,7 @@ expr : var
      | lambda
      | atvar
      | '[' list ']'           {$2.AppendLineNumber($1) : $$ = $2}
-     | '(' expr ')'           {$$ = CreateExpressionNode($2, "()")}
+     | '(' expr ')'           {$$ = CreateFunctionCallNode(CreateVariableNode("#Bind", $1), $2)}
      | '(' list2n ')'         {$$ = CreateTupleNode($2)}
      | ope expr %prec UNARY   {$$ = CreateFunctionCallNode($1.Token, $2)}
      | expr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
@@ -258,7 +258,7 @@ cexpr : var
       | str
       | num
       | cexpr '(' list ')'      {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
-      | '(' expr ')'            {$$ = CreateExpressionNode($2, "()")}
+      | '(' expr ')'            {$$ = CreateFunctionCallNode(CreateVariableNode("#Bind", $1), $2)}
       | ope expr %prec UNARY    {$$ = CreateFunctionCallNode($1.Token, $2)}
       | cexpr '.' fvar          {$$ = CreatePropertyNode($1, $2, $3)}
       | cexpr nope expr         {$$ = CreateFunctionCallNode($2.Token, $1, $3)}

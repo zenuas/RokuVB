@@ -51,17 +51,7 @@ Namespace Compiler
                         Dim to_flat As Func(Of Boolean, IEvaluableNode, IEvaluableNode) =
                             Function(isnewlet, e)
 
-                                If TypeOf e Is ExpressionNode Then
-
-                                    Dim expr = CType(e, ExpressionNode)
-                                    If expr.Operator.Equals("()") Then Return to_flat(isnewlet, expr.Left)
-
-                                    expr.Left = to_flat(True, expr.Left)
-                                    expr.Right = to_flat(True, expr.Right)
-                                    Coverage.Case()
-                                    If isnewlet Then Return to_let(e, e)
-
-                                ElseIf TypeOf e Is PropertyNode Then
+                                If TypeOf e Is PropertyNode Then
 
                                     Dim prop = CType(e, PropertyNode)
                                     prop.Left = to_flat(True, prop.Left)

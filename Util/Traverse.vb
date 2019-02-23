@@ -177,12 +177,6 @@ BLOCK_NODE_:
                             f("Declare", x.Declare)
                             f("Expression", x.Expression)
 
-                        Case TypeOf node_ Is ExpressionNode
-
-                            Dim x = CType(node_, ExpressionNode)
-                            f("Left", x.Left)
-                            f("Right", x.Right)
-
                         Case TypeOf node_ Is IfExpressionNode
 
                             Dim x = CType(node_, IfExpressionNode)
