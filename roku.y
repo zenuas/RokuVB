@@ -113,6 +113,7 @@ expr : var
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
      | bool
+     | var LT typen GT        {$$ = New TypeNode($1) With {.Arguments = $3.List}}
 
 call : expr '(' list ')' {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
 
@@ -268,6 +269,7 @@ cexpr : var
       | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
       | null
       | bool
+      | var LT typen GT         {$$ = New TypeNode($1) With {.Arguments = $3.List}}
 
 array_pattern  : patterns
 tupple_pattern : patterns

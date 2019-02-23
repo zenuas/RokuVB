@@ -2,7 +2,7 @@
 ##? copy tests\lib\TestGen.dll tests\obj\
 use System
 
-var x = TestGen.of(DateTime, Int)()
+var x = TestGen<DateTime, Int>()
 
 #=>2000/05/06 0:00:00
 #=>1
@@ -19,4 +19,4 @@ print(x.NotGenMethod(DateTime(2000, 5, 6), 1) + 2)
 #=>2000/05/06 0:00:00
 #=>str
 #=>str return
-print(TestGen.of(Int, DateTime).GenSharedFunction(1, DateTime(2000, 5, 6), "str") + " return")
+print(TestGen<Int, DateTime>.GenSharedFunction(1, DateTime(2000, 5, 6), "str") + " return")
