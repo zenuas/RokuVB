@@ -1,4 +1,5 @@
 ﻿Imports System.Collections.Generic
+Imports Roku.Util
 
 
 Namespace Node
@@ -32,7 +33,7 @@ Namespace Node
 
         Public Overrides Function ToString() As String
 
-            Return If(Me.Type Is Nothing, Me.Name, Me.Type.ToString)
+            Return $"{If(Me.Namespace Is Nothing, "", $"{Me.Namespace}.")}{Me.Name}{If(Me.Arguments.Count > 0, $"<{String.Join(", ", Me.Arguments.Map(Function(x) x.ToString))}>", "")}"
         End Function
     End Class
 
