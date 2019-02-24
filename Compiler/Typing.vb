@@ -1080,27 +1080,19 @@ Namespace Compiler
                             Dim node = CType(child, StructNode)
                             Dim struct = CType(node.Type, RkStruct)
 
-                            For Each s In node.Lets.Where(Function(x) TypeOf x.Value Is LetNode)
+                            For Each fix In struct.Scope.FindCurrentStruct(struct.Name).By(Of RkStruct).Where(Function(x) Not x.HasGeneric)
 
-                                Dim t = CType(s.Value, LetNode).Type
-                                If Not struct.Local.ContainsKey(s.Key) OrElse struct.Local(s.Key) Is Nothing Then
+                                For Each s In node.Lets.Where(Function(x) TypeOf x.Value Is LetNode)
 
-                                    struct.Local(s.Key) = t
-                                    If struct.Local(s.Key) IsNot Nothing Then type_fix = True
-                                    Coverage.Case()
-                                End If
-                                If struct.HasGeneric AndAlso TypeOf t IsNot RkGenericEntry Then
+                                    Dim t = CType(s.Value, LetNode).Type
+                                    If TypeOf t Is RkGenericEntry Then t = fix.Generics.FindFirst(Function(x) x.Name.Equals(CType(t, RkGenericEntry).Name)).ToType
+                                    If t IsNot Nothing AndAlso Not fix.Local.ContainsKey(s.Key) OrElse fix.Local(s.Key) Is Nothing Then
 
-                                    For Each fix In struct.Scope.FindCurrentStruct(struct.Name).By(Of RkStruct)
-
-                                        If fix.Local(s.Key) Is Nothing Then
-
-                                            fix.Local(s.Key) = t
-                                            If fix.Local(s.Key) IsNot Nothing Then type_fix = True
-                                            Coverage.Case()
-                                        End If
-                                    Next
-                                End If
+                                        fix.Local(s.Key) = t
+                                        type_fix = True
+                                        Coverage.Case()
+                                    End If
+                                Next
                             Next
                             Coverage.Case()
 
