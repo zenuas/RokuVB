@@ -581,6 +581,7 @@ READ_CONTINUE_:
 
         Public Overridable Property CurrentWord As New System.Text.StringBuilder
         Public Overridable Property CurrentLine As New System.Text.StringBuilder
+        Public Overridable Property TabSize As Integer = 4
 
         Public Overrides Function ReadChar() As Char
 
@@ -591,6 +592,12 @@ READ_CONTINUE_:
 
                 Me.LineColumn = 1
                 Me.LineNumber += 1
+                Me.CurrentWord.Clear()
+                Me.CurrentLine.Clear()
+
+            ElseIf n = &H9 Then
+
+                Me.LineColumn += Me.TabSize - (Me.LineColumn - 1) Mod Me.TabSize
                 Me.CurrentWord.Clear()
                 Me.CurrentLine.Clear()
             Else
