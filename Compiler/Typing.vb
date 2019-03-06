@@ -198,7 +198,7 @@ Namespace Compiler
                             node.Type = LoadClass(base, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray)
                             Coverage.Case()
 
-                        ElseIf Not node.IsGeneric Then
+                        ElseIf Not node.IsGeneric AndAlso Not node.UseStatement Then
 
                             Dim base = CType(If(node.Namespace Is Nothing, ns, node.Namespace.Type), IScope)
                             Dim t As IType
@@ -450,13 +450,10 @@ Namespace Compiler
 
             If TypeOf scope Is IFunction Then
 
+                Coverage.Case()
                 Dim f = CType(scope, IFunction)
-                If f.HasGeneric Then
-
-                    Coverage.Case()
-                    Dim x = f.Generics.FindFirstOrNull(Function(g) name.Equals(g.Name))
-                    If x IsNot Nothing Then Return x
-                End If
+                Dim g = f.Generics.FindFirstOrNull(Function(x) name.Equals(x.Name))
+                If g IsNot Nothing Then Return g
 
                 Coverage.Case()
                 Return f.Apply(CType(f.GenericBase, IFunction).Else(Function() f).Generics.FindFirst(Function(x) name.Equals(x.Name)).ApplyIndex)
@@ -896,6 +893,15 @@ Namespace Compiler
 
                             Dim node = CType(child, TypeNode)
                             If node.IsGeneric Then set_type(node, Function() GetGeneric(node.Name, current))
+                            If node.Arguments.Count > 0 Then
+
+                                set_type(node,
+                                    Function()
+
+                                        Dim args = node.Arguments.Map(Function(x) x.Type).ToArray
+                                        Return LoadFunction(current, "#Alloc", {LoadStruct(current, node.Name, args)}.Join(args).ToArray)
+                                    End Function)
+                            End If
                             If node.Nullable AndAlso Not node.NullAdded Then
 
                                 Dim t = node.Type

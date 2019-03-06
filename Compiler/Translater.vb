@@ -218,9 +218,11 @@ Namespace Compiler
 
                                 Case InOperator.Alloc
 
-                                    args.Insert(0, New OpValue With {.Name = node.Type.Name, .Type = node.Type, .Scope = func})
+                                    Dim struct = CType(node.Type, RkStruct)
+                                    args.Insert(0, New OpValue With {.Name = struct.Name, .Type = struct, .Scope = func})
+                                    If struct.Apply.Count > 0 Then args.InsertRange(1, struct.Apply.Map(Function(x, i) New OpValue With {.Name = $"${i + 1}", .Type = x, .Scope = func}))
                                     Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
-                                    If args.Count = 1 OrElse CType(node.Type, RkStruct).Generics.Count > 0 Then Return xs
+                                    If args.Count = 1 OrElse struct.Generics.Count > 0 Then Return xs
                                     Dim stmts = xs.ToList
                                     node.Function.Arguments.Cdr.Each(Sub(x, i) stmts.Add(New InCode With {.Operator = InOperator.Bind, .Return = New OpProperty With {.Name = x.Name, .Receiver = ret, .Type = x.Value, .Scope = func}, .Left = args(i + 1)}))
                                     Return stmts.ToArray
@@ -233,7 +235,8 @@ Namespace Compiler
                             TypeOf stmt Is StringNode OrElse
                             TypeOf stmt Is FunctionNode OrElse
                             TypeOf stmt Is NullNode OrElse
-                            TypeOf stmt Is BoolNode Then
+                            TypeOf stmt Is BoolNode OrElse
+                            TypeOf stmt Is TypeNode Then
 
                         Coverage.Case()
                         Return {New InCode With {.Operator = InOperator.Bind, .Return = ret, .Left = to_value(stmt)}}

@@ -47,7 +47,7 @@ struct ListIndex<@T>
 	var list: System.Collections.Generic.List<@T>
 
 sub ListIndex(index: Int, xs: System.Collections.Generic.List<@T>) ListIndex<@T>
-	var e = ListIndex(@T)()
+	var e = ListIndex<@T>()
 	e.index = index
 	e.list = xs
 	return(e)

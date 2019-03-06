@@ -90,6 +90,13 @@ Namespace Compiler
                                     Coverage.Case()
                                     Return var
 
+                                ElseIf TypeOf e Is TypeNode Then
+
+                                    Dim type = CType(e, TypeNode)
+                                    type.UseStatement = True
+                                    Coverage.Case()
+                                    If isnewlet AndAlso type.Arguments.Count > 0 Then Return to_let(e, e)
+
                                 ElseIf e IsNot Nothing AndAlso IsGeneric(e.GetType, GetType(ListNode(Of ))) Then
 
                                     Dim list = e.GetType.GetProperty("List").GetValue(e)
