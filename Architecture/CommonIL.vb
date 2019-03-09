@@ -474,21 +474,25 @@ Namespace Architecture
                 structs As Dictionary(Of RkStruct, TypeData)
             )
 
+            Dim gen_il_3op_lr =
+                Sub(ope As OpCode, code As InCode, left As OpValue, right As OpValue)
+
+                    gen_il_load(il, left, False)
+                    gen_il_load(il, right, False)
+                    il.Emit(ope)
+                    If code?.Return IsNot Nothing Then gen_il_store(il, code.Return)
+                End Sub
+
             Dim gen_il_3op =
                 Sub(ope As OpCode, code As InCode)
 
-                    gen_il_load(il, code.Left, False)
-                    gen_il_load(il, code.Right, False)
-                    il.Emit(ope)
-                    If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
+                    gen_il_3op_lr(ope, code, code.Left, code.Right)
                 End Sub
 
             Dim gen_il_3op_not =
                 Sub(ope As OpCode, code As InCode)
 
-                    gen_il_load(il, code.Left, False)
-                    gen_il_load(il, code.Right, False)
-                    il.Emit(ope)
+                    gen_il_3op_lr(ope, Nothing, code.Left, code.Right)
                     il.Emit(OpCodes.Ldc_I4_0)
                     il.Emit(OpCodes.Ceq)
                     If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
@@ -506,15 +510,6 @@ Namespace Architecture
                     Else
                         gen_il_3op(ope, code)
                     End If
-                End Sub
-
-            Dim gen_il_uminus =
-                Sub(ope As OpCode, code As InCode)
-
-                    gen_il_load(il, New OpNumeric32 With {.Numeric = 0}, False)
-                    gen_il_load(il, code.Left, False)
-                    il.Emit(ope)
-                    If code.Return IsNot Nothing Then gen_il_store(il, code.Return)
                 End Sub
 
             Dim get_ctor =
@@ -552,7 +547,8 @@ Namespace Architecture
                     Case InOperator.Lte : gen_il_3op_not(OpCodes.Cgt, CType(stmt, InCode))
                     Case InOperator.Gt : gen_il_3op(OpCodes.Cgt, CType(stmt, InCode))
                     Case InOperator.Gte : gen_il_3op_not(OpCodes.Clt, CType(stmt, InCode))
-                    Case InOperator.UMinus : gen_il_uminus(OpCodes.Sub, CType(stmt, InCode))
+                    Case InOperator.UMinus : gen_il_3op_lr(OpCodes.Sub, CType(stmt, InCode), New OpNumeric32 With {.Numeric = 0}, CType(stmt, InCode).Left)
+                    Case InOperator.Not : gen_il_3op_lr(OpCodes.Ceq, CType(stmt, InCode), CType(stmt, InCode).Left, New OpNumeric32 With {.Numeric = 0})
 
                     Case InOperator.Bind
                         Dim bind = CType(stmt, InCode)

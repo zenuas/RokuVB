@@ -29,10 +29,6 @@ Namespace Manager
             Me.ObjectType = Me.LoadType(GetType(Object).GetTypeInfo)
             Me.AddStruct(Me.ObjectType, "Object")
 
-            ' struct Bool : Boolean
-            Me.BoolType = Me.LoadType(GetType(Boolean).GetTypeInfo)
-            Me.AddStruct(Me.BoolType, "Bool")
-
             Dim add_native_operator_function =
                 Function(t As IType, name As String, op As InOperator) As RkNativeFunction
 
@@ -62,6 +58,11 @@ Namespace Manager
                     Me.AddFunction(f)
                     Return f
                 End Function
+
+            ' struct Bool : Boolean
+            Me.BoolType = Me.LoadType(GetType(Boolean).GetTypeInfo)
+            Me.AddStruct(Me.BoolType, "Bool")
+            add_native_unary_function(Me.BoolType, "!", InOperator.Not)
 
             ' struct Int32 : Numeric
             Dim define_num =
