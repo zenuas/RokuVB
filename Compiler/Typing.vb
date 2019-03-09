@@ -893,7 +893,7 @@ Namespace Compiler
 
                             Dim node = CType(child, TypeNode)
                             If node.IsGeneric Then set_type(node, Function() GetGeneric(node.Name, current))
-                            If node.Arguments.Count > 0 Then set_type(node, Function() LoadFunction(current, "#Alloc", LoadStruct(current, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray)))
+                            If node.Arguments.Count > 0 Then set_type(node, Function() LoadStruct(current, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray))
                             If node.Nullable AndAlso Not node.NullAdded Then
 
                                 Dim t = node.Type
