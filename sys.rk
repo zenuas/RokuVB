@@ -42,6 +42,16 @@ class List<@T, @R>
 	sub cdr<List<@X, @R>>(@T) @X
 	sub isnull(@T) Bool
 
+class LoopHead<@T, @R>
+	sub car(@T) @R
+	sub cdr<LoopBody<@X, @R>>(@T) @X
+	sub isnull(@T) Bool
+
+class LoopBody<@T, @R>
+	sub car(@T) @R
+	sub cdr(@T) @T
+	sub isnull(@T) Bool
+
 struct ListIndex<@T>
 	var index: Int
 	var list: System.Collections.Generic.List<@T>
