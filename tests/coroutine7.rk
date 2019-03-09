@@ -1,0 +1,15 @@
+sub co() [String]
+	var no4 = "four"
+	yields(["one", "two", "three"])
+	yield(no4)
+	yields(["five", "six"])
+
+var xs = co()
+
+#=>one
+#=>two
+#=>three
+#=>four
+#=>five
+#=>six
+xs.each(=> print($1))

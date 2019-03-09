@@ -359,6 +359,7 @@ Namespace Compiler
                                                 CreateFunctionCallNode(CreateVariableNode("return", v), x3)
                                             })
                                         program_pointer += 4
+                                        Continue Do
 
                                     ElseIf var.Name.Equals("return") Then
 
