@@ -220,7 +220,6 @@ Namespace Compiler
 
                                     Dim struct = CType(node.Type, RkStruct)
                                     args.Insert(0, New OpValue With {.Name = struct.Name, .Type = struct, .Scope = func})
-                                    If struct.Apply.Count > 0 Then args.InsertRange(1, struct.Apply.Map(Function(x, i) New OpValue With {.Name = $"${i + 1}", .Type = x, .Scope = func}))
                                     Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
                                     If args.Count = 1 OrElse struct.Generics.Count > 0 Then Return xs
                                     Dim stmts = xs.ToList
