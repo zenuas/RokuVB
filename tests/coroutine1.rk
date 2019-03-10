@@ -30,12 +30,12 @@ xs.each(=> print($1))
 #     state1_:
 #     # yield("two")
 #     self.next = 2
-#     self.value = "one"
+#     self.value = "two"
 #     return(self.value)
 #     state2_:
 #     # yield("three")
 #     self.next = 3
-#     self.value = "one"
+#     self.value = "three"
 #     return(self.value)
 #     state3_:
 #     end_:

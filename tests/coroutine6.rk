@@ -20,7 +20,7 @@ xs.each(=> print($1))
 #     if self.next >= 1 then return(self.value)
 #     if self.state == 1 then goto state1_
 #     if self.state == -1 then goto end_
-#     # yield("one")
+#     # yields(["one", "two", "three"])
 #     var values = ["one", "two", "three"]
 #     if ! isnull(values)
 #         self.next = 1
