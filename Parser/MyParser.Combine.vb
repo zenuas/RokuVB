@@ -1,4 +1,5 @@
-﻿Imports Roku.Node
+﻿Imports System
+Imports Roku.Node
 Imports Roku.Util.Extensions
 
 
@@ -444,9 +445,50 @@ Namespace Parser
             Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr, False, False), IStatementNode))
         End Function
 
+        Public Shared Function ExpressionToType(expr As IEvaluableNode, t1 As IEvaluableNode, ParamArray ts As TypeBaseNode()) As TypeNode
+
+            Dim check_type =
+                Function(t As TypeBaseNode) As TypeNode
+
+                    If TypeOf t IsNot TypeNode Then SyntaxError(t, "not type")
+                    Return CType(t, TypeNode)
+                End Function
+
+            Dim to_type As Func(Of IEvaluableNode, TypeBaseNode) =
+                Function(e)
+
+                    If TypeOf e Is TypeBaseNode Then
+
+                        Return CType(e, TypeBaseNode)
+
+                    ElseIf TypeOf e Is VariableNode Then
+
+                        Return New TypeNode(CType(e, VariableNode))
+
+                    ElseIf TypeOf e Is PropertyNode Then
+
+                        Dim prop = CType(e, PropertyNode)
+                        Return New TypeNode(check_type(to_type(prop.Left)), prop.Right)
+                    End If
+
+                    SyntaxError(expr, "not type")
+                    Return Nothing
+                End Function
+
+            Dim type = check_type(to_type(expr))
+            type.Arguments.Add(to_type(t1))
+            type.Arguments.AddRange(ts)
+            Return type
+        End Function
+
         Public Shared Sub SyntaxError(t As Token, Optional message As String = "syntax error")
 
             Throw New SyntaxErrorException(t.LineNumber, t.LineColumn, message)
+        End Sub
+
+        Public Shared Sub SyntaxError(t As INode, Optional message As String = "syntax error")
+
+            Throw New SyntaxErrorException(If(t.LineNumber, 0), If(t.LineColumn, 0), message)
         End Sub
 
     End Class

@@ -1,0 +1,68 @@
+struct Foo1<@T>
+	var i: @T
+
+struct Foo2<@T, @R>
+	var i: @T
+	var j: @R
+
+struct Bar
+	var dummy: String
+
+struct Baz
+	var dummy: String
+
+#=>True
+print(1 < 2)
+
+#=>False
+print(1 > 2)
+
+# 例で挙げているような型パラメータを取る構造体にコンストラクタ引数を与えることはまだできない
+# 構文エラーが出なければひとまず良しとする
+var a = Foo1<Bar>()
+var b = Foo2<Bar,Baz>()
+#var c = Foo2<Bar?,Baz>()
+var d = Foo2<Bar,Baz?>()
+
+
+# LTの問題
+# 
+# LT(less than、「<」)は2つの意味がある
+# 演算子と総称型のパラメータ部分である
+# 
+# 「Foo1<Bar>(1)」は2つの解釈ができてしまう
+# (Foo1 < Bar) > (1) という、Fooより大きいBarの戻り値が1より大きいかという解釈と
+# Foo1<Bar>(1) という、Foo1型に型パラメータBarを与えコンストラクタに1を与えるという解釈である
+# 後者と解釈する方が自然
+# 
+# 「Foo2<Bar,Baz>(1)」も2つの解釈ができてしまう
+# 同じく (Foo2 < Bar), (Baz > (1)) と Foo2<Bar, Baz>(1) 
+# これも後者と解釈する方が自然
+# 
+# 以上からLTの次の次にGTかカンマが来る場合は型パラメータとする必要がある
+# ただし、これをそのまま書くと還元還元衝突が起こる
+# expr: expr LT expr
+#     | expr GT expr
+#     | type LT typen GT
+# 
+# ここまで変形して衝突がなくなる(LT、GT、カンマはシフト優先)
+# expr: expr LT expr
+#     | expr GT expr
+#     | expr LT expr GT           # $1、$3をtypeに変換、還元の優先度を上げる必要あり
+#     | expr LT expr ',' typen GT # $1、$3をtypeに変換、還元の優先度を上げる必要あり
+# 
+# exprからtypeの変換を成立させるためには expr⊃type である必要がある
+# しかし、exprとtypeでは'?'の互換性が取れない
+# Foo<Bar?, Baz> は一見正しい型パラメータに見えるがLTの次がexprであるせいで構文エラーとなる
+# Foo<Bar, Baz?> であれば通る
+# 
+# これを回避するための最終形は次の通り
+# expr: expr LT expr
+#     | expr GT expr
+#     | expr LT expr     GT           # $1、$3 をtypeに変換、還元の優先度を上げる必要あり
+#     | expr LT expr '?' GT           # $1、$3?をtypeに変換、還元の優先度を上げる必要あり
+#     | expr LT expr     ',' typen GT # $1、$3 をtypeに変換、還元の優先度を上げる必要あり
+#     | expr LT expr '?' ',' typen GT # $1、$3?をtypeに変換、還元の優先度を上げる必要あり
+# ※現在は先読みの個数が足りず未対応
+# 
+# 同じ理屈で Foo?<Bar> も通らないが、これは構文上通しても意味解析できないため考慮不要

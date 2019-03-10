@@ -59,6 +59,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  ','
 %left  '(' '[' '{'
 %left  EOL
+%right TYPE_PARAM
 
 %%
 
@@ -112,7 +113,12 @@ expr : var
      | expr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
      | null
      | bool
-     | var LT typen GT        {$$ = New TypeNode($1) With {.Arguments = $3.List}}
+     | expr LT expr                               {$$ = CreateFunctionCallNode($2, $1, $3)}
+     | expr GT expr                               {$$ = CreateFunctionCallNode($2, $1, $3)}
+     | expr LT expr GT           %prec TYPE_PARAM {$$ = ExpressionToType($1, $3)}
+     | expr LT expr ',' typen GT %prec TYPE_PARAM {$$ = ExpressionToType($1, $3, $5.List.ToArray)}
+#     | expr LT expr '?' GT           %prec TYPE_PARAM {$$ = ExpressionToType($1, $3)}
+#     | expr LT expr '?' ',' typen GT %prec TYPE_PARAM {$$ = ExpressionToType($1, $3, $6.List.ToArray)}
 
 call : expr '(' list ')' {$$ = CreateFunctionCallNode($1, $3.List.ToArray)}
 
@@ -268,7 +274,12 @@ cexpr : var
       | cexpr '?' expr ':' expr {$$ = CreateIfExpressionNode($1, $3, $5)}
       | null
       | bool
-      | var LT typen GT         {$$ = New TypeNode($1) With {.Arguments = $3.List}}
+      | cexpr LT expr                               {$$ = CreateFunctionCallNode($2, $1, $3)}
+      | cexpr GT expr                               {$$ = CreateFunctionCallNode($2, $1, $3)}
+      | cexpr LT expr GT           %prec TYPE_PARAM {$$ = ExpressionToType($1, $3)}
+      | cexpr LT expr ',' typen GT %prec TYPE_PARAM {$$ = ExpressionToType($1, $3, $5.List.ToArray)}
+#      | cexpr LT expr '?' GT           %prec TYPE_PARAM {$$ = ExpressionToType($1, $3)}
+#      | cexpr LT expr '?' ',' typen GT %prec TYPE_PARAM {$$ = ExpressionToType($1, $3, $6.List.ToArray)}
 
 array_pattern  : patterns
 tupple_pattern : patterns
@@ -304,10 +315,10 @@ bool   : TRUE    {$$ = New BoolNode($1, True)}
 ope    : nope
        | and
        | or
-nope   : OPE     {$$ = New TokenNode($1)}
-       | OR      {$$ = New TokenNode($1)}
        | LT      {$$ = New TokenNode($1)}
        | GT      {$$ = New TokenNode($1)}
+nope   : OPE     {$$ = New TokenNode($1)}
+       | OR      {$$ = New TokenNode($1)}
 and    : AND2    {$$ = New TokenNode($1)}
 or     : OR2     {$$ = New TokenNode($1)}
 

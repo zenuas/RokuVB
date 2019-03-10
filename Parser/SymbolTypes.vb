@@ -111,6 +111,9 @@ Namespace Parser
         ''' <summary>TRUE</summary>
         [TRUE]
 
+        ''' <summary>TYPE_PARAM</summary>
+        TYPE_PARAM
+
         ''' <summary>UNARY</summary>
         UNARY
 

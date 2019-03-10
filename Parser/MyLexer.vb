@@ -53,6 +53,7 @@ Namespace Parser
             Me.ReservedWord("SWITCH") = SymbolTypes.SWITCH
             Me.ReservedWord("THEN") = SymbolTypes.[THEN]
             Me.ReservedWord("TRUE") = SymbolTypes.[TRUE]
+            Me.ReservedWord("TYPE_PARAM") = SymbolTypes.TYPE_PARAM
             Me.ReservedWord("UNARY") = SymbolTypes.UNARY
             Me.ReservedWord("UNION") = SymbolTypes.UNION
             Me.ReservedWord("USE") = SymbolTypes.USE
