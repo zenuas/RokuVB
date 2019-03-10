@@ -47,8 +47,8 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %token<NumericNode> NUM
 %left  EQ
 %left  '?'
-%left<TokenNode> ope nope
 %left  OPE OR LT GT
+%left<TokenNode> ope nope
 %left<TokenNode> or
 %left  OR2
 %left  AND2
@@ -238,8 +238,8 @@ if     : ifthen
        | elseif
        | ifthen ELSE EOL block {$$ = AddElse($1, $4)}
        | elseif ELSE EOL block {$$ = AddElse($1, $4)}
-       | IF expr                 THEN NOTEOL expr EOL {$$ = CreateIfNode($2, ToBlock(Me.CurrentScope, $5))}
-       | IF var ':' type EQ expr THEN NOTEOL expr EOL {$$ = CreateIfCastNode($2, $4, $6, ToBlock(Me.CurrentScope, $9))}
+       | IF expr                 THEN NOTEOL expr EOL {$$ = CreateIfNode($2, ToStatementBlock(Me.CurrentScope, $5))}
+       | IF var ':' type EQ expr THEN NOTEOL expr EOL {$$ = CreateIfCastNode($2, $4, $6, ToStatementBlock(Me.CurrentScope, $9))}
 ifthen : IF expr EOL block                 {$$ = CreateIfNode($2, $4)}
        | IF var ':' type EQ expr EOL block {$$ = CreateIfCastNode($2, $4, $6, $8)}
 elseif : ifthen ELSE ifthen    {$$ = AddElse($1, ToBlock(Me.CurrentScope, $3))}
@@ -254,7 +254,7 @@ casen      : case                      {$$ = CreateSwitchNode($1)}
 case       : case_expr ARROW EOL       {$$ = $1}
            | case_expr ARROW EOL block {$$ = $1 : $1.Then = $4}
            | case_expr ARROW expr EOL  {$$ = $1 : $1.Then = ToLambdaExpressionBlock(Me.CurrentScope, $3)}
-case_expr  : cexpr                  {$$ = CreateCaseValueNode(ToBlock(Me.CurrentScope, $1))}
+case_expr  : cexpr                  {$$ = CreateCaseValueNode(ToLetBlock(Me.CurrentScope, $1))}
            | var ':' type           {$$ = CreateCaseCastNode($3, $1)}
            | '[' array_pattern ']'  {$$ = CreateCaseArrayNode($2, $1)}
 #           | '(' tupple_pattern ')' {}

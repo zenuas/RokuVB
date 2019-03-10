@@ -440,7 +440,12 @@ Namespace Parser
             Return block
         End Function
 
-        Public Shared Function ToBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
+        Public Shared Function ToStatementBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
+
+            Return ToBlock(scope, CType(expr, IStatementNode))
+        End Function
+
+        Public Shared Function ToLetBlock(scope As IScopeNode, expr As IEvaluableNode) As BlockNode
 
             Return ToBlock(scope, CType(CreateLetNode(CreateVariableNode("$ret", expr), expr, False, False), IStatementNode))
         End Function
