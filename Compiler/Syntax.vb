@@ -386,21 +386,18 @@ Namespace Compiler
                             Dim self_type = New TypeNode(CreateVariableNode(func.Name, func))
                             Dim t = func.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is func.Return).Arguments(1)
                             Dim scope = CType(p, IAddFunction)
-                            Dim create_type = Function(x As TypeBaseNode) x ' ToDo: dummy
                             Dim local_vars = func.Arguments.Map(Function(x) Tuple.Create(x.Name.Name, x.Type)).ToList
 
                             ' struct "func.Name"
                             '     var state = 0
                             '     var next  = 0
                             '     var value: "t"
-                            '     var values: "return"
                             '     var args...
                             Dim co = New StructNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p}
                             co.Lets.Add("state", CreateLetNode(CreateVariableNode("state", co), New NumericNode("0", 0)))
                             co.Lets.Add("next", CreateLetNode(CreateVariableNode("next", co), New NumericNode("0", 0)))
                             co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", co), t))
-                            'co.Lets.Add("values", CreateLetNode(CreateVariableNode("values", co), func.Return))
-                            local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, co), create_type(x.Item2))))
+                            local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, co), x.Item2)))
                             p.Lets.Add(co.Name, co)
 
                             ' sub "func.Name"(args...) "func.Name"
