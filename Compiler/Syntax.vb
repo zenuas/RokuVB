@@ -387,8 +387,10 @@ Namespace Compiler
                             Dim t = func.Where.FindFirst(Function(x) x.Name.Equals("List") AndAlso x.Arguments(0) Is func.Return).Arguments(1)
                             Dim scope = CType(p, IAddFunction)
                             Dim local_vars = func.Arguments.Map(Function(x) Tuple.Create(x.Name.Name, x.Type)).ToList
+                            Dim gen_vars = func.Arguments.Where(Function(x) x.Type.IsGeneric).Map(Function(x) x.Type).ToList
+                            self_type.Arguments.AddRange(gen_vars)
 
-                            ' struct "func.Name"
+                            ' struct "func.Name"<gen_vars>
                             '     var state = 0
                             '     var next  = 0
                             '     var value: "t"
@@ -399,32 +401,42 @@ Namespace Compiler
                             co.Lets.Add("value", CreateLetNode(CreateVariableNode("value", co), t))
                             local_vars.Each(Sub(x) co.Lets.Add(x.Item1, CreateLetNode(CreateVariableNode(x.Item1, co), x.Item2)))
                             p.Lets.Add(co.Name, co)
+                            co.Generics.AddRange(gen_vars)
 
                             ' sub "func.Name"(args...) "func.Name"
-                            '     var self = "func.Name"()
+                            '     var self = "func.Name"<gen_vars>()
                             '     self.args = args
                             '     return(self)
                             If func.Arguments.Count > 0 Then
 
                                 Dim co2 = New FunctionNode(func.LineNumber.Value) With {.Name = func.Name, .Parent = p, .Arguments = New List(Of DeclareNode)}
                                 Dim self = CreateLocalVariable("self", co2)
-                                func.Arguments.Each(Sub(x) co2.Arguments.Add(New DeclareNode(CreateVariableNode(x.Name.Name, co2), New TypeNode(CreateVariableNode(x.Type.Name, co2)))))
+                                func.Arguments.Each(Sub(x) co2.Arguments.Add(New DeclareNode(CreateVariableNode(x.Name.Name, co2), New TypeNode(CreateVariableNode(x.Type.Name, co2)) With {.IsGeneric = x.Type.IsGeneric})))
                                 co2.Return = self_type
 
-                                co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(CreateVariableNode(func.Name, co2)), True, False))
+                                Dim ctor = CreateVariableNode(func.Name, co2)
+                                If gen_vars.Count > 0 Then
+
+                                    Dim tx = New TypeNode(ctor)
+                                    tx.Arguments.AddRange(gen_vars)
+                                    co2.Statements.Add(CreateLetNode(CreateLocalVariable("#co", co2), tx, True, False))
+                                    ctor = CreateVariableNode("#co", co2)
+                                End If
+                                co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(ctor), True, False))
                                 co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, co2)), x.Name, False)))
                                 co2.Statements.Add(CreateFunctionCallNode(CreateVariableNode("return", co2), self))
                                 scope.AddFunction(co2)
                             End If
 
-                            ' sub cdr(self: co) [t]
+                            ' sub cdr(self: co<gen_vars>) [t]
                             '     var next = self.next
                             '     var unexec = (next == 0)
                             '     if unexec then
                             '         var car = self.car
                             '         car()
                             '         next = self.next
-                            '     var xs = co()
+                            '     var tx = co<gen_vars>
+                            '     var xs = tx()
                             '     xs.state = next
                             '     xs.args = self.args
                             '     xs.local_var = self.local_var # mark-only
@@ -440,13 +452,15 @@ Namespace Compiler
                                 Dim next_var = CreateLocalVariable("next", cdr)
                                 Dim unexec_var = CreateLocalVariable("unexec", cdr)
                                 Dim car_var = CreateLocalVariable("car", cdr)
+                                Dim tx_var = CreateLocalVariable("tx", cdr)
                                 Dim xs_var = CreateLocalVariable("xs", cdr)
 
                                 cdr.Statements.AddRange({
                                         CreateLetNode(next_var, CreatePropertyNode(self, Nothing, CreateVariableNode("next", cdr)), True, False),
                                         CreateLetNode(unexec_var, CreateFunctionCallNode(New Token(SymbolTypes.OPE) With {.Name = "=="}, next_var, New NumericNode("0", 0)), True, False),
                                         CreateIfNode(unexec_var, then_block),
-                                        CreateLetNode(xs_var, CreateFunctionCallNode(CreateVariableNode(func.Name, cdr)), True, False),
+                                        CreateLetNode(tx_var, self_type, True, False),
+                                        CreateLetNode(xs_var, CreateFunctionCallNode(tx_var), True, False),
                                         CreateLetNode(CreatePropertyNode(xs_var, Nothing, CreateVariableNode("state", cdr)), next_var, False)
                                     })
                                 then_block.Statements.AddRange({
@@ -463,7 +477,7 @@ Namespace Compiler
 
                             Loop While False
 
-                            ' sub isnull(self: co) Bool
+                            ' sub isnull(self: co<gen_vars>) Bool
                             '     var next = self.next
                             '     var unexec = (next == 0)
                             '     if unexec then
@@ -503,7 +517,7 @@ Namespace Compiler
 
                             Loop While False
 
-                            ' sub car(self: co) t
+                            ' sub car(self: co<gen_vars>) t
                             '     var next = self.next
                             '     var flag = (next >= 1)
                             '     if flag then

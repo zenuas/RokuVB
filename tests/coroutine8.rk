@@ -1,0 +1,7 @@
+sub co(arg: @T) [@T]
+	yield(arg)
+
+var xs = co("a")
+
+#=>a
+xs.each(=> print($1))
