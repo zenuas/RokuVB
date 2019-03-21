@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports Roku.Manager
+Imports Roku.Util.Extensions
 Imports Roku.Util.TypeHelper
 
 
@@ -32,7 +33,7 @@ Namespace Node
                 Dim parent = base.Parent
                 base.Bind = Nothing
                 base.Parent = Nothing
-                Dim clone = CType(Me.NodeDeepCopy(base), FunctionNode)
+                Dim clone = CType(NodeDeepCopy(base), FunctionNode)
                 base.Bind = bind
                 base.Parent = parent
                 clone.Bind = bind
@@ -40,9 +41,9 @@ Namespace Node
 
                 For i = 0 To clone.Arguments.Count - 1
 
-                    clone.Arguments(i).Type.Type = f.Arguments(i).Value
+                    SetNodeType(clone.Arguments(i).Type, f.Arguments(i).Value)
                 Next
-                If clone.Return IsNot Nothing Then clone.Return.Type = f.Return
+                If clone.Return IsNot Nothing Then SetNodeType(clone.Return, f.Return)
                 clone.Type = f
 
                 f.FunctionNode = clone
@@ -50,7 +51,17 @@ Namespace Node
             End If
         End Sub
 
-        Public Overridable Function NodeDeepCopy(n As INode) As INode
+        Public Shared Sub SetNodeType(base As TypeBaseNode, t As IType)
+
+            If TypeOf base Is TypeNode AndAlso TypeOf t Is IApply Then
+
+                Dim apply = CType(t, IApply)
+                CType(base, TypeNode).Arguments.Each(Sub(x) x.Type = If(apply.Apply.FindFirstOrNull(Function(a) a.Name.Equals(x.Name)), x.Type))
+            End If
+            base.Type = t
+        End Sub
+
+        Public Shared Function NodeDeepCopy(n As INode) As INode
 
             Dim cache As New Dictionary(Of INode, INode)
             Dim copy As Func(Of INode, INode) =
