@@ -418,9 +418,9 @@ Namespace Compiler
                                 If gen_vars.Count > 0 Then
 
                                     Dim tx = New TypeNode(ctor)
+                                    ctor = CreateLocalVariable("#co", co2)
                                     tx.Arguments.AddRange(gen_vars)
-                                    co2.Statements.Add(CreateLetNode(CreateLocalVariable("#co", co2), tx, True, False))
-                                    ctor = CreateVariableNode("#co", co2)
+                                    co2.Statements.Add(CreateLetNode(ctor, tx, True, False))
                                 End If
                                 co2.Statements.Add(CreateLetNode(self, CreateFunctionCallNode(ctor), True, False))
                                 co2.Arguments.Each(Sub(x) co2.Statements.Add(CreateLetNode(CreatePropertyNode(self, Nothing, CreateVariableNode(x.Name.Name, co2)), x.Name, False)))
@@ -666,6 +666,7 @@ Namespace Compiler
                                 Dim xs_var = CType(cdr.Lets("xs"), VariableNode)
                                 Dim index = cdr.Statements.IndexOf(Function(x) TypeOf x Is LabelNode AndAlso CType(x, LabelNode).Label = -1)
 
+                                If index < 0 Then Exit Do
                                 cdr.Statements.RemoveAt(index)
                                 user.LocalVars.Each(
                                     Sub(kv)
@@ -691,6 +692,7 @@ Namespace Compiler
                                 Dim self = func.Arguments(0).Name
                                 Dim index = func.Statements.IndexOf(Function(x) TypeOf x Is LabelNode AndAlso CType(x, LabelNode).Label = -1)
 
+                                If index < 0 Then Exit Do
                                 func.Statements.RemoveAt(index)
                                 user.LocalVars.Each(
                                     Sub(kv)

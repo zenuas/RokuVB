@@ -5,3 +5,19 @@ var xs = co("a")
 
 #=>a
 xs.each(=> print($1))
+
+# コルーチンの総称型
+# 
+# コルーチンcoに総称型を使用すると次の通り変換される
+# 
+# struct co<@T>
+#     var value: @T
+#     var arg: @T
+# 
+# sub co(arg: @T) co<@T>
+#     var self = co<@T>()
+#     self.arg = arg
+#     return(self)
+# 
+# car、cdr、isnullは通常通り
+

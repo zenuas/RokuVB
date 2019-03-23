@@ -892,7 +892,14 @@ Namespace Compiler
                         ElseIf TypeOf child Is TypeNode Then
 
                             Dim node = CType(child, TypeNode)
-                            If node.IsGeneric Then set_type(node, Function() GetGeneric(node.Name, current))
+                            If node.IsGeneric AndAlso (node.Type Is Nothing OrElse node.Type.HasGeneric) Then
+
+                                node.Type = GetGeneric(node.Name, current)
+
+                            ElseIf node.HasGeneric AndAlso (node.Type Is Nothing OrElse (node.Type.HasGeneric AndAlso Not node.Arguments.Or(Function(x) TypeOf x.Type Is RkGenericEntry AndAlso CType(x.Type, RkGenericEntry).ToType Is Nothing))) Then
+
+                                node.Type = LoadStruct(current, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray)
+                            End If
                             If node.Arguments.Count > 0 Then set_type(node, Function() LoadStruct(current, node.Name, node.Arguments.Map(Function(x) x.Type).ToArray))
                             If node.Nullable AndAlso Not node.NullAdded Then
 
