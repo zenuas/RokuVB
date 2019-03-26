@@ -320,7 +320,7 @@ Namespace Manager
             clone.Apply.Clear()
             clone.Apply.AddRange(Me.Apply)
             clone.Arguments.Clear()
-            clone.Arguments.AddRange(Me.Arguments)
+            Me.Arguments.Each(Sub(x) clone.Arguments.Add(New NamedValue With {.Name = x.Name, .Value = x.Value}))
             clone.Where.Clear()
             clone.Where.AddRange(Me.Where)
             clone.Body.Clear()

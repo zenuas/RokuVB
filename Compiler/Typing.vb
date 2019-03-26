@@ -715,7 +715,7 @@ Namespace Compiler
                 ElseIf TypeOf from Is IApply Then
 
                     Coverage.Case()
-                    Dim to_apply = CType(to_, IApply)
+                    Dim to_apply = CType(FixedVar(to_), IApply)
                     CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, VarFeedback(pgm, root, x, to_apply.Apply(i))))
                 Else
 
@@ -741,7 +741,7 @@ Namespace Compiler
             ElseIf TypeOf from Is IApply Then
 
                 Coverage.Case()
-                Dim to_apply = CType(FixedByName(to_), IApply)
+                Dim to_apply = CType(FixedVar(to_), IApply)
                 CType(from, IApply).Apply.Done(Function(x, i) If(i >= to_apply.Apply.Count, x, VarFeedback(pgm, root, x, to_apply.Apply(i))))
             End If
 
