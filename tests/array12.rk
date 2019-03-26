@@ -1,0 +1,11 @@
+
+var xxs = [[1, 2], [3, 4]]
+
+#=>1
+#=>2
+#=>3
+#=>4
+print(xxs[0][0])
+print(xxs[0][1])
+print(xxs[1][0])
+print(xxs[1][1])
