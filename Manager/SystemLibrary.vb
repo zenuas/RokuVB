@@ -613,6 +613,15 @@ Namespace Manager
             Return CType(t, RkCILStruct).Apply(0)
         End Function
 
+        Public Shared Function TypeIs(a As IType, b As IType) As Boolean
+
+            a = FixedByName(a)
+            b = FixedByName(b)
+
+            If a Is b Then Return True
+            Return False
+        End Function
+
         Public Shared Function FixedByName(t As IType, Optional deep As Boolean = False) As IType
 
             If TypeOf t Is RkByNameWithReceiver Then

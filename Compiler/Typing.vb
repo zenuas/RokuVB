@@ -700,7 +700,7 @@ Namespace Compiler
 
         Public Shared Function VarFeedback(pgm As ProgramNode, root As SystemLibrary, from As IType, to_ As IType) As IType
 
-            from = FixedByName(from, True)
+            from = FixedVar(FixedByName(from, True))
             to_ = FixedByName(to_, True)
             If to_ Is Nothing Then Return from
             If from Is Nothing Then Return to_
@@ -777,7 +777,8 @@ Namespace Compiler
                         Dim func = CType(current, RkFunction)
                         If TypeOf func.Return Is RkGenericEntry Then
 
-                            Dim apply_index = CType(func.Return, RkGenericEntry).ApplyIndex
+                            Dim g = CType(func.Return, RkGenericEntry)
+                            Dim apply_index = g.ApplyIndex
                             If func.Apply(apply_index) Is Nothing Then
 
                                 Dim x = f.Apply(0)
@@ -793,7 +794,8 @@ Namespace Compiler
                                 f.Apply(0) = x
                             End If
 
-                            f.Arguments(0).Value = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
+                            g.Reference.Apply(g.ApplyIndex) = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
+                            'f.Arguments(0).Value = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
                         End If
                     End If
                 End If

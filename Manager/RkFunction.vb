@@ -89,7 +89,7 @@ Namespace Manager
             values.Each(Sub(kv) apply(Me.Generics.FindFirst(Function(x) x.Name.Equals(kv.Name)).ApplyIndex) = kv.Value)
             For Each fix In Me.GetBaseFunctions().Where(Function(g) g.Apply.Count = apply.Count)
 
-                If fix.Apply.And(Function(g, i) apply(i) Is g) Then Return fix
+                If fix.Apply.And(Function(g, i) TypeIs(apply(i), g)) Then Return fix
             Next
 
             Dim clone = CType(Me.CloneGeneric, RkFunction)
