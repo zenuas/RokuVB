@@ -1,0 +1,17 @@
+
+sub f(n: Int) [Int]
+	
+	if n > 0
+		return(f(n - 1) + [n] + f(n - 1))
+	else
+		return([])
+
+#=>1
+f(1).each(=> print($1))
+
+#=>1
+#=>2
+#=>1
+f(2).each(=> print($1))
+
+
