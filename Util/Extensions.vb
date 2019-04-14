@@ -507,11 +507,11 @@ Namespace Util
         <DebuggerHidden>
         Public Function FindLastIndex(Of T)(self As IList(Of T), f As Func(Of T, Integer, Boolean)) As Integer
 
-            Dim count = self.Count - 1
-            Dim i = 0
+            Dim i = self.Count - 1
             For Each x In self.Reverse
 
-                If f(x, count - i) Then Return i
+                If f(x, i) Then Return i
+                i -= 1
             Next
             Return -1
         End Function
