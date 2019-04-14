@@ -395,6 +395,7 @@ Namespace Util
             For Each x In self
 
                 If f(x, i) Then Yield x
+                i += 1
             Next
         End Function
 
@@ -448,6 +449,32 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Function FindFirstIndex(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In self
+
+                If f(x, i) Then Return i
+                i += 1
+            Next
+            Return -1
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function FindFirstIndex(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In self
+
+                If f(x) Then Return i
+                i += 1
+            Next
+            Return -1
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Function FindLast(Of T)(self As IList(Of T), f As Func(Of T, Integer, Boolean)) As T
 
             Dim count = self.Count - 1
@@ -474,6 +501,32 @@ Namespace Util
         Public Function FindLastOrNull(Of T)(self As IList(Of T), f As Func(Of T, Boolean)) As T
 
             Return self.Reverse.Where(f).Car
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function FindLastIndex(Of T)(self As IList(Of T), f As Func(Of T, Integer, Boolean)) As Integer
+
+            Dim count = self.Count - 1
+            Dim i = 0
+            For Each x In self.Reverse
+
+                If f(x, count - i) Then Return i
+            Next
+            Return -1
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function FindLastIndex(Of T)(self As IList(Of T), f As Func(Of T, Boolean)) As Integer
+
+            Dim i = self.Count - 1
+            For Each x In self.Reverse
+
+                If f(x) Then Return i
+                i -= 1
+            Next
+            Return -1
         End Function
 
         <Extension>

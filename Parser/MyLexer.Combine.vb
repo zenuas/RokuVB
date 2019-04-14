@@ -1,12 +1,14 @@
 Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
+Imports Roku.Util.Extensions
 
 Namespace Parser
 
     Partial Public Class MyLexer
 
         Public Overridable Property Parser As MyParser
+        Public Overridable Property PhysicalLineColumn As Integer = 1
 
         Public Overrides Sub Initialize()
 
@@ -61,18 +63,7 @@ READ_LINE_:
                 If Not begin.EndOfToken Then
 
 READ_CONTINUE_:
-                    Do While True
-
-                        Dim t = Me.ReaderNext
-                        t.Indent = indent
-                        Me.TokenStack.Add(t)
-                        If t.InputToken = SymbolTypes.EOL Then Exit Do
-                        If t.EndOfToken Then
-
-                            Me.TokenStack.Insert(Me.TokenStack.Count - 1, Me.CreateEndOfLine(t.LineNumber, t.LineColumn))
-                            Exit Do
-                        End If
-                    Loop
+                    Me.ReaderTokens(indent)
                 End If
 
                 If Me.TokenStack(Me.TokenStack.Count - 1).EndOfToken Then
@@ -97,6 +88,22 @@ READ_CONTINUE_:
             Return first
         End Function
 
+        Public Overridable Sub ReaderTokens(indent As Integer)
+
+            Do While True
+
+                Dim t = Me.ReaderNext
+                t.Indent = indent
+                Me.TokenStack.Add(t)
+                If t.InputToken = SymbolTypes.EOL Then Exit Do
+                If t.EndOfToken Then
+
+                    Me.TokenStack.Insert(Me.TokenStack.Count - 1, Me.CreateEndOfLine(t.LineNumber, t.LineColumn))
+                    Exit Do
+                End If
+            Loop
+        End Sub
+
         Public Overrides Function PeekToken() As IToken(Of INode)
 
             Dim t = MyBase.PeekToken
@@ -116,6 +123,12 @@ READ_CONTINUE_:
                 Me.TokenStack.Insert(0, ope)
 
                 t = gt
+
+            ElseIf t.InputToken = SymbolTypes.EOL AndAlso Not Me.Parser.IsAccept(t) Then
+
+                Me.StoreToken = Nothing
+                Me.ReaderTokens(t.Indent)
+                Return Me.PeekToken
             End If
             Return t
 
@@ -126,6 +139,7 @@ READ_CONTINUE_:
             If Me.EndOfStream() Then Return Me.CreateEndOfToken
 
             ' lex char
+            Dim ishead = Me.PhysicalLineColumn = 1
             Dim lineno = 0
             Dim column = 0
             Dim indent = 0
@@ -153,17 +167,62 @@ READ_CONTINUE_:
             If c = "#"c Then
 
                 Dim eol = Me.CreateEndOfLine(Me.LineNumber, Me.LineColumn)
-                Me.ReadLineComment()
+                Dim comment = Me.ReadLineComment()
+                If ishead AndAlso comment.StartsWith("###") Then
+
+                    Dim start_count = comment.ToCharArray.FindFirstIndex(Function(x) x <> "#"c)
+                    If start_count = -1 Then start_count = comment.Length
+
+                    Do While True
+
+                        If Me.EndOfStream() Then Return Me.CreateEndOfToken
+                        If indent = Me.ReaderIndent Then
+
+                            Dim end_comment = Me.ReadLineComment
+
+                            Dim end_count = end_comment.ToCharArray.FindFirstIndex(Function(x) x <> "#"c)
+                            If end_count = -1 AndAlso end_comment.StartsWith("#") Then end_count = end_comment.Length
+                            If start_count = end_count Then Exit Do
+                        Else
+
+                            Me.ReadLine()
+                        End If
+                    Loop
+                End If
                 Return eol
             End If
             lineno = Me.LineNumber
             column = Me.LineColumn
 
-            Dim x = CType(Me.ReaderToken(), Token)
-            x.Indent = indent
-            x.LineNumber = lineno
-            x.LineColumn = column
-            Return x
+            Dim t = CType(Me.ReaderToken(), Token)
+            t.Indent = indent
+            t.LineNumber = lineno
+            t.LineColumn = column
+            Return t
+        End Function
+
+        Public Overridable Function ReaderIndent() As Integer
+
+            If Me.EndOfStream() Then Return 0
+
+            Dim indent = 0
+            Dim c = Me.NextChar
+            Do While Char.IsWhiteSpace(c)
+
+                indent += 1
+                Me.ReadChar()
+                If c = Convert.ToChar(13) Then
+
+                    If Me.NextChar = Convert.ToChar(10) Then
+
+                        Me.ReadChar()
+                    End If
+                End If
+                If Me.EndOfStream() Then Return indent
+                If c = Convert.ToChar(10) OrElse c = Convert.ToChar(13) Then indent = 0
+                c = Me.NextChar
+            Loop
+            Return indent
         End Function
 
         Public Overridable Overloads Function ReaderToken() As IToken(Of INode)
@@ -367,10 +426,12 @@ READ_CONTINUE_:
 
 #Region "read token"
 
-        Public Overridable Sub ReadLineComment()
+        Public Overridable Function ReadLineComment() As String
 
-            Me.ReadLine()
-        End Sub
+            Dim column = Me.PhysicalLineColumn
+            Dim s = Me.ReadLine()
+            Return s.Substring(column - 1)
+        End Function
 
         Public Overridable Function CreateEndOfLine(linenum As Integer, linecolumn As Integer) As IToken(Of INode)
 
@@ -591,6 +652,7 @@ READ_CONTINUE_:
             If n = &HA OrElse (n = &HD AndAlso Me.PeekStream() <> &HA) Then
 
                 Me.LineColumn = 1
+                Me.PhysicalLineColumn = 1
                 Me.LineNumber += 1
                 Me.CurrentWord.Clear()
                 Me.CurrentLine.Clear()
@@ -598,10 +660,13 @@ READ_CONTINUE_:
             ElseIf n = &H9 Then
 
                 Me.LineColumn += Me.TabSize - (Me.LineColumn - 1) Mod Me.TabSize
+                Me.PhysicalLineColumn += 1
                 Me.CurrentWord.Clear()
-                Me.CurrentLine.Clear()
+                Me.CurrentLine.Append(c)
             Else
+
                 Me.LineColumn += 1
+                Me.PhysicalLineColumn += 1
                 Me.CurrentWord.Append(c)
                 Me.CurrentLine.Append(c)
             End If
@@ -613,6 +678,7 @@ READ_CONTINUE_:
             If Not Me.EndOfStream Then
 
                 Me.LineColumn = 1
+                Me.PhysicalLineColumn = 1
                 Me.LineNumber += 1
             End If
             If Me.PeekBuffer >= 0 Then Me.CurrentLine.Append(Char.ConvertFromUtf32(Me.PeekBuffer)(0))
