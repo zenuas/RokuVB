@@ -170,19 +170,14 @@ READ_CONTINUE_:
                 Dim comment = Me.ReadLineComment()
                 If ishead AndAlso comment.StartsWith("###") Then
 
-                    Dim start_count = comment.ToArray.FindFirstIndex(Function(x) x <> "#"c)
-                    If start_count = -1 Then start_count = comment.Length
+                    Dim start_count = comment.MatchLength(Function(x) x = "#"c)
 
                     Do While True
 
                         If Me.EndOfStream() Then Return Me.CreateEndOfToken
                         If indent = Me.ReaderIndent Then
 
-                            Dim end_comment = Me.ReadLineComment
-
-                            Dim end_count = end_comment.ToArray.FindFirstIndex(Function(x) x <> "#"c)
-                            If end_count = -1 AndAlso end_comment.StartsWith("#") Then end_count = end_comment.Length
-                            If start_count = end_count Then Exit Do
+                            If start_count = Me.ReadLineComment.MatchLength(Function(x) x = "#"c) Then Exit Do
                         Else
 
                             Me.ReadLine()

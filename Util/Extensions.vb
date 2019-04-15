@@ -541,6 +541,32 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Function MatchLength(Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In self
+
+                If Not f(x, i) Then Return i
+                i += 1
+            Next
+            Return i
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
+        Public Function MatchLength(Of T)(self As IEnumerable(Of T), f As Func(Of T, Boolean)) As Integer
+
+            Dim i = 0
+            For Each x In self
+
+                If Not f(x) Then Return i
+                i += 1
+            Next
+            Return i
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Function [And](Of T)(self As IEnumerable(Of T), f As Func(Of T, Integer, Boolean)) As Boolean
 
             Dim i = 0
