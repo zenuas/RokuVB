@@ -170,7 +170,7 @@ READ_CONTINUE_:
                 Dim comment = Me.ReadLineComment()
                 If ishead AndAlso comment.StartsWith("###") Then
 
-                    Dim start_count = comment.ToCharArray.FindFirstIndex(Function(x) x <> "#"c)
+                    Dim start_count = comment.ToArray.FindFirstIndex(Function(x) x <> "#"c)
                     If start_count = -1 Then start_count = comment.Length
 
                     Do While True
@@ -180,7 +180,7 @@ READ_CONTINUE_:
 
                             Dim end_comment = Me.ReadLineComment
 
-                            Dim end_count = end_comment.ToCharArray.FindFirstIndex(Function(x) x <> "#"c)
+                            Dim end_count = end_comment.ToArray.FindFirstIndex(Function(x) x <> "#"c)
                             If end_count = -1 AndAlso end_comment.StartsWith("#") Then end_count = end_comment.Length
                             If start_count = end_count Then Exit Do
                         Else

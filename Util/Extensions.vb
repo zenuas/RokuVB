@@ -209,6 +209,16 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
+        Public Iterator Function ToArray(self As String) As IEnumerable(Of Char)
+
+            For Each c In self
+
+                Yield c
+            Next
+        End Function
+
+        <Extension>
+        <DebuggerHidden>
         Public Function ToHash_KeyDerivation(Of T, R)(self As IEnumerable(Of T), f As Func(Of T, R)) As Dictionary(Of R, T)
 
             Dim hash As New Dictionary(Of R, T)
