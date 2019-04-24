@@ -1,0 +1,24 @@
+sub co(arg: [@T]) [@T]
+	yields(arg)
+
+var xs = co(["a", "b", "c"])
+
+#=>a
+#=>b
+#=>c
+xs.each(=> print($1))
+
+###
+引数に配列を使った場合のコルーチン
+
+引数に配列を使った場合、次のように解釈される
+struct co<@T1, @T2>
+sub co<List<@A, @B>>(arg: @A) co<@A, @B>
+
+そして呼び出し側が次のようになる
+var $1: CList = ["a", "b", "c"]
+var xs = co<CList>($1) # このcoは関数を指す
+
+coが関数を指す場合は型引数が1つで
+coが型を指す場合は型引数が2つになる
+###
