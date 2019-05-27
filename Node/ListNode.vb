@@ -17,9 +17,10 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            t = FixedByName(t)
+            Dim a = FixedByName(t)
+            If TypeOf a IsNot IApply Then Return False
 
-            Dim apply = CType(t, IApply).Apply(0)
+            Dim apply = CType(a, IApply).Apply(0)
             Dim fix = False
             For Each x In Me.List
 

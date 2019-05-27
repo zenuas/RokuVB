@@ -14,4 +14,36 @@ f(1).each(=> print($1))
 #=>1
 f(2).each(=> print($1))
 
+###
+fの戻り値の型推論
 
+上記のfは sub f<List(Int, @T)>(Int) @T となる
+戻り値@Tを推論することが目標となる
+
+1つ目のreturnから推論できることは次の通り
+$1 = f(n - 1)
+$2 = $1 + [n] # sub +(_, CList<Int>) _ かな？
+$3 = f(n - 1)
+$4 = $2 + $3  # sub +<List<Int, @X>>(_, @X) _ かな？
+return($4)
+戻り値には+関数が定義されている、ここではこれ以上の情報が得られない
+
+2つ目のreturnからは CList<_> が得られる
+@Tの型制約から @T=CList<Int> が導ける
+
+これで初めて1つめのreturnの推論が導ける
+$1 = f(n - 1) # CList<Int>
+$2 = $1 + [n] # sub +(CList<Int>, CList<Int>) CList<Int>
+$3 = f(n - 1) # CList<Int>
+$4 = $2 + $3  # sub +(CList<Int>, CList<Int>) CList<Int>
+return($4)
+
+
+問題になるのは1つ目のreturnにある
+現実には$2、$3の型のみで導こうとし型制約は考慮しない
+$4 = $2 + $3  # sub +<List<Int, @X>>(_, @X) _ かな？
+ではなく
+$4 = $2 + $3  # sub +(_, _) _ かな？
+つまり [sub +(Int,Int) Int | sub +(Long,Long) Long | ...] などの大量の+関数が候補となってしまう
+$4の型候補は <List<@T, Int>>[Int | Long | Short | Byte | String | @T] になってしまう
+###

@@ -1,4 +1,5 @@
 Imports System
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Util.Extensions
 
 
@@ -18,7 +19,7 @@ Namespace Manager
 
         Public Overridable Function [Is](t As IType) As Boolean Implements IType.Is
 
-            Throw New NotImplementedException()
+            Return FixedByName(Me).Is(t)
         End Function
 
         Public Overridable Function CloneGeneric() As IType Implements IType.CloneGeneric
