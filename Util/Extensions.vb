@@ -371,7 +371,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T)) As IEnumerable(Of T)
+        Public Iterator Function Merge(Of T)(self As IEnumerable(Of T), xs As IEnumerable(Of T)) As IEnumerable(Of T)
 
             Dim hash = xs.ToHash_ValueDerivation(Function(x) True)
             For Each v In self
@@ -382,7 +382,7 @@ Namespace Util
 
         <Extension>
         <DebuggerHidden>
-        Public Iterator Function Merge(Of T)(self As IList(Of T), xs As IEnumerable(Of T), match As Func(Of T, T, Boolean)) As IEnumerable(Of T)
+        Public Iterator Function Merge(Of T)(self As IEnumerable(Of T), xs As IEnumerable(Of T), match As Func(Of T, T, Boolean)) As IEnumerable(Of T)
 
             For Each v In self
 
