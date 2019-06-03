@@ -1,6 +1,7 @@
 ﻿Imports System
 Imports System.Collections.Generic
 Imports Roku.Node
+Imports Roku.Manager.SystemLibrary
 Imports Roku.Util.Extensions
 
 
@@ -64,7 +65,7 @@ Namespace Manager
             If Not Me.Is(target, args) Then Return False
 
             Dim gen = Me.GenericBase.Else(Function() Me)
-            Dim named_hash = args.Map(Function(x) If(TypeOf x Is RkGenericEntry, Nothing, x)).ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
+            Dim named_hash = args.Map(Function(x) FixedByName(x)).ToHash_KeyDerivation(Function(x, i) gen.Generics(i).Name)
             Dim index_hash As New Dictionary(Of String, Integer)
             gen.Generics.Each(Sub(x) index_hash(x.Name) = x.ApplyIndex)
             Dim isset = False

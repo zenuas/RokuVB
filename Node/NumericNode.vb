@@ -1,5 +1,6 @@
 Imports System
 Imports Roku.Manager
+Imports Roku.Manager.SystemLibrary
 
 
 Namespace Node
@@ -22,15 +23,15 @@ Namespace Node
 
         Public Overridable Function Feedback(t As IType) As Boolean Implements IFeedback.Feedback
 
-            If TypeOf Me.Type Is RkUnionType Then
+            If t Is Me.Type Then Return False
 
-                Dim union = CType(Me.Type, RkUnionType)
-                Return union.Merge(t)
-            Else
+            If Me.Type Is Nothing Then
 
                 Me.Type = t
                 Return True
             End If
+
+            Return TypeFeedback(Me.Type, t)
         End Function
 
         Public Overrides Function ToString() As String

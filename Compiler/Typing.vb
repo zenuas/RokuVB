@@ -1201,7 +1201,7 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim union = CType(t, RkUnionType)
-                        t = If(union.Types.Count > 1 AndAlso union.Dynamic, root.ObjectType, var_normalize(root.ChoosePriorityType(union.Types)))
+                        t = If(union.Types?.Count > 1 AndAlso union.Dynamic, root.ObjectType, var_normalize(root.ChoosePriorityType(union.Types)))
 
                     ElseIf TypeOf t Is RkGenericEntry Then
 

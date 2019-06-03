@@ -36,7 +36,18 @@ Namespace Node
                 If Me.Function.HasGeneric Then
 
                     Me.Function = CType(Me.Function.FixedGeneric(New NamedValue With {.Name = r.Name, .Value = t}), IFunction)
-                    Me.Function.Arguments.Each(Sub(x, i) Me.Arguments(i).Type = x.Value)
+                    Me.Function.Arguments.Each(
+                        Sub(x, i)
+
+                            Dim arg = Me.Arguments(i)
+                            If TypeOf arg Is IFeedback Then
+
+                                CType(arg, IFeedback).Feedback(x.Value)
+                            Else
+
+                                arg.Type = x.Value
+                            End If
+                        End Sub)
                     Return True
                 End If
 

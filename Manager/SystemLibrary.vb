@@ -778,6 +778,16 @@ Namespace Manager
 
         End Function
 
+        Public Shared Function TypeFeedback(base As IType, t As IType) As Boolean
+
+            If TypeOf base Is RkUnionType Then
+
+                Return CType(base, RkUnionType).Merge(t)
+            End If
+
+            Return False
+        End Function
+
     End Class
 
 End Namespace
