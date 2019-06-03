@@ -177,7 +177,7 @@ Namespace Manager
             If Me.Types Is Nothing Then
 
                 Diagnostics.Debug.Assert(types.ToList.Count > 0, "types is empty")
-                Dim xs = types.Where(Function(x) FixedByName(x) IsNot Nothing).UniqueHash.ToList
+                Dim xs = types.UniqueHash.ToList
                 If xs.Count = 0 Then Return False
                 Me.Types = xs
                 Return True
@@ -186,6 +186,12 @@ Namespace Manager
 
                 Dim before = Me.Types.Count
                 Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList
+                Dim gens = after.Split(Function(x) TypeOf x Is RkGenericEntry)
+                If gens.Item2.Count > 0 Then
+
+                    Dim invert = types.Where(Function(a) Not gens.Item1.Or(Function(b) a.Is(b)))
+                    after = gens.Item1.Join(invert).ToList
+                End If
                 Diagnostics.Debug.Assert(after.Count > 0, "types is empty")
                 Me.Types = after
                 Return before <> Me.Types.Count
