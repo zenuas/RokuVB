@@ -2,7 +2,7 @@
 # usage: make.bat
 #
 
-PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools
+PATH:=build-tools;$(PATH);$("PROGRAMFILES(X86)")\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin;$("PROGRAMFILES(X86)")\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools
 RELEASE=Release
 OUT=bin\$(RELEASE)\roku.exe
 VBFLAGS=/debug-

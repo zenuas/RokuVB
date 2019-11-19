@@ -10,7 +10,7 @@
     <AssemblyName>roku</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Empty</MyType>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <NoConfig>true</NoConfig>
     <NoStandardLib>true</NoStandardLib>
     <NoVBRuntimeReference>true</NoVBRuntimeReference>
