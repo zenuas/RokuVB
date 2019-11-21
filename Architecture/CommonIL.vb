@@ -19,7 +19,8 @@ Namespace Architecture
         Public Overridable Sub Assemble(root As SystemLibrary, entrypoint As RkNamespace, path As String, subsystem As PEFileKinds)
 
             Dim name As New AssemblyName(entrypoint.Name)
-            Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, IO.Path.GetDirectoryName(path))
+            Dim dir = IO.Path.GetDirectoryName(path)
+            Dim asm = System.AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, If(String.IsNullOrEmpty(dir), ".", dir))
             Me.Module = asm.DefineDynamicModule(entrypoint.Name, IO.Path.GetFileName(path), True)
 
             Dim structs = Me.DeclareStructs(root)
