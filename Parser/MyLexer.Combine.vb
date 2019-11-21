@@ -484,7 +484,13 @@ READ_CONTINUE_:
             Do While Not Me.EndOfStream
 
                 Dim c = Me.ReadChar
-                If c = start_char Then Exit Do
+                If c = "\" Then
+
+                    c = Me.ReadChar
+                Else
+
+                    If c = start_char Then Exit Do
+                End If
                 buf.Append(c)
             Loop
 
