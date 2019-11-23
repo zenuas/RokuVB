@@ -1,0 +1,8 @@
+
+#=>Save
+var a = System.Reflection.Emit.AssemblyBuilderAccess.Save
+#print(a.ToString())
+
+###
+CLRのenum値を呼ぶ
+###

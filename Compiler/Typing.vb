@@ -519,6 +519,15 @@ Namespace Compiler
 
                     Coverage.Case()
                     Dim ns2 = CType(r, RkNamespace)
+
+                    Dim t = TryLoadStruct(ns2, byname.Name)
+                    If t IsNot Nothing Then
+
+                        Coverage.Case()
+                        byname.Type = t
+                        Return t
+                    End If
+
                     Dim n = TryLoadNamespace(ns2, byname.Name)
                     If n IsNot Nothing Then
 

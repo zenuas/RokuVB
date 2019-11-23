@@ -302,12 +302,19 @@ Namespace Manager
             Dim s = New RkCILStruct With {.Scope = ns, .Name = ti.Name, .TypeInfo = ti}
             Me.AddTypeCache(ti, ns, s)
 
-            If ns.Namespaces.ContainsKey(ti.Name) Then
+            If ti.IsEnum Then
 
-                'ToDo: generics suport
+                ti.GetEnumNames.Each(Sub(name) s.AddLet(name, s))
             Else
-                s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
-                ns.AddNamespace(s.FunctionNamespace)
+
+                If ns.Namespaces.ContainsKey(ti.Name) Then
+
+                    'ToDo: generics suport
+                Else
+
+                    s.FunctionNamespace = New RkCILNamespace With {.Name = ti.Name, .Parent = ns, .Root = Me, .BaseType = s}
+                    ns.AddNamespace(s.FunctionNamespace)
+                End If
             End If
 
             Return s

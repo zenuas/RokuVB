@@ -578,8 +578,16 @@ Namespace Architecture
                             ' nothing
                         Else
 
-                            gen_il_load(il, dot.Left, False)
-                            il.Emit(OpCodes.Ldfld, Me.RkToCILType(dot.Left.Type, structs).GetField(dot.Right.Name))
+                            Dim t = Me.RkToCILType(dot.Left.Type, structs)
+                            If t.Type.IsEnum Then
+
+                                Dim v = System.Enum.Parse(t.Type, dot.Right.Name)
+                                il.Emit(OpCodes.Ldc_I4, CInt(v))
+                            Else
+
+                                gen_il_load(il, dot.Left, False)
+                                il.Emit(OpCodes.Ldfld, t.GetField(dot.Right.Name))
+                            End If
                             gen_il_store(il, dot.Return)
                         End If
 
