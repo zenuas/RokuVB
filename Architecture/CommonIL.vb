@@ -654,7 +654,9 @@ Namespace Architecture
                                     il.Emit(OpCodes.Newobj, Me.RkToCILConstructor(f, structs))
                                 End If
                             Else
-                                il.Emit(OpCodes.Call, Me.RkToCILFunction(cc.Function, functions, structs))
+
+                                Dim f = Me.RkToCILFunction(cc.Function, functions, structs)
+                                il.Emit(If(f.IsVirtual, OpCodes.Callvirt, OpCodes.Call), f)
                             End If
 
                             If cc.Return Is Nothing Then
@@ -728,6 +730,12 @@ ARRAY_CREATE_:
 
                     Case InOperator.Label
                         il.MarkLabel(labels(stmt))
+
+                    Case InOperator.Typeof
+                        Dim typeof_ = CType(stmt, InCode)
+                        il.Emit(OpCodes.Ldtoken, Me.RkToCILType(typeof_.Left.Type, structs).Type)
+                        il.EmitCall(OpCodes.Call, GetType(Type).GetMethod("GetTypeFromHandle"), Nothing)
+                        gen_il_store(il, typeof_.Return)
 
                     Case InOperator.Cast
                         Dim cast = CType(stmt, InCode)

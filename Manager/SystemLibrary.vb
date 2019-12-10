@@ -124,6 +124,13 @@ Namespace Manager
             ' sub print(s: @T)
             Me.CreateFunctionAlias(Me.LoadType(GetType(System.Console).GetTypeInfo).FunctionNamespace, "WriteLine", "print")
 
+            ' sub typeof(x: @T) System.Type
+            Dim typeof_ As New RkNativeFunction With {.Name = "typeof", .Operator = InOperator.Typeof, .Scope = Me, .Parent = Me}
+            Dim typeof_t = typeof_.DefineGeneric("@T")
+            typeof_.Arguments.Add(New NamedValue With {.Name = "x", .Value = typeof_t})
+            typeof_.Return = Me.LoadType(GetType(System.Type).GetTypeInfo)
+            Me.AddFunction(typeof_)
+
             ' sub cast(x: @T, t: @R) @R
             Dim cast As New RkNativeFunction With {.Name = "cast", .Operator = InOperator.Cast, .Scope = Me, .Parent = Me}
             Dim cast_t = cast.DefineGeneric("@T")

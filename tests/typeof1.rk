@@ -1,0 +1,9 @@
+
+#=>Int32
+var x = typeof(Int)
+print(x.Name())
+
+
+###
+typeof関数は @T->System.Type を行う組み込み関数
+###

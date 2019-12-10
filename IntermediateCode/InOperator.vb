@@ -126,6 +126,7 @@ Namespace IntermediateCode
         Label
         Array
         CanCast
+        [Typeof]
 
         [Try]
         [Catch]
