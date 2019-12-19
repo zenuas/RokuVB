@@ -1,7 +1,9 @@
 @prompt $$$S
 @echo off
 
-set PATH=%PATH%;%PROGRAMFILES(X86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin;%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools
+set PATH=%PATH%;^
+%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin;^
+%PROGRAMFILES(X86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools
 
 set COMPILE_RK=
 set ENABLE_DOT=0
