@@ -48,6 +48,9 @@ Namespace Parser
         ''' <summary>CLASS</summary>
         [CLASS]
 
+        ''' <summary>DOT2</summary>
+        DOT2
+
         ''' <summary>ELSE</summary>
         [ELSE]
 

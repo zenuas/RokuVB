@@ -16,6 +16,7 @@ Namespace Manager
         Public Overridable Property Types As List(Of IType)
         Public Overridable Property ReturnCache As RkUnionType
         Public Overridable Property Dynamic As Boolean = True
+        Public Overridable Property AddMerge As Boolean = False
 
         Public Sub New()
 
@@ -180,6 +181,13 @@ Namespace Manager
                 Dim xs = types.UniqueHash.ToList
                 If xs.Count = 0 Then Return False
                 Me.Types = xs
+                Return True
+
+            ElseIf Me.AddMerge Then
+
+                Dim adds = types.Where(Function(x) Me.Types.FindFirstOrNull(Function(a) x.Is(a)) Is Nothing).ToList
+                If adds.Count = 0 Then Return False
+                Me.Types.AddRange(adds)
                 Return True
 
             ElseIf Me.Types.Count > 0 AndAlso Not Me.Dynamic Then

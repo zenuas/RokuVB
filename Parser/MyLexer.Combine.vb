@@ -226,6 +226,14 @@ READ_CONTINUE_:
             Dim c = Me.ReadChar
             If Char.IsWhiteSpace(c) OrElse c = "#"c Then Throw New SyntaxErrorException(Me.LineNumber, Me.LineColumn, "syntax error")
 
+            If c = "."c Then
+
+                If Not Me.EndOfStream AndAlso Me.NextChar = "."c Then
+
+                    Me.ReadChar()
+                    Return New Token(SymbolTypes.DOT2)
+                End If
+            End If
             If Me.ReservedChar.ContainsKey(c) Then Return Me.CreateCharToken(Me.ReservedChar(c), c)
 
             Dim buf As New System.Text.StringBuilder(c.ToString)
@@ -293,11 +301,6 @@ READ_CONTINUE_:
                 Else
                     Return New Token(SymbolTypes.EQ, buf.ToString)
                 End If
-
-                'ElseIf c = "."c Then
-
-                '    If Not Me.EndOfStream AndAlso Me.NextChar = "."c Then Return New Token(SymbolTypes.DOT2)
-                '    Return New Token(SymbolTypes.__x2E)
 
             ElseIf Me.IsOperator(c) Then
 

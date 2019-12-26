@@ -46,7 +46,7 @@ Imports FunctionListNode = Roku.Node.ListNode(Of Roku.Node.FunctionNode)
 %left  ':'
 %token<NumericNode> NUM
 %left  EQ
-%left  '?'
+%left  '?' DOT2
 %left  OPE OR LT GT
 %left<TokenNode> ope nope
 %left<TokenNode> or
@@ -200,6 +200,7 @@ typev  : nsvar
        | '[' type ']'            {$$ = New TypeArrayNode($2)}
        | '[' typeor ']'          {$2.AppendLineNumber($1) : $$ = New UnionNode($2)}
        | atvar
+       | atvar DOT2              {$$ = New UnionNode($1) With {.Dynamic = True}}
        | '[' type2n ']'          {$$ = New TypeTupleNode($2)}
        | STRUCT varx             {$$ = New TypeTupleNode($2)}
        | STRUCT varx LT typen GT {$$ = New TypeTupleNode($2, $4)}

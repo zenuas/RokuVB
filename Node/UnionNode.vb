@@ -21,8 +21,16 @@ Namespace Node
             Me.AppendLineNumber(items)
         End Sub
 
+        Public Sub New(base As TypeBaseNode)
+
+            Me.Name = base.Name
+            Me.Union = New ListNode(Of TypeBaseNode)
+            Me.AppendLineNumber(base)
+        End Sub
+
         Public Overridable ReadOnly Property Union As ListNode(Of TypeBaseNode)
         Public Overridable ReadOnly Property Generics As New List(Of TypeBaseNode)
+        Public Overridable Property Dynamic As Boolean = False
 
         Public Overrides Function HasGeneric() As Boolean
 

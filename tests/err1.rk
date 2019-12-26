@@ -1,0 +1,37 @@
+
+sub f(n: Int) @T..
+	if n == 0
+		return(0)
+	else if n == 1
+		return("hello")
+	else
+		return(cast(10, Int64))
+
+sub g(a: @T..)
+	if n: Int = a
+		print("Int")
+		print(n)
+	else if s: String = a
+		print("String")
+		print(s)
+	else if l: Int64 = a
+		print("Int64")
+		print(l)
+
+#=>Int
+#=>0
+g(f(0))
+
+#=>String
+#=>hello
+g(f(1))
+
+#=>Int64
+#=>10
+g(f(2))
+
+
+###
+@T.. は動的な共有型となる
+関数fでは戻り値の型が [Int | String | Int64] となる
+###

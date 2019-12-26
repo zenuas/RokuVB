@@ -96,7 +96,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node = CType(child, UnionNode)
-                        Dim union = New RkUnionType With {.UnionName = node.Name}
+                        Dim union = New RkUnionType With {.UnionName = node.Name, .AddMerge = node.Dynamic}
                         node.Type = union
                         If Not String.IsNullOrEmpty(node.Name) Then current.Scope.AddStruct(union)
 
@@ -180,7 +180,7 @@ Namespace Compiler
                         If Not node.HasGeneric Then
 
                             Dim t = CType(node.Type, RkUnionType)
-                            t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
+                            If Not node.Dynamic Then t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
                             If node.Nullable Then
 
                                 t.Add(root.NullType)
@@ -805,6 +805,11 @@ Namespace Compiler
 
                             g.Reference.Apply(g.ApplyIndex) = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
                             'f.Arguments(0).Value = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
+
+                        ElseIf TypeOf func.Return Is RkUnionType Then
+
+                            Dim union = CType(func.Return, RkUnionType)
+                            If union.AddMerge Then union.Merge(node.Arguments(0).Type)
                         End If
                     End If
                 End If
