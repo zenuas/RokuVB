@@ -663,9 +663,10 @@ Namespace Manager
 
         Public Shared Function TypeToString(t As IType) As String
 
-            t = FixedByName(t)
-            If t Is Nothing Then Return "_"
-            Return t.ToString
+            Dim dynamic = If(TypeOf t Is RkGenericEntry AndAlso CType(t, RkGenericEntry).Dynamic, "..", "")
+            Dim x = FixedByName(t)
+            If x Is Nothing Then Return $"_{dynamic}"
+            Return $"{x.ToString}{dynamic}"
         End Function
 
         Public Shared Function CopyGenericEntry(clone As IApply, t As RkGenericEntry) As RkGenericEntry

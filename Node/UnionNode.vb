@@ -25,6 +25,7 @@ Namespace Node
 
             Me.Name = base.Name
             Me.Union = New ListNode(Of TypeBaseNode)
+            Me.IsGeneric = base.IsGeneric
             Me.AppendLineNumber(base)
         End Sub
 
@@ -34,7 +35,12 @@ Namespace Node
 
         Public Overrides Function HasGeneric() As Boolean
 
-            Return Me.Union.List.Or(Function(x) x.HasGeneric)
+            Return Me.IsGeneric OrElse Me.Union.List.Or(Function(x) x.HasGeneric)
+        End Function
+
+        Public Overrides Function ToString() As String
+
+            Return $"{MyBase.ToString()}{If(Me.Dynamic, "..", "")}"
         End Function
 
     End Class

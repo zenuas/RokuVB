@@ -11,6 +11,7 @@ Namespace Manager
         Public Overridable Property Name As String Implements IType.Name
         Public Overridable Property ApplyIndex As Integer
         Public Overridable Property Reference As IApply = Nothing
+        Public Overridable Property Dynamic As Boolean = False
 
         Public Overridable Function GetValue(name As String) As IType Implements IType.GetValue
 

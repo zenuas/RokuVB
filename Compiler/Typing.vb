@@ -20,7 +20,9 @@ Namespace Compiler
 
             If base.IsGeneric Then
 
-                base.Type = t.DefineGeneric(base.Name)
+                Dim x = t.DefineGeneric(base.Name)
+                base.Type = x
+                If TypeOf base Is UnionNode Then x.Dynamic = CType(base, UnionNode).Dynamic
 
             ElseIf TypeOf base Is TypeNode Then
 
@@ -180,7 +182,7 @@ Namespace Compiler
                         If Not node.HasGeneric Then
 
                             Dim t = CType(node.Type, RkUnionType)
-                            If Not node.Dynamic Then t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
+                            t.Merge(node.Union.List.Map(Function(x) LoadStruct(ns, x.Name)))
                             If node.Nullable Then
 
                                 t.Add(root.NullType)
@@ -769,6 +771,39 @@ Namespace Compiler
             Return from
         End Function
 
+        Public Shared Sub ApplyReturnFeedback(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace, ret As RkNativeFunction, current As RkFunction)
+
+            Dim g = CType(current.Return, RkGenericEntry)
+            Dim apply_index = g.ApplyIndex
+            If current.Apply(apply_index) Is Nothing Then
+
+                If g.Dynamic Then
+
+                    current.Apply(apply_index) = New RkUnionType With {.AddMerge = True}
+                Else
+
+                    Dim x = ret.Apply(0)
+                    current.Apply(apply_index) = x
+                    Do While True
+
+                        Dim apply = current.ApplyToWhere(ns, current.Apply.ToArray)
+                        If apply(apply_index) Is x Then Exit Do
+                        current.Apply.Clear()
+                        current.Apply.AddRange(apply)
+                        x = apply(apply_index)
+                    Loop
+                    ret.Apply(0) = x
+                End If
+            End If
+
+            If g.Dynamic Then
+
+                CType(g.Reference.Apply(apply_index), RkUnionType).Merge(ret.Arguments(0).Value)
+            Else
+                g.Reference.Apply(apply_index) = VarFeedback(pgm, root, ret.Arguments(0).Value, current.Return)
+            End If
+        End Sub
+
         Public Shared Sub ApplyFeedback(pgm As ProgramNode, root As SystemLibrary, ns As RkNamespace, f As IFunction, node As FunctionCallNode, current As IScope)
 
             If TypeOf f Is RkNativeFunction Then
@@ -784,33 +819,7 @@ Namespace Compiler
                     If TypeOf current Is RkFunction Then
 
                         Dim func = CType(current, RkFunction)
-                        If TypeOf func.Return Is RkGenericEntry Then
-
-                            Dim g = CType(func.Return, RkGenericEntry)
-                            Dim apply_index = g.ApplyIndex
-                            If func.Apply(apply_index) Is Nothing Then
-
-                                Dim x = f.Apply(0)
-                                func.Apply(apply_index) = x
-                                Do While True
-
-                                    Dim apply = func.ApplyToWhere(ns, func.Apply.ToArray)
-                                    If apply(apply_index) Is x Then Exit Do
-                                    func.Apply.Clear()
-                                    func.Apply.AddRange(apply)
-                                    x = apply(apply_index)
-                                Loop
-                                f.Apply(0) = x
-                            End If
-
-                            g.Reference.Apply(g.ApplyIndex) = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
-                            'f.Arguments(0).Value = VarFeedback(pgm, root, f.Arguments(0).Value, func.Return)
-
-                        ElseIf TypeOf func.Return Is RkUnionType Then
-
-                            Dim union = CType(func.Return, RkUnionType)
-                            If union.AddMerge Then union.Merge(node.Arguments(0).Type)
-                        End If
+                        If TypeOf func.Return Is RkGenericEntry Then ApplyReturnFeedback(pgm, root, ns, native, func)
                     End If
                 End If
             End If
