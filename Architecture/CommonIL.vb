@@ -162,7 +162,7 @@ Namespace Architecture
         Public Overridable Function DeclareMethods(root As SystemLibrary, structs As Dictionary(Of RkStruct, TypeData)) As Dictionary(Of IFunction, MethodInfo)
 
             Dim map As New Dictionary(Of IFunction, MethodInfo)
-            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso Not x.HasIndefinite AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
+            For Each f In Me.FindAllMethods(root).Where(Function(x) Not x.HasGeneric AndAlso (x.FunctionNode IsNot Nothing OrElse x.Body.Count > 0))
 
                 If map.ContainsKey(f) Then Continue For
                 Dim name = CreateManglingName(f)
@@ -752,6 +752,7 @@ ARRAY_CREATE_:
                                     Case ct.TypeInfo Is GetType(Byte) : il.Emit(OpCodes.Conv_U1)
 
                                     Case Else
+                                        il.Emit(OpCodes.Box, Me.RkToCILType(cast.Left.Type, structs).Type)
                                         GoTo CLASS_CAST_
                                 End Select
                             Else
@@ -766,11 +767,10 @@ CLASS_CAST_:
 
                     Case InOperator.CanCast
                         Dim cancast = CType(stmt, InCode)
-                        Dim t = Me.RkToCILType(cancast.Right.Type, structs).Type
                         gen_il_load(il, cancast.Left, False)
                         If TypeOf cancast.Left.Type Is RkCILStruct AndAlso CType(cancast.Left.Type, RkCILStruct).TypeInfo.IsValueType Then
 
-                            il.Emit(OpCodes.Box, t)
+                            il.Emit(OpCodes.Box, CType(cancast.Left.Type, RkCILStruct).TypeInfo)
                         End If
                         If cancast.Right.Type Is root.NullType Then
 
@@ -778,7 +778,7 @@ CLASS_CAST_:
                             il.Emit(OpCodes.Ceq)
                         Else
 
-                            il.Emit(OpCodes.Isinst, t)
+                            il.Emit(OpCodes.Isinst, Me.RkToCILType(cancast.Right.Type, structs).Type)
                             il.Emit(OpCodes.Ldnull)
                             il.Emit(OpCodes.Cgt_Un)
                         End If
@@ -819,6 +819,7 @@ CLASS_CAST_:
                     Return New TypeData With {.Type = s.TypeInfo, .Constructor = s.TypeInfo.GetConstructor(New Type() {})}
                 End If
             End If
+            If TypeOf r Is RkUnionType Then Return New TypeData With {.Type = GetType(System.Object), .Constructor = Nothing}
             If TypeOf r IsNot RkStruct Then Throw New ArgumentException("invalid RkStruct", NameOf(r))
             Return structs(CType(r, RkStruct))
         End Function

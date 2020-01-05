@@ -1224,7 +1224,7 @@ Namespace Compiler
 
                         Coverage.Case()
                         Dim union = CType(t, RkUnionType)
-                        t = If(union.Types?.Count > 1 AndAlso union.Dynamic, root.ObjectType, var_normalize(root.ChoosePriorityType(union.Types)))
+                        t = root.ChoosePriorityType(union.Types.Map(Function(x) var_normalize(x)).ToList)
 
                     ElseIf TypeOf t Is RkGenericEntry Then
 
@@ -1254,7 +1254,7 @@ Namespace Compiler
                         s.Local.Keys.ToList.Each(Sub(x) s.Local(x) = var_normalize(s.Local(x)))
                     End If
 
-                    If TypeOf t Is IApply Then
+                    If TypeOf t Is IApply AndAlso TypeOf t IsNot RkUnionType Then
 
                         Coverage.Case()
                         Dim apply = CType(t, IApply)
@@ -1297,7 +1297,9 @@ Namespace Compiler
                     If TypeOf child Is FunctionCallNode Then
 
                         Dim node = CType(child, FunctionCallNode)
-                        node.Function = CType(var_normalize(node.Function), IFunction)
+                        Dim t = var_normalize(node.Function)
+                        If TypeOf t Is RkUnionType Then t = CType(t, RkUnionType).Types(0)
+                        node.Function = CType(t, IFunction)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is IEvaluableNode Then

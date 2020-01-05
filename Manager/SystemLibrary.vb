@@ -191,23 +191,24 @@ Namespace Manager
             Dim not_void = types.Where(Function(x) x IsNot Me.VoidType).ToList
             If not_void.Count = 0 Then Return Me.VoidType
 
-            Dim not_num = not_void.FindFirstOrNull(Function(x) Me.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing)
-            If not_num IsNot Nothing Then Return not_num
+            If not_void.FindFirstOrNull(Function(x) Me.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing) Is Nothing Then
 
-            Dim t As IType
-            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int32").Is(x))
-            If t IsNot Nothing Then Return t
+                Dim t As IType
+                t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int32").Is(x))
+                If t IsNot Nothing Then Return t
 
-            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int64").Is(x))
-            If t IsNot Nothing Then Return t
+                t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int64").Is(x))
+                If t IsNot Nothing Then Return t
 
-            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int16").Is(x))
-            If t IsNot Nothing Then Return t
+                t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Int16").Is(x))
+                If t IsNot Nothing Then Return t
 
-            t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Byte").Is(x))
-            If t IsNot Nothing Then Return t
+                t = not_void.FindFirstOrNull(Function(x) LoadStruct(Me, "Byte").Is(x))
+                If t IsNot Nothing Then Return t
+            End If
 
-            Return not_void(0)
+            If not_void.Count = 1 Then Return not_void(0)
+            Return New RkUnionType(not_void)
         End Function
 
         Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)

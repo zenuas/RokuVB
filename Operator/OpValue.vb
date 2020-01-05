@@ -11,6 +11,7 @@ Namespace [Operator]
 
         Public Overrides Function ToString() As String
 
+            If String.IsNullOrEmpty(Me.Name) Then Return $"{Me.Type}"
             Return $"{Me.Name}"
         End Function
     End Class

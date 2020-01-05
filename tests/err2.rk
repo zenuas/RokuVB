@@ -1,0 +1,40 @@
+
+sub f1() [Int | String]
+	return(0)
+
+sub f2() [Int64 | String]
+	return(cast(1, Int64))
+
+sub g(p: @X, a: @T..)
+	if n: @T = p
+		print("match")
+	else
+		print("miss")
+
+#=>match
+g(5, f1())
+
+#=>match
+g("test", f1())
+
+#=>miss
+g(cast(5, Int64), f1())
+
+#=>miss
+g(5, f2())
+
+#=>match
+g("test", f2())
+
+#=>match
+g(cast(5, Int64), f2())
+
+
+###
+@T.. と @X を比較する
+if n: @T = p では@Tが取りうる型のいずれかにキャスト可能な場合成立する
+
+g(cast(5, Int64), f1()) では
+g(p: Int64, a: [Int | String]) となるため
+pは@Tのいずれの型とも一致しない
+###
