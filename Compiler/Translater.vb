@@ -371,19 +371,47 @@ Namespace Compiler
                         Dim bool = LoadStruct(root, "Bool")
                         Dim eq_r As New OpValue With {.Name = create_anonymus(), .Type = bool, .Scope = func}
 
-                        body.Add(New InCode With {
-                                .Operator = InOperator.CanCast,
-                                .Return = eq_r,
-                                .Left = to_value(ifcast.Condition),
-                                .Right = to_value(ifcast.Declare)
-                            })
-                        if_.Condition = eq_r
-                        then_.Insert(0, New InCode With {
-                                .Operator = InOperator.Cast,
-                                .Return = New OpValue With {.Name = ifcast.Var.Name, .Type = ifcast.Declare.Type, .Scope = func},
-                                .Left = to_value(ifcast.Condition),
-                                .Right = to_value(ifcast.Declare)
-                            })
+                        If TypeOf ifcast.Declare.Type Is RkUnionType Then
+
+                            Dim union = CType(ifcast.Declare.Type, RkUnionType)
+                            Dim match_end = New InLabel
+                            For Each x In union.Types
+
+                                Dim next_ = New InLabel
+                                body.Add(New InCode With {
+                                        .Operator = InOperator.CanCast,
+                                        .Return = eq_r,
+                                        .Left = to_value(ifcast.Condition),
+                                        .Right = New OpValue With {.Type = x, .Scope = func}
+                                    })
+                                body.Add(New InIf With {.Condition = eq_r, .Else = next_})
+                                body.Add(New InGoto With {.Label = match_end})
+                                body.Add(next_)
+                            Next
+                            body.Add(match_end)
+                            if_.Condition = eq_r
+                            then_.Insert(0, New InCode With {
+                                    .Operator = InOperator.Cast,
+                                    .Return = New OpValue With {.Name = ifcast.Var.Name, .Type = LoadStruct(root, "Object"), .Scope = func},
+                                    .Left = to_value(ifcast.Condition),
+                                    .Right = New OpValue With {.Type = LoadStruct(root, "Object"), .Scope = func}
+                                })
+                        Else
+
+                            body.Add(New InCode With {
+                                    .Operator = InOperator.CanCast,
+                                    .Return = eq_r,
+                                    .Left = to_value(ifcast.Condition),
+                                    .Right = to_value(ifcast.Declare)
+                                })
+                            if_.Condition = eq_r
+                            then_.Insert(0, New InCode With {
+                                    .Operator = InOperator.Cast,
+                                    .Return = New OpValue With {.Name = ifcast.Var.Name, .Type = ifcast.Declare.Type, .Scope = func},
+                                    .Left = to_value(ifcast.Condition),
+                                    .Right = to_value(ifcast.Declare)
+                                })
+                        End If
                     Else
 
                         if_.Condition = to_value(node.Condition)

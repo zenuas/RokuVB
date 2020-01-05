@@ -1271,7 +1271,28 @@ Namespace Compiler
 
                     If Not isfirst Then Return
 
-                    next_(child, current + 1)
+                    Do
+
+                        If TypeOf child Is IfCastNode Then
+
+                            Dim ifcast = CType(child, IfCastNode)
+                            Dim cast = ifcast.Declare.Type
+                            If TypeOf cast Is RkGenericEntry Then
+
+                                Dim t = CType(cast, RkGenericEntry).ToType
+                                If TypeOf t Is RkUnionType Then
+
+                                    Dim union = New RkUnionType(CType(t, RkUnionType).Types)
+                                    next_(child, current + 1)
+                                    ifcast.Declare.Type = union
+                                    Exit Do
+                                End If
+                            End If
+                        End If
+
+                        next_(child, current + 1)
+
+                    Loop While False
 
                     If TypeOf child Is FunctionCallNode Then
 
