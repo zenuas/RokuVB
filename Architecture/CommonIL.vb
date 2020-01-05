@@ -95,7 +95,7 @@ Namespace Architecture
         Public Overridable Function DeclareStructs(root As SystemLibrary) As Dictionary(Of RkStruct, TypeData)
 
             Dim map As New Dictionary(Of RkStruct, TypeData)
-            For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso Not x.HasIndefinite AndAlso (x.StructNode IsNot Nothing OrElse x.IsTuple) AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
+            For Each struct In Me.FindAllStructs(root).Where(Function(x) (Not x.HasGeneric AndAlso (x.StructNode IsNot Nothing OrElse x.IsTuple) AndAlso TypeOf x IsNot RkCILStruct) OrElse x.ClosureEnvironment)
 
                 If map.ContainsKey(struct) Then Continue For
                 Dim name = CreateManglingName(struct)
