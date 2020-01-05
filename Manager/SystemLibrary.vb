@@ -188,7 +188,7 @@ Namespace Manager
         Public Overridable Function ChoosePriorityType(types As List(Of IType)) As IType
 
             If types Is Nothing Then Return Me.VoidType
-            Dim not_void = types.Where(Function(x) x IsNot Me.VoidType).ToList
+            Dim not_void = types.Where(Function(x) x IsNot Nothing AndAlso x IsNot Me.VoidType).ToList
             If not_void.Count = 0 Then Return Me.VoidType
 
             If not_void.FindFirstOrNull(Function(x) Me.NumericTypes.FindFirstOrNull(Function(a) a.Is(x)) Is Nothing) Is Nothing Then
