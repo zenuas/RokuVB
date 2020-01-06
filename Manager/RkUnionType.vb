@@ -2,7 +2,6 @@
 Imports System.Collections.Generic
 Imports Roku.IntermediateCode
 Imports Roku.Node
-Imports Roku.Manager.SystemLibrary
 Imports Roku.Operator
 Imports Roku.Util.Extensions
 
@@ -15,8 +14,7 @@ Namespace Manager
         Public Overridable Property UnionName As String = Nothing
         Public Overridable Property Types As List(Of IType)
         Public Overridable Property ReturnCache As RkUnionType
-        Public Overridable Property Dynamic As Boolean = True
-        Public Overridable Property AddMerge As Boolean = False
+        Public Overridable Property UnionType As UnionTypes = UnionTypes.Subtraction
 
         Public Sub New()
 
@@ -63,7 +61,7 @@ Namespace Manager
 
                     Dim xs = Me.Types.By(Of RkFunction).Where(Function(x) x.Return IsNot Nothing).ToList
                     If xs.Count = 0 Then Return Nothing
-                    Me.ReturnCache = New RkUnionType(xs.Map(Function(x) x.Return)) With {.Dynamic = False}
+                    Me.ReturnCache = New RkUnionType(xs.Map(Function(x) x.Return)) With {.UnionType = Me.UnionType}
                 End If
                 Return Me.ReturnCache
             End Get
@@ -183,14 +181,14 @@ Namespace Manager
                 Me.Types = xs
                 Return True
 
-            ElseIf Me.AddMerge Then
+            ElseIf Me.UnionType = UnionTypes.Addtion Then
 
                 Dim adds = types.Where(Function(x) Me.Types.FindFirstOrNull(Function(a) x.Is(a)) Is Nothing).ToList
                 If adds.Count = 0 Then Return False
                 Me.Types.AddRange(adds)
                 Return True
 
-            ElseIf Me.Types.Count > 0 AndAlso Not Me.Dynamic Then
+            ElseIf Me.Types.Count > 0 AndAlso Me.UnionType = UnionTypes.Subtraction Then
 
                 Dim before = Me.Types.Count
                 Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList

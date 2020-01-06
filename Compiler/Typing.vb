@@ -98,7 +98,7 @@ Namespace Compiler
                     ElseIf TypeOf child Is UnionNode Then
 
                         Dim node = CType(child, UnionNode)
-                        Dim union = New RkUnionType With {.UnionName = node.Name, .AddMerge = node.Dynamic}
+                        Dim union = New RkUnionType With {.UnionName = node.Name, .UnionType = If(node.Dynamic, UnionTypes.Addtion, UnionTypes.Fixed)}
                         node.Type = union
                         If Not String.IsNullOrEmpty(node.Name) Then current.Scope.AddStruct(union)
 
@@ -218,7 +218,7 @@ Namespace Compiler
                             End If
                             If node.Nullable Then
 
-                                If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
+                                If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t}) With {.UnionType = UnionTypes.Fixed}
                                 CType(t, RkUnionType).Add(root.NullType)
                                 node.NullAdded = True
                             End If
@@ -340,7 +340,7 @@ Namespace Compiler
 
                         ElseIf node.ImplicitReturn Then
 
-                            func.Return = New RkUnionType With {.Dynamic = False}
+                            func.Return = New RkUnionType
                         End If
                         Coverage.Case()
                     End If
@@ -362,7 +362,7 @@ Namespace Compiler
                     If TypeOf child Is NumericNode Then
 
                         Dim node = CType(child, NumericNode)
-                        node.Type = New RkUnionType(root.NumericTypes) With {.Dynamic = False}
+                        node.Type = New RkUnionType(root.NumericTypes)
                         Coverage.Case()
 
                     ElseIf TypeOf child Is StringNode Then
@@ -567,7 +567,7 @@ Namespace Compiler
                 ElseIf fs.Count >= 2 Then
 
                     Coverage.Case()
-                    Dim union = New RkUnionType(fs) With {.Dynamic = False}
+                    Dim union = New RkUnionType(fs)
                     byname.Type = union
                     Return union
                 End If
@@ -779,7 +779,7 @@ Namespace Compiler
 
                 If g.Dynamic Then
 
-                    current.Apply(apply_index) = New RkUnionType With {.AddMerge = True}
+                    current.Apply(apply_index) = New RkUnionType With {.UnionType = UnionTypes.Addtion}
                 Else
 
                     Dim x = ret.Apply(0)
@@ -929,7 +929,7 @@ Namespace Compiler
                             If node.Nullable AndAlso Not node.NullAdded Then
 
                                 Dim t = node.Type
-                                If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t})
+                                If TypeOf t IsNot RkUnionType Then t = New RkUnionType({t}) With {.UnionType = UnionTypes.Fixed}
                                 CType(t, RkUnionType).Add(root.NullType)
                                 node.Type = t
                                 node.NullAdded = True
@@ -1136,7 +1136,7 @@ Namespace Compiler
                                     If CInt(count.GetValue(list)) = 0 Then
 
                                         Coverage.Case()
-                                        Return LoadStruct(root, "Array", New RkUnionType With {.Dynamic = False})
+                                        Return LoadStruct(root, "Array", New RkUnionType)
                                     Else
 
                                         Coverage.Case()
@@ -1171,7 +1171,7 @@ Namespace Compiler
                             Dim func = CType(block.Owner, FunctionNode)
                             Dim lambda = CType(block.Statements(block.Statements.Count - 1), LambdaExpressionNode)
                             Dim ret_type = FixedByName(func?.Function?.Return)
-                            If TypeOf ret_type Is RkUnionType Then ret_type = root.ChoosePriorityType(CType(ret_type, RkUnionType).Types)
+                            If TypeOf ret_type Is RkUnionType Then ret_type = root.ChoosePriorityType(CType(ret_type, RkUnionType))
                             If ret_type Is Nothing OrElse lambda.Type Is Nothing OrElse ret_type.Is(root.VoidType) Then
 
                                 If ret_type Is root.VoidType Then func.Function.Return = Nothing
@@ -1223,8 +1223,13 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkUnionType Then
 
                         Coverage.Case()
-                        Dim union = CType(t, RkUnionType)
-                        t = root.ChoosePriorityType(union.Types.Map(Function(x) var_normalize(x)).ToList)
+                        Dim tx = root.ChoosePriorityType(CType(t, RkUnionType))
+                        If TypeOf tx Is RkUnionType Then
+
+                            Dim union = CType(tx, RkUnionType)
+                            union.Types = union.Types.Map(Function(x) var_normalize(x)).ToList
+                        End If
+                        t = tx
 
                     ElseIf TypeOf t Is RkGenericEntry Then
 
@@ -1266,33 +1271,12 @@ Namespace Compiler
 
             Util.Traverse.NodesOnce(
                 pgm,
-                0,
+                CType(ns, IScope),
                 Sub(parent, ref, child, current, isfirst, next_)
 
                     If Not isfirst Then Return
 
-                    Do
-
-                        If TypeOf child Is IfCastNode Then
-
-                            Dim ifcast = CType(child, IfCastNode)
-                            Dim cast = ifcast.Declare.Type
-                            If TypeOf cast Is RkGenericEntry Then
-
-                                Dim t = CType(cast, RkGenericEntry).ToType
-                                If TypeOf t Is RkUnionType Then
-
-                                    Dim union = New RkUnionType(CType(t, RkUnionType).Types)
-                                    next_(child, current + 1)
-                                    ifcast.Declare.Type = union
-                                    Exit Do
-                                End If
-                            End If
-                        End If
-
-                        next_(child, current + 1)
-
-                    Loop While False
+                    next_(child, If(TypeOf child Is IHaveScopeType, CType(CType(child, IHaveScopeType).Type, IScope), current))
 
                     If TypeOf child Is FunctionCallNode Then
 

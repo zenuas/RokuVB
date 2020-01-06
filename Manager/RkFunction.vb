@@ -131,7 +131,7 @@ Namespace Manager
                                 If gens(g).And(Function(x) Not x.Is(t)) Then gens(g).Add(t)
                             End Sub
                         CType(p, RkUnionType).Types.Each(Sub(x) generic_match(arg, x, gen_add))
-                        gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value) With {.Dynamic = False})))
+                        gens.Each(Sub(kv) gen_to_type(kv.Key, If(kv.Value.Count = 1, kv.Value(0), New RkUnionType(kv.Value) With {.UnionType = UnionTypes.Fixed})))
 
                     ElseIf TypeOf arg Is RkFunction Then
 
