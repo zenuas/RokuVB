@@ -4,6 +4,7 @@ Namespace Manager
 
         Addtion
         Subtraction
+        AffectedSubtraction
         Fixed
 
     End Enum

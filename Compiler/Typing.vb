@@ -567,7 +567,7 @@ Namespace Compiler
                 ElseIf fs.Count >= 2 Then
 
                     Coverage.Case()
-                    Dim union = New RkUnionType(fs)
+                    Dim union = New RkUnionType(fs) With {.UnionType = UnionTypes.AffectedSubtraction}
                     byname.Type = union
                     Return union
                 End If

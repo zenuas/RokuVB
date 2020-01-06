@@ -188,7 +188,7 @@ Namespace Manager
                 Me.Types.AddRange(adds)
                 Return True
 
-            ElseIf Me.Types.Count > 0 AndAlso Me.UnionType = UnionTypes.Subtraction Then
+            ElseIf Me.Types.Count > 0 AndAlso (Me.UnionType = UnionTypes.Subtraction OrElse Me.UnionType = UnionTypes.AffectedSubtraction) Then
 
                 Dim before = Me.Types.Count
                 Dim after = Me.Types.Merge(types, Function(a, b) a.Is(b)).ToList

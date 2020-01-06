@@ -212,6 +212,7 @@ Namespace Manager
 
                 Return not_void(0)
             Else
+
                 Return New RkUnionType(not_void) With {.UnionType = union.UnionType}
             End If
         End Function
@@ -557,7 +558,7 @@ Namespace Manager
                     If Not same Then unique.Add(f)
                 Next
                 If unique.Count = 1 Then Return unique(0)
-                Dim union As New RkUnionType(unique)
+                Dim union As New RkUnionType(unique) With {.UnionType = UnionTypes.AffectedSubtraction}
                 If union.Types.Count = 1 Then Return CType(union.Types(0), IFunction)
                 Return union
             End If
