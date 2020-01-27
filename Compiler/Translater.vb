@@ -218,7 +218,7 @@ Namespace Compiler
 
                                 Case InOperator.Alloc
 
-                                    Dim struct = CType(node.Type, RkStruct)
+                                    Dim struct = CType(FixedByName(node.Type), RkStruct)
                                     args.Insert(0, New OpValue With {.Name = struct.Name, .Type = struct, .Scope = func})
                                     Dim xs = node.Function.CreateCallReturn(ret, args.ToArray)
                                     If args.Count = 1 OrElse struct.Generics.Count > 0 Then Return xs

@@ -1223,13 +1223,9 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkUnionType Then
 
                         Coverage.Case()
-                        Dim tx = root.ChoosePriorityType(CType(t, RkUnionType))
-                        If TypeOf tx Is RkUnionType Then
-
-                            Dim union = CType(tx, RkUnionType)
-                            union.Types = union.Types.Map(Function(x) var_normalize(x)).ToList
-                        End If
-                        t = tx
+                        Dim union = root.ChoosePriorityTypeEffect(CType(t, RkUnionType))
+                        union.Types = union.Types.Map(Function(x) var_normalize(x)).ToList
+                        t = union
 
                     ElseIf TypeOf t Is RkGenericEntry Then
 
@@ -1281,10 +1277,34 @@ Namespace Compiler
                     If TypeOf child Is FunctionCallNode Then
 
                         Dim node = CType(child, FunctionCallNode)
-                        Dim t = var_normalize(node.Function)
-                        If TypeOf t Is RkUnionType Then t = CType(t, RkUnionType).Types(0)
-                        node.Function = CType(t, IFunction)
+                        If node.Function?.HasIndefinite Then node.Function = FixedFunction(root, ns, node)
                         Coverage.Case()
+
+                    ElseIf TypeOf child Is LetNode Then
+
+                        Dim let_ = CType(child, LetNode)
+                        Dim t = If(let_.Expression Is Nothing, let_.Declare?.Type, let_.Expression.Type)
+                        If TypeOf let_.Var.Type Is RkUnionType Then CType(let_.Var.Type, RkUnionType).Merge(t)
+                        If TypeOf let_.Type Is RkUnionType Then CType(let_.Type, RkUnionType).Merge(t)
+                        Coverage.Case()
+
+                    ElseIf IsGeneric(child.GetType, GetType(ListNode(Of ))) Then
+
+                        Dim e = CType(child, IEvaluableNode)
+                        If e.Type?.HasIndefinite Then
+
+                            Coverage.Case()
+                            Dim list = child.GetType.GetProperty("List").GetValue(child)
+                            Dim count = list.GetType.GetProperty("Count")
+                            If CInt(count.GetValue(list)) > 0 Then
+
+                                Coverage.Case()
+                                Dim item = list.GetType.GetProperty("Item")
+                                Dim item0 = CType(item.GetValue(list, New Object() {0}), IEvaluableNode)
+                                e.IsInstance = item0.IsInstance
+                                e.Type = LoadStruct(root, "Array", FixedVar(item0.Type))
+                            End If
+                        End If
 
                     ElseIf TypeOf child Is IEvaluableNode Then
 

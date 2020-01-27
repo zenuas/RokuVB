@@ -217,6 +217,25 @@ Namespace Manager
             End If
         End Function
 
+        Public Overridable Function ChoosePriorityTypeEffect(union As RkUnionType) As RkUnionType
+
+            If union.Types Is Nothing Then
+
+                union.Merge(Me.VoidType)
+                Return union
+            End If
+
+            Dim not_void = union.Types.Where(Function(x) x IsNot Nothing AndAlso Not x.Is(Me.VoidType)).ToList
+            If not_void.Count = 0 Then
+
+                union.Merge(Me.VoidType)
+                Return union
+            End If
+
+            union.Merge(ChoosePriorityType(union))
+            Return union
+        End Function
+
         Public Overridable Sub CreateFunctionAlias(scope As IScope, name As String, [alias] As String)
 
             For Each f In FindLoadFunction(scope, name, Function(x) True)
