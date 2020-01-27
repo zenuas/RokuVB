@@ -1284,9 +1284,12 @@ Namespace Compiler
 
                         Dim let_ = CType(child, LetNode)
                         Dim t = If(let_.Expression Is Nothing, let_.Declare?.Type, let_.Expression.Type)
-                        If TypeOf let_.Var.Type Is RkUnionType Then CType(let_.Var.Type, RkUnionType).Merge(t)
-                        If TypeOf let_.Type Is RkUnionType Then CType(let_.Type, RkUnionType).Merge(t)
-                        Coverage.Case()
+                        If t IsNot Nothing Then
+
+                            If TypeOf let_.Var.Type Is RkUnionType Then CType(let_.Var.Type, RkUnionType).Merge(t)
+                            If TypeOf let_.Type Is RkUnionType Then CType(let_.Type, RkUnionType).Merge(t)
+                            Coverage.Case()
+                        End If
 
                     ElseIf IsGeneric(child.GetType, GetType(ListNode(Of ))) Then
 
@@ -1319,6 +1322,32 @@ Namespace Compiler
 
                         Dim e = CType(child, IHaveScopeType)
                         var_normalize(e.Type)
+                        Coverage.Case()
+                    End If
+
+                End Sub)
+
+            Util.Traverse.NodesOnce(
+                pgm,
+                CType(ns, IScope),
+                Sub(parent, ref, child, current, isfirst, next_)
+
+                    If Not isfirst Then Return
+
+                    next_(child, If(TypeOf child Is IHaveScopeType, CType(CType(child, IHaveScopeType).Type, IScope), current))
+
+                    If TypeOf child Is FunctionCallNode Then
+
+                        Dim node = CType(child, FunctionCallNode)
+                        Dim t = var_normalize(node.Function)
+                        If TypeOf t Is RkUnionType Then t = CType(t, RkUnionType).Types(0)
+                        node.Function = CType(t, IFunction)
+
+                    ElseIf TypeOf child Is IEvaluableNode Then
+
+                        Dim e = CType(child, IEvaluableNode)
+                        e.Type = var_normalize(e.Type)
+                        If TypeOf e.Type Is RkUnionType Then e.Type = root.ChoosePriorityType(CType(e.Type, RkUnionType))
                         Coverage.Case()
                     End If
 
