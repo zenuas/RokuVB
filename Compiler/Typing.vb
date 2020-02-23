@@ -1230,7 +1230,8 @@ Namespace Compiler
                     ElseIf TypeOf t Is RkGenericEntry Then
 
                         Coverage.Case()
-                        t = var_normalize(CType(t, RkGenericEntry).ToType)
+                        Dim x = var_normalize(CType(t, RkGenericEntry).ToType)
+                        If x IsNot Nothing Then t = x
 
                     ElseIf TypeOf t Is RkFunction Then
 
