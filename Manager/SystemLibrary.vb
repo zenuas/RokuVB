@@ -593,11 +593,12 @@ Namespace Manager
             Dim arg_any_indefinite = args.Or(Function(x) x IsNot Nothing AndAlso x.HasIndefinite)
 
             Dim fs = FindLoadFunction(scope, name, Function(x) Not x.HasIndefinite AndAlso (Not arg_any_indefinite OrElse x.GenericBase Is Nothing) AndAlso x.Arguments.Count = args.Length AndAlso x.Arguments.And(Function(arg, i) FixedByName(args(i)).If(Function(fix) fix.Is(arg.Value), Function() True)))
+
             If fs.Or(Function(x) x.HasGeneric) AndAlso fs.Or(Function(x) Not x.HasGeneric) Then
 
-                Return fs.Where(Function(x) Not x.HasGeneric)
+                fs = fs.Where(Function(x) Not x.HasGeneric)
             End If
-            Return fs
+            Return fs.UniqueList(Function(a, b) a.Is(b))
         End Function
 
         Public Shared Iterator Function FindLoadFunction(scope As IScope, name As String, match As Func(Of IFunction, Boolean)) As IEnumerable(Of IFunction)
